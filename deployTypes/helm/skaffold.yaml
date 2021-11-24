@@ -1,0 +1,17 @@
+apiVersion: skaffold/v2beta26
+kind: Config
+build:
+  artifacts:
+    - image: my-app
+  local:
+    useDockerCLI: true
+    useBuildkit: false
+deploy:
+  helm:
+    releases:
+      - name: my-chart
+        chartPath: charts
+        artifactOverrides:
+          imageKey: my-app
+        imageStrategy:
+          helm: {}

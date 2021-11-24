@@ -2,6 +2,8 @@ package osutil
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"io/fs"
 	"os"
 	"runtime"
 	"syscall"
@@ -63,5 +65,38 @@ func EnsureFile(file string) error {
 		return fmt.Errorf("%s must not be a directory", file)
 	}
 
+	return nil
+}
+
+func CopyDir(fileSys fs.FS, src, dest string) error {
+	files, err := fs.ReadDir(fileSys, src)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+
+		srcPath := src + "/" + f.Name()
+		destPath := dest + "/" + f.Name()
+		log.Debugf("fileName: %s", srcPath)
+
+		if f.IsDir() {
+			if err = EnsureDirectory(destPath); err != nil {
+				return err
+			}
+			if err = CopyDir(fileSys, srcPath, destPath); err != nil {
+				return err
+			}
+		} else {
+			file, err := fs.ReadFile(fileSys, srcPath)
+			if err != nil {
+				return err
+			}
+
+			if err = os.WriteFile(destPath, file, 0644); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }

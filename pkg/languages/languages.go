@@ -3,8 +3,9 @@ package languages
 import (
 	"embed"
 	"fmt"
-	"io/fs"
+	"github.com/imiller31/draftv2/pkg/embedutils"
 	log "github.com/sirupsen/logrus"
+	"io/fs"
 	"os"
 	"path"
 )
@@ -14,6 +15,7 @@ import (
 var (
 	//go:embed builders
 	builders	embed.FS
+	parentDirName = "builders"
 )
 
 type Languages struct {
@@ -31,7 +33,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string) error {
 		return fmt.Errorf("language %s is not supported", lang)
 	}
 
-	dir := "builders/" + val.Name()
+	dir := parentDirName + "/" + val.Name()
 
 	files, err := fs.ReadDir(builders, dir)
 	if err != nil {
@@ -60,19 +62,9 @@ func (l *Languages) CreateDockerfileForLanguage(lang string) error {
 }
 
 func CreateLanguages() *Languages {
-	l := &Languages{
-		langs: make(map[string]fs.DirEntry),
-	}
-	files, err := builders.ReadDir("builders")
+	langMap, err := embedutils.EmbedFStoMap(builders, parentDirName)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	for _, f := range files {
-		if f.IsDir() {
-			l.langs[f.Name()] = f
-		}
-	}
-
-	return l
+	return &Languages{langs: langMap}
 }

@@ -18,11 +18,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/imiller31/draftv2/pkg/deployments"
 	"github.com/imiller31/draftv2/pkg/linguist"
+	"strings"
 
+	"github.com/imiller31/draftv2/pkg/languages"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/imiller31/draftv2/pkg/languages"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -67,12 +69,15 @@ func (cc *createCmd) run() error {
 	if err = cc.detectLanguage(); err != nil {
 		return err
 	}
+
+	d := deployments.CreateDeployments()
+
 	switch cc.deployType {
-		case "helm": err = cc.createHelm()
+		case "helm": err = cc.createHelm(d)
 
-		case "kustomize": err = cc.createKustomize()
+		case "kustomize": err = cc.createKustomize(d)
 
-		case "manifest": err = cc.createManifest()
+		case "manifest": err = cc.createManifest(d)
 	}
 
 	return err
@@ -97,8 +102,9 @@ func (cc *createCmd) detectLanguage() error {
 	for _, lang := range langs {
 		detectedLang := linguist.Alias(lang)
 		log.Infof("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
-		if supportedLanguages.ContainsLanguage(detectedLang.Language) {
-			if err = supportedLanguages.CreateDockerfileForLanguage(detectedLang.Language); err != nil {
+		lowerLang := strings.ToLower(detectedLang.Language)
+		if supportedLanguages.ContainsLanguage(lowerLang) {
+			if err = supportedLanguages.CreateDockerfileForLanguage(lowerLang); err != nil {
 				return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", detectedLang.Language, err)
 			}
 			return err
@@ -108,15 +114,16 @@ func (cc *createCmd) detectLanguage() error {
 	return ErrNoLanguageDetected
 }
 
-func (cc *createCmd) createHelm() error {
-	return errors.New("helm not yet implemented")
+func (cc *createCmd) createHelm(d *deployments.Deployments) error {
+	log.Info("--> Creating helm chart")
+	return d.CopyDeploymentFiles("helm")
 }
 
-func (cc *createCmd) createKustomize() error {
+func (cc *createCmd) createKustomize(d *deployments.Deployments) error {
 	return errors.New("kustomize not yet implemented")
 }
 
-func (cc *createCmd) createManifest() error {
+func (cc *createCmd) createManifest(d *deployments.Deployments) error {
 	return errors.New("manifests not yet implemented")
 }
 

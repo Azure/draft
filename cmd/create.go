@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"github.com/imiller31/draftv2/pkg/deployments"
 	"github.com/imiller31/draftv2/pkg/linguist"
+	"strconv"
 	"strings"
 
 	"github.com/imiller31/draftv2/pkg/languages"
+	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -99,11 +101,38 @@ func (cc *createCmd) detectLanguage() error {
 	}
 
 	supportedLanguages := languages.CreateLanguages()
+
 	for _, lang := range langs {
 		detectedLang := linguist.Alias(lang)
 		log.Infof("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
 		lowerLang := strings.ToLower(detectedLang.Language)
 		if supportedLanguages.ContainsLanguage(lowerLang) {
+
+			langConfig := supportedLanguages.GetConfig(lowerLang)
+			prompts := make([]*promptui.Prompt, 0)
+
+			for _, customPrompt := range langConfig.Variables {
+				prompts = append(prompts, &promptui.Prompt{
+					Label: customPrompt.Description,
+					Validate: func(s string) error {
+						switch customPrompt.VarType {
+						case "int": return validateInt(s)
+						default: return nil
+						}
+					},
+				})
+			}
+
+			inputs := make([]string, 0)
+
+			for _, prompt := range prompts {
+				input, err := prompt.Run()
+				if err != nil {
+					return err
+				}
+				inputs = append(inputs, input)
+			}
+
 			if err = supportedLanguages.CreateDockerfileForLanguage(lowerLang); err != nil {
 				return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", detectedLang.Language, err)
 			}
@@ -112,6 +141,11 @@ func (cc *createCmd) detectLanguage() error {
 		log.Infof( "--> Could not find a pack for %s. Trying to find the next likely language match...\n", detectedLang.Language)
 	}
 	return ErrNoLanguageDetected
+}
+
+func validateInt(s string) error {
+	_, err := strconv.Atoi(s)
+	return err
 }
 
 func (cc *createCmd) createHelm(d *deployments.Deployments) error {

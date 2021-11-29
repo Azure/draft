@@ -1,6 +1,6 @@
 FROM golang
-ENV PORT 8080
-EXPOSE 8080
+ENV PORT {{PORT}}
+EXPOSE {{PORT}}
 
 WORKDIR /go/src/app
 COPY . .

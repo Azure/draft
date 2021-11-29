@@ -1,4 +1,4 @@
-# draftv2 - electric bougaloo
+# draftv2 - electric boogaloo
 
 Draftv2 (placeholder name) helps developers get started in the k8s space.
 1. `draftv2 create` builds the necessary artifacts an application needs to run on k8s

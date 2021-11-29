@@ -15,7 +15,7 @@ FROM microsoft/dotnet:2.1-aspnetcore-runtime
 WORKDIR /app
 COPY --from=builder /app .
 
-ENV PORT 80
-EXPOSE 80
+ENV PORT {{PORT}}
+EXPOSE {{PORT}}
 
 ENTRYPOINT dotnet $(cat /app/__assemblyname).dll

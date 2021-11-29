@@ -1,6 +1,6 @@
 FROM node:10
-ENV PORT 8080
-EXPOSE 8080
+ENV PORT {{PORT}}
+EXPOSE {{PORT}}
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

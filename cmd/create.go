@@ -113,7 +113,7 @@ func (cc *createCmd) detectLanguage() error {
 
 			for _, customPrompt := range langConfig.Variables {
 				prompt := &promptui.Prompt{
-					Label: customPrompt.Description,
+					Label: "Please Enter" + customPrompt.Description,
 					Validate: func(s string) error {
 						if len(s) <= 0 {
 							return fmt.Errorf("input must be greater than 0")

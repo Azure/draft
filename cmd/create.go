@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"github.com/imiller31/draftv2/pkg/deployments"
 	"github.com/imiller31/draftv2/pkg/linguist"
-	"strconv"
 	"strings"
 
 	"github.com/imiller31/draftv2/pkg/languages"
+	"github.com/imiller31/draftv2/pkg/prompts"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -109,31 +109,35 @@ func (cc *createCmd) detectLanguage() error {
 		if supportedLanguages.ContainsLanguage(lowerLang) {
 
 			langConfig := supportedLanguages.GetConfig(lowerLang)
-			prompts := make([]*promptui.Prompt, 0)
+			templatePrompts := make([]*prompts.TemplatePrompt, 0)
 
 			for _, customPrompt := range langConfig.Variables {
-				prompts = append(prompts, &promptui.Prompt{
+				prompt := &promptui.Prompt{
 					Label: customPrompt.Description,
 					Validate: func(s string) error {
-						switch customPrompt.VarType {
-						case "int": return validateInt(s)
-						default: return nil
+						if len(s) <= 0 {
+							return fmt.Errorf("input must be greater than 0")
 						}
+						return nil
 					},
+				}
+				templatePrompts = append(templatePrompts, &prompts.TemplatePrompt{
+					Prompt: prompt,
+					OverrideString: customPrompt.Name,
 				})
 			}
 
-			inputs := make([]string, 0)
+			inputs := make(map[string]string)
 
-			for _, prompt := range prompts {
-				input, err := prompt.Run()
+			for _, prompt := range templatePrompts {
+				input, err := prompt.Prompt.Run()
 				if err != nil {
 					return err
 				}
-				inputs = append(inputs, input)
+				inputs[prompt.OverrideString] = input
 			}
 
-			if err = supportedLanguages.CreateDockerfileForLanguage(lowerLang); err != nil {
+			if err = supportedLanguages.CreateDockerfileForLanguage(lowerLang, inputs); err != nil {
 				return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", detectedLang.Language, err)
 			}
 			return err
@@ -141,11 +145,6 @@ func (cc *createCmd) detectLanguage() error {
 		log.Infof( "--> Could not find a pack for %s. Trying to find the next likely language match...\n", detectedLang.Language)
 	}
 	return ErrNoLanguageDetected
-}
-
-func validateInt(s string) error {
-	_, err := strconv.Atoi(s)
-	return err
 }
 
 func (cc *createCmd) createHelm(d *deployments.Deployments) error {

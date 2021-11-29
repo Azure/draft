@@ -1,8 +1,0 @@
-language: go
-nameOverrides:
-  - path: "go/dockerignore"
-    prefix: "."
-variables:
-  - name: port
-    description: "the port exposed in the application"
-    type: int

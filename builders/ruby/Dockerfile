@@ -1,6 +1,6 @@
 FROM ruby
-ENV PORT 3000
-EXPOSE 3000
+ENV PORT {{PORT}}
+EXPOSE {{PORT}}
 RUN bundle config --global frozen 1
 
 WORKDIR /usr/src/app

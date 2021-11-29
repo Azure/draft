@@ -27,11 +27,11 @@ RUN apk add --no-cache openssl-dev ncurses
 WORKDIR /opt/rel
 
 ENV RELX_REPLACE_OS_VARS true
-ENV HTTP_PORT 8080
+ENV HTTP_PORT {{PORT}}
 
 COPY --from=builder /opt/rel /opt/rel
 
-EXPOSE 8080 8080
+EXPOSE {{PORT}} {{PORT}}
 
 RUN ln -s /opt/rel/bin/$(cat /opt/rel/__relname) /opt/rel/bin/start_script
 ENTRYPOINT ["/opt/rel/bin/start_script"]

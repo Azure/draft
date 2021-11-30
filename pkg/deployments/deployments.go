@@ -4,27 +4,28 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"io/fs"
+
 	"github.com/imiller31/draftv2/pkg/configs"
 	"github.com/imiller31/draftv2/pkg/embedutils"
 	"github.com/imiller31/draftv2/pkg/osutil"
-	"github.com/spf13/viper"
-	"io/fs"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 //go:generate cp -r ../../deployTypes ./deployTypes
 
 var (
 	//go:embed deployTypes
-	deployTypes embed.FS
-	parentDirName = "deployTypes"
+	deployTypes    embed.FS
+	parentDirName  = "deployTypes"
 	configFileName = "draft.yaml"
 )
 
 type Deployments struct {
 	deploys map[string]fs.DirEntry
-	configs map[string] *configs.DraftConfig
-	dest string
+	configs map[string]*configs.DraftConfig
+	dest    string
 }
 
 func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string) error {
@@ -47,7 +48,7 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 	return nil
 }
 
-func (d *Deployments) loadConfig(lang string) (*configs.DraftConfig, error){
+func (d *Deployments) loadConfig(lang string) (*configs.DraftConfig, error) {
 	val, ok := d.deploys[lang]
 	if !ok {
 		return nil, fmt.Errorf("language %s unsupported", lang)
@@ -60,7 +61,9 @@ func (d *Deployments) loadConfig(lang string) (*configs.DraftConfig, error){
 	}
 
 	viper.SetConfigFile("yaml")
-	viper.ReadConfig(bytes.NewBuffer(configBytes))
+	if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
+		return nil, err
+	}
 
 	var config configs.DraftConfig
 
@@ -80,7 +83,7 @@ func (d *Deployments) GetConfig(deployTyoe string) *configs.DraftConfig {
 }
 
 func (d *Deployments) PopulateConfigs() {
-	for deployType, _ := range d.deploys {
+	for deployType := range d.deploys {
 		config, err := d.loadConfig(deployType)
 		if err != nil {
 			log.Debugf("no config found for language %s", deployType)
@@ -98,7 +101,7 @@ func CreateDeployments() *Deployments {
 
 	d := &Deployments{
 		deploys: deployMap,
-		dest: ".",
+		dest:    ".",
 		configs: make(map[string]*configs.DraftConfig),
 	}
 	d.PopulateConfigs()

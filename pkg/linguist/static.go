@@ -17,7 +17,7 @@ var files = map[string]string{
 # codemirror_mode       - A String name of the CodeMirror Mode used for highlighting whenever a file is edited.
 #                         This must match a mode from https://git.io/vi9Fx
 # codemirror_mime_type  - A String name of the file mime type used for highlighting whenever a file is edited.
-#                         This should match the `+"`"+`mime`+"`"+` associated with the mode from https://git.io/f4SoQ
+#                         This should match the ` + "`" + `mime` + "`" + ` associated with the mode from https://git.io/f4SoQ
 # wrap                  - Boolean wrap to enable line wrapping (default: false)
 # extensions            - An Array of associated extensions (the first one is
 #                         considered the primary extension, the others should be
@@ -36,7 +36,7 @@ var files = map[string]string{
 #                         in the statistics as the parent language.
 #
 # Any additions or modifications (even trivial) should have corresponding
-# test changes in `+"`"+`test/test_blob.rb`+"`"+`.
+# test changes in ` + "`" + `test/test_blob.rb` + "`" + `.
 #
 # Please keep this list alphabetized. Capitalization comes before lowercase.
 ---
@@ -7187,7 +7187,7 @@ xBase:
 # pathname.
 #
 # Please add additional test coverage to
-# `+"`"+`test/test_file_blob.rb#test_vendored`+"`"+` if you make any changes.
+# ` + "`" + `test/test_file_blob.rb#test_vendored` + "`" + ` if you make any changes.
 
 ## Vendor Conventions ##
 
@@ -7574,7 +7574,7 @@ xBase:
 # pathname.
 #
 # Please add additional test coverage to
-# `+"`"+`test/test_blob.rb#test_documentation`+"`"+` if you make any changes.
+# ` + "`" + `test/test_blob.rb#test_documentation` + "`" + ` if you make any changes.
 
 ## Documentation directories ##
 
@@ -7602,5 +7602,4 @@ xBase:
 # Samples folders
 - ^[Ss]amples?/
 `,
-
 }

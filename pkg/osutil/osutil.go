@@ -2,13 +2,14 @@ package osutil
 
 import (
 	"fmt"
-	"github.com/imiller31/draftv2/pkg/configs"
-	log "github.com/sirupsen/logrus"
 	"io/fs"
 	"os"
 	"runtime"
 	"strings"
 	"syscall"
+
+	"github.com/imiller31/draftv2/pkg/configs"
+	log "github.com/sirupsen/logrus"
 )
 
 // Exists returns whether the given file or directory exists or not.
@@ -45,7 +46,7 @@ func SymlinkWithFallback(oldname, newname string) (err error) {
 func EnsureDirectory(dir string) error {
 	if fi, err := os.Stat(dir); err != nil {
 		if err := os.MkdirAll(dir, 0755); err != nil {
-			return fmt.Errorf("Could not create %s: %s", dir, err)
+			return fmt.Errorf("could not create %s: %s", dir, err)
 		}
 	} else if !fi.IsDir() {
 		return fmt.Errorf("%s must be a directory", dir)
@@ -60,7 +61,7 @@ func EnsureFile(file string) error {
 	if err != nil {
 		f, err := os.Create(file)
 		if err != nil {
-			return fmt.Errorf("Could not create %s: %s", file, err)
+			return fmt.Errorf("could not create %s: %s", file, err)
 		}
 		defer f.Close()
 	} else if fi.IsDir() {
@@ -106,7 +107,7 @@ func CopyDir(
 
 			for oldString, newString := range customInputs {
 				log.Debugf("replacing %s with %s", oldString, newString)
-				fileString = strings.ReplaceAll(fileString, "{{" + oldString + "}}", newString)
+				fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
 			}
 
 			fileName := f.Name()

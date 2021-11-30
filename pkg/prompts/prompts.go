@@ -2,12 +2,13 @@ package prompts
 
 import (
 	"fmt"
+
 	"github.com/imiller31/draftv2/pkg/configs"
 	"github.com/manifoldco/promptui"
 )
 
 type TemplatePrompt struct {
-	Prompt *promptui.Prompt
+	Prompt         *promptui.Prompt
 	OverrideString string
 }
 
@@ -24,7 +25,7 @@ func RunPromptsFromConfig(config *configs.DraftConfig) (map[string]string, error
 			},
 		}
 		templatePrompts = append(templatePrompts, &TemplatePrompt{
-			Prompt: prompt,
+			Prompt:         prompt,
 			OverrideString: customPrompt.Name,
 		})
 	}

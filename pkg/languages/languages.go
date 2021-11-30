@@ -4,24 +4,25 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"io/fs"
+
 	"github.com/imiller31/draftv2/pkg/configs"
 	"github.com/imiller31/draftv2/pkg/embedutils"
 	"github.com/imiller31/draftv2/pkg/osutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"io/fs"
 )
 
 //go:generate cp -r ../../builders ./builders
 
 var (
 	//go:embed builders
-	builders	embed.FS
+	builders      embed.FS
 	parentDirName = "builders"
 )
 
 type Languages struct {
-	langs	map[string]fs.DirEntry
+	langs   map[string]fs.DirEntry
 	configs map[string]*configs.DraftConfig
 }
 
@@ -50,7 +51,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 	return nil
 }
 
-func (l *Languages) loadConfig(lang string) (*configs.DraftConfig, error){
+func (l *Languages) loadConfig(lang string) (*configs.DraftConfig, error) {
 	val, ok := l.langs[lang]
 	if !ok {
 		return nil, fmt.Errorf("language %s unsupported", lang)
@@ -63,7 +64,9 @@ func (l *Languages) loadConfig(lang string) (*configs.DraftConfig, error){
 	}
 
 	viper.SetConfigFile("yaml")
-	viper.ReadConfig(bytes.NewBuffer(configBytes))
+	if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
+		return nil, err
+	}
 
 	var config configs.DraftConfig
 
@@ -83,7 +86,7 @@ func (l *Languages) GetConfig(lang string) *configs.DraftConfig {
 }
 
 func (l *Languages) PopulateConfigs() {
-	for lang, _ := range l.langs {
+	for lang := range l.langs {
 		config, err := l.loadConfig(lang)
 		if err != nil {
 			log.Debugf("no config found for language %s", lang)
@@ -99,9 +102,8 @@ func CreateLanguages() *Languages {
 		log.Fatal(err)
 	}
 
-
 	l := &Languages{
-		langs: langMap,
+		langs:   langMap,
 		configs: make(map[string]*configs.DraftConfig),
 	}
 	l.PopulateConfigs()

@@ -84,21 +84,14 @@ func (cc *createCmd) run() error {
 		return err
 	}
 
-	switch deployType {
-		case "helm":
-			config := d.GetConfig(deployType)
-			customInputs, err := prompts.RunPromptsFromConfig(config)
-			if err != nil {
-				return err
-			}
-			err = cc.createHelm(d, customInputs)
 
-		case "kustomize": err = cc.createKustomize(d)
-
-		case "manifest": err = cc.createManifest(d)
+	config := d.GetConfig(deployType)
+	customInputs, err := prompts.RunPromptsFromConfig(config)
+	if err != nil {
+		return err
 	}
-
-	return err
+	log.Infof("--> Creating %s k8s resources", deployType)
+	return d.CopyDeploymentFiles(deployType, customInputs)
 }
 
 func (cc *createCmd) detectLanguage() error {

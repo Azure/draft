@@ -2,10 +2,12 @@ package osutil
 
 import (
 	"fmt"
+	"github.com/imiller31/draftv2/pkg/configs"
 	log "github.com/sirupsen/logrus"
 	"io/fs"
 	"os"
 	"runtime"
+	"strings"
 	"syscall"
 )
 
@@ -68,7 +70,11 @@ func EnsureFile(file string) error {
 	return nil
 }
 
-func CopyDir(fileSys fs.FS, src, dest string) error {
+func CopyDir(
+	fileSys fs.FS,
+	src, dest string,
+	config *configs.DraftConfig,
+	customInputs map[string]string) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {
 		return err
@@ -76,15 +82,18 @@ func CopyDir(fileSys fs.FS, src, dest string) error {
 
 	for _, f := range files {
 
+		if f.Name() == "draft.yaml" {
+			continue
+		}
+
 		srcPath := src + "/" + f.Name()
 		destPath := dest + "/" + f.Name()
-		log.Debugf("fileName: %s", srcPath)
 
 		if f.IsDir() {
 			if err = EnsureDirectory(destPath); err != nil {
 				return err
 			}
-			if err = CopyDir(fileSys, srcPath, destPath); err != nil {
+			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs); err != nil {
 				return err
 			}
 		} else {
@@ -93,7 +102,25 @@ func CopyDir(fileSys fs.FS, src, dest string) error {
 				return err
 			}
 
-			if err = os.WriteFile(destPath, file, 0644); err != nil {
+			fileString := string(file)
+
+			for oldString, newString := range customInputs {
+				log.Debugf("replacing %s with %s", oldString, newString)
+				fileString = strings.ReplaceAll(fileString, "{{" + oldString + "}}", newString)
+			}
+
+			fileName := f.Name()
+
+			if config != nil {
+				log.Debugf("checking name override for srcPath: %s, destPath: %s, destPrefix: %s/",
+					srcPath, destPath, dest)
+				if prefix := config.GetNameOverride(destPath); prefix != "" {
+					log.Debugf("overriding file: %s with prefix: %s", destPath, prefix)
+					fileName = fmt.Sprintf("%s%s", prefix, fileName)
+				}
+			}
+
+			if err = os.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), []byte(fileString), 0644); err != nil {
 				return err
 			}
 		}

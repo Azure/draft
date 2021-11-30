@@ -74,8 +74,24 @@ func (cc *createCmd) run() error {
 
 	d := deployments.CreateDeployments()
 
-	switch cc.deployType {
-		case "helm": err = cc.createHelm(d)
+	selection := &promptui.Select{
+			Label: "Select k8s Deployment Type",
+			Items: []string{"helm", "kustomize", "manifests"},
+	}
+
+	_, deployType, err := selection.Run()
+	if err != nil {
+		return err
+	}
+
+	switch deployType {
+		case "helm":
+			config := d.GetConfig(deployType)
+			customInputs, err := prompts.RunPromptsFromConfig(config)
+			if err != nil {
+				return err
+			}
+			err = cc.createHelm(d, customInputs)
 
 		case "kustomize": err = cc.createKustomize(d)
 
@@ -109,32 +125,9 @@ func (cc *createCmd) detectLanguage() error {
 		if supportedLanguages.ContainsLanguage(lowerLang) {
 
 			langConfig := supportedLanguages.GetConfig(lowerLang)
-			templatePrompts := make([]*prompts.TemplatePrompt, 0)
-
-			for _, customPrompt := range langConfig.Variables {
-				prompt := &promptui.Prompt{
-					Label: "Please Enter" + customPrompt.Description,
-					Validate: func(s string) error {
-						if len(s) <= 0 {
-							return fmt.Errorf("input must be greater than 0")
-						}
-						return nil
-					},
-				}
-				templatePrompts = append(templatePrompts, &prompts.TemplatePrompt{
-					Prompt: prompt,
-					OverrideString: customPrompt.Name,
-				})
-			}
-
-			inputs := make(map[string]string)
-
-			for _, prompt := range templatePrompts {
-				input, err := prompt.Prompt.Run()
-				if err != nil {
-					return err
-				}
-				inputs[prompt.OverrideString] = input
+			inputs, err := prompts.RunPromptsFromConfig(langConfig)
+			if err != nil {
+				return err
 			}
 
 			if err = supportedLanguages.CreateDockerfileForLanguage(lowerLang, inputs); err != nil {
@@ -147,9 +140,9 @@ func (cc *createCmd) detectLanguage() error {
 	return ErrNoLanguageDetected
 }
 
-func (cc *createCmd) createHelm(d *deployments.Deployments) error {
+func (cc *createCmd) createHelm(d *deployments.Deployments, customInputs map[string]string) error {
 	log.Info("--> Creating helm chart")
-	return d.CopyDeploymentFiles("helm")
+	return d.CopyDeploymentFiles("helm", customInputs)
 }
 
 func (cc *createCmd) createKustomize(d *deployments.Deployments) error {

@@ -1,12 +1,15 @@
 package deployments
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
+	"github.com/imiller31/draftv2/pkg/configs"
 	"github.com/imiller31/draftv2/pkg/embedutils"
 	"github.com/imiller31/draftv2/pkg/osutil"
+	"github.com/spf13/viper"
 	"io/fs"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 //go:generate cp -r ../../deployTypes ./deployTypes
@@ -15,14 +18,16 @@ var (
 	//go:embed deployTypes
 	deployTypes embed.FS
 	parentDirName = "deployTypes"
+	configFileName = "draft.yaml"
 )
 
 type Deployments struct {
 	deploys map[string]fs.DirEntry
+	configs map[string] *configs.DraftConfig
 	dest string
 }
 
-func (d *Deployments) CopyDeploymentFiles(deployType string) error {
+func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string) error {
 	val, ok := d.deploys[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
@@ -30,14 +35,60 @@ func (d *Deployments) CopyDeploymentFiles(deployType string) error {
 
 	srcDir := parentDirName + "/" + val.Name()
 
-	if err := osutil.CopyDir(deployTypes, srcDir, d.dest); err != nil {
+	config, ok := d.configs[deployType]
+	if !ok {
+		config = nil
+	}
+
+	if err := osutil.CopyDir(deployTypes, srcDir, d.dest, config, customInputs); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+func (d *Deployments) loadConfig(lang string) (*configs.DraftConfig, error){
+	val, ok := d.deploys[lang]
+	if !ok {
+		return nil, fmt.Errorf("language %s unsupported", lang)
+	}
 
+	configPath := fmt.Sprintf("%s/%s/%s", parentDirName, val.Name(), configFileName)
+	configBytes, err := fs.ReadFile(deployTypes, configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	viper.SetConfigFile("yaml")
+	viper.ReadConfig(bytes.NewBuffer(configBytes))
+
+	var config configs.DraftConfig
+
+	if err = viper.Unmarshal(&config); err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
+
+func (d *Deployments) GetConfig(deployTyoe string) *configs.DraftConfig {
+	val, ok := d.configs[deployTyoe]
+	if !ok {
+		return nil
+	}
+	return val
+}
+
+func (d *Deployments) PopulateConfigs() {
+	for deployType, _ := range d.deploys {
+		config, err := d.loadConfig(deployType)
+		if err != nil {
+			log.Debugf("no config found for language %s", deployType)
+			config = &configs.DraftConfig{}
+		}
+		d.configs[deployType] = config
+	}
+}
 
 func CreateDeployments() *Deployments {
 	deployMap, err := embedutils.EmbedFStoMap(deployTypes, "deployTypes")
@@ -45,8 +96,12 @@ func CreateDeployments() *Deployments {
 		log.Fatal(err)
 	}
 
-	return &Deployments{
+	d := &Deployments{
 		deploys: deployMap,
-		dest: "./",
+		dest: ".",
+		configs: make(map[string]*configs.DraftConfig),
 	}
+	d.PopulateConfigs()
+
+	return d
 }

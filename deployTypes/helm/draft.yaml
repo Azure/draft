@@ -1,0 +1,9 @@
+nameOverrides:
+  - path: "charts/helmignore"
+    prefix: "."
+  - path: "charts/templates/helpers.tpl"
+    prefix: "_"
+variables:
+  - name: "PORT"
+    description: "the port exposed in the application"
+    type: int

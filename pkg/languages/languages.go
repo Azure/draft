@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"github.com/imiller31/draftv2/pkg/configs"
 	"github.com/imiller31/draftv2/pkg/embedutils"
+	"github.com/imiller31/draftv2/pkg/osutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"io/fs"
-	"os"
-	"strings"
 )
 
 //go:generate cp -r ../../builders ./builders
@@ -22,7 +22,7 @@ var (
 
 type Languages struct {
 	langs	map[string]fs.DirEntry
-	configs map[string]*Config
+	configs map[string]*configs.DraftConfig
 }
 
 func (l *Languages) ContainsLanguage(lang string) bool {
@@ -30,67 +30,27 @@ func (l *Languages) ContainsLanguage(lang string) bool {
 	return ok
 }
 
-func (l *Languages) CreateDockerfileForLanguage(lang string, customOverrides map[string]string) error {
+func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string) error {
 	val, ok := l.langs[lang]
 	if !ok {
 		return fmt.Errorf("language %s is not supported", lang)
 	}
 
-	config := l.GetConfig(lang)
+	srcDir := parentDirName + "/" + val.Name()
 
-	dir := parentDirName + "/" + val.Name()
-
-	files, err := fs.ReadDir(builders, dir)
-	if err != nil {
-		return err
+	config, ok := l.configs[lang]
+	if !ok {
+		config = nil
 	}
 
-	log.Infof("got %d file matches", len(files))
-
-	for _, f := range files {
-
-		if f.Name() == "draft.yaml" {
-			continue
-		}
-
-		filePath := dir + "/" + f.Name()
-
-		log.Infof("fileName: %s", filePath)
-
-		file, err := fs.ReadFile(builders, filePath)
-		if err != nil {
-			return err
-		}
-
-		fileString := string(file)
-
-		for oldString, newString := range customOverrides {
-			log.Debugf("replacing %s with %s", oldString, newString)
-			fileString = strings.ReplaceAll(fileString, "{{" + oldString + "}}", newString)
-		}
-
-		fileName := f.Name()
-
-		for _, fileOverride := range config.NameOverrides {
-			fullPath := dir + "/" + fileOverride.Path
-			log.Debugf("fullPath: %s, filePath: %s", fullPath, filePath)
-			if fullPath == filePath {
-				fileName = fileOverride.Prefix + fileName
-				break
-			}
-		}
-
-		log.Debugf("writing file: %s", fileName)
-
-		if err = os.WriteFile(fileName, []byte(fileString), 0644); err != nil {
-			return err
-		}
+	if err := osutil.CopyDir(builders, srcDir, ".", config, customInputs); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (l *Languages) loadConfig(lang string) (*Config, error){
+func (l *Languages) loadConfig(lang string) (*configs.DraftConfig, error){
 	val, ok := l.langs[lang]
 	if !ok {
 		return nil, fmt.Errorf("language %s unsupported", lang)
@@ -105,7 +65,7 @@ func (l *Languages) loadConfig(lang string) (*Config, error){
 	viper.SetConfigFile("yaml")
 	viper.ReadConfig(bytes.NewBuffer(configBytes))
 
-	var config Config
+	var config configs.DraftConfig
 
 	if err = viper.Unmarshal(&config); err != nil {
 		return nil, err
@@ -114,7 +74,7 @@ func (l *Languages) loadConfig(lang string) (*Config, error){
 	return &config, nil
 }
 
-func (l *Languages) GetConfig(lang string) *Config {
+func (l *Languages) GetConfig(lang string) *configs.DraftConfig {
 	val, ok := l.configs[lang]
 	if !ok {
 		return nil
@@ -127,7 +87,7 @@ func (l *Languages) PopulateConfigs() {
 		config, err := l.loadConfig(lang)
 		if err != nil {
 			log.Debugf("no config found for language %s", lang)
-			config = &Config{Language: lang}
+			config = &configs.DraftConfig{}
 		}
 		l.configs[lang] = config
 	}
@@ -142,7 +102,7 @@ func CreateLanguages() *Languages {
 
 	l := &Languages{
 		langs: langMap,
-		configs: make(map[string]*Config),
+		configs: make(map[string]*configs.DraftConfig),
 	}
 	l.PopulateConfigs()
 

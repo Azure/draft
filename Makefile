@@ -5,14 +5,15 @@ all: generate vendor build
 generate:
 	rm -r ./pkg/languages/builders; \
 	rm -r ./pkg/deployments/deployTypes; \
-	go generate ./pkg/languages/...; \
-	go generate ./pkg/deployments/...;
+	GO111MODULE=on go generate ./pkg/languages/...; \
+	GO111MODULE=on go generate ./pkg/deployments/...;
 
 
 .PHONY: vendor
 vendor:
-	go mod tidy && go mod vendor;
+	GO111MODULE=on go mod tidy; \
+	GO111MODULE=on go mod vendor;
 
 .PHONY: build
 build:
-	go build -o .
+	GO111MODULE=on go build -o .

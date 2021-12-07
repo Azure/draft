@@ -298,6 +298,7 @@ func Alias(lang *Language) *Language {
 	packAliases := map[string]string{
 		"maven pom": "Java",
 		"c#":        "csharp",
+		"go module": "gomodule",
 	}
 
 	if alias, ok := packAliases[strings.ToLower(lang.Language)]; ok {

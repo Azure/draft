@@ -83,8 +83,17 @@ func (cc *createCmd) detectLanguage() error {
 		return fmt.Errorf("there was an error detecting the language: %s", err)
 	}
 
+	hasGo := false
+	hasGoMod := false
 	for _, lang := range langs {
 		log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
+		// For now let's check here for weird stuff like go module support
+		if lang.Language == "Go" {
+			hasGo = true
+		}
+		if lang.Language == "Go Module" {
+			hasGoMod = true
+		}
 	}
 
 	if len(langs) == 0 {
@@ -98,7 +107,10 @@ func (cc *createCmd) detectLanguage() error {
 		log.Infof("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
 		lowerLang := strings.ToLower(detectedLang.Language)
 		if supportedLanguages.ContainsLanguage(lowerLang) {
-
+			if lowerLang == "go" && hasGo && hasGoMod {
+				log.Debug("detected go and go module")
+				lowerLang = "gomodule"
+			}
 			langConfig := supportedLanguages.GetConfig(lowerLang)
 			inputs, err := prompts.RunPromptsFromConfig(langConfig)
 			if err != nil {

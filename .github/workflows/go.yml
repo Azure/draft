@@ -1,0 +1,38 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+
+    - name: make
+      run: make
+    
+    - uses: actions/upload-artifact@v2
+      with: 
+        name: draftv2-binary
+        path: ./draftv2
+        if-no-files-found: error
+  
+  go:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/download-artifact@v2
+      with: 
+        name: draftv2-binary

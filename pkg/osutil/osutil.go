@@ -115,7 +115,7 @@ func CopyDir(
 			if config != nil {
 				log.Debugf("checking name override for srcPath: %s, destPath: %s, destPrefix: %s/",
 					srcPath, destPath, dest)
-				if prefix := config.GetNameOverride(destPath); prefix != "" {
+				if prefix := config.GetNameOverride(fileName); prefix != "" {
 					log.Debugf("overriding file: %s with prefix: %s", destPath, prefix)
 					fileName = fmt.Sprintf("%s%s", prefix, fileName)
 				}

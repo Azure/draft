@@ -37,5 +37,5 @@ jobs:
       with: 
         name: draftv2-binary
     
-    - run: printf "8080\n2\n" | draftv2 -v create ./test/go/
+    - run: printf "8080\n2\n" | ./draftv2 -v create ./test/go/
     

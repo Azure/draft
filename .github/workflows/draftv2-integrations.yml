@@ -41,7 +41,7 @@ jobs:
     
     - run: chmod +x ./draftv2
 
-    - run: ./test/go/scripts/helm.exp
+    - run: expect -f ./test/go/scripts/helm.exp
   
   gomod-kustomize:
     runs-on: ubuntu-latest
@@ -57,5 +57,5 @@ jobs:
     
     - run: chmod +x ./draftv2
 
-    - run: ./test/go/scripts/kustomize.exp
+    - run: expect -f ./test/go/scripts/kustomize.exp
     

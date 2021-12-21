@@ -24,6 +24,7 @@ var (
 type Languages struct {
 	langs   map[string]fs.DirEntry
 	configs map[string]*configs.DraftConfig
+	dest    string
 }
 
 func (l *Languages) ContainsLanguage(lang string) bool {
@@ -44,7 +45,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 		config = nil
 	}
 
-	if err := osutil.CopyDir(builders, srcDir, ".", config, customInputs); err != nil {
+	if err := osutil.CopyDir(builders, srcDir, l.dest, config, customInputs); err != nil {
 		return err
 	}
 
@@ -96,7 +97,7 @@ func (l *Languages) PopulateConfigs() {
 	}
 }
 
-func CreateLanguages() *Languages {
+func CreateLanguages(dest string) *Languages {
 	langMap, err := embedutils.EmbedFStoMap(builders, parentDirName)
 	if err != nil {
 		log.Fatal(err)
@@ -104,6 +105,7 @@ func CreateLanguages() *Languages {
 
 	l := &Languages{
 		langs:   langMap,
+		dest:    dest,
 		configs: make(map[string]*configs.DraftConfig),
 	}
 	l.PopulateConfigs()

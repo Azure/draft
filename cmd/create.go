@@ -33,8 +33,11 @@ func newCreateCmd() *cobra.Command {
 		Short: "add minimum viable files to deploy to k8s",
 		Long:  "This command will add the necessary files to the local directory for deployment to k8s",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Debugf("number of args passed: %d", len(args))
 			if len(args) > 0 {
 				cc.dest = args[0]
+			} else {
+				cc.dest = "."
 			}
 			return cc.run()
 		},
@@ -55,7 +58,7 @@ func (cc *createCmd) run() error {
 		return err
 	}
 
-	d := deployments.CreateDeployments()
+	d := deployments.CreateDeployments(cc.dest)
 
 	selection := &promptui.Select{
 		Label: "Select k8s Deployment Type",
@@ -77,8 +80,8 @@ func (cc *createCmd) run() error {
 }
 
 func (cc *createCmd) detectLanguage() error {
-	langs, err := linguist.ProcessDir(".")
-	log.Debugf("linguist.ProcessDir('.') result:\n\nError: %v", err)
+	langs, err := linguist.ProcessDir(cc.dest)
+	log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", cc.dest, err)
 	if err != nil {
 		return fmt.Errorf("there was an error detecting the language: %s", err)
 	}
@@ -100,7 +103,7 @@ func (cc *createCmd) detectLanguage() error {
 		return ErrNoLanguageDetected
 	}
 
-	supportedLanguages := languages.CreateLanguages()
+	supportedLanguages := languages.CreateLanguages(cc.dest)
 
 	for _, lang := range langs {
 		detectedLang := linguist.Alias(lang)

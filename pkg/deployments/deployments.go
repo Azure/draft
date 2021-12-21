@@ -93,7 +93,7 @@ func (d *Deployments) PopulateConfigs() {
 	}
 }
 
-func CreateDeployments() *Deployments {
+func CreateDeployments(dest string) *Deployments {
 	deployMap, err := embedutils.EmbedFStoMap(deployTypes, "deployTypes")
 	if err != nil {
 		log.Fatal(err)
@@ -101,7 +101,7 @@ func CreateDeployments() *Deployments {
 
 	d := &Deployments{
 		deploys: deployMap,
-		dest:    ".",
+		dest:    dest,
 		configs: make(map[string]*configs.DraftConfig),
 	}
 	d.PopulateConfigs()

@@ -26,7 +26,7 @@ func (d *DraftConfig) initialize() {
 	log.Debug("initializing nameOverrideMap")
 	for _, builderVar := range d.NameOverrides {
 		log.Debugf("mapping path: %s, to prefix %s", builderVar.Path, builderVar.Prefix)
-		d.nameOverrideMap["./"+builderVar.Path] = builderVar.Prefix
+		d.nameOverrideMap[builderVar.Path] = builderVar.Prefix
 	}
 }
 

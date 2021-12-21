@@ -37,7 +37,7 @@ jobs:
       with: 
         name: draftv2-binary
     
-    - run: apt update && apt install expect
+    - run: sudo apt-get install expect
     
     - run: chmod +x ./draftv2
 
@@ -53,7 +53,7 @@ jobs:
       with: 
         name: draftv2-binary
     
-    - run: apt update && apt install expect
+    - run: sudo apt-get install expect
     
     - run: chmod +x ./draftv2
 

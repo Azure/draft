@@ -23,6 +23,7 @@ type createCmd struct {
 	lang           string
 	dest           string
 	repositoryName string
+	deployType     string
 }
 
 func newCreateCmd() *cobra.Command {
@@ -44,6 +45,7 @@ func newCreateCmd() *cobra.Command {
 
 	f.StringVarP(&cc.appName, "app", "a", "", "name of helm release by default this is randomly generated")
 	f.StringVarP(&cc.lang, "lang", "l", "", "the name of the language used to create the k8s deployment")
+	f.StringVarP(&cc.deployType, "deploy", "d", "", "type of k8s deployment to create")
 
 	return cmd
 }
@@ -57,23 +59,25 @@ func (cc *createCmd) run() error {
 
 	d := deployments.CreateDeployments()
 
-	selection := &promptui.Select{
-		Label: "Select k8s Deployment Type",
-		Items: []string{"helm", "kustomize", "manifests"},
+	if cc.deployType == "" {
+		selection := &promptui.Select{
+			Label: "Select k8s Deployment Type",
+			Items: []string{"helm", "kustomize", "manifests"},
+		}
+
+		_, cc.deployType, err = selection.Run()
+		if err != nil {
+			return err
+		}
 	}
 
-	_, deployType, err := selection.Run()
-	if err != nil {
-		return err
-	}
-
-	config := d.GetConfig(deployType)
+	config := d.GetConfig(cc.deployType)
 	customInputs, err := prompts.RunPromptsFromConfig(config)
 	if err != nil {
 		return err
 	}
-	log.Infof("--> Creating %s k8s resources", deployType)
-	return d.CopyDeploymentFiles(deployType, customInputs)
+	log.Infof("--> Creating %s k8s resources", cc.deployType)
+	return d.CopyDeploymentFiles(cc.deployType, customInputs)
 }
 
 func (cc *createCmd) detectLanguage() error {

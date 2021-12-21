@@ -38,6 +38,6 @@ jobs:
         name: draftv2-binary
     
     - run: chmod +x ./draftv2
-    
-    - run: printf "8080\n2\n" | ./draftv2 -v create ./test/go/
+
+    - run: printf "8080\n8080\n" | ./draftv2 -v create ./test/go/ -d kustomize
     

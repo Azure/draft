@@ -24,7 +24,7 @@ if {$force_conservative} {
 
 
 set timeout -1
-spawn draftv2 -v create ./test/go
+spawn ./draftv2 -v create ./test/go
 match_max 100000
 expect -exact "\[37mDEBU\[0m\[0000\] number of args passed: 1                     \r
 \[36mINFO\[0m\[0000\] detecting language                           \r

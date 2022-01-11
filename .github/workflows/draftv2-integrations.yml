@@ -32,14 +32,18 @@ jobs:
     needs: build
     steps:
     - uses: actions/checkout@v2
-
     - uses: actions/download-artifact@v2
       with: 
         name: draftv2-binary
-    
     - run: chmod +x ./draftv2
-
     - run: ./draftv2 -v create -c ./test/go/configs/helm.yaml
+    - name: start minikube
+      id: minikube
+      uses: medyagh/setup-minikube@master
+    - name: Build Docker images
+      uses: hiberbee/github-action-skaffold@1.12.0
+      with:
+        command: run
   
   gomod-kustomize:
     runs-on: ubuntu-latest

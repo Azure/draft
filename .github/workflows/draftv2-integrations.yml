@@ -37,11 +37,9 @@ jobs:
       with: 
         name: draftv2-binary
     
-    - run: sudo apt-get install expect
-    
     - run: chmod +x ./draftv2
 
-    - run: expect -f ./test/go/scripts/helm.exp
+    - run: ./draftv2 -v create -c ./test/go/configs/helm.yaml
   
   gomod-kustomize:
     runs-on: ubuntu-latest
@@ -57,5 +55,5 @@ jobs:
     
     - run: chmod +x ./draftv2
 
-    - run: expect -f ./test/go/scripts/kustomize.exp
+    - run: ./draftv2 -v create -c ./test/go/configs/kustomize.yaml
     

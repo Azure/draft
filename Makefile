@@ -16,4 +16,4 @@ vendor:
 
 .PHONY: build
 build:
-	GO111MODULE=on go build -o .
+	GO111MODULE=on go build -v -o .

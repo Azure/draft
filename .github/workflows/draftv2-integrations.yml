@@ -62,6 +62,5 @@ jobs:
       id: minikube
       uses: medyagh/setup-minikube@master
     - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-    - run: cd ./test/go && skaffold init -a '{"builder":"Docker"}' --force
-    - run: skaffold run 
+    - run: cd ./test/go && skaffold init -a '{"builder":"Docker"}' --force && skaffold run
     

@@ -36,7 +36,7 @@ jobs:
       with: 
         name: draftv2-binary
     - run: chmod +x ./draftv2
-    - run: ./draftv2 -v create -c ./test/go/configs/helm.yaml
+    - run: ./draftv2 -v create -c ./test/go/configs/helm.yaml ./test/go/
     - name: start minikube
       id: minikube
       uses: medyagh/setup-minikube@master

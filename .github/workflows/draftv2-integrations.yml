@@ -40,10 +40,8 @@ jobs:
     - name: start minikube
       id: minikube
       uses: medyagh/setup-minikube@master
-    - name: Build Docker images
-      uses: hiberbee/github-action-skaffold@1.12.0
-      with:
-        command: run
+    - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+    - run: skaffold run
   
   gomod-kustomize:
     runs-on: ubuntu-latest

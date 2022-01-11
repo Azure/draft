@@ -57,5 +57,11 @@ jobs:
     
     - run: chmod +x ./draftv2
 
-    - run: ./draftv2 -v create -c ./test/go/configs/kustomize.yaml
+    - run: ./draftv2 -v create -c ./test/go/configs/kustomize.yaml ./test/go/
+    - name: start minikube
+      id: minikube
+      uses: medyagh/setup-minikube@master
+    - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+    - run: cd ./test/go && skaffold init
+    - run: skaffold run
     

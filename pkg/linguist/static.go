@@ -17,7 +17,7 @@ var files = map[string]string{
 # codemirror_mode       - A String name of the CodeMirror Mode used for highlighting whenever a file is edited.
 #                         This must match a mode from https://git.io/vi9Fx
 # codemirror_mime_type  - A String name of the file mime type used for highlighting whenever a file is edited.
-#                         This should match the ` + "`" + `mime` + "`" + ` associated with the mode from https://git.io/f4SoQ
+#                         This should match the `+"`"+`mime`+"`"+` associated with the mode from https://git.io/f4SoQ
 # wrap                  - Boolean wrap to enable line wrapping (default: false)
 # extensions            - An Array of associated extensions (the first one is
 #                         considered the primary extension, the others should be
@@ -36,7 +36,7 @@ var files = map[string]string{
 #                         in the statistics as the parent language.
 #
 # Any additions or modifications (even trivial) should have corresponding
-# test changes in ` + "`" + `test/test_blob.rb` + "`" + `.
+# test changes in `+"`"+`test/test_blob.rb`+"`"+`.
 #
 # Please keep this list alphabetized. Capitalization comes before lowercase.
 ---
@@ -697,6 +697,7 @@ C++:
   - ".inl"
   - ".ino"
   - ".ipp"
+  - ".ixx"
   - ".re"
   - ".tcc"
   - ".tpp"
@@ -1439,6 +1440,7 @@ EJS:
   extensions:
   - ".ejs"
   - ".ect"
+  - ".ejs.t"
   - ".jst"
   tm_scope: text.html.js
   ace_mode: ejs
@@ -1463,6 +1465,14 @@ Eagle:
   codemirror_mode: xml
   codemirror_mime_type: text/xml
   language_id: 97
+Earthly:
+  type: programming
+  color: "#2af0ff"
+  tm_scope: source.earthfile
+  ace_mode: text
+  filenames:
+  - Earthfile
+  language_id: 963512632
 Easybuild:
   type: data
   color: "#069406"
@@ -2313,9 +2323,11 @@ HTML+EEX:
   group: HTML
   aliases:
   - eex
+  - heex
   - leex
   extensions:
   - ".eex"
+  - ".html.heex"
   - ".html.leex"
   ace_mode: text
   codemirror_mode: htmlmixed
@@ -2524,6 +2536,7 @@ INI:
   - ".pro"
   - ".properties"
   filenames:
+  - ".flake8"
   - buildozer.spec
   tm_scope: source.ini
   aliases:
@@ -3731,6 +3744,14 @@ MoonScript:
   tm_scope: source.moonscript
   ace_mode: text
   language_id: 238
+Motoko:
+  type: programming
+  color: "#fbb03b"
+  extensions:
+  - ".mo"
+  tm_scope: source.mo
+  ace_mode: text
+  language_id: 202937027
 Motorola 68K Assembly:
   type: programming
   color: "#005daa"
@@ -4629,6 +4650,14 @@ Prolog:
   tm_scope: source.prolog
   ace_mode: prolog
   language_id: 295
+Promela:
+  type: programming
+  color: "#de0000"
+  tm_scope: source.promela
+  ace_mode: text
+  extensions:
+  - ".pml"
+  language_id: 441858312
 Propeller Spin:
   type: programming
   color: "#7fa2a7"
@@ -5606,6 +5635,7 @@ Shell:
   - ".env"
   - ".env.example"
   - ".flaskenv"
+  - ".kshrc"
   - ".login"
   - ".profile"
   - ".zlogin"
@@ -5621,6 +5651,7 @@ Shell:
   - bashrc
   - cshrc
   - gradlew
+  - kshrc
   - login
   - man
   - profile
@@ -5644,6 +5675,18 @@ Shell:
   codemirror_mode: shell
   codemirror_mime_type: text/x-sh
   language_id: 346
+ShellCheck Config:
+  type: data
+  color: "#cecfcb"
+  filenames:
+  - ".shellcheckrc"
+  aliases:
+  - shellcheckrc
+  tm_scope: source.shellcheckrc
+  ace_mode: ini
+  codemirror_mode: properties
+  codemirror_mime_type: text/x-properties
+  language_id: 687511714
 ShellSession:
   type: programming
   extensions:
@@ -6394,6 +6437,7 @@ Vim Script:
   extensions:
   - ".vim"
   - ".vba"
+  - ".vimrc"
   - ".vmb"
   filenames:
   - ".exrc"
@@ -6663,6 +6707,7 @@ XML:
   - ".gmx"
   - ".grxml"
   - ".gst"
+  - ".hzp"
   - ".iml"
   - ".ivy"
   - ".jelly"
@@ -7187,7 +7232,7 @@ xBase:
 # pathname.
 #
 # Please add additional test coverage to
-# ` + "`" + `test/test_file_blob.rb#test_vendored` + "`" + ` if you make any changes.
+# `+"`"+`test/test_file_blob.rb#test_vendored`+"`"+` if you make any changes.
 
 ## Vendor Conventions ##
 
@@ -7574,7 +7619,7 @@ xBase:
 # pathname.
 #
 # Please add additional test coverage to
-# ` + "`" + `test/test_blob.rb#test_documentation` + "`" + ` if you make any changes.
+# `+"`"+`test/test_blob.rb#test_documentation`+"`"+` if you make any changes.
 
 ## Documentation directories ##
 
@@ -7602,4 +7647,5 @@ xBase:
 # Samples folders
 - ^[Ss]amples?/
 `,
+
 }

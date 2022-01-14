@@ -115,9 +115,18 @@ func (cc *createCmd) detectLanguage() error {
 			// For now let's check here for weird stuff like go module support
 			if lang.Language == "Go" {
 				hasGo = true
-			}
-			if lang.Language == "Go Module" {
-				hasGoMod = true
+
+				selection := &promptui.Select{
+					Label: "Linguist detected Go, do you use Go Modules?",
+					Items: []string{"yes", "no"},
+				}
+
+				_, selectResponse, err := selection.Run()
+				if err != nil {
+					return err
+				}
+
+				hasGoMod = strings.EqualFold(selectResponse, "yes")
 			}
 		}
 
@@ -196,7 +205,7 @@ func (cc *createCmd) createDeployment() error {
 			Items: []string{"helm", "kustomize", "manifests"},
 		}
 
-		_, deployType, err := selection.Run()
+		_, deployType, err = selection.Run()
 		if err != nil {
 			return err
 		}

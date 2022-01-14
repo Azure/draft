@@ -41,14 +41,13 @@ jobs:
       with:
         repository: gambtho/go_echo
         path: ./langtest
-    - run: rm -rf ./langtest/go_echo/manifests && rm -f ./langtest/go_echo/Dockerfile ./langtest/go_echo/.dockerignore
-    - run: ls -l ./langtest/
-    - run: ./draftv2 -v create -c ./test/gomodule/helm.yaml ./langtest/go_echo
+    - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+    - run: ./draftv2 -v create -c ./test/gomodule/helm.yaml ./langtest/g
     - name: start minikube
       id: minikube
       uses: medyagh/setup-minikube@master
     - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-    - run: cd ./langtest/go_echo && skaffold run
+    - run: cd ./langtest && skaffold run
   
   gomod-kustomize:
     runs-on: ubuntu-latest
@@ -64,12 +63,12 @@ jobs:
       with:
         repository: gambtho/go_echo
         path: ./langtest
-    - run: rm -rf ./langtest/go_echo/manifests && rm -f ./langtest/go_echo/Dockerfile ./langtest/go_echo/.dockerignore
-    - run: ./draftv2 -v create -c ./test/gomodule/kustomize.yaml ./langtest/go_echo
+    - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+    - run: ./draftv2 -v create -c ./test/gomodule/kustomize.yaml ./langtest/
     - name: start minikube
       id: minikube
       uses: medyagh/setup-minikube@master
     - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-    - run: cd ./langtest/go_echo && skaffold init --force 
-    - run: cd ./langtest/go_echo && skaffold run
+    - run: cd ./langtest/ && skaffold init --force 
+    - run: cd ./langtest/ && skaffold run
     

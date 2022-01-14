@@ -228,6 +228,7 @@ func ProcessDir(dirname string) ([]*Language, error) {
 				return filepath.SkipDir
 			}
 		} else if (file.Mode() & os.ModeSymlink) == 0 {
+			log.Debugf("%s: filename to be ignored: %s", path, ShouldIgnoreFilename(path))
 			if ShouldIgnoreFilename(path) {
 				log.Debugf("%s: filename should be ignored, skipping", path)
 				return nil

@@ -22,6 +22,8 @@ var (
 
 	shebangRE       = regexp.MustCompile(`^#!\s*(\S+)(?:\s+(\S+))?.*`)
 	scriptVersionRE = regexp.MustCompile(`((?:\d+\.?)+)`)
+
+	configurationSuffixes = []string{".yaml", ".yml", ".xml", ".toml"}
 )
 
 func init() {
@@ -155,7 +157,8 @@ func detectInterpreter(contents []byte) string {
 func ShouldIgnoreFilename(filename string) bool {
 	vendored := IsVendored(filename)
 	documentation := IsDocumentation(filename)
-	return vendored || documentation
+	isConfiguration := IsConfiguration(filename)
+	return vendored || documentation || isConfiguration
 	// return IsVendored(filename) || IsDocumentation(filename)
 }
 
@@ -174,6 +177,14 @@ func IsVendored(path string) bool {
 // IsDocumentation checks if path contains a filename commonly belonging to documentation.
 func IsDocumentation(path string) bool {
 	return doxRE.MatchString(path)
+}
+
+func IsConfiguration(path string) bool {
+	isConfig := false
+	for _, suffix := range configurationSuffixes {
+		isConfig = isConfig || strings.HasSuffix(path, suffix)
+	}
+	return isConfig
 }
 
 // IsBinary checks contents for known character escape codes which

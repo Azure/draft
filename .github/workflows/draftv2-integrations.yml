@@ -42,7 +42,7 @@ jobs:
         repository: gambtho/go_echo
         path: ./langtest
     - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-    - run: ./draftv2 -v create -c ./test/gomodule/helm.yaml ./langtest/g
+    - run: ./draftv2 -v create -c ./test/gomodule/helm.yaml ./langtest/
     - name: start minikube
       id: minikube
       uses: medyagh/setup-minikube@master

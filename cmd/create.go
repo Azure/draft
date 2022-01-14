@@ -102,8 +102,9 @@ func (cc *createCmd) detectLanguage() error {
 	hasGo := false
 	hasGoMod := false
 	var langs []*linguist.Language
+	var err error
 	if cc.createConfig.LanguageType == "" {
-		langs, err := linguist.ProcessDir(cc.dest)
+		langs, err = linguist.ProcessDir(cc.dest)
 		log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", cc.dest, err)
 		if err != nil {
 			return fmt.Errorf("there was an error detecting the language: %s", err)
@@ -113,13 +114,22 @@ func (cc *createCmd) detectLanguage() error {
 			// For now let's check here for weird stuff like go module support
 			if lang.Language == "Go" {
 				hasGo = true
-			}
-			if lang.Language == "Go Module" {
-				hasGoMod = true
+
+				selection := &promptui.Select{
+					Label: "Linguist detected Go, do you use Go Modules?",
+					Items: []string{"yes", "no"},
+				}
+
+				_, selectResponse, err := selection.Run()
+				if err != nil {
+					return err
+				}
+
+				hasGoMod = strings.EqualFold(selectResponse, "yes")
 			}
 		}
 
-		log.Debugf("langs found: %v", langs)
+		log.Debugf("detected %d langs", len(langs))
 
 		if len(langs) == 0 {
 			return ErrNoLanguageDetected
@@ -129,6 +139,7 @@ func (cc *createCmd) detectLanguage() error {
 	supportedLanguages := languages.CreateLanguages(cc.dest)
 
 	if cc.createConfig.LanguageType != "" {
+		log.Debug("using configuration language")
 		lowerLang := strings.ToLower(cc.createConfig.LanguageType)
 		langConfig := supportedLanguages.GetConfig(lowerLang)
 		if langConfig == nil {
@@ -193,7 +204,7 @@ func (cc *createCmd) createDeployment() error {
 			Items: []string{"helm", "kustomize", "manifests"},
 		}
 
-		_, deployType, err := selection.Run()
+		_, deployType, err = selection.Run()
 		if err != nil {
 			return err
 		}

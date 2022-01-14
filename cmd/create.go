@@ -20,7 +20,7 @@ import (
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
 // code for linguist to classify, or if there are no packs available for the detected languages.
-var ErrNoLanguageDetected = errors.New("no languages were detected")
+var ErrNoLanguageDetected = errors.New("no supported languages were detected")
 
 type createCmd struct {
 	appName        string
@@ -119,6 +119,8 @@ func (cc *createCmd) detectLanguage() error {
 				hasGoMod = true
 			}
 		}
+
+		log.Debugf("langs found: %v", langs)
 
 		if len(langs) == 0 {
 			return ErrNoLanguageDetected

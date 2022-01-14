@@ -1,0 +1,8 @@
+deployType: "kustomize"
+languageType: "javascript"
+deployVariables:
+  - name: "PORT"
+    value: "3000"
+languageVariables:
+  - name: "PORT"
+    value: "3000"

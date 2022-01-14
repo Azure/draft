@@ -20,13 +20,12 @@ import (
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
 // code for linguist to classify, or if there are no packs available for the detected languages.
-var ErrNoLanguageDetected = errors.New("no languages were detected")
+var ErrNoLanguageDetected = errors.New("no supported languages were detected")
 
 type createCmd struct {
-	appName        string
-	lang           string
-	dest           string
-	repositoryName string
+	appName string
+	lang    string
+	dest    string
 
 	createConfigPath string
 	createConfig     *configs.CreateConfig
@@ -233,7 +232,7 @@ func validateConfigInputsToPrompts(required []configs.BuilderVar, provided []con
 
 	for _, variable := range required {
 		if _, ok := customInputs[variable.Name]; !ok {
-			return nil, errors.New(fmt.Sprintf("config missing language variable: %s with description: %s", variable.Name, variable.Description))
+			return nil, fmt.Errorf("config missing language variable: %s with description: %s", variable.Name, variable.Description)
 		}
 	}
 

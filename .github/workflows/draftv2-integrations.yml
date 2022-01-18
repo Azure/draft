@@ -68,4 +68,4 @@ jobs:
       - run: cd ./langtest && skaffold init --force
       - run: cd ./langtest && skaffold run
   javascript:
-    uses: ismille/.github/workflows/javascript-integration.yml@{{GITHUB_SHA}}
+    uses: ismille/draftv2/.github/workflows/javascript-integration.yml@{{GITHUB_SHA}}

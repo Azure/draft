@@ -83,7 +83,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: meshu-dev/nodejs-helloworld
+          repository: davidgamero/express-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/javascript/helm.yaml ./langtest/

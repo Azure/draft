@@ -2,7 +2,7 @@ deployType: "kustomize"
 languageType: "javascript"
 deployVariables:
   - name: "PORT"
-    value: "3000"
+    value: "1313"
 languageVariables:
   - name: "PORT"
-    value: "3000"
+    value: "1313"

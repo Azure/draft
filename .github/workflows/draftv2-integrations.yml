@@ -68,4 +68,4 @@ jobs:
       - run: cd ./langtest && skaffold init --force
       - run: cd ./langtest && skaffold run
   javascript:
-    uses: davidgamero/draftv2/.github/workflows/javascript-integration.yml@master
+    uses: davidgamero/draftv2/.github/workflows/javascript-integration.yml@javascript-tests

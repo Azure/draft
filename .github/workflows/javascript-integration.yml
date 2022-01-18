@@ -6,7 +6,6 @@ on:
 jobs:
   javascript-helm:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -28,7 +27,6 @@ jobs:
 
   javascript-kustomize:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

@@ -68,4 +68,4 @@ jobs:
       - run: cd ./langtest && skaffold init --force
       - run: cd ./langtest && skaffold run
   javascript:
-    uses: imiller31/draftv2/.github/workflows/javascript-integration.yml@{{GITHUB_SHA}}
+    uses: {{CI_REPOSITORY_SLUG}}/.github/workflows/javascript-integration.yml@{{GITHUB_SHA}}

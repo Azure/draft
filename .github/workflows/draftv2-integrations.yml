@@ -1,74 +1,114 @@
-name: Go Modules
+name: DraftV2 Integrations
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: make
+        run: make
+      - uses: actions/upload-artifact@v2
+        with:
+          name: draftv2-binary
+          path: ./draftv2
+          if-no-files-found: error
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
-
-    - name: make
-      run: make
-    
-    - uses: actions/upload-artifact@v2
-      with: 
-        name: draftv2-binary
-        path: ./draftv2
-        if-no-files-found: error
-  
   gomod-helm:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/download-artifact@v2
-      with: 
-        name: draftv2-binary
-    - run: chmod +x ./draftv2
-    - run: mkdir ./langtest
-    - uses: actions/checkout@v2
-      with:
-        repository: gambtho/go_echo
-        path: ./langtest
-    - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-    - run: ./draftv2 -v create -c ./test/gomodule/helm.yaml ./langtest/
-    - name: start minikube
-      id: minikube
-      uses: medyagh/setup-minikube@master
-    - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-    - run: cd ./langtest && skaffold run
-  
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draftv2-binary
+      - run: chmod +x ./draftv2
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draftv2 -v create -c ./test/gomodule/helm.yaml ./langtest/
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+      - run: cd ./langtest && skaffold run
+
   gomod-kustomize:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/download-artifact@v2
-      with: 
-        name: draftv2-binary
-    - run: chmod +x ./draftv2
-    - run: mkdir ./langtest
-    - uses: actions/checkout@v2
-      with:
-        repository: gambtho/go_echo
-        path: ./langtest
-    - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-    - run: ./draftv2 -v create -c ./test/gomodule/kustomize.yaml ./langtest/
-    - name: start minikube
-      id: minikube
-      uses: medyagh/setup-minikube@master
-    - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-    - run: cd ./langtest/ && skaffold init --force 
-    - run: cd ./langtest/ && skaffold run
-    
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draftv2-binary
+      - run: chmod +x ./draftv2
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draftv2 -v create -c ./test/gomodule/kustomize.yaml ./langtest/
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+      - run: cd ./langtest && skaffold init --force
+      - run: cd ./langtest && skaffold run
+
+  javascript-helm:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draftv2-binary
+      - run: chmod +x ./draftv2
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draftv2 -v create -c ./test/javascript/helm.yaml ./langtest/
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+      - run: cd ./langtest && skaffold run
+
+  javascript-kustomize:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draftv2-binary
+      - run: chmod +x ./draftv2
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draftv2 -v create -c ./test/javascript/kustomize.yaml ./langtest/
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+      - run: cd ./langtest && skaffold init --force
+      - run: cd ./langtest && skaffold run

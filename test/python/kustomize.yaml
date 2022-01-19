@@ -1,4 +1,4 @@
-deployType: "Helm"
+deployType: "kustomize"
 languageType: "python"
 deployVariables:
   - name: "PORT"

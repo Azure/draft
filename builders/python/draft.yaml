@@ -1,4 +1,4 @@
-language: go
+language: python
 nameOverrides:
   - path: "dockerignore"
     prefix: "."

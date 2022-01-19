@@ -150,7 +150,7 @@ jobs:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/flask/kustomize.yaml ./langtest/
+      - run: ./draftv2 -v create -c ./test/python/kustomize.yaml ./langtest/
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

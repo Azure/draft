@@ -2,7 +2,7 @@ deployType: "kustomize"
 languageType: "python"
 deployVariables:
   - name: "PORT"
-    value: "8000"
+    value: "5000"
 languageVariables:
   - name: "PORT"
-    value: "8000"
+    value: "5000"

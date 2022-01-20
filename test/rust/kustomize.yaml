@@ -1,8 +1,8 @@
 deployType: "kustomize"
-languageType: "gomodule"
+languageType: "python"
 deployVariables:
   - name: "PORT"
-    value: "8080"
+    value: "5000"
 languageVariables:
   - name: "PORT"
-    value: "8080"
+    value: "5000"

@@ -1,8 +1,8 @@
 deployType: "Helm"
-languageType: "gomodule"
+languageType: "rust"
 deployVariables:
   - name: "PORT"
-    value: "1323"
+    value: "8000"
 languageVariables:
   - name: "PORT"
-    value: "1323"
+    value: "8000"

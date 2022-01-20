@@ -5,4 +5,4 @@ deployVariables:
     value: "1313"
 languageVariables:
   - name: "PORT"
-  value: "1313"
+    value: "1313"

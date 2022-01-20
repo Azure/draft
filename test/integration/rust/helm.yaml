@@ -5,4 +5,4 @@ deployVariables:
     value: "8000"
 languageVariables:
   - name: "PORT"
-  value: "8000"
+    value: "8000"

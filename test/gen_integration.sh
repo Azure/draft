@@ -2,7 +2,7 @@
 echo "Removing previous integration configs"
 rm -rf ./integration/*
 echo "Removing previous integration workflows"
-rm ../.github/workflows/draftv2-integrations.yml
+rm ../.github/workflows/integration.yml
 
 # add build to workflow
 echo "name: DraftV2 Integrations
@@ -28,7 +28,7 @@ jobs:
         with:
           name: draftv2-binary
           path: ./draftv2
-          if-no-files-found: error" > ../.github/workflows/draftv2-integrations.yml
+          if-no-files-found: error" > ../.github/workflows/integration.yml
 
 
 # read config and add integration test for each language
@@ -84,7 +84,7 @@ languageVariables:
         id: minikube
         uses: medyagh/setup-minikube@master
       - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-      - run: cd ./langtest && skaffold run" >> ../.github/workflows/draftv2-integrations.yml
+      - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration.yml
 
     # create kustomize workflow
     echo "
@@ -109,5 +109,5 @@ languageVariables:
         uses: medyagh/setup-minikube@master
       - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
       - run: cd ./langtest && skaffold init --force
-      - run: cd ./langtest && skaffold run" >> ../.github/workflows/draftv2-integrations.yml
+      - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration.yml
 done

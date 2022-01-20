@@ -1,0 +1,8 @@
+deployType: "Helm"
+languageType: "rust"
+deployVariables:
+  - name: "PORT"
+    value: "8000"
+languageVariables:
+  - name: "PORT"
+    value: "8000"

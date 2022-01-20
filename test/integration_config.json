@@ -1,0 +1,18 @@
+[
+  { "language": "gomodule", "port": "1323", "repo": "gambtho/go_echo" },
+  {
+    "language": "python",
+    "port": "5000",
+    "repo": "OliverMKing/flask-hello-world"
+  },
+  {
+    "language": "rust",
+    "port": "8000",
+    "repo": "OliverMKing/tiny-http-hello-world"
+  },
+  {
+    "language": "javascript",
+    "port": "1313",
+    "repo": "davidgamero/express-hello-world"
+  }
+]

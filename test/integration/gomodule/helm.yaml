@@ -1,8 +1,8 @@
-deployType: "kustomize"
+deployType: "Helm"
 languageType: "gomodule"
 deployVariables:
   - name: "PORT"
-    value: "8080"
+    value: "1323"
 languageVariables:
   - name: "PORT"
-    value: "8080"
+    value: "1323"

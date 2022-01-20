@@ -1,8 +1,8 @@
 deployType: "Helm"
-languageType: "javascript"
+languageType: "python"
 deployVariables:
   - name: "PORT"
-    value: "1313"
+    value: "5000"
 languageVariables:
   - name: "PORT"
-    value: "1313"
+  value: "5000"

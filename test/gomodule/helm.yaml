@@ -1,8 +1,0 @@
-deployType: "Helm"
-languageType: "gomodule"
-deployVariables:
-  - name: "PORT"
-    value: "1323"
-languageVariables:
-  - name: "PORT"
-    value: "1323"

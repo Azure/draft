@@ -1,8 +1,8 @@
 deployType: "kustomize"
-languageType: "gomodule"
+languageType: "rust"
 deployVariables:
   - name: "PORT"
-    value: "8080"
+    value: "8000"
 languageVariables:
   - name: "PORT"
-    value: "8080"
+    value: "8000"

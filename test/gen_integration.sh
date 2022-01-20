@@ -50,7 +50,7 @@ deployVariables:
     value: \"$port\"
 languageVariables:
   - name: \"PORT\"
-  value: \"$port\"" > ./integration/$lang/helm.yaml
+    value: \"$port\"" > ./integration/$lang/helm.yaml
 
     # create kustomize.yaml
     echo "deployType: \"kustomize\"

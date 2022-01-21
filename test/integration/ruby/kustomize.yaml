@@ -1,0 +1,8 @@
+deployType: "kustomize"
+languageType: "ruby"
+deployVariables:
+  - name: "PORT"
+    value: "8000"
+languageVariables:
+  - name: "PORT"
+    value: "8000"

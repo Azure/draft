@@ -14,5 +14,10 @@
     "language": "javascript",
     "port": "1313",
     "repo": "davidgamero/express-hello-world"
+  },
+  {
+    "language": "ruby",
+    "port": "8000",
+    "repo": "OliverMKing/ruby-hello-world"
   }
 ]

@@ -2,7 +2,7 @@ deployType: "Helm"
 languageType: "csharp"
 deployVariables:
   - name: "PORT"
-    value: "5000"
+    value: "80"
 languageVariables:
   - name: "PORT"
-    value: "5000"
+    value: "80"

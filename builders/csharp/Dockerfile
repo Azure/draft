@@ -15,7 +15,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=builder /app .
 
-RUN echo __assemblyname
+RUN cat __assemblyname
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 

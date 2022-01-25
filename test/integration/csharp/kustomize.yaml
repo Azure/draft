@@ -1,0 +1,8 @@
+deployType: "kustomize"
+languageType: "csharp"
+deployVariables:
+  - name: "PORT"
+    value: "80"
+languageVariables:
+  - name: "PORT"
+    value: "80"

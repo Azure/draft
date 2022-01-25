@@ -2,7 +2,6 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS builder
 WORKDIR /app
 
 # caches restore result by copying csproj file separately
-COPY *.sln .
 COPY *.csproj .
 RUN dotnet restore
 

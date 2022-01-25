@@ -2,19 +2,20 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS builder
 WORKDIR /app
 
 # caches restore result by copying csproj file separately
+COPY *.sln .
 COPY *.csproj .
 RUN dotnet restore
 
 COPY . .
-RUN dotnet publish --output /app/ --configuration Release
-RUN sed -n 's:.*<AssemblyName>\(.*\)</AssemblyName>.*:\1:p' *.csproj > __assemblyname
-RUN if [ ! -s __assemblyname ]; then filename=$(ls *.csproj); echo ${filename%.*} > __assemblyname; fi
+RUN dotnet publish --output /app/ --configuration Release --no-restore
+RUN ls -l
 
 # Stage 2
-FROM mcr.microsoft.com/dotnet/runtime:6.0
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=builder /app .
 
+RUN ls -l
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 

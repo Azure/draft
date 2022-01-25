@@ -7,14 +7,15 @@ RUN dotnet restore
 
 COPY . .
 RUN dotnet publish --output /app/ --configuration Release --no-restore
-RUN ls -l
+RUN sed -n 's:.*<AssemblyName>\(.*\)</AssemblyName>.*:\1:p' *.csproj > __assemblyname
+RUN if [ ! -s __assemblyname ]; then filename=$(ls *.csproj); echo ${filename%.*} > __assemblyname; fi
 
 # Stage 2
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=builder /app .
 
-RUN ls -l
+RUN echo __assemblyname
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 

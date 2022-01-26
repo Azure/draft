@@ -127,6 +127,23 @@ func (cc *createCmd) detectLanguage() error {
 
 				hasGoMod = strings.EqualFold(selectResponse, "yes")
 			}
+
+			if lang.Language == "Java" {
+
+				selection := &promptui.Select{
+					Label: "Linguist detected Go, are you using maven or gradle?",
+					Items: []string{"gradle", "maven"},
+				}
+
+				_, selectResponse, err := selection.Run()
+				if err != nil {
+					return err
+				}
+
+				if selectResponse == "gradle" {
+					lang.Language = "Gradle"
+				}
+			}
 		}
 
 		log.Debugf("detected %d langs", len(langs))

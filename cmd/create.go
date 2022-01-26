@@ -131,7 +131,7 @@ func (cc *createCmd) detectLanguage() error {
 			if lang.Language == "Java" {
 
 				selection := &promptui.Select{
-					Label: "Linguist detected Go, are you using maven or gradle?",
+					Label: "Linguist detected Java, are you using maven or gradle?",
 					Items: []string{"gradle", "maven"},
 				}
 

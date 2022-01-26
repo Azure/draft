@@ -24,5 +24,10 @@
     "language": "csharp",
     "port": "80",
     "repo": "imiller31/csharp-simple-web-app"
+  },
+  {
+    "language": "java",
+    "port": "8080",
+    "repo": "imiller31/simple-java-server"
   }
 ]

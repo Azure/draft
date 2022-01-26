@@ -1,0 +1,8 @@
+deployType: "Helm"
+languageType: "java"
+deployVariables:
+  - name: "PORT"
+    value: "8080"
+languageVariables:
+  - name: "PORT"
+    value: "8080"

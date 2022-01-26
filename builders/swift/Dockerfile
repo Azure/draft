@@ -1,10 +1,11 @@
-FROM swift
+FROM swift:5.5
 
 WORKDIR /src
-ONBUILD COPY . /src
-ONBUILD RUN swift build -c release
+COPY . /src
+RUN apt-get update && apt-get install -y sudo openssl libssl-dev libcurl4-openssl-dev
+RUN swift build -c release
 
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 
-CMD ["/bin/bash", "-c", "find .build -executable -type f -not -name '*.so'| swift package describe | grep "Type: executable" | head | bash"]
+CMD ["swift", "run"]

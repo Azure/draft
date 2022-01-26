@@ -34,5 +34,10 @@
     "language": "gradle",
     "port": "8080",
     "repo": "imiller31/simple-gradle-server"
+  },
+  {
+    "language": "swift",
+    "port": "8080",
+    "repo": "OliverMKing/swift-hello-world"
   }
 ]

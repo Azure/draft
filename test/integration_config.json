@@ -29,5 +29,10 @@
     "language": "java",
     "port": "8080",
     "repo": "imiller31/simple-java-server"
+  },
+  {
+    "language": "gradle",
+    "port": "8080",
+    "repo": "imiller31/simple-gradle-server"
   }
 ]

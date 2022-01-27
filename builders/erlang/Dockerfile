@@ -22,7 +22,7 @@ RUN relname=$(ls _build/prod/rel) ; echo $relname > /opt/rel/__relname
 
 FROM alpine:3.15
 
-RUN apk add --no-cache openssl-dev ncurses
+RUN apk add --no-cache openssl-dev ncurses libstdc++ libgcc_s
 
 WORKDIR /opt/rel
 

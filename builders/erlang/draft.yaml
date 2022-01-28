@@ -6,6 +6,3 @@ variables:
   - name: "PORT"
     description: "the port exposed in the application"
     type: int
-  - name: "NODE"
-    description: "ip address for erlang to run on ex: 127.0.0.1"
-    type: string

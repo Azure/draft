@@ -28,7 +28,6 @@ WORKDIR /opt/rel
 
 ENV RELX_REPLACE_OS_VARS true
 ENV HTTP_PORT {{PORT}}
-ENV NODE {{NODE}}
 
 COPY --from=builder /opt/rel /opt/rel
 

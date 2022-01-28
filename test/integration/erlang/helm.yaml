@@ -6,3 +6,5 @@ deployVariables:
 languageVariables:
   - name: "PORT"
     value: "8080"
+  - name: "NODE"
+    value: "127.0.0.1"

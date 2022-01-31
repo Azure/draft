@@ -44,5 +44,10 @@
     "language": "erlang",
     "port": "8080",
     "repo": "bfoley13/ErlangExample"
+  },
+  {
+    "language": "clojure",
+    "port": "8080",
+    "repo": "imiller31/clojure-simple-http"
   }
 ]

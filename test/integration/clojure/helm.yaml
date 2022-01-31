@@ -1,5 +1,5 @@
-deployType: "kustomize"
-languageType: "erlang"
+deployType: "Helm"
+languageType: "clojure"
 deployVariables:
   - name: "PORT"
     value: "8080"

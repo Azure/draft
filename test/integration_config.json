@@ -39,10 +39,5 @@
     "language": "swift",
     "port": "8080",
     "repo": "OliverMKing/swift-hello-world"
-  },
-  {
-    "language": "erlang",
-    "port": "8080",
-    "repo": "bfoley13/ErlangExample"
   }
 ]

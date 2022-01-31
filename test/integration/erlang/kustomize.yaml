@@ -1,8 +1,0 @@
-deployType: "kustomize"
-languageType: "erlang"
-deployVariables:
-  - name: "PORT"
-    value: "8080"
-languageVariables:
-  - name: "PORT"
-    value: "8080"

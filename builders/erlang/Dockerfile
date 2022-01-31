@@ -1,4 +1,4 @@
-FROM erlang:24.2-alpine as builder
+FROM erlang:20.3.6-alpine as builder
 
 RUN apk add --update tar curl git bash make libc-dev gcc g++ && \
     rm -rf /var/cache/apk/*
@@ -20,9 +20,9 @@ RUN tar -zxvf /usr/src/app/_build/prod/rel/*/*.tar.gz -C /opt/rel
 
 RUN relname=$(ls _build/prod/rel) ; echo $relname > /opt/rel/__relname
 
-FROM alpine:3.15
+FROM alpine:3.7
 
-RUN apk add --no-cache openssl-dev ncurses libstdc++ libgcc
+RUN apk add --no-cache openssl-dev ncurses
 
 WORKDIR /opt/rel
 

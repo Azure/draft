@@ -19,9 +19,9 @@ build:
 
 .PHONY: build-all
 build-all:
-	build-window build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
+	build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
 
-.PHONY: build-windows
+.PHONY: build-windows-amd64
 buld-windows:
 	GOOS=windows GOARCH=amd64 go build -v -o ./bin/draftv2-windows-amd64
 

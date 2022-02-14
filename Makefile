@@ -18,8 +18,7 @@ build:
 	GO111MODULE=on go build -v -o .
 
 .PHONY: build-all
-build-all:
-	build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
+build-all: build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
 
 .PHONY: build-windows-amd64
 build-windows-amd64:

@@ -6,13 +6,17 @@ on:
       - "v*.*.*"
 
 jobs:
-  linux:
+  Release-Artifacts:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Make Release Dir
         run: mkdir bin
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
       - name: Build Release Binaries
         run: make build-all
       - name: Release

@@ -1,0 +1,22 @@
+name: Draftv2 Releases
+
+on: 
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Make Release Dir
+        run: mkdir bin
+      - name: Build Release Binaries
+        run: make build-all
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./bin/*

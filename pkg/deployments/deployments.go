@@ -16,7 +16,7 @@ import (
 //go:generate cp -r ../../deployTypes ./deployTypes
 
 var (
-	//go:embed deployTypes
+	//go:embed all:deployTypes
 	deployTypes    embed.FS
 	parentDirName  = "deployTypes"
 	configFileName = "draft.yaml"

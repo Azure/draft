@@ -16,7 +16,7 @@ import (
 //go:generate cp -r ../../builders ./builders
 
 var (
-	//go:embed builders
+	//go:embed all:builders
 	builders      embed.FS
 	parentDirName = "builders"
 )

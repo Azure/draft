@@ -1,7 +1,4 @@
 language: clojure
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     description: "the port exposed in the application"

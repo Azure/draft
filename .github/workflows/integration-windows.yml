@@ -1,4 +1,4 @@
-name: DraftV2 Linux Integrations
+name: DraftV2 Windows Integrations
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up Go
@@ -24,7 +24,7 @@ jobs:
           if-no-files-found: error
 
   gomodule-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -46,7 +46,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   gomodule-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -69,7 +69,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   python-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -91,7 +91,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   python-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -114,7 +114,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   rust-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -136,7 +136,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   rust-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -159,7 +159,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   javascript-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -181,7 +181,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   javascript-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -204,7 +204,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   ruby-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -226,7 +226,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   ruby-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -249,7 +249,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   csharp-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -271,7 +271,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   csharp-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -294,7 +294,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   java-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -316,7 +316,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   java-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -339,7 +339,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   gradle-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -361,7 +361,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   gradle-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -384,7 +384,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   swift-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -406,7 +406,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   swift-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -429,7 +429,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   erlang-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -451,7 +451,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   erlang-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -474,7 +474,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   clojure-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -496,7 +496,7 @@ jobs:
       - run: cd ./langtest && skaffold run
 
   clojure-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2

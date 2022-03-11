@@ -20,7 +20,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: draftv2-binary
-          path: ./draftv2
+          path: .\draftv2
           if-no-files-found: error
 
   gomodule-helm:

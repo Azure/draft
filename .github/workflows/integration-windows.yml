@@ -42,6 +42,8 @@ jobs:
       - run: Remove-Item ./langtest/Dockerfile
       - run: Remove-Item ./langtest/.dockerignore
       - run: ./draftv2.exe -v create -c ./test/integration/gomodule/helm.yaml ./langtest/
+      - run: dir ./langtest/
+      - run: Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Tools-All
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

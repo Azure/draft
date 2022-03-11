@@ -38,7 +38,7 @@ jobs:
           repository: gambtho/go_echo
           path: ./langtest
       - run: dir
-      - run: Remove-Item ./langtest/manifests -Recursive -Force
+      - run: Remove-Item ./langtest/manifests -Recurse -Force
       - run: Remove-Item ./langtest/Dockerfile
       - run: Remove-Item ./langtest/.dockerignore
       - run: ./draftv2.exe -v create -c ./test/integration/gomodule/helm.yaml ./langtest/

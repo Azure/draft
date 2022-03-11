@@ -21,7 +21,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: draftv2-binary
-          path: .\draftv2
+          path: .\draftv2.exe
           if-no-files-found: error
 
   gomodule-helm:
@@ -32,19 +32,18 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draftv2-binary
-      - run: chmod +x ./draftv2
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gomodule/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/gomodule/helm.yaml ./langtest/
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-      - run: cd ./langtest && skaffold run
+      - run: choco install -y skaffold
+      - run: cd .\langtest && skaffold run
 
   gomodule-kustomize:
     runs-on: windows-latest

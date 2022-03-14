@@ -28,6 +28,7 @@ type createCmd struct {
 	dest    string
 
 	dockerfileOnly bool
+	deploymentOnly bool
 
 	createConfigPath string
 	createConfig     *configs.CreateConfig
@@ -61,6 +62,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "name of helm release by default this is randomly generated")
 	f.StringVarP(&cc.lang, "lang", "l", "", "the name of the language used to create the k8s deployment")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "will only add Dockerfile to the local directory")
+	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "will only add deployment files to the local directory")
 
 	return cmd
 }
@@ -100,8 +102,11 @@ func (cc *createCmd) run() error {
 		return err
 	}
 
-	if err = cc.generateDockerfile(detectedLang, lowerLang); err != nil {
-		return err
+	if !cc.deploymentOnly {
+		err := cc.generateDockerfile(detectedLang, lowerLang)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !cc.dockerfileOnly {

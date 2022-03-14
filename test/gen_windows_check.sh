@@ -14,6 +14,6 @@ for deploy in ${deployTypes[@]};do
     do
       echo "\$filesExist=\$filesExist -and (Test-Path -Path $file -PathType Leaf)" >> $scriptName
     done
-    echo "if (\$filesExist) {Exit 1}" >> $scriptName
+    echo "if (-not \$filesExist) {Exit 1}" >> $scriptName
 
 done

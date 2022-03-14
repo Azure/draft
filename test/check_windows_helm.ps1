@@ -11,4 +11,4 @@ $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/helm/charts/template
 $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/helm/charts/templates/helpers.tpl -PathType Leaf)
 $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/helm/charts/values.yaml -PathType Leaf)
 $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/helm/skaffold.yaml -PathType Leaf)
-if ($filesExist) {Exit 1}
+if (-not $filesExist) {Exit 1}

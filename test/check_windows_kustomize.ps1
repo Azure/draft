@@ -4,4 +4,4 @@ $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/kustomize/base/deplo
 $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/kustomize/base/ingress.yaml -PathType Leaf)
 $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/kustomize/base/kustomization.yaml -PathType Leaf)
 $filesExist=$filesExist -and (Test-Path -Path ./deployTypes/kustomize/base/service.yaml -PathType Leaf)
-if ($filesExist) {Exit 1}
+if (-not $filesExist) {Exit 1}

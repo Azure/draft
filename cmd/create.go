@@ -102,6 +102,10 @@ func (cc *createCmd) run() error {
 		return err
 	}
 
+	if cc.dockerfileOnly && cc.deploymentOnly {
+		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
+	}
+
 	if !cc.deploymentOnly {
 		err := cc.generateDockerfile(detectedLang, lowerLang)
 		if err != nil {

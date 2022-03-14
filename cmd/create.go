@@ -29,6 +29,8 @@ type createCmd struct {
 
 	createConfigPath string
 	createConfig     *configs.CreateConfig
+
+	supportedLangs *languages.Languages
 }
 
 func newCreateCmd() *cobra.Command {
@@ -89,16 +91,20 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
-	var err error
 	log.Info("detecting language")
-	if err = cc.detectLanguage(); err != nil {
+	detectedLang, lowerLang, err := cc.detectLanguage()
+	if err != nil {
+		return err
+	}
+
+	if err = cc.generateDockerfile(detectedLang, lowerLang); err != nil {
 		return err
 	}
 
 	return cc.createDeployment()
 }
 
-func (cc *createCmd) detectLanguage() error {
+func (cc *createCmd) detectLanguage() (*configs.DraftConfig, string, error) {
 	hasGo := false
 	hasGoMod := false
 	var langs []*linguist.Language
@@ -107,7 +113,7 @@ func (cc *createCmd) detectLanguage() error {
 		langs, err = linguist.ProcessDir(cc.dest)
 		log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", cc.dest, err)
 		if err != nil {
-			return fmt.Errorf("there was an error detecting the language: %s", err)
+			return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
 		}
 		for _, lang := range langs {
 			log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
@@ -122,7 +128,7 @@ func (cc *createCmd) detectLanguage() error {
 
 				_, selectResponse, err := selection.Run()
 				if err != nil {
-					return err
+					return nil, "", err
 				}
 
 				hasGoMod = strings.EqualFold(selectResponse, "yes")
@@ -137,7 +143,7 @@ func (cc *createCmd) detectLanguage() error {
 
 				_, selectResponse, err := selection.Run()
 				if err != nil {
-					return err
+					return nil, "", err
 				}
 
 				if selectResponse == "gradle" {
@@ -149,54 +155,64 @@ func (cc *createCmd) detectLanguage() error {
 		log.Debugf("detected %d langs", len(langs))
 
 		if len(langs) == 0 {
-			return ErrNoLanguageDetected
+			return nil, "", ErrNoLanguageDetected
 		}
 	}
 
-	supportedLanguages := languages.CreateLanguages(cc.dest)
+	cc.supportedLangs = languages.CreateLanguages(cc.dest)
 
 	if cc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")
 		lowerLang := strings.ToLower(cc.createConfig.LanguageType)
-		langConfig := supportedLanguages.GetConfig(lowerLang)
+		langConfig := cc.supportedLangs.GetConfig(lowerLang)
 		if langConfig == nil {
-			return ErrNoLanguageDetected
-		}
-		inputs, err := validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables)
-		if err != nil {
-			return err
+			return nil, "", ErrNoLanguageDetected
 		}
 
-		if err = supportedLanguages.CreateDockerfileForLanguage(lowerLang, inputs); err != nil {
-			return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
-		}
-
-		return nil
+		return langConfig, lowerLang, nil
 	}
 
 	for _, lang := range langs {
 		detectedLang := linguist.Alias(lang)
 		log.Infof("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
 		lowerLang := strings.ToLower(detectedLang.Language)
-		if supportedLanguages.ContainsLanguage(lowerLang) {
+		if cc.supportedLangs.ContainsLanguage(lowerLang) {
 			if lowerLang == "go" && hasGo && hasGoMod {
 				log.Debug("detected go and go module")
 				lowerLang = "gomodule"
 			}
-			langConfig := supportedLanguages.GetConfig(lowerLang)
-			inputs, err := prompts.RunPromptsFromConfig(langConfig)
-			if err != nil {
-				return err
-			}
-
-			if err = supportedLanguages.CreateDockerfileForLanguage(lowerLang, inputs); err != nil {
-				return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", detectedLang.Language, err)
-			}
-			return err
+			langConfig := cc.supportedLangs.GetConfig(lowerLang)
+			return langConfig, lowerLang, nil
 		}
 		log.Infof("--> Could not find a pack for %s. Trying to find the next likely language match...\n", detectedLang.Language)
 	}
-	return ErrNoLanguageDetected
+	return nil, "", ErrNoLanguageDetected
+}
+
+func (cc *createCmd) generateDockerfile(langConfig *configs.DraftConfig, lowerLang string) error {
+	if cc.supportedLangs == nil {
+		return errors.New("supported languages were loaded incorrectly")
+	}
+
+	var inputs map[string]string
+	var err error
+	if cc.createConfig.LanguageVariables == nil {
+		inputs, err = prompts.RunPromptsFromConfig(langConfig)
+		if err != nil {
+			return err
+		}
+	} else {
+		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs); err != nil {
+		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
+	}
+
+	return err
 }
 
 func (cc *createCmd) createDeployment() error {

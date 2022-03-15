@@ -1,5 +1,5 @@
 .PHONY: all
-all: go-enerate vendor build
+all: go-generate vendor build
 
 .PHONY: go-generate
 go-generate:

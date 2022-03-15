@@ -3,7 +3,7 @@ package prompts
 import (
 	"fmt"
 
-	"github.com/imiller31/draftv2/pkg/configs"
+	"github.com/Azure/draftv2/pkg/configs"
 	"github.com/manifoldco/promptui"
 )
 

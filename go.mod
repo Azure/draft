@@ -1,4 +1,4 @@
-module github.com/imiller31/draftv2
+module github.com/Azure/draftv2
 
 go 1.18
 

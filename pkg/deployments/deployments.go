@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/imiller31/draftv2/pkg/configs"
-	"github.com/imiller31/draftv2/pkg/embedutils"
-	"github.com/imiller31/draftv2/pkg/osutil"
+	"github.com/Azure/draftv2/pkg/configs"
+	"github.com/Azure/draftv2/pkg/embedutils"
+	"github.com/Azure/draftv2/pkg/osutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

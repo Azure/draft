@@ -22,7 +22,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/imiller31/draftv2">
+  <a href="https://github.com/Azure/draftv2">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -31,14 +31,14 @@
   <p align="center">
     A tool to help developers hit the ground running with k8s
     <br />
-    <a href="https://github.com/imiller31/draftv2"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Azure/draftv2"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/imiller31/draftv2">View Demo</a>
+    <a href="https://github.com/Azure/draftv2">View Demo</a>
     ·
-    <a href="https://github.com/imiller31/draftv2/issues">Report Bug</a>
+    <a href="https://github.com/Azure/draftv2/issues">Report Bug</a>
     ·
-    <a href="https://github.com/imiller31/draftv2/issues">Request Feature</a>
+    <a href="https://github.com/Azure/draftv2/issues">Request Feature</a>
   </p>
 </div>
 
@@ -106,7 +106,7 @@ Draftv2 requires Go version 1.17.x.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/imiller31/draftv2.git
+   git clone https://github.com/Azure/draftv2.git
    ```
 2. Build the binary
    ```sh
@@ -140,7 +140,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [] Feature 3
     - [] Nested Feature
 
-See the [open issues](https://github.com/imiller31/draftv2/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/Azure/draftv2/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -179,7 +179,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
 
-Project Link: [https://github.com/imiller31/draftv2](https://github.com/imiller31/draftv2)
+Project Link: [https://github.com/Azure/draftv2](https://github.com/Azure/draftv2)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -198,16 +198,16 @@ Project Link: [https://github.com/imiller31/draftv2](https://github.com/imiller3
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/imiller31/draftv2.svg?style=for-the-badge
-[contributors-url]: https://github.com/imiller31/draftv2/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/imiller31/draftv2.svg?style=for-the-badge
-[forks-url]: https://github.com/imiller31/draftv2/network/members
-[stars-shield]: https://img.shields.io/github/stars/imiller31/draftv2.svg?style=for-the-badge
-[stars-url]: https://github.com/imiller31/draftv2/stargazers
-[issues-shield]: https://img.shields.io/github/issues/imiller31/draftv2.svg?style=for-the-badge
-[issues-url]: https://github.com/imiller31/draftv2/issues
-[license-shield]: https://img.shields.io/github/license/imiller31/draftv2.svg?style=for-the-badge
-[license-url]: https://github.com/imiller31/draftv2/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/Azure/draftv2.svg?style=for-the-badge
+[contributors-url]: https://github.com/Azure/draftv2/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Azure/draftv2.svg?style=for-the-badge
+[forks-url]: https://github.com/Azure/draftv2/network/members
+[stars-shield]: https://img.shields.io/github/stars/Azure/draftv2.svg?style=for-the-badge
+[stars-url]: https://github.com/Azure/draftv2/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Azure/draftv2.svg?style=for-the-badge
+[issues-url]: https://github.com/Azure/draftv2/issues
+[license-shield]: https://img.shields.io/github/license/Azure/draftv2.svg?style=for-the-badge
+[license-url]: https://github.com/Azure/draftv2/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: images/screenshot.png

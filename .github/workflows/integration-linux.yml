@@ -1,4 +1,4 @@
-name: DraftV2 Integrations
+name: DraftV2 Linux Integrations
 
 on:
   push:

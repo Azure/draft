@@ -34,7 +34,7 @@ jobs:
           if-no-files-found: error
 
   gomodule-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -58,7 +58,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   gomodule-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -82,7 +82,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   python-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -106,7 +106,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   python-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -130,7 +130,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   rust-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -154,7 +154,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   rust-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -178,7 +178,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   javascript-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -202,7 +202,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   javascript-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -226,7 +226,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   ruby-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -250,7 +250,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   ruby-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -274,7 +274,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   csharp-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -298,7 +298,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   csharp-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -322,7 +322,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   java-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -346,7 +346,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   java-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -370,7 +370,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   gradle-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -394,7 +394,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   gradle-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -418,7 +418,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   swift-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -442,7 +442,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   swift-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -466,7 +466,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   erlang-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -490,7 +490,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   erlang-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -514,7 +514,7 @@ jobs:
       - run: ./check_windows_kustomize.ps1
 
   clojure-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -538,7 +538,7 @@ jobs:
       - run: ./check_windows_helm.ps1
 
   clojure-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2

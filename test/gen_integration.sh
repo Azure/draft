@@ -151,7 +151,7 @@ languageVariables:
     # create helm workflow
     echo "
   $lang-helm:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -177,7 +177,7 @@ languageVariables:
     # create kustomize workflow
     echo "
   $lang-kustomize:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - uses: actions/checkout@v2

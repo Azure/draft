@@ -6,7 +6,7 @@ rm ../.github/workflows/integration-linux.yml
 rm ../.github/workflows/integration-windows.yml
 
 # add build to workflow
-echo "name: DraftV2 Integrations
+echo "name: DraftV2 Linux Integrations
 
 on:
   push:
@@ -30,6 +30,42 @@ jobs:
           name: draftv2-binary
           path: ./draftv2
           if-no-files-found: error" > ../.github/workflows/integration-linux.yml
+
+echo "name: DraftV2 Windows Integrations
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: make
+        run: make
+      - uses: actions/upload-artifact@v2
+        with:
+          name: draftv2-binary
+          path: ./draftv2.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./test/check_windows_helm.ps1
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
+          name: check_windows_kustomize
+          path: ./test/check_windows_kustomize.ps1
+          if-no-files-found: error" > ../.github/workflows/integration-windows.yml
+
 
 
 # read config and add integration test for each language
@@ -111,75 +147,6 @@ languageVariables:
       - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
       - run: cd ./langtest && skaffold init --force
       - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration-linux.yml
-done
-
-# add build to workflow
-echo "name: DraftV2 Integrations
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-      - name: make
-        run: make
-      - uses: actions/upload-artifact@v2
-        with:
-          name: draftv2-binary
-          path: ./draftv2.exe
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v2
-        with:
-          name: check_windows_helm
-          path: ./test/check_windows_helm.ps1
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v2
-        with:
-          name: check_windows_kustomize
-          path: ./test/check_windows_kustomize.ps1
-          if-no-files-found: error" > ../.github/workflows/integration-windows.yml
-
-
-# read config and add integration test for each language
-cat integration_config.json | jq -c '.[]' | while read -r test;
-do
-    # extract from json
-    lang=$(echo $test | jq '.language' -r)
-    port=$(echo $test | jq '.port' -r)
-    repo=$(echo $test | jq '.repo' -r)
-    echo "Adding $lang with port $port"
-
-    mkdir ./integration/$lang
-
-    # create helm.yaml
-    echo "deployType: \"Helm\"
-languageType: \"$lang\"
-deployVariables:
-  - name: \"PORT\"
-    value: \"$port\"
-languageVariables:
-  - name: \"PORT\"
-    value: \"$port\"" > ./integration/$lang/helm.yaml
-
-    # create kustomize.yaml
-    echo "deployType: \"kustomize\"
-languageType: \"$lang\"
-deployVariables:
-  - name: \"PORT\"
-    value: \"$port\"
-languageVariables:
-  - name: \"PORT\"
-    value: \"$port\"" > ./integration/$lang/kustomize.yaml
 
     # create helm workflow
     echo "
@@ -205,6 +172,7 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
+      - run: dir
       - run: ./check_windows_helm.ps1" >> ../.github/workflows/integration-windows.yml
 
     # create kustomize workflow
@@ -231,5 +199,6 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
-      - run: ./check_windows_kustomize.ps1" >> ../.github/workflows/integration-linux.yml
+      - run: dir
+      - run: ./check_windows_kustomize.ps1" >> ../.github/workflows/integration-windows.yml
 done

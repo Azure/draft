@@ -158,7 +158,6 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: draftv2-binary
-      - run: chmod +x ./draftv2
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
@@ -185,7 +184,6 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: draftv2-binary
-      - run: chmod +x ./draftv2
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:

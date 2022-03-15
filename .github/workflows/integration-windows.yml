@@ -70,11 +70,11 @@ jobs:
         with:
           repository: gambtho/go_echo
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/gomodule/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -118,11 +118,11 @@ jobs:
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/python/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -166,11 +166,11 @@ jobs:
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/rust/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -214,11 +214,11 @@ jobs:
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/javascript/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -262,11 +262,11 @@ jobs:
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/ruby/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -310,11 +310,11 @@ jobs:
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/csharp/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -358,11 +358,11 @@ jobs:
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/java/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -406,11 +406,11 @@ jobs:
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/gradle/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -454,11 +454,11 @@ jobs:
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/swift/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -502,11 +502,11 @@ jobs:
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/erlang/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -550,11 +550,11 @@ jobs:
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/clojure/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize

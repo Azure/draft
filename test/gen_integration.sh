@@ -189,11 +189,11 @@ languageVariables:
         with:
           repository: $repo
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/$lang/kustomize.yaml ./langtest/
-      - run: cd ./langtest
+      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize

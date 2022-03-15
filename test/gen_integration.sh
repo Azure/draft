@@ -166,7 +166,7 @@ languageVariables:
       - run: Remove-Item ./langtest/manifests -Recurse -Force
       - run: Remove-Item ./langtest/Dockerfile
       - run: Remove-Item ./langtest/.dockerignore
-      - run: ./draftv2.exe -v create -c /test/integration/$lang/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/$lang/helm.yaml ./langtest/
       - run: cd ./langtest
       - uses: actions/download-artifact@v2
         with:
@@ -192,7 +192,7 @@ languageVariables:
       - run: Remove-Item ./langtest/manifests -Recurse -Force
       - run: Remove-Item ./langtest/Dockerfile
       - run: Remove-Item ./langtest/.dockerignore
-      - run: ./draftv2.exe -v create -c /test/integration/$lang/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/$lang/kustomize.yaml ./langtest/
       - run: cd ./langtest
       - uses: actions/download-artifact@v2
         with:

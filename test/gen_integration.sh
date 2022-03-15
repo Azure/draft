@@ -163,16 +163,16 @@ languageVariables:
         with:
           repository: $repo
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force
-      - run: Remove-Item ./langtest/Dockerfile
-      - run: Remove-Item ./langtest/.dockerignore
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/$lang/helm.yaml ./langtest/
-      - run: cd ./langtest
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
-      - run: dir
-      - run: ./check_windows_helm.ps1" >> ../.github/workflows/integration-windows.yml
+          path: ./langtest/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
 
     # create kustomize workflow
     echo "
@@ -193,10 +193,10 @@ languageVariables:
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draftv2.exe -v create -c ./test/integration/$lang/kustomize.yaml ./langtest/
-      - run: cd ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
-      - run: dir
-      - run: ./check_windows_kustomize.ps1" >> ../.github/workflows/integration-windows.yml
+          path: ./langtest/
+      - run: ./check_windows_kustomize.ps1
+        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
 done

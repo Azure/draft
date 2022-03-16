@@ -96,7 +96,7 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
-	log.Info("detecting language")
+	log.Info("Detecting Language")
 	detectedLang, lowerLang, err := cc.detectLanguage()
 	if err != nil {
 		return err
@@ -106,14 +106,33 @@ func (cc *createCmd) run() error {
 		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
 
-	if !cc.deploymentOnly {
+	// check if the local directory has dockerfile or charts
+	dockerfilePath := cc.dest + "/Dockerfile"
+	deploymentDirPath := cc.dest + "/charts"
+
+	_, err = os.Stat(dockerfilePath)
+	hasDockerFile := err == nil 
+	_, err = os.Stat(deploymentDirPath)
+	hasDeploymentDir := err == nil
+	
+	if hasDockerFile {
+		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
+	} else if cc.deploymentOnly {
+		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
+	} else if !cc.deploymentOnly {
+		log.Info("--> Dockerfile Creation")
 		err := cc.generateDockerfile(detectedLang, lowerLang)
 		if err != nil {
 			return err
 		}
 	}
-
-	if !cc.dockerfileOnly {
+	
+	if hasDeploymentDir {
+		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
+	} else if cc.dockerfileOnly {
+		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
+	} else if !cc.dockerfileOnly {
+		log.Info("--> Deployment File Creation")
 		err := cc.createDeployment()
 		if err != nil {
 			return err
@@ -231,6 +250,7 @@ func (cc *createCmd) generateDockerfile(langConfig *configs.DraftConfig, lowerLa
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
 
+	log.Infof("--> Creating Dockerfile")
 	return err
 }
 

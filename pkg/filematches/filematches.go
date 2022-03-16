@@ -41,7 +41,8 @@ func isValidYamlFile(filePath string) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-	results, err := kubeval.Validate(fileContents, filePath)
+    config := kubeval.NewDefaultConfig()
+	results, err := kubeval.Validate(fileContents, config)
     if err != nil || hasErrors(results) {
         log.Fatal(err)
     }

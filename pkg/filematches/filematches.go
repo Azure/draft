@@ -21,11 +21,11 @@ func findDeploymentFiles(dest string, pattern string) ([]string, error) {
             return err
         }
         if info.IsDir() {
-            return nil
+            return nil  
         }
         if matched, err := filepath.Match(pattern, filepath.Base(path)); err != nil {
             return err
-        } else if matched {
+        } else if matched && isValidYamlFile(path) {
             matches = append(matches, path)
         }
         return nil
@@ -36,10 +36,41 @@ func findDeploymentFiles(dest string, pattern string) ([]string, error) {
     return matches, nil
 }
 
-func isValidYamlFile(filePath string) {
+func isValidYamlFile(filePath string) bool {
 	fileContents, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	results, err := kubeval.Validate(fileContents, filePath)
+    if err != nil || hasErrors(results) {
+        log.Fatal(err)
+    }
+    return true
+}
+
+func hasErrors(res []kubeval.ValidationResult) bool {
+	for _, r := range res {
+		if len(r.Errors) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *FileMatches) HasDeploymentFiles() bool {
+    return len(f.deploymentFiles) > 0
+}
+
+func CreateFileMatches(dest string) *FileMatches {
+	deploymentFiles, err := findDeploymentFiles(dest, "*.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	l := &FileMatches{
+		dest:            dest,
+		deploymentFiles: deploymentFiles,
+	}
+
+	return l
 }

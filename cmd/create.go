@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/draftv2/pkg/configs"
 	"github.com/Azure/draftv2/pkg/deployments"
+	"github.com/Azure/draftv2/pkg/filematches"
 	"github.com/Azure/draftv2/pkg/languages"
 	"github.com/Azure/draftv2/pkg/linguist"
 	"github.com/Azure/draftv2/pkg/prompts"
@@ -34,6 +35,7 @@ type createCmd struct {
 	createConfig     *configs.CreateConfig
 
 	supportedLangs *languages.Languages
+	fileMatches *filematches.FileMatches
 }
 
 func newCreateCmd() *cobra.Command {
@@ -107,13 +109,16 @@ func (cc *createCmd) run() error {
 	}
 
 	// check if the local directory has dockerfile or charts
-	dockerfilePath := cc.dest + "/Dockerfile"
-	deploymentDirPath := cc.dest + "/charts"
+	var hasDockerFile bool; var hasDeploymentFiles bool
+	hasDockerFile, hasDeploymentFiles, err = cc.searchDirectory()
 
-	_, err = os.Stat(dockerfilePath)
-	hasDockerFile := err == nil 
-	_, err = os.Stat(deploymentDirPath)
-	hasDeploymentDir := err == nil
+	// dockerfilePath := cc.dest + "/Dockerfile"
+	// deploymentDirPath := cc.dest + "/charts"
+
+	// _, err = os.Stat(dockerfilePath)
+	// hasDockerFile := err == nil 
+	// _, err = os.Stat(deploymentDirPath)
+	// hasDeploymentDir := err == nil
 	
 	if hasDockerFile {
 		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
@@ -127,7 +132,7 @@ func (cc *createCmd) run() error {
 		}
 	}
 	
-	if hasDeploymentDir {
+	if hasDeploymentFiles {
 		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
 	} else if cc.dockerfileOnly {
 		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
@@ -290,6 +295,35 @@ func (cc *createCmd) createDeployment() error {
 
 	log.Infof("--> Creating %s k8s resources", deployType)
 	return d.CopyDeploymentFiles(deployType, customInputs)
+}
+
+// returns hasDockerfile, hasDeploymentFiles, error
+func (cc *createCmd) searchDirectory() (bool, bool, error) {
+	// check if Dockerfile exists
+	dockerfilePath := cc.dest + "/Dockerfile"
+	_, err := os.Stat(dockerfilePath)
+	if err != nil {
+		return false, false, err
+	}
+	hasDockerFile := true
+
+	// recursive directory search for valid yaml files
+	hasDeploymentFiles := false
+	cc.fileMatches = filematches.CreateFileMatches(cc.dest)
+	if cc.fileMatches.HasDeploymentFiles() {
+		selection := &promptui.Select{
+			Label: "We found deployment files in the directory, would you like to create new deployment files?",
+			Items: []string{"yes", "no"},
+		}
+
+		_, selectResponse, err := selection.Run()
+		if err != nil {
+			return false, false, err
+		}
+
+		hasDeploymentFiles = strings.EqualFold(selectResponse, "no")
+	}
+	return hasDockerFile, hasDeploymentFiles, nil
 }
 
 func init() {

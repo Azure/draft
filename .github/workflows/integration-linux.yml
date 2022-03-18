@@ -1,10 +1,8 @@
 name: DraftV2 Linux Integrations
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   build:

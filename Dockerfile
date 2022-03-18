@@ -4,5 +4,9 @@ WORKDIR /draftv2
 COPY . ./
 
 RUN apk add build-base
+
+RUN GO111MODULE=on go generate ./pkg/languages/...
+RUN GO111MODULE=on go generate ./pkg/deployments/...
+
 RUN go mod vendor
-RUN go test ./... -buildvcs=false
+CMD ["go", "test", "./...", "-buildvcs=false"]

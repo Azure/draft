@@ -6,14 +6,18 @@ import (
 )
 
 var (
-	appPythonPath   = filepath.Join("testdata", "app-python")
-	appEmptydirPath = filepath.Join("testdata", "app-emptydir")
+	appPythonPath   = filepath.Join("testdirs", "app-python")
+	appEmptydirPath = filepath.Join("testdirs", "app-emptydir")
 )
 
 func TestProcessDir(t *testing.T) {
 	output, err := ProcessDir(appPythonPath)
 	if err != nil {
 		t.Error("expected detect to pass")
+	}
+
+	if len(output) == 0 {
+		t.Errorf("expected detect to not be empty")
 	}
 	if output[0].Language != "Python" {
 		t.Errorf("expected output == 'Python', got '%s'", output[0].Language)
@@ -36,11 +40,11 @@ func TestGitAttributes(t *testing.T) {
 		path         string
 		expectedLang string
 	}{
-		{filepath.Join("testdata", "app-duck"), "Duck"},
-		{filepath.Join("testdata", "app-vendored"), "Python"},
-		{filepath.Join("testdata", "app-not-vendored"), "HTML"},
-		{filepath.Join("testdata", "app-documentation"), "Python"},
-		{filepath.Join("testdata", "app-generated"), "Python"},
+		{filepath.Join("testdirs", "app-duck"), "Duck"},
+		{filepath.Join("testdirs", "app-vendored"), "Python"},
+		{filepath.Join("testdirs", "app-not-vendored"), "HTML"},
+		{filepath.Join("testdirs", "app-documentation"), "Python"},
+		{filepath.Join("testdirs", "app-generated"), "Python"},
 	}
 
 	for _, tc := range testCases {
@@ -58,7 +62,7 @@ func TestGitAttributes(t *testing.T) {
 
 //TestDirectoryIsIgnored checks to see if directory paths such as 'docs/' are ignored from being classified by linguist when added to the "ignore" list.
 func TestDirectoryIsIgnored(t *testing.T) {
-	path := filepath.Join("testdata", "app-documentation")
+	path := filepath.Join("testdirs", "app-documentation")
 	// populate isIgnored
 	ProcessDir(path)
 	ignorePath := filepath.Join(path, "docs")

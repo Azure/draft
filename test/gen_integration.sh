@@ -9,10 +9,8 @@ rm ../.github/workflows/integration-windows.yml
 echo "name: DraftV2 Linux Integrations
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   build:
@@ -34,10 +32,8 @@ jobs:
 echo "name: DraftV2 Windows Integrations
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   build:

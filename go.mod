@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/Azure/draft v0.16.0 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect

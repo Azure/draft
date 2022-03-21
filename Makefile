@@ -8,6 +8,10 @@ go-generate:
 	GO111MODULE=on go generate ./pkg/languages/...; \
 	GO111MODULE=on go generate ./pkg/deployments/...;
 
+.PHONY: run-unit-tests
+run-unit-tests:
+	docker build . -t gotest && docker run -t --rm --name draftv2-test gotest
+
 .PHONY: generate-integrations
 generate-integrations:
 	cd ./test; \

@@ -1,0 +1,7 @@
+vendor/
+.idea/
+/pkg/languages/builders/
+/pkg/deployments/deployTypes/
+.DS_Store
+draftv2
+langtest

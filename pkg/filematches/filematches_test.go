@@ -125,3 +125,38 @@ func TestCreateK8sFileMatchesNestedInvalidFile(t *testing.T) {
 
 	os.Remove(file_name)
 }
+
+func touchDockerfile(name string) error {
+    file, err := os.OpenFile(name, os.O_RDONLY|os.O_CREATE, 0644)
+    if err != nil {
+        return err
+    }
+    return file.Close()
+}
+
+func TestSearchDirectoryWithDockerfile(t *testing.T) {
+	dir, err := ioutil.TempDir("", "filematch")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	dockerfilePath := dir + "/Dockerfile"
+	err = touchDockerfile(dockerfilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	hasDockerFile, _, err := SearchDirectory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.True(t, hasDockerFile, "should have Dockerfile")
+
+	os.Remove(dockerfilePath)
+	hasDockerFile, _, err = SearchDirectory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.False(t, hasDockerFile, "should not have Dockerfile")
+}

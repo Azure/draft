@@ -14,10 +14,12 @@ type FileMatches struct {
 	deploymentFiles []string
 }
 
-func findDeploymentFiles(dest string, pattern string) ([]string, error) {
+func findDeploymentFiles(dest string) ([]string, error) {
+	pattern := "*.yaml"
     var matches []string
     err := filepath.Walk(dest, func(path string, info os.FileInfo, err error) error {
         if err != nil {
+			log.Fatal(err)
             return err
         }
         if info.IsDir() {
@@ -44,7 +46,7 @@ func isValidYamlFile(filePath string) bool {
     config := kubeval.NewDefaultConfig()
 	results, err := kubeval.Validate(fileContents, config)
     if err != nil || hasErrors(results) {
-        log.Fatal(err)
+        return false
     }
     return true
 }
@@ -63,7 +65,7 @@ func (f *FileMatches) HasDeploymentFiles() bool {
 }
 
 func CreateFileMatches(dest string) *FileMatches {
-	deploymentFiles, err := findDeploymentFiles(dest, "*.yaml")
+	deploymentFiles, err := findDeploymentFiles(dest)
 	if err != nil {
 		log.Fatal(err)
 	}

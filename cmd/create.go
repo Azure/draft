@@ -104,47 +104,59 @@ func (cc *createCmd) run() error {
 		return err
 	}
 
-	if cc.dockerfileOnly && cc.deploymentOnly {
-		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
-	}
+	return cc.createFiles(detectedLang, lowerLang)
+
+	// if cc.dockerfileOnly && cc.deploymentOnly {
+	// 	return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
+	// }
 
 	// check if the local directory has dockerfile or charts
-	var hasDockerFile bool; var hasDeploymentFiles bool
-	hasDockerFile, hasDeploymentFiles, err = cc.searchDirectory()
+	// var hasDockerFile bool; var hasDeploymentFiles bool
+	// hasDockerFile, hasDeploymentFiles, err = filematches.SearchDirectory()
+	// if err != nil {
+	// 	return err
+	// }
 
-	// dockerfilePath := cc.dest + "/Dockerfile"
-	// deploymentDirPath := cc.dest + "/charts"
+	// if hasDeploymentFiles {
+	// 	selection := &promptui.Select{
+	// 		Label: "We found deployment files in the directory, would you like to create new deployment files?",
+	// 		Items: []string{"yes", "no"},
+	// 	}
+	
+	// 	_, selectResponse, err := selection.Run()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	
+	// 	hasDeploymentFiles = strings.EqualFold(selectResponse, "no")
+	// }
 
-	// _, err = os.Stat(dockerfilePath)
-	// hasDockerFile := err == nil 
-	// _, err = os.Stat(deploymentDirPath)
-	// hasDeploymentDir := err == nil
 	
-	if hasDockerFile {
-		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
-	} else if cc.deploymentOnly {
-		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
-	} else if !cc.deploymentOnly {
-		log.Info("--> Dockerfile Creation")
-		err := cc.generateDockerfile(detectedLang, lowerLang)
-		if err != nil {
-			return err
-		}
-	}
+	// if hasDockerFile {
+	// 	log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
+	// } else if cc.deploymentOnly {
+	// 	log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
+	// } else if !cc.deploymentOnly {
+	// 	log.Info("--> Dockerfile Creation")
+	// 	err := cc.generateDockerfile(detectedLang, lowerLang)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	
-	if hasDeploymentFiles {
-		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
-	} else if cc.dockerfileOnly {
-		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
-	} else if !cc.dockerfileOnly {
-		log.Info("--> Deployment File Creation")
-		err := cc.createDeployment()
-		if err != nil {
-			return err
-		}
-	}
+	// if hasDeploymentFiles {
+	// 	log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
+	// } else if cc.dockerfileOnly {
+	// 	log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
+	// } else if !cc.dockerfileOnly {
+	// 	log.Info("--> Deployment File Creation")
+	// 	err := cc.createDeployment()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	
-	return nil
+	// return nil
 }
 
 func (cc *createCmd) detectLanguage() (*configs.DraftConfig, string, error) {
@@ -297,33 +309,57 @@ func (cc *createCmd) createDeployment() error {
 	return d.CopyDeploymentFiles(deployType, customInputs)
 }
 
-// returns hasDockerfile, hasDeploymentFiles, error
-func (cc *createCmd) searchDirectory() (bool, bool, error) {
-	// check if Dockerfile exists
-	dockerfilePath := cc.dest + "/Dockerfile"
-	_, err := os.Stat(dockerfilePath)
-	if err != nil {
-		return false, false, err
+func (cc* createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang string) error {
+	if cc.dockerfileOnly && cc.deploymentOnly {
+		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
-	hasDockerFile := true
 
-	// recursive directory search for valid yaml files
-	hasDeploymentFiles := false
-	cc.fileMatches = filematches.CreateFileMatches(cc.dest)
-	if cc.fileMatches.HasDeploymentFiles() {
+	// check if the local directory has dockerfile or charts
+	hasDockerFile, hasDeploymentFiles, err := filematches.SearchDirectory(cc.dest)
+	if err != nil {
+		return err
+	}
+
+	if hasDeploymentFiles {
 		selection := &promptui.Select{
 			Label: "We found deployment files in the directory, would you like to create new deployment files?",
 			Items: []string{"yes", "no"},
 		}
-
+	
 		_, selectResponse, err := selection.Run()
 		if err != nil {
-			return false, false, err
+			return err
 		}
-
+	
 		hasDeploymentFiles = strings.EqualFold(selectResponse, "no")
 	}
-	return hasDockerFile, hasDeploymentFiles, nil
+
+	
+	if hasDockerFile {
+		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
+	} else if cc.deploymentOnly {
+		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
+	} else if !cc.deploymentOnly {
+		log.Info("--> Dockerfile Creation")
+		err := cc.generateDockerfile(detectedLang, lowerLang)
+		if err != nil {
+			return err
+		}
+	}
+	
+	if hasDeploymentFiles {
+		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
+	} else if cc.dockerfileOnly {
+		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
+	} else if !cc.dockerfileOnly {
+		log.Info("--> Deployment File Creation")
+		err := cc.createDeployment()
+		if err != nil {
+			return err
+		}
+	}
+	
+	return nil
 }
 
 func init() {

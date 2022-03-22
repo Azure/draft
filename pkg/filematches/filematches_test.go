@@ -34,7 +34,7 @@ func generateYamlFromTemplate(dir string, valid bool) (*os.File, error) {
 	return file, nil
 } 
 
-func TestCreateFileMatchesValidFile(t *testing.T) {
+func TestCreateK8sFileMatchesValidFile(t *testing.T) {
 	dir, err := ioutil.TempDir("", "filematch")
 	if err != nil {
 		t.Fatal(err)
@@ -47,15 +47,15 @@ func TestCreateFileMatchesValidFile(t *testing.T) {
 	}
 	file_name := file.Name()
 
-	fileMatches := CreateFileMatches(dir)
-	assert.True(t, fileMatches.HasDeploymentFiles(), "should have valid deployment files")
+	fileMatches := createK8sFileMatches(dir)
+	assert.True(t, fileMatches.hasDeploymentFiles(), "should have valid deployment files")
 
 	os.Remove(file_name)
-	fileMatches = CreateFileMatches(dir)
-	assert.False(t, fileMatches.HasDeploymentFiles(), "should not have valid deployment files")
+	fileMatches = createK8sFileMatches(dir)
+	assert.False(t, fileMatches.hasDeploymentFiles(), "should not have valid deployment files")
 }
 
-func TestCreateFileMatchesInvalidFile(t *testing.T) {
+func TestCreateK8sFileMatchesInvalidFile(t *testing.T) {
 	dir, err := ioutil.TempDir("", "filematch")
 	if err != nil {
 		t.Fatal(err)
@@ -68,13 +68,13 @@ func TestCreateFileMatchesInvalidFile(t *testing.T) {
 	}
 	file_name := file.Name()
 
-	fileMatches := CreateFileMatches(dir)
-	assert.False(t, fileMatches.HasDeploymentFiles(), "should not have valid deployment files")
+	fileMatches := createK8sFileMatches(dir)
+	assert.False(t, fileMatches.hasDeploymentFiles(), "should not have valid deployment files")
 
 	os.Remove(file_name)
 }
 
-func TestCreateFileMatchesNestedValidFile(t *testing.T) {
+func TestCreateK8sFileMatchesNestedValidFile(t *testing.T) {
 	dir, err := ioutil.TempDir("", "filematch")
 	if err != nil {
 		t.Fatal(err)
@@ -93,15 +93,15 @@ func TestCreateFileMatchesNestedValidFile(t *testing.T) {
 	}
 	file_name := file.Name()
 
-	fileMatches := CreateFileMatches(dir)
-	assert.True(t, fileMatches.HasDeploymentFiles(), "should have valid deployment files")
+	fileMatches := createK8sFileMatches(dir)
+	assert.True(t, fileMatches.hasDeploymentFiles(), "should have valid deployment files")
 
 	os.Remove(file_name)
-	fileMatches = CreateFileMatches(dir)
-	assert.False(t, fileMatches.HasDeploymentFiles(), "should not have valid deployment files")
+	fileMatches = createK8sFileMatches(dir)
+	assert.False(t, fileMatches.hasDeploymentFiles(), "should not have valid deployment files")
 }
 
-func TestCreateFileMatchesNestedInvalidFile(t *testing.T) {
+func TestCreateK8sFileMatchesNestedInvalidFile(t *testing.T) {
 	dir, err := ioutil.TempDir("", "filematch")
 	if err != nil {
 		t.Fatal(err)
@@ -120,8 +120,8 @@ func TestCreateFileMatchesNestedInvalidFile(t *testing.T) {
 	}
 	file_name := file.Name()
 
-	fileMatches := CreateFileMatches(dir)
-	assert.False(t, fileMatches.HasDeploymentFiles(), "should not have valid deployment files")
+	fileMatches := createK8sFileMatches(dir)
+	assert.False(t, fileMatches.hasDeploymentFiles(), "should not have valid deployment files")
 
 	os.Remove(file_name)
 }

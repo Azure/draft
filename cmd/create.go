@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/draftv2/pkg/configs"
 	"github.com/Azure/draftv2/pkg/deployments"
+	"github.com/Azure/draftv2/pkg/filematches"
 	"github.com/Azure/draftv2/pkg/languages"
 	"github.com/Azure/draftv2/pkg/linguist"
 	"github.com/Azure/draftv2/pkg/prompts"
@@ -34,6 +35,7 @@ type createCmd struct {
 	createConfig     *configs.CreateConfig
 
 	supportedLangs *languages.Languages
+	fileMatches *filematches.FileMatches
 }
 
 func newCreateCmd() *cobra.Command {
@@ -96,31 +98,13 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
-	log.Info("detecting language")
+	log.Info("Detecting Language")
 	detectedLang, lowerLang, err := cc.detectLanguage()
 	if err != nil {
 		return err
 	}
 
-	if cc.dockerfileOnly && cc.deploymentOnly {
-		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
-	}
-
-	if !cc.deploymentOnly {
-		err := cc.generateDockerfile(detectedLang, lowerLang)
-		if err != nil {
-			return err
-		}
-	}
-
-	if !cc.dockerfileOnly {
-		err := cc.createDeployment()
-		if err != nil {
-			return err
-		}
-	}
-	
-	return nil
+	return cc.createFiles(detectedLang, lowerLang)
 }
 
 func (cc *createCmd) detectLanguage() (*configs.DraftConfig, string, error) {
@@ -231,6 +215,7 @@ func (cc *createCmd) generateDockerfile(langConfig *configs.DraftConfig, lowerLa
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
 
+	log.Infof("--> Creating Dockerfile")
 	return err
 }
 
@@ -270,6 +255,59 @@ func (cc *createCmd) createDeployment() error {
 
 	log.Infof("--> Creating %s k8s resources", deployType)
 	return d.CopyDeploymentFiles(deployType, customInputs)
+}
+
+func (cc* createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang string) error {
+	if cc.dockerfileOnly && cc.deploymentOnly {
+		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
+	}
+
+	// check if the local directory has dockerfile or charts
+	hasDockerFile, hasDeploymentFiles, err := filematches.SearchDirectory(cc.dest)
+	if err != nil {
+		return err
+	}
+
+	if hasDeploymentFiles {
+		selection := &promptui.Select{
+			Label: "We found deployment files in the directory, would you like to create new deployment files?",
+			Items: []string{"yes", "no"},
+		}
+	
+		_, selectResponse, err := selection.Run()
+		if err != nil {
+			return err
+		}
+	
+		hasDeploymentFiles = strings.EqualFold(selectResponse, "no")
+	}
+
+	
+	if hasDockerFile {
+		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
+	} else if cc.deploymentOnly {
+		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
+	} else if !cc.deploymentOnly {
+		log.Info("--> Dockerfile Creation")
+		err := cc.generateDockerfile(detectedLang, lowerLang)
+		if err != nil {
+			return err
+		}
+	}
+	
+	if hasDeploymentFiles {
+		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
+	} else if cc.dockerfileOnly {
+		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
+	} else if !cc.dockerfileOnly {
+		log.Info("--> Deployment File Creation")
+		err := cc.createDeployment()
+		if err != nil {
+			return err
+		}
+	}
+	
+	return nil
 }
 
 func init() {

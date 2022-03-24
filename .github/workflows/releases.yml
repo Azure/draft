@@ -24,3 +24,11 @@ jobs:
         with:
           files: |
             ./bin/*
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./bin/*
+          token: ${{ secrets.PUBLISH_RELEASE_TOKEN }}
+        env:
+          GITHUB_REPOSITORY: Azure/aks-app

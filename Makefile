@@ -47,4 +47,4 @@ build-darwin-amd64:
 
 .PHONY: build-darwin-arm64
 build-darwin-arm64:
-	GOOS=darwin GOARCH=arm64 go build -v -o ./bin/draft-v2darwin-arm64
+	GOOS=darwin GOARCH=arm64 go build -v -o ./bin/draftv2-darwin-arm64

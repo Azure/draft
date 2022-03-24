@@ -30,7 +30,7 @@ func newConnectCmd() *cobra.Command {
 		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
 		and service principle, and configuring that application to trust github`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("connectgithub called")
+			fmt.Print("")
 		},
 	}
 

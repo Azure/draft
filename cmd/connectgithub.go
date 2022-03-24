@@ -22,19 +22,23 @@ import (
 )
 
 
-// connectgithubCmd represents the connectgithub command
-var connectgithubCmd = &cobra.Command{
-	Use:   "connectgithub",
-	Short: "automates setting up Github OIDC",
-	Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
-	and service principle, and configuring that application to trust github`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("connectgithub called")
-	},
+func newConnectCmd() *cobra.Command {
+	// connectgithubCmd represents the connectgithub command
+	var cmd = &cobra.Command{
+		Use:   "connectgithub",
+		Short: "automates setting up Github OIDC",
+		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
+		and service principle, and configuring that application to trust github`,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("connectgithub called")
+		},
+	}
+
+	return cmd
 }
 
 func init() {
-	rootCmd.AddCommand(connectgithubCmd)
+	rootCmd.AddCommand(newConnectCmd())
 
 	// Here you will define your flags and configuration settings.
 

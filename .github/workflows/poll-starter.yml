@@ -1,0 +1,40 @@
+name: Poll Starter Workflows for Updates
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+env:
+  STARTER_WORKFLOW_PATH: "./starterWorkflows/"
+  STARTER_WORKFLOW_REPO_BRANCH: "partner_templates"
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download starter workflows
+        run: |
+          # get deployment workflows
+          curl \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/actions/starter-workflows/contents/deployments?ref=$STARTER_WORKFLOW_REPO_BRANCH \
+            | jq -c '.[]' | while read -r workflow;
+          do
+            # extract fields
+            name=$(echo $workflow | jq '.name' -r)
+            downloadUrl=$(echo $workflow | jq '.download_url' -r)
+            
+            # download workflow if it's an AKS workflow
+            if [[ $name == azure-kubernetes-service* ]] ;
+            then
+              curl -o $STARTER_WORKFLOW_PATH/$name $downloadUrl
+            fi
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: update starter workflows
+          title: Automated Update Starter Workflows
+          body: This is an auto-generated PR. The starter workflow repo has changes not in this repository.
+          branch: starter-workflow-updates

@@ -30,7 +30,7 @@ jobs:
             if [[ $name == azure-kubernetes-service* ]] ;
             then
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
-              wget -o $STARTER_WORKFLOW_PATH$name $downloadUrl
+              wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
             fi
           done
       - name: Create Pull Request

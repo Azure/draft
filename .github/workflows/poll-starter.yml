@@ -29,7 +29,7 @@ jobs:
             # download workflow if it's an AKS workflow
             if [[ $name == azure-kubernetes-service* ]] ;
             then
-              touch $STARTER_WORKFLOW_PATH$name
+              mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
               wget -o $STARTER_WORKFLOW_PATH$name $downloadUrl
             fi
           done

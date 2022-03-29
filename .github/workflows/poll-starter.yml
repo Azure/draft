@@ -27,7 +27,7 @@ jobs:
           # Optional, directory where to extract artifact(s), defaults to current directory
           path: /tmp
       - run: |
-          ls /tmp/seenWorkflows
+          cat /tmp/seenWorkflows
       - name: Create new run information
         run: |
           echo "Creating new run information record"

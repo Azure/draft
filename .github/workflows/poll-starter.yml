@@ -8,7 +8,6 @@ on:
 env:
   STARTER_WORKFLOW_PATH: "./starterWorkflows/"
   STARTER_WORKFLOW_REPO_BRANCH: "partner_templates"
-  SEEN_MAP_NAME: "seenWorkflows"
 
 jobs:
   poll:
@@ -18,14 +17,14 @@ jobs:
       - name: Create new run information
         run: |
           echo "Creating new run information record"
-          declare -A $SEEN_MAP_NAME
-          touch /tmp/$SEEN_MAP_NAME
-          declare -p $SEEN_MAP_NAME > /tmp/$SEEN_MAP_NAME
+          declare -A seenWorkflows
+          touch /tmp/seenWorkflows
+          declare -p seenWorkflows > /tmp/seenWorkflows
 
       - name: Download starter workflows
         run: |
           # get previous seen workflows
-          source /tmp/$SEEN_MAP_NAME
+          source /tmp/seenWorkflows
 
           # get deployment workflows
           echo "Calling GitHub API for starter workflows"
@@ -40,22 +39,22 @@ jobs:
             sha=$(echo $workflow | jq '.sha' -r)
             
             # download workflow if it's an AKS workflow and not seen before
-            if [[$name == azure-kubernetes-service* ] && [ $SEEN_MAP_NAME[$name] != $sha ]] ;
+            if [[$name == azure-kubernetes-service* ] && [ seenWorkflows[$name] != $sha ]] ;
             then
               echo "Downloading starter workflow $name"
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
               wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
-              $SEEN_MAP_NAME[$name]=$sha
+              seenWorkflows[$name]=$sha
             fi
           done
 
           # store seen workflows
-          declare -p $SEEN_MAP_NAME > /tmp/$SEEN_MAP_NAME
+          declare -p seenWorkflows > /tmp/seenWorkflows
       - name: Upload run information
         uses: actions/upload-artifact@v3
         with:
           name: seen
-          path: /tmp/$SEEN_MAP_NAME
+          path: /tmp/seenWorkflows
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:

@@ -40,7 +40,7 @@ jobs:
             sha=$(echo $workflow | jq '.sha' -r)
             
             # download workflow if it's an AKS workflow and not seen before
-            if [[ $name == azure-kubernetes-service* -a $SEEN_MAP_NAME[$name] != $sha ]] ;
+            if [[$name == azure-kubernetes-service* ] && [ $SEEN_MAP_NAME[$name] != $sha ]] ;
             then
               echo "Downloading starter workflow $name"
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name

@@ -76,5 +76,5 @@ jobs:
         with:
           commit-message: update starter workflows
           title: Automated Update Starter Workflows
-          body: This is an auto-generated PR. The starter workflow repo has changes not in this repository. Closing this PR stops all future alerts for this particular file changes.
+          body: This is an auto-generated PR. The starter workflow repo has changes not in this repository. Closing this PR stops all future alerts for these particular file changes.
           branch: starter-workflow-updates

@@ -14,21 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Download run information
         uses: dawidd6/action-download-artifact@v2
+        continue-on-error: true
+        id: download
         with:
-          # Optional, GitHub token, a Personal Access Token with `public_repo` scope if needed
-          # Required, if artifact is from a different repo
-          # Required, if repo is private a Personal Access Token with `repo` scope is needed
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: poll-starter.yml
           workflow_conclusion: success
           name: seen
-          # Optional, directory where to extract artifact(s), defaults to current directory
           path: /tmp
-      - run: |
-          cat /tmp/seenWorkflows
+
       - name: Create new run information
+        if: steps.download.outcome != 'success'
         run: |
           echo "Creating new run information record"
           declare -A seenWorkflows
@@ -65,11 +64,13 @@ jobs:
               declare -p seenWorkflows > /tmp/seenWorkflows
             fi
           done
+
       - name: Upload run information
         uses: actions/upload-artifact@v3
         with:
           name: seen
           path: /tmp/seenWorkflows
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:

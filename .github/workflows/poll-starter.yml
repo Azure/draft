@@ -1,0 +1,80 @@
+name: Poll Starter Workflows
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+env:
+  STARTER_WORKFLOW_PATH: "./starterWorkflows/"
+  STARTER_WORKFLOW_REPO_BRANCH: "partner_templates"
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download run information
+        uses: dawidd6/action-download-artifact@v2
+        continue-on-error: true
+        id: download
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: poll-starter.yml
+          workflow_conclusion: success
+          name: seen
+          path: /tmp
+
+      - name: Create new run information
+        if: steps.download.outcome != 'success'
+        run: |
+          echo "Creating new run information record"
+          declare -A seenWorkflows
+          touch /tmp/seenWorkflows
+          declare -p seenWorkflows > /tmp/seenWorkflows
+
+      - name: Download starter workflows
+        run: |
+          # get deployment workflows
+          echo "Calling GitHub API for starter workflows"
+          curl \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/actions/starter-workflows/contents/deployments?ref=$STARTER_WORKFLOW_REPO_BRANCH \
+            | jq -c '.[]' | while read -r workflow;
+          do
+            # extract fields
+            name=$(echo $workflow | jq '.name' -r)
+            downloadUrl=$(echo $workflow | jq '.download_url' -r)
+            sha=$(echo $workflow | jq '.sha' -r)
+
+            # get previous seen workflows (bash runs while loops in new shell)
+            source /tmp/seenWorkflows
+            
+            # download workflow if it's an AKS workflow and not seen before
+            echo "Checking workflow $name"
+            if [[ ( $name == azure-kubernetes-service* ) && ( ${seenWorkflows["$name"]} != "$sha" ) ]] ;
+            then
+              echo "Downloading starter workflow $name"
+              mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
+              wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
+
+              echo "Writting to seen workflows"
+              seenWorkflows["$name"]="$sha"
+              declare -p seenWorkflows > /tmp/seenWorkflows
+            fi
+          done
+
+      - name: Upload run information
+        uses: actions/upload-artifact@v3
+        with:
+          name: seen
+          path: /tmp/seenWorkflows
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: update starter workflows
+          title: Automated Update Starter Workflows
+          body: This is an auto-generated PR. The starter workflow repo has changes not in this repository. Closing this PR stops all future alerts for these particular file changes.
+          branch: starter-workflow-updates

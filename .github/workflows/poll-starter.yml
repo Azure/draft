@@ -8,15 +8,27 @@ on:
 env:
   STARTER_WORKFLOW_PATH: "./starterWorkflows/"
   STARTER_WORKFLOW_REPO_BRANCH: "partner_templates"
+  SEEN_MAP_NAME: "seenWorkflows"
 
 jobs:
   poll:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Create new run information
+        run: |
+          echo "Creating new run information record"
+          declare -A $SEEN_MAP_NAME
+          touch /tmp/$SEEN_MAP_NAME
+          declare -p $SEEN_MAP_NAME > /tmp/$SEEN_MAP_NAME
+
       - name: Download starter workflows
         run: |
+          # get previous seen workflows
+          source /tmp/$SEEN_MAP_NAME
+
           # get deployment workflows
+          echo "Calling GitHub API for starter workflows"
           curl \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/actions/starter-workflows/contents/deployments?ref=$STARTER_WORKFLOW_REPO_BRANCH \
@@ -25,14 +37,25 @@ jobs:
             # extract fields
             name=$(echo $workflow | jq '.name' -r)
             downloadUrl=$(echo $workflow | jq '.download_url' -r)
+            sha=$(echo $workflow | jq '.sha' -r)
             
-            # download workflow if it's an AKS workflow
-            if [[ $name == azure-kubernetes-service* ]] ;
+            # download workflow if it's an AKS workflow and not seen before
+            if [[ $name == azure-kubernetes-service* -a $SEEN_MAP_NAME[$name] != $sha ]] ;
             then
+              echo "Downloading starter workflow $name"
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
               wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
+              $SEEN_MAP_NAME[$name]=$sha
             fi
           done
+
+          # store seen workflows
+          declare -p $SEEN_MAP_NAME > /tmp/$SEEN_MAP_NAME
+      - name: Upload run information
+        uses: actions/upload-artifact@v3
+        with:
+          name: seen
+          path: /tmp/$SEEN_MAP_NAME
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:

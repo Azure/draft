@@ -25,7 +25,6 @@ jobs:
         run: |
           # get previous seen workflows
           source /tmp/seenWorkflows
-          declare -A seenWorkflows
 
           # get deployment workflows
           echo "Calling GitHub API for starter workflows"
@@ -46,7 +45,7 @@ jobs:
               echo "Downloading starter workflow $name"
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
               wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
-              seenWorkflows[$name]=$sha
+              seenWorkflows["$name"]="$sha"
             fi
           done
 

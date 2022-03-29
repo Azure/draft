@@ -25,8 +25,9 @@ jobs:
           workflow_conclusion: success
           name: seen
           # Optional, directory where to extract artifact(s), defaults to current directory
-          path: /tmp/seenWorkflows.zip
+          path: /tmp/seenWorkflows
       - run: |
+          ls /tmp/seenWorkflows/
           unzip /tmp/seenWorkflows.zip -d /tmp/
           cat /tmp/seenWorkflows
       - name: Create new run information

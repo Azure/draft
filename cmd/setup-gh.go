@@ -18,21 +18,15 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os/exec"
-	"strconv"
-	"encoding/json"
 
+	"github.com/Azure/draftv2/pkg/providers"
 	"github.com/spf13/cobra"
 )
 
-type SetUpCmd struct {
-	appName string
-	subscriptionID string
-	resourceGroupName string
-}
+
 
 func newConnectCmd() *cobra.Command {
-	sc := &SetUpCmd{}
+	sc := &providers.SetUpCmd{}
 
 	// setup-ghCmd represents the setup-gh command
 	var cmd = &cobra.Command{
@@ -41,88 +35,54 @@ func newConnectCmd() *cobra.Command {
 		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
 		and service principle, and configuring that application to trust github`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Print("")
-			sc.ValidateSetUpConfig()
-			return sc.CreateServiceProvider()
+			
+			if err := hasValidProviderInfo(sc); err != nil {
+				return err
+			}
+
+			if err := runProviderSetUp(sc); err != nil {
+				return err
+			}
+
+			return nil
+			
 		},
 	}
 
 	f := cmd.Flags()
-
-	f.StringVarP(&sc.appName, "app", "a", "myRandomApp", "name of Azure Active Directory application")
-	f.StringVarP(&sc.subscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
-	f.StringVarP(&sc.resourceGroupName, "resource-group-name", "r", "myNewResourceGroup", "the name of the Azure resource group")
-	cmd.MarkFlagRequired("subscription-id")
+	f.StringVarP(&sc.AppName, "app", "a", "myRandomApp", "name of Azure Active Directory application")
+	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
+	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "myNewResourceGroup", "the name of the Azure resource group")
+	f.StringVarP(&sc.Provider, "provider", "p", "", "your cloud provider")
 
 	return cmd
 }
 
 
-func (sc *SetUpCmd) setAZContext() error {
-	setContextCmd := exec.Command("az", "account", "set", "--subscription", sc.subscriptionID)
-	stdoutStderr, err := setContextCmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("%s\n", stdoutStderr)
+func hasValidProviderInfo(sc *providers.SetUpCmd) error {
+	if sc.Provider == "azure" && sc.SubscriptionID == "" {
+		return errors.New("If provider is azure, must provide azure subscription ID")
+	} 
 
 	return nil
 }
 
 
-func (sc *SetUpCmd) CreateServiceProvider() error {
-	// TODO: set context to correct subscription
-	// if err := sc.setAZContext(); err != nil {
-	// 	return err
-	// }
 
-	// createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
-	// using the az show app command for testing purposes 
-	createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
-	stdoutStderr, err := createAppCmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("%s\n", stdoutStderr)
-		return err
-	}
-
-	var azApp map[string]interface{}  
-    json.Unmarshal(stdoutStderr, &azApp)
-	appId := fmt.Sprint(azApp["appId"])
-	
-	fmt.Println(appId)
-	
-	createSPCmd := exec.Command("az", "ad", "sp", "create", "--id", appId)
-	out, sperr := createSPCmd.CombinedOutput()
-	if sperr != nil {
-		return sperr
-	}
-
-	var serviceProvider map[string]interface{}
-	json.Unmarshal(out, &serviceProvider)
-	objectId := fmt.Sprint(serviceProvider["objectId"])
-
-	fmt.Println(objectId)
-	return nil
-}
-
-func (sc *SetUpCmd) ValidateSetUpConfig() error {
-	//fmt.Printf("%v", sc)
-
-	// TODO: check subscriptionID length
-	_, err := strconv.ParseFloat(sc.subscriptionID, 64)
-		if err != nil {
-			return errors.New("Invalid number")
+func runProviderSetUp(sc *providers.SetUpCmd) error {
+	if sc.Provider == "azure" {
+		// call azure provider logic
+		if err := providers.InitiateAzureOIDCFlow(sc); err != nil {
+			return err
 		}
-	
-	if sc.appName == "" {
-		return errors.New("Invalid app name")
-	} else if sc.resourceGroupName == "" {
-		return errors.New("Invalid resource group name")
+	} else {
+		// call logic for user-submitted provider
+		fmt.Printf("The provider is %v\n", sc.Provider)
 	}
-	
+
 	return nil
 }
+
 
 func init() {
 	rootCmd.AddCommand(newConnectCmd())
@@ -131,7 +91,7 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// setup-ghCmd.PersistentFlags().String("foo", "", "A help for foo")
+	//setup-ghCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

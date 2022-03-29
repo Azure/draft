@@ -45,15 +45,12 @@ jobs:
               echo "Downloading starter workflow $name"
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
               wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
+
+              echo "Writting to seen workflows"
               seenWorkflows["$name"]="$sha"
               declare -p seenWorkflows > /tmp/seenWorkflows
             fi
           done
-
-          # store seen workflows
-          echo "Storing run information"
-          source /tmp/seenWorkflows
-          echo ${seenWorkflows[*]}
       - name: Upload run information
         uses: actions/upload-artifact@v3
         with:
@@ -64,5 +61,5 @@ jobs:
         with:
           commit-message: update starter workflows
           title: Automated Update Starter Workflows
-          body: This is an auto-generated PR. The starter workflow repo has changes not in this repository.
+          body: This is an auto-generated PR. The starter workflow repo has changes not in this repository. Closing this PR stops all future alerts for this particular file changes.
           branch: starter-workflow-updates

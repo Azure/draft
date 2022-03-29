@@ -25,6 +25,7 @@ jobs:
         run: |
           # get previous seen workflows
           source /tmp/seenWorkflows
+          declare -A seenWorkflows
 
           # get deployment workflows
           echo "Calling GitHub API for starter workflows"

@@ -51,7 +51,7 @@ jobs:
 
           # store seen workflows
           echo "Storing run information"
-          declare -p seenWorkflows
+          echo ${seenWorkflows[*]}
           declare -p seenWorkflows > /tmp/seenWorkflows
       - name: Upload run information
         uses: actions/upload-artifact@v3

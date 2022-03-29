@@ -25,6 +25,7 @@ jobs:
         run: |
           # get previous seen workflows
           source /tmp/seenWorkflows
+          seenWorkflows[test]=test
 
           # get deployment workflows
           echo "Calling GitHub API for starter workflows"
@@ -52,7 +53,6 @@ jobs:
 
           # store seen workflows
           echo "Storing run information"
-          seenWorkflows[test]=test
           echo ${seenWorkflows[*]}
           declare -p seenWorkflows > /tmp/seenWorkflows
       - name: Upload run information

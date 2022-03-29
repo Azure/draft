@@ -17,12 +17,22 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
+	"errors"
 
 	"github.com/spf13/cobra"
+	"github.com/manifoldco/promptui"
 )
 
+type SetUpCmd struct {
+	appName string
+	subscriptionID string
+	resourceGroupName string
+}
 
 func newConnectCmd() *cobra.Command {
+	sc := &SetUpCmd{}
+
 	// setup-ghCmd represents the setup-gh command
 	var cmd = &cobra.Command{
 		Use:   "setup-gh",
@@ -31,10 +41,89 @@ func newConnectCmd() *cobra.Command {
 		and service principle, and configuring that application to trust github`,
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Print("")
+			sc.InitializeSetUpConfig()
 		},
 	}
 
 	return cmd
+}
+
+func getAppName() string {
+	validate := func(input string) error {
+		if input == "" {
+			return errors.New("Invalid app name")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Enter Azure Active Directory app name",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return err.Error()
+	}
+
+	return result
+}
+
+func getSubscriptionID() string {
+	validate := func(input string) error {
+		_, err := strconv.ParseFloat(input, 64)
+		if err != nil {
+			return errors.New("Invalid number")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Number",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return err.Error()
+	}
+
+	return result
+}
+
+func getResourceGroup() string {
+	validate := func(input string) error {
+		if input == "" {
+			return errors.New("Invalid resource group name")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Enter Azure resource group name",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return err.Error()
+	}
+
+	return result
+}
+
+func (sc *SetUpCmd) InitializeSetUpConfig() (*SetUpCmd, error) {
+	sc.appName = getAppName()
+	sc.subscriptionID = getSubscriptionID()
+	sc.resourceGroupName = getResourceGroup()
+
+	return sc, nil
 }
 
 func init() {

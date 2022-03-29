@@ -52,6 +52,7 @@ jobs:
 
           # store seen workflows
           echo "Storing run information"
+          seenWorkflows[test]=test
           echo ${seenWorkflows[*]}
           declare -p seenWorkflows > /tmp/seenWorkflows
       - name: Upload run information

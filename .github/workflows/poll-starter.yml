@@ -17,7 +17,7 @@ jobs:
       - name: Create new run information
         run: |
           echo "Creating new run information record"
-          declare -A seenWorkflows
+          declare -Ag seenWorkflows
           touch /tmp/seenWorkflows
           declare -p seenWorkflows > /tmp/seenWorkflows
 

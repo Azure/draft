@@ -49,7 +49,7 @@ jobs:
               seenWorkflows["$name"]="$sha"
               echo ${seenWorkflows[*]}
             fi
-          done
+          done < <(find . -type f -name "*.bin" -maxdepth 1)
 
           # store seen workflows
           echo "Storing run information"

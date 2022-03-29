@@ -40,7 +40,7 @@ jobs:
             
             # download workflow if it's an AKS workflow and not seen before
             echo "Checking workflow $name"
-            echo $seenWorkflows[$name]
+            echo $(seenWorkflows[$name])
             if [ $name == azure-kubernetes-service* ] && ![ seenWorkflows[$name] == $sha ] ;
             then
               echo "Downloading starter workflow $name"

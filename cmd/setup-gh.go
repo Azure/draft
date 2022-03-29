@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 
 	"github.com/spf13/cobra"
-	//"github.com/manifoldco/promptui"
 )
 
 type SetUpCmd struct {
@@ -59,77 +58,6 @@ func newConnectCmd() *cobra.Command {
 }
 
 
-
-// func getAppName() string {
-// 	validate := func(input string) error {
-// 		if input == "" {
-// 			return errors.New("Invalid app name")
-// 		}
-// 		return nil
-// 	}
-
-// 	prompt := promptui.Prompt{
-// 		Label:    "Enter Azure Active Directory app name",
-// 		Validate: validate,
-// 	}
-
-// 	result, err := prompt.Run()
-
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return err.Error()
-// 	}
-
-// 	return result
-// }
-
-// func getSubscriptionID() string {
-	// validate := func(input string) error {
-	// 	_, err := strconv.ParseFloat(input, 64)
-	// 	if err != nil {
-	// 		return errors.New("Invalid number")
-	// 	}
-	// 	return nil
-	// }
-
-// 	prompt := promptui.Prompt{
-// 		Label:    "Number",
-// 		Validate: validate,
-// 	}
-
-// 	result, err := prompt.Run()
-
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return err.Error()
-// 	}
-
-// 	return result
-// }
-
-// func getResourceGroup() string {
-// 	validate := func(input string) error {
-// 		if input == "" {
-// 			return errors.New("Invalid resource group name")
-// 		}
-// 		return nil
-// 	}
-
-// 	prompt := promptui.Prompt{
-// 		Label:    "Enter Azure resource group name",
-// 		Validate: validate,
-// 	}
-
-// 	result, err := prompt.Run()
-
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return err.Error()
-// 	}
-
-// 	return result
-// }
-
 func (sc *SetUpCmd) setAZContext() error {
 	setContextCmd := exec.Command("az", "account", "set", "--subscription", sc.subscriptionID)
 	stdoutStderr, err := setContextCmd.CombinedOutput()
@@ -149,21 +77,32 @@ func (sc *SetUpCmd) CreateServiceProvider() error {
 	// 	return err
 	// }
 
-	// createAppCmd := exec.Command("az", "ad", "app", "create", "--display-name", sc.appName)
+	// createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
 	// using the az show app command for testing purposes 
-	createAppCmd := exec.Command("az", "ad", "app", "show","--only-show-errors", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
+	createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
 	stdoutStderr, err := createAppCmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("%s\n", stdoutStderr)
 		return err
 	}
 
-	var result map[string]interface{}  
-    json.Unmarshal(stdoutStderr, &result)
-	appId := result["appId"]
+	var azApp map[string]interface{}  
+    json.Unmarshal(stdoutStderr, &azApp)
+	appId := fmt.Sprint(azApp["appId"])
+	
 	fmt.Println(appId)
 	
+	createSPCmd := exec.Command("az", "ad", "sp", "create", "--id", appId)
+	out, sperr := createSPCmd.CombinedOutput()
+	if sperr != nil {
+		return sperr
+	}
 
+	var serviceProvider map[string]interface{}
+	json.Unmarshal(out, &serviceProvider)
+	objectId := fmt.Sprint(serviceProvider["objectId"])
+
+	fmt.Println(objectId)
 	return nil
 }
 

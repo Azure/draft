@@ -17,7 +17,7 @@ jobs:
       - name: Create new run information
         run: |
           echo "Creating new run information record"
-          declare -Ag seenWorkflows
+          declare -A seenWorkflows
           touch /tmp/seenWorkflows
           declare -p seenWorkflows > /tmp/seenWorkflows
 
@@ -46,6 +46,7 @@ jobs:
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
               wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
               seenWorkflows["$name"]="$sha"
+              echo ${seenWorkflows[*]}
             fi
           done
 

@@ -21,7 +21,7 @@ import (
 	"errors"
 
 	"github.com/spf13/cobra"
-	"github.com/manifoldco/promptui"
+	//"github.com/manifoldco/promptui"
 )
 
 type SetUpCmd struct {
@@ -39,91 +39,110 @@ func newConnectCmd() *cobra.Command {
 		Short: "automates setting up Github OIDC",
 		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
 		and service principle, and configuring that application to trust github`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Print("")
-			sc.InitializeSetUpConfig()
+			return sc.ValidateSetUpConfig()
 		},
 	}
+
+	f := cmd.Flags()
+
+	f.StringVarP(&sc.appName, "app", "a", "myNewApp", "name of Azure Active Directory application")
+	f.StringVarP(&sc.subscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
+	f.StringVarP(&sc.resourceGroupName, "resource-group-name", "r", "myNewResourceGroup", "the name of the Azure resource group")
+	cmd.MarkFlagRequired("subscription-id")
 
 	return cmd
 }
 
-func getAppName() string {
-	validate := func(input string) error {
-		if input == "" {
-			return errors.New("Invalid app name")
-		}
-		return nil
-	}
 
-	prompt := promptui.Prompt{
-		Label:    "Enter Azure Active Directory app name",
-		Validate: validate,
-	}
 
-	result, err := prompt.Run()
+// func getAppName() string {
+// 	validate := func(input string) error {
+// 		if input == "" {
+// 			return errors.New("Invalid app name")
+// 		}
+// 		return nil
+// 	}
 
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return err.Error()
-	}
+// 	prompt := promptui.Prompt{
+// 		Label:    "Enter Azure Active Directory app name",
+// 		Validate: validate,
+// 	}
 
-	return result
-}
+// 	result, err := prompt.Run()
 
-func getSubscriptionID() string {
-	validate := func(input string) error {
-		_, err := strconv.ParseFloat(input, 64)
+// 	if err != nil {
+// 		fmt.Printf("Prompt failed %v\n", err)
+// 		return err.Error()
+// 	}
+
+// 	return result
+// }
+
+// func getSubscriptionID() string {
+	// validate := func(input string) error {
+	// 	_, err := strconv.ParseFloat(input, 64)
+	// 	if err != nil {
+	// 		return errors.New("Invalid number")
+	// 	}
+	// 	return nil
+	// }
+
+// 	prompt := promptui.Prompt{
+// 		Label:    "Number",
+// 		Validate: validate,
+// 	}
+
+// 	result, err := prompt.Run()
+
+// 	if err != nil {
+// 		fmt.Printf("Prompt failed %v\n", err)
+// 		return err.Error()
+// 	}
+
+// 	return result
+// }
+
+// func getResourceGroup() string {
+// 	validate := func(input string) error {
+// 		if input == "" {
+// 			return errors.New("Invalid resource group name")
+// 		}
+// 		return nil
+// 	}
+
+// 	prompt := promptui.Prompt{
+// 		Label:    "Enter Azure resource group name",
+// 		Validate: validate,
+// 	}
+
+// 	result, err := prompt.Run()
+
+// 	if err != nil {
+// 		fmt.Printf("Prompt failed %v\n", err)
+// 		return err.Error()
+// 	}
+
+// 	return result
+// }
+
+func (sc *SetUpCmd) ValidateSetUpConfig() error {
+	//fmt.Printf("%v", sc)
+
+	// TODO: check subscriptionID length
+	_, err := strconv.ParseFloat(sc.subscriptionID, 64)
 		if err != nil {
 			return errors.New("Invalid number")
 		}
-		return nil
+	
+	if sc.appName == "" {
+		return errors.New("Invalid app name")
+	} else if sc.resourceGroupName == "" {
+		return errors.New("Invalid resource group name")
 	}
-
-	prompt := promptui.Prompt{
-		Label:    "Number",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return err.Error()
-	}
-
-	return result
-}
-
-func getResourceGroup() string {
-	validate := func(input string) error {
-		if input == "" {
-			return errors.New("Invalid resource group name")
-		}
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Enter Azure resource group name",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return err.Error()
-	}
-
-	return result
-}
-
-func (sc *SetUpCmd) InitializeSetUpConfig() (*SetUpCmd, error) {
-	sc.appName = getAppName()
-	sc.subscriptionID = getSubscriptionID()
-	sc.resourceGroupName = getResourceGroup()
-
-	return sc, nil
+	
+	return nil
 }
 
 func init() {

@@ -16,9 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"strconv"
 	"errors"
+	"fmt"
+	"os/exec"
+	"strconv"
+	"encoding/json"
 
 	"github.com/spf13/cobra"
 	//"github.com/manifoldco/promptui"
@@ -41,13 +43,14 @@ func newConnectCmd() *cobra.Command {
 		and service principle, and configuring that application to trust github`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Print("")
-			return sc.ValidateSetUpConfig()
+			sc.ValidateSetUpConfig()
+			return sc.CreateServiceProvider()
 		},
 	}
 
 	f := cmd.Flags()
 
-	f.StringVarP(&sc.appName, "app", "a", "myNewApp", "name of Azure Active Directory application")
+	f.StringVarP(&sc.appName, "app", "a", "myRandomApp", "name of Azure Active Directory application")
 	f.StringVarP(&sc.subscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
 	f.StringVarP(&sc.resourceGroupName, "resource-group-name", "r", "myNewResourceGroup", "the name of the Azure resource group")
 	cmd.MarkFlagRequired("subscription-id")
@@ -126,6 +129,43 @@ func newConnectCmd() *cobra.Command {
 
 // 	return result
 // }
+
+func (sc *SetUpCmd) setAZContext() error {
+	setContextCmd := exec.Command("az", "account", "set", "--subscription", sc.subscriptionID)
+	stdoutStderr, err := setContextCmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%s\n", stdoutStderr)
+
+	return nil
+}
+
+
+func (sc *SetUpCmd) CreateServiceProvider() error {
+	// TODO: set context to correct subscription
+	// if err := sc.setAZContext(); err != nil {
+	// 	return err
+	// }
+
+	// createAppCmd := exec.Command("az", "ad", "app", "create", "--display-name", sc.appName)
+	// using the az show app command for testing purposes 
+	createAppCmd := exec.Command("az", "ad", "app", "show","--only-show-errors", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
+	stdoutStderr, err := createAppCmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("%s\n", stdoutStderr)
+		return err
+	}
+
+	var result map[string]interface{}  
+    json.Unmarshal(stdoutStderr, &result)
+	appId := result["appId"]
+	fmt.Println(appId)
+	
+
+	return nil
+}
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {
 	//fmt.Printf("%v", sc)

@@ -23,9 +23,6 @@ jobs:
 
       - name: Download starter workflows
         run: |
-          # get previous seen workflows
-          source /tmp/seenWorkflows
-          seenWorkflows[test]=test
 
           # get deployment workflows
           echo "Calling GitHub API for starter workflows"
@@ -38,6 +35,9 @@ jobs:
             name=$(echo $workflow | jq '.name' -r)
             downloadUrl=$(echo $workflow | jq '.download_url' -r)
             sha=$(echo $workflow | jq '.sha' -r)
+
+            # get previous seen workflows (bash runs while loops in new shell)
+            source /tmp/seenWorkflows
             
             # download workflow if it's an AKS workflow and not seen before
             echo "Checking workflow $name"
@@ -47,9 +47,9 @@ jobs:
               mkdir -p $STARTER_WORKFLOW_PATH && touch $STARTER_WORKFLOW_PATH$name
               wget -O $STARTER_WORKFLOW_PATH$name $downloadUrl
               seenWorkflows["$name"]="$sha"
-              echo ${seenWorkflows[*]}
+              declare -p seenWorkflows > /tmp/seenWorkflows
             fi
-          done <<<(find . -type f -name "*.bin" -maxdepth 1)
+          done
 
           # store seen workflows
           echo "Storing run information"

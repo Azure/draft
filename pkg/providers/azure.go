@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os/exec"
-	"strconv"
 )
 
 type SetUpCmd struct {
@@ -19,6 +19,8 @@ type SetUpCmd struct {
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
+	checkAzCliInstalled()
+
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err
 	}
@@ -40,6 +42,14 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 
 
 	return nil
+}
+
+func checkAzCliInstalled()  {
+	azCmd := exec.Command("erin")
+	_, err := azCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (sc *SetUpCmd) setAZContext() error {
@@ -78,7 +88,7 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 func (sc *SetUpCmd) createAzApp() error {
 	// TODO: pull only appId info from az app create response
 	// createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
-	
+
 	// using the az show app command for testing purposes
 	createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
 	out, err := createAppCmd.CombinedOutput()
@@ -123,13 +133,7 @@ func (sc *SetUpCmd) CreateServiceProvider() error {
 }
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {
-	//fmt.Printf("%v", sc)
-
-	// TODO: check subscriptionID length
-	_, err := strconv.ParseFloat(sc.SubscriptionID, 64)
-	if err != nil {
-		return errors.New("Invalid number")
-	}
+	// TODO: check subscriptionID is valid
 
 	if sc.AppName == "" {
 		return errors.New("Invalid app name")

@@ -18,14 +18,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/draftv2/pkg/providers"
 	"github.com/spf13/cobra"
 )
 
 
-
-func newConnectCmd() *cobra.Command {
+func newSetUpCmd() *cobra.Command {
 	sc := &providers.SetUpCmd{}
 
 	// setup-ghCmd represents the setup-gh command
@@ -60,7 +60,8 @@ func newConnectCmd() *cobra.Command {
 
 
 func hasValidProviderInfo(sc *providers.SetUpCmd) error {
-	if sc.Provider == "azure" && sc.SubscriptionID == "" {
+	provider := strings.ToLower(sc.Provider)
+	if provider == "azure" && sc.SubscriptionID == "" {
 		return errors.New("If provider is azure, must provide azure subscription ID")
 	} 
 
@@ -70,11 +71,11 @@ func hasValidProviderInfo(sc *providers.SetUpCmd) error {
 
 
 func runProviderSetUp(sc *providers.SetUpCmd) error {
-	if sc.Provider == "azure" {
+	provider := strings.ToLower(sc.Provider)
+	if provider == "azure" {
 		// call azure provider logic
-		if err := providers.InitiateAzureOIDCFlow(sc); err != nil {
-			return err
-		}
+		return providers.InitiateAzureOIDCFlow(sc)
+			
 	} else {
 		// call logic for user-submitted provider
 		fmt.Printf("The provider is %v\n", sc.Provider)
@@ -85,7 +86,7 @@ func runProviderSetUp(sc *providers.SetUpCmd) error {
 
 
 func init() {
-	rootCmd.AddCommand(newConnectCmd())
+	rootCmd.AddCommand(newSetUpCmd())
 
 	// Here you will define your flags and configuration settings.
 

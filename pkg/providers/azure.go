@@ -13,6 +13,9 @@ type SetUpCmd struct {
 	SubscriptionID    string
 	ResourceGroupName string
 	Provider          string
+	appId string
+	tenantId string
+	clientId string
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
@@ -25,17 +28,18 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	// 	return err
 	// }
 
-	appId, appErr := createAzApp()
-	if appErr != nil {
-		fmt.Println(appId)
-		return appErr
-	}
+	if !sc.appExistsAlready() {
+		appErr := sc.createAzApp()
+		if appErr != nil {
+			return appErr
+		}
+	} 
 
-	clientId, tenantId, spErr := sc.CreateServiceProvider(appId)
-	if spErr != nil {
-		fmt.Println(clientId, tenantId)
-		return spErr
-	}
+	// clientId, tenantId, spErr := sc.CreateServiceProvider()
+	// if spErr != nil {
+	// 	fmt.Println(clientId, tenantId)
+	// 	return spErr
+	// }
 
 
 	return nil
@@ -53,16 +57,34 @@ func (sc *SetUpCmd) setAZContext() error {
 	return nil
 }
 
-func createAzApp() (string, error) {
-	// TODO: check if app already exists,if not run this logic
+func (sc *SetUpCmd) appExistsAlready() bool {
+	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)
+	checkAppExistsCmd := exec.Command("az", "ad", "app","list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
+	out, err := checkAppExistsCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
 
+	var azApp []string
+	json.Unmarshal(out, &azApp)
+	
+	if len(azApp) == 1 {
+		// TODO: tell user app already exists and ask if they want to use it?
+		appId := fmt.Sprint(azApp[0])
+		sc.appId = appId
+		return true
+	}
+
+	return false
+}
+
+func (sc *SetUpCmd) createAzApp() error {
 	// createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
 	// using the az show app command for testing purposes
 	createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
 	out, err := createAppCmd.CombinedOutput()
 	if err != nil {
-		errMessage := string(out)
-		return errMessage, err
+		return err
 	}
 
 	var azApp map[string]interface{}
@@ -70,11 +92,12 @@ func createAzApp() (string, error) {
 	appId := fmt.Sprint(azApp["appId"])
 
 	fmt.Println(appId)
-	return appId, nil
+	sc.appId = appId
+	return nil
 }
 
-func (sc *SetUpCmd) CreateServiceProvider(appId string) (string,  string, error) {
-	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", appId)
+func (sc *SetUpCmd) CreateServiceProvider() (string,  string, error) {
+	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId)
 	spOut, spErr := createSpCmd.CombinedOutput()
 	if spErr != nil {
 		return "create sp failed\t", string(spOut), spErr

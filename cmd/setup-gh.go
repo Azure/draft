@@ -53,7 +53,7 @@ func newConnectCmd() *cobra.Command {
 	f.StringVarP(&sc.AppName, "app", "a", "myRandomApp", "name of Azure Active Directory application")
 	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
 	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "myNewResourceGroup", "the name of the Azure resource group")
-	f.StringVarP(&sc.Provider, "provider", "p", "", "your cloud provider")
+	f.StringVarP(&sc.Provider, "provider", "p", "azure", "your cloud provider")
 
 	return cmd
 }

@@ -20,9 +20,23 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		return err
 	}
 
-	if err := sc.CreateServiceProvider(); err != nil {
-		return err
+	// TODO: set context to correct subscription
+	// if err := sc.setAZContext(); err != nil {
+	// 	return err
+	// }
+
+	appId, appErr := createAzApp()
+	if appErr != nil {
+		fmt.Println(appId)
+		return appErr
 	}
+
+	clientId, tenantId, spErr := sc.CreateServiceProvider(appId)
+	if spErr != nil {
+		fmt.Println(clientId, tenantId)
+		return spErr
+	}
+
 
 	return nil
 }
@@ -39,39 +53,49 @@ func (sc *SetUpCmd) setAZContext() error {
 	return nil
 }
 
-func (sc *SetUpCmd) CreateServiceProvider() error {
-	// TODO: set context to correct subscription
-	// if err := sc.setAZContext(); err != nil {
-	// 	return err
-	// }
+func createAzApp() (string, error) {
+	// TODO: check if app already exists,if not run this logic
 
 	// createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
 	// using the az show app command for testing purposes
 	createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
-	stdoutStderr, err := createAppCmd.CombinedOutput()
+	out, err := createAppCmd.CombinedOutput()
 	if err != nil {
-		fmt.Printf("%s\n", stdoutStderr)
-		return err
+		errMessage := string(out)
+		return errMessage, err
 	}
 
 	var azApp map[string]interface{}
-	json.Unmarshal(stdoutStderr, &azApp)
+	json.Unmarshal(out, &azApp)
 	appId := fmt.Sprint(azApp["appId"])
 
 	fmt.Println(appId)
+	return appId, nil
+}
 
-	createSPCmd := exec.Command("az", "ad", "sp", "create", "--id", appId)
-	out, sperr := createSPCmd.CombinedOutput()
-	if sperr != nil {
-		return sperr
+func (sc *SetUpCmd) CreateServiceProvider(appId string) (string,  string, error) {
+	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", appId)
+	spOut, spErr := createSpCmd.CombinedOutput()
+	if spErr != nil {
+		return "create sp failed\t", string(spOut), spErr
 	}
 
 	var serviceProvider map[string]interface{}
-	json.Unmarshal(out, &serviceProvider)
+	json.Unmarshal(spOut, &serviceProvider)
 	objectId := fmt.Sprint(serviceProvider["objectId"])
 
-	fmt.Println(objectId)
-	return nil
+	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
+	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", objectId, "--assignee-principle-type", "ServicePrincipal", "--scope", scope)
+	roleOut, roleErr := assignSpRoleCmd.CombinedOutput()
+	if roleErr != nil {
+		return "assign sp role failed\t", string(roleOut), roleErr
+	}
+
+	json.Unmarshal(roleOut, &serviceProvider)
+	clientId := fmt.Sprint(serviceProvider["clientId"])
+	tenantId := fmt.Sprint(serviceProvider["tenantId"])
+
+	return clientId, tenantId, nil
 }
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {

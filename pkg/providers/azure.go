@@ -29,17 +29,14 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	// }
 
 	if !sc.appExistsAlready() {
-		appErr := sc.createAzApp()
-		if appErr != nil {
-			return appErr
+		if err := sc.createAzApp();err != nil {
+			return err
 		}
 	} 
 
-	// clientId, tenantId, spErr := sc.CreateServiceProvider()
-	// if spErr != nil {
-	// 	fmt.Println(clientId, tenantId)
-	// 	return spErr
-	// }
+	if err := sc.CreateServiceProvider();err != nil {
+		return err
+	}
 
 
 	return nil
@@ -79,7 +76,9 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 }
 
 func (sc *SetUpCmd) createAzApp() error {
+	// TODO: pull only appId info from az app create response
 	// createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
+	
 	// using the az show app command for testing purposes
 	createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
 	out, err := createAppCmd.CombinedOutput()
@@ -91,16 +90,15 @@ func (sc *SetUpCmd) createAzApp() error {
 	json.Unmarshal(out, &azApp)
 	appId := fmt.Sprint(azApp["appId"])
 
-	fmt.Println(appId)
 	sc.appId = appId
 	return nil
 }
 
-func (sc *SetUpCmd) CreateServiceProvider() (string,  string, error) {
+func (sc *SetUpCmd) CreateServiceProvider() error {
 	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId)
 	spOut, spErr := createSpCmd.CombinedOutput()
 	if spErr != nil {
-		return "create sp failed\t", string(spOut), spErr
+		return spErr
 	}
 
 	var serviceProvider map[string]interface{}
@@ -111,14 +109,17 @@ func (sc *SetUpCmd) CreateServiceProvider() (string,  string, error) {
 	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", objectId, "--assignee-principle-type", "ServicePrincipal", "--scope", scope)
 	roleOut, roleErr := assignSpRoleCmd.CombinedOutput()
 	if roleErr != nil {
-		return "assign sp role failed\t", string(roleOut), roleErr
+		return roleErr
 	}
 
 	json.Unmarshal(roleOut, &serviceProvider)
 	clientId := fmt.Sprint(serviceProvider["clientId"])
 	tenantId := fmt.Sprint(serviceProvider["tenantId"])
 
-	return clientId, tenantId, nil
+	sc.clientId = clientId
+	sc.tenantId = tenantId
+
+	return nil
 }
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {

@@ -19,11 +19,22 @@ type SetUpCmd struct {
 	objectId string
 }
 
+type federatedIdentityCredentials struct {
+	name string
+	issuer string
+	subject string
+	description string
+	audiences []string
+}
+
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
+	
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err
 	}
 
+	hasFederatedCredentials(sc)
+	
 	if !sc.appExistsAlready() {
 		if err := sc.createAzApp(); err != nil {
 			return err
@@ -167,18 +178,41 @@ func IsSubscriptionIdValid(subscriptionId string) bool {
 		return false
 	}
 
-	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "[id]")
+	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "id")
 	out, err := getSubscriptionIdCmd.CombinedOutput()
 	if err != nil {
 		return false
 	}
 
-	var azSubscription []string
+	var azSubscription string
 	json.Unmarshal(out, &azSubscription)
 
-	if len(azSubscription) == 1 {
+	if azSubscription != "" {
 		return true
 	}
 
 	return false
+}
+
+func hasFederatedCredentials(sc *SetUpCmd) bool {
+	//uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.objectId)
+	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", "https://graph.microsoft.com/beta/applications/ab4c4f05-d1f4-4d8e-9b9a-3ed645339eed/federatedIdentityCredentials", "--query", "value")
+	out, err := getFicCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	var fics map[string]interface{}
+	json.Unmarshal(out, &fics)
+
+	if len(fics) > 0 {
+		// TODO: ask user if they want to use current credentials?
+		return true
+	}
+
+	return false
+}
+
+func createFederatedCredentials() {
+	// otherwise create them
 }

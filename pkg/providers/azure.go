@@ -1,13 +1,13 @@
 package providers
 
 import (
-	
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os/exec"
 
+	
 	"github.com/manifoldco/promptui"
 )
 
@@ -20,6 +20,7 @@ type SetUpCmd struct {
 	tenantId string
 	clientId string
 	objectId string
+	repo string
 }
 
 type federatedIdentityCredentials struct {
@@ -176,6 +177,12 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 		return errors.New("Invalid resource group name")
 	}
 
+	// if repo is empty at this stage then we're using prompts and 
+	// will get that info after successful az sp creation
+	if sc.repo != "" {
+		return validateGhRepo(sc.repo)
+	}
+
 	return nil
 }
 
@@ -219,15 +226,19 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	return false
 }
 
-func getGhRepo() (string, error) {
-	validate := func(input string) error {
-		listReposCmd := exec.Command("gh", "repo", "view", input)
+func validateGhRepo(input string) error {
+	listReposCmd := exec.Command("gh", "repo", "view", input)
 		_, err := listReposCmd.CombinedOutput()
 		if err != nil {
 			log.Fatal("Repo not found")
 			return err
 		}
 		return nil
+}
+
+func (sc *SetUpCmd) getGhRepo() error {
+	validate := func(input string) error {
+		return validateGhRepo(input)
 	}
 
 	repoPrompt := promptui.Prompt{
@@ -235,12 +246,14 @@ func getGhRepo() (string, error) {
 		Validate: validate,
 	}
 
-	org, err := repoPrompt.Run()
+	repo, err := repoPrompt.Run()
 	if err != nil {
-		return org, err
+		return err
 	}
 
-	return org, err
+	sc.repo = repo
+
+	return err
 }
 
 func (sc *SetUpCmd) createFederatedCredentials() error {
@@ -250,15 +263,16 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 		{Name: "masterfic", Subject: "repo:%s:ref:refs/heads/master", Issuer: "https://token.actions.githubusercontent.com", Description: "master", Audiences: []string{"api://AzureADTokenExchange"}},
 	}
 
-	repo, err := getGhRepo()
-	if err != nil {
-		return err
-	}
+	if sc.repo == "" {
+		if err := sc.getGhRepo(); err != nil {
+			return err
+		}
+	} 
 
 	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appId)
 
 	for _, fic := range fics {
-		subject := fmt.Sprintf(fic.Subject, repo)
+		subject := fmt.Sprintf(fic.Subject, sc.repo)
 		fic.Subject = subject
 
 		ficBody, err := json.Marshal(fic)

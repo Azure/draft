@@ -92,11 +92,10 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 }
 
 func (sc *SetUpCmd) createAzApp() error {
-	// TODO: pull only appId info from az app create response
-	// createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
+	createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.appName)
 
 	// using the az show app command for testing purposes
-	createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
+	// createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
 	out, err := createAppCmd.CombinedOutput()
 	if err != nil {
 		return err

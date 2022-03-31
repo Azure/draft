@@ -1,11 +1,14 @@
 package providers
 
 import (
+	
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os/exec"
+
+	"github.com/manifoldco/promptui"
 )
 
 type SetUpCmd struct {
@@ -20,20 +23,23 @@ type SetUpCmd struct {
 }
 
 type federatedIdentityCredentials struct {
-	name string
-	issuer string
-	subject string
-	description string
-	audiences []string
+	Name string `json:"name"`
+	Issuer string `json:"issuer"`
+	Subject string `json:"subject"`
+	Description string `json:"description"`
+	Audiences []string 	`json:"audiences"`
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
-	
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err
 	}
 
-	hasFederatedCredentials(sc)
+	hasGhCli()
+
+	if !sc.hasFederatedCredentials() {
+		sc.createFederatedCredentials()
+	}
 	
 	if !sc.appExistsAlready() {
 		if err := sc.createAzApp(); err != nil {
@@ -194,9 +200,9 @@ func IsSubscriptionIdValid(subscriptionId string) bool {
 	return false
 }
 
-func hasFederatedCredentials(sc *SetUpCmd) bool {
-	//uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.objectId)
-	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", "https://graph.microsoft.com/beta/applications/ab4c4f05-d1f4-4d8e-9b9a-3ed645339eed/federatedIdentityCredentials", "--query", "value")
+func (sc *SetUpCmd) hasFederatedCredentials() bool {
+	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.objectId)
+	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value")
 	out, err := getFicCmd.CombinedOutput()
 	if err != nil {
 		return false
@@ -213,6 +219,76 @@ func hasFederatedCredentials(sc *SetUpCmd) bool {
 	return false
 }
 
-func createFederatedCredentials() {
-	// otherwise create them
+func getGhRepo() (string, error) {
+	validate := func(input string) error {
+		listReposCmd := exec.Command("gh", "repo", "view", input)
+		_, err := listReposCmd.CombinedOutput()
+		if err != nil {
+			log.Fatal("Repo not found")
+			return err
+		}
+		return nil
+	}
+
+	repoPrompt := promptui.Prompt{
+		Label:    "Enter github organization and repo; example: organization/repoName",
+		Validate: validate,
+	}
+
+	org, err := repoPrompt.Run()
+	if err != nil {
+		return org, err
+	}
+
+	return org, err
+}
+
+func (sc *SetUpCmd) createFederatedCredentials() error {
+	fics := []federatedIdentityCredentials{
+		{Name: "prfic", Subject: "repo:%s:pull_request", Issuer: "https://token.actions.githubusercontent.com", Description: "pr", Audiences: []string{"api://AzureADTokenExchange"}},
+		{Name: "mainfic", Subject: "repo:%s:ref:refs/heads/main", Issuer: "https://token.actions.githubusercontent.com", Description: "main", Audiences: []string{"api://AzureADTokenExchange"}},
+		{Name: "masterfic", Subject: "repo:%s:ref:refs/heads/master", Issuer: "https://token.actions.githubusercontent.com", Description: "master", Audiences: []string{"api://AzureADTokenExchange"}},
+	}
+
+	repo, err := getGhRepo()
+	if err != nil {
+		return err
+	}
+
+	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appId)
+
+	for _, fic := range fics {
+		subject := fmt.Sprintf(fic.Subject, repo)
+		fic.Subject = subject
+
+		ficBody, err := json.Marshal(fic)
+		if err != nil {
+			return err
+		}
+
+		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", uri, "--body", string(ficBody))
+		_, ficErr := createFicCmd.CombinedOutput()
+		if ficErr != nil {
+			return ficErr
+		}
+
+		return nil
+	}
+
+	
+
+	return nil
+
+}
+
+func hasGhCli() bool {
+	ghCmd := exec.Command("gh")
+	_, err := ghCmd.CombinedOutput()
+	if err != nil {
+		// TODO: install gh cli?
+		log.Fatal("Error: The github cli is required to complete this process.")
+		return false
+	}
+
+	return true
 }

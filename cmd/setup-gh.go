@@ -37,21 +37,18 @@ func newSetUpCmd() *cobra.Command {
 		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
 		and service principle, and configuring that application to trust github`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: check if flags are set - if not, run prompts
 			if !flagsAreSet(cmd.Flags()) {
 				gatherUserInfo(sc)
-				fmt.Printf("%v", sc)
 			} else {
 				if err := hasValidProviderInfo(sc); err != nil {
 					return err
 				}
-	
 			}
 			
 			if err := runProviderSetUp(sc); err != nil {
 				return err
 			}
-			
+
 			return nil		
 		},
 	}
@@ -68,8 +65,12 @@ func newSetUpCmd() *cobra.Command {
 
 func hasValidProviderInfo(sc *providers.SetUpCmd) error {
 	provider := strings.ToLower(sc.Provider)
-	if provider == "azure" && sc.SubscriptionID == "" {
-		return errors.New("If provider is azure, must provide azure subscription ID")
+	if provider == "azure" {
+		providers.CheckAzCliInstalled()
+
+		if sc.SubscriptionID == "" {
+			return errors.New("If provider is azure, must provide azure subscription ID")
+		}
 	} 
 
 	return nil
@@ -110,7 +111,6 @@ func getAppName() string {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
 		return err.Error()
 	}
 
@@ -119,7 +119,9 @@ func getAppName() string {
 
 func getSubscriptionID() string {
 	validate := func(input string) error {
-		// TODO: check if it's an existing subscription id
+		if !providers.IsSubscriptionIdValid(input) {
+			return errors.New("Invalid subscription id")
+		}
 		return nil
 	}
 
@@ -131,7 +133,6 @@ func getSubscriptionID() string {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
 		return err.Error()
 	}
 
@@ -154,7 +155,6 @@ func getResourceGroup() string {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
 		return err.Error()
 	}
 
@@ -177,6 +177,8 @@ func getCloudProvider() string {
 
 func gatherUserInfo(sc *providers.SetUpCmd) {
 	if getCloudProvider() == "azure" {
+		providers.CheckAzCliInstalled()
+
 		sc.AppName = getAppName()
 		sc.SubscriptionID = getSubscriptionID()
 		sc.ResourceGroupName = getResourceGroup()

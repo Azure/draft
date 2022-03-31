@@ -20,8 +20,6 @@ type SetUpCmd struct {
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
-	checkAzCliInstalled()
-
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err
 	}
@@ -45,7 +43,7 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	return nil
 }
 
-func checkAzCliInstalled()  {
+func CheckAzCliInstalled()  {
 	azCmd := exec.Command("az")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
@@ -151,7 +149,9 @@ func (sc *SetUpCmd) assignSpRole() error {
 }
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {
-	// TODO: check subscriptionID is valid
+	if !IsSubscriptionIdValid(sc.SubscriptionID) {
+		return errors.New("Subscription id is not valid")
+	}
 
 	if sc.AppName == "" {
 		return errors.New("Invalid app name")
@@ -160,4 +160,25 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 	}
 
 	return nil
+}
+
+func IsSubscriptionIdValid(subscriptionId string) bool {
+	if subscriptionId == "" { 
+		return false
+	}
+
+	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "[id]")
+	out, err := getSubscriptionIdCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	var azSubscription []string
+	json.Unmarshal(out, &azSubscription)
+
+	if len(azSubscription) == 1 {
+		return true
+	}
+
+	return false
 }

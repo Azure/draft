@@ -16,11 +16,11 @@ type SetUpCmd struct {
 	SubscriptionID    string
 	ResourceGroupName string
 	Provider          string
+	Repo string
 	appId string
 	tenantId string
 	clientId string
 	objectId string
-	repo string
 }
 
 type federatedIdentityCredentials struct {
@@ -38,22 +38,22 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 
 	hasGhCli()
 
-	if !sc.hasFederatedCredentials() {
-		sc.createFederatedCredentials()
-	}
-	
 	if !sc.appExistsAlready() {
 		if err := sc.createAzApp(); err != nil {
 			return err
 		}
 	} 
-
+		
 	if !sc.serviceProviderExistsAlready() {
 		if err := sc.CreateServiceProvider(); err != nil {
 			return err
 		}
 	}
 
+	if !sc.hasFederatedCredentials() {
+		sc.createFederatedCredentials()
+	}
+		
 	if err := sc.assignSpRole(); err != nil {
 		return err
 	}
@@ -81,8 +81,8 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 	var azApp []string
 	json.Unmarshal(out, &azApp)
 	
-	if len(azApp) == 1 {
-		// TODO: tell user app already exists and ask if they want to use it?
+	if len(azApp) >= 1 {
+		// TODO: tell user app already exists and ask which one they want to use?
 		appId := fmt.Sprint(azApp[0])
 		sc.appId = appId
 		return true
@@ -178,8 +178,8 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 
 	// if repo is empty at this stage then we're using prompts and 
 	// will get that info after successful az sp creation
-	if sc.repo != "" {
-		return validateGhRepo(sc.repo)
+	if sc.Repo != "" {
+		return validateGhRepo(sc.Repo)
 	}
 
 	return nil
@@ -250,7 +250,7 @@ func (sc *SetUpCmd) getGhRepo() error {
 		return err
 	}
 
-	sc.repo = repo
+	sc.Repo = repo
 
 	return err
 }
@@ -262,7 +262,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 		{Name: "masterfic", Subject: "repo:%s:ref:refs/heads/master", Issuer: "https://token.actions.githubusercontent.com", Description: "master", Audiences: []string{"api://AzureADTokenExchange"}},
 	}
 
-	if sc.repo == "" {
+	if sc.Repo == "" {
 		if err := sc.getGhRepo(); err != nil {
 			return err
 		}
@@ -271,7 +271,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appId)
 
 	for _, fic := range fics {
-		subject := fmt.Sprintf(fic.Subject, sc.repo)
+		subject := fmt.Sprintf(fic.Subject, sc.Repo)
 		fic.Subject = subject
 
 		ficBody, err := json.Marshal(fic)

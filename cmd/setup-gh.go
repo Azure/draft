@@ -58,12 +58,18 @@ func newSetUpCmd() *cobra.Command {
 	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
 	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "myNewResourceGroup", "the name of the Azure resource group")
 	f.StringVarP(&sc.Provider, "provider", "p", "azure", "your cloud provider")
+	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "your github repo")
 
 	return cmd
 }
 
 
 func hasValidProviderInfo(sc *providers.SetUpCmd) error {
+	// TODO: move validate set up config here?
+	if sc.Repo == "" {
+		return errors.New("Must provide github repo")
+	}
+
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		providers.CheckAzCliInstalled()
@@ -92,7 +98,7 @@ func runProviderSetUp(sc *providers.SetUpCmd) error {
 }
 
 func flagsAreSet(f *pflag.FlagSet) bool {
-	return f.Changed("subscription-id")
+	return f.Changed("gh-repo") || f.Changed("subscription-id") || f.Changed("provider")
 }
 
 func getAppName() string {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"time"
 
-	
 	"github.com/manifoldco/promptui"
 )
 
@@ -92,6 +92,7 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 }
 
 func (sc *SetUpCmd) createAzApp() error {
+	// TODO: need to change command to force create app? or ask for new app name?
 	createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
 	// using the az show app command for testing purposes
@@ -285,10 +286,12 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 			return ficErr
 		}
 
-		return nil
 	}
 
-	
+	time.Sleep(5 * time.Second)
+
+	// check to make sure credentials were created
+	sc.hasFederatedCredentials()	
 
 	return nil
 

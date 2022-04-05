@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 	"os/exec"
-	"encoding/json"
+	
 
 	"github.com/Azure/draftv2/pkg/configs"
 	log "github.com/sirupsen/logrus"
@@ -135,51 +135,41 @@ func CheckAzCliInstalled()  {
 	azCmd := exec.Command("az")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error: AZ cli not installed. Find installation instructions at this link: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli")
 	}
 }
 
 func IsLoggedInToAz() bool {
 	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
-	out, err := azCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var login string
-	json.Unmarshal(out, &login)
-
-	if login != "" {
-		return true
-	}
-
-	return false
-}
-
-func LoginToAz() {
-	azCmd := exec.Command("az", "login")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func HasGhCli() bool {
-	ghCmd := exec.Command("gh")
-	_, err := ghCmd.CombinedOutput()
-	if err != nil {
-		// TODO: install gh cli?
-		log.Fatal("Error: The github cli is required to complete this process.")
 		return false
 	}
 
 	return true
 }
 
-func LoginToGh() {
-	ghCmd := exec.Command("gh", "auth", "login")
+
+func HasGhCli() bool {
+	ghCmd := exec.Command("gh")
 	_, err := ghCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal("Error: The github cli is required to complete this process.")
+		// TODO: install gh cli?
+		log.Fatal("Error: The github cli is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
+		return false
 	}
+
+	return true
+}
+
+func IsLoggedInToGh() bool {
+	ghCmd := exec.Command("gh", "auth", "status")
+	out, err := ghCmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf(string(out))
+		return false
+	}
+
+	return true
+
 }

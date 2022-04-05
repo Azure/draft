@@ -3,10 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
-	"github.com/Azure/draftv2/pkg/providers"
 	"github.com/Azure/draftv2/pkg/osutil"
+	"github.com/Azure/draftv2/pkg/providers"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -60,7 +61,7 @@ func hasValidProviderInfo(sc *providers.SetUpCmd) error {
 	if provider == "azure" {
 		osutil.CheckAzCliInstalled()
 		if !osutil.IsLoggedInToAz() {
-			osutil.LoginToAz()
+			log.Fatal("Error: Must be logged in to az cli. Run the az --help command for more information on logging in via cli")
 		}
 
 		if sc.SubscriptionID == "" {
@@ -114,7 +115,7 @@ func getAppName() string {
 
 func getSubscriptionID() string {
 	validate := func(input string) error {
-		if !providers.IsSubscriptionIdValid(input) {
+		if input == "" {
 			return errors.New("Invalid subscription id")
 		}
 		return nil
@@ -156,6 +157,28 @@ func getResourceGroup() string {
 	return result
 }
 
+func getGhRepo() string {
+	validate := func(input string) error {
+		if !strings.Contains(input, "/") {
+			return errors.New("Github repo cannot be empty")
+		}
+
+		return nil
+	}
+
+	repoPrompt := promptui.Prompt{
+		Label:    "Enter github organization and repo; example: organization/repoName",
+		Validate: validate,
+	}
+
+	repo, err := repoPrompt.Run()
+	if err != nil {
+		return err.Error()
+	}
+
+	return repo
+}
+
 func getCloudProvider() string {
 	selection := &promptui.Select{
 		Label: "What cloud provider would you like to use?",
@@ -174,12 +197,13 @@ func gatherUserInfo(sc *providers.SetUpCmd) {
 	if getCloudProvider() == "azure" {
 		osutil.CheckAzCliInstalled()
 		if !osutil.IsLoggedInToAz() {
-			osutil.LoginToAz()
+			log.Fatal("Error: Must be logged in to az cli. Run the az --help command for more information on logging in via cli")
 		}
 
 		sc.AppName = getAppName()
 		sc.SubscriptionID = getSubscriptionID()
 		sc.ResourceGroupName = getResourceGroup()
+		sc.Repo = getGhRepo()
 	} else {
 		// prompts for other cloud providers
 	}

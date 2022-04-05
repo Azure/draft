@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/manifoldco/promptui"
+	
 	"github.com/Azure/draftv2/pkg/osutil"
 )
 
@@ -33,13 +33,14 @@ type federatedIdentityCredentials struct {
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
+	if !osutil.HasGhCli() || !osutil.IsLoggedInToGh() {
+		log.Fatal("Error: Unable to login to your github account.")
+	}
+
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err
 	}
 
-	if osutil.HasGhCli() {
-		osutil.LoginToGh()
-	}
 
 	if !sc.appExistsAlready() {
 		if err := sc.createAzApp(); err != nil {
@@ -172,10 +173,8 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 		return errors.New("Invalid resource group name")
 	}
 
-	// if repo is empty at this stage then we're using prompts and 
-	// will get that info after successful az sp creation
-	if sc.Repo != "" {
-		return validateGhRepo(sc.Repo)
+	if !sc.ValidGhRepo() {
+		return errors.New("Github repo is not valid")
 	}
 
 	return nil
@@ -221,35 +220,16 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	return false
 }
 
-func validateGhRepo(input string) error {
-	listReposCmd := exec.Command("gh", "repo", "view", input)
+func (sc *SetUpCmd) ValidGhRepo() bool {
+	listReposCmd := exec.Command("gh", "repo", "view", sc.Repo)
 		_, err := listReposCmd.CombinedOutput()
 		if err != nil {
-			log.Fatal("Repo not found")
-			return err
+			log.Fatal("Github repo not found")
+			return false
 		}
-		return nil
+		return true
 }
 
-func (sc *SetUpCmd) getGhRepo() error {
-	validate := func(input string) error {
-		return validateGhRepo(input)
-	}
-
-	repoPrompt := promptui.Prompt{
-		Label:    "Enter github organization and repo; example: organization/repoName",
-		Validate: validate,
-	}
-
-	repo, err := repoPrompt.Run()
-	if err != nil {
-		return err
-	}
-
-	sc.Repo = repo
-
-	return err
-}
 
 func (sc *SetUpCmd) createFederatedCredentials() error {
 	fics := []federatedIdentityCredentials{
@@ -257,12 +237,6 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 		{Name: "mainfic", Subject: "repo:%s:ref:refs/heads/main", Issuer: "https://token.actions.githubusercontent.com", Description: "main", Audiences: []string{"api://AzureADTokenExchange"}},
 		{Name: "masterfic", Subject: "repo:%s:ref:refs/heads/master", Issuer: "https://token.actions.githubusercontent.com", Description: "master", Audiences: []string{"api://AzureADTokenExchange"}},
 	}
-
-	if sc.Repo == "" {
-		if err := sc.getGhRepo(); err != nil {
-			return err
-		}
-	} 
 
 	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appId)
 

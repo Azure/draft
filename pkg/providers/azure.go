@@ -20,7 +20,6 @@ type SetUpCmd struct {
 	Repo string
 	appId string
 	tenantId string
-	clientId string
 	objectId string
 }
 
@@ -47,13 +46,16 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	} else if err := sc.createAzApp(); err != nil {
 		return err
 	}
-	
+
 	if !sc.serviceProviderExistsAlready() {
 		if err := sc.CreateServiceProvider(); err != nil {
 			return err
 		}
 	}
 
+	if err := sc.getTenantId(); err != nil {
+		return err
+	}
 	
 	if err := sc.assignSpRole(); err != nil {
 		return err
@@ -151,12 +153,21 @@ func (sc *SetUpCmd) assignSpRole() error {
 		return err
 	}
 
-	var serviceProvider map[string]interface{}
-	json.Unmarshal(out, &serviceProvider)
-	clientId := fmt.Sprint(serviceProvider["clientId"])
-	tenantId := fmt.Sprint(serviceProvider["tenantId"])
+	return nil
+}
 
-	sc.clientId = clientId
+func (sc *SetUpCmd) getTenantId() error {
+	getTenantIdCmd := exec.Command("az", "account", "show", "--query", "tenantId", "--only-show-errors")
+	out, err := getTenantIdCmd.CombinedOutput()
+	if err != nil {
+		log.Fatalf(string(out))
+		return err
+	}
+
+	var tenantId string
+	json.Unmarshal(out, &tenantId)
+	tenantId = fmt.Sprint(tenantId)
+
 	sc.tenantId = tenantId
 
 	return nil

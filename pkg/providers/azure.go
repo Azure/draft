@@ -54,12 +54,13 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		}
 	}
 
-	if !sc.hasFederatedCredentials() {
-		sc.createFederatedCredentials()
-	}
-		
+	
 	if err := sc.assignSpRole(); err != nil {
 		return err
+	}
+	
+	if !sc.hasFederatedCredentials() {
+		sc.createFederatedCredentials()
 	}
 
 	return nil
@@ -128,7 +129,7 @@ func (sc *SetUpCmd) serviceProviderExistsAlready() bool {
 }
 
 func (sc *SetUpCmd) CreateServiceProvider() error {
-	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId)
+	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 	out, err := createSpCmd.CombinedOutput()
 	if err != nil {
 		return err
@@ -145,9 +146,10 @@ func (sc *SetUpCmd) CreateServiceProvider() error {
 
 func (sc *SetUpCmd) assignSpRole() error {
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.objectId, "--assignee-principle-type", "ServicePrincipal", "--scope", scope)
+	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.objectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
 	out, err := assignSpRoleCmd.CombinedOutput()
 	if err != nil {
+		log.Fatalf(string(out))
 		return err
 	}
 
@@ -250,8 +252,9 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 		}
 
 		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", uri, "--body", string(ficBody))
-		_, ficErr := createFicCmd.CombinedOutput()
+		out, ficErr := createFicCmd.CombinedOutput()
 		if ficErr != nil {
+			log.Fatalf(string(out))
 			return ficErr
 		}
 

@@ -1,18 +1,4 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
@@ -73,6 +59,9 @@ func hasValidProviderInfo(sc *providers.SetUpCmd) error {
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		providers.CheckAzCliInstalled()
+		if !providers.IsLoggedInToAz() {
+			providers.LoginToAz()
+		}
 
 		if sc.SubscriptionID == "" {
 			return errors.New("If provider is azure, must provide azure subscription ID")
@@ -184,6 +173,9 @@ func getCloudProvider() string {
 func gatherUserInfo(sc *providers.SetUpCmd) {
 	if getCloudProvider() == "azure" {
 		providers.CheckAzCliInstalled()
+		if !providers.IsLoggedInToAz() {
+			providers.LoginToAz()
+		}
 
 		sc.AppName = getAppName()
 		sc.SubscriptionID = getSubscriptionID()
@@ -198,13 +190,4 @@ func gatherUserInfo(sc *providers.SetUpCmd) {
 func init() {
 	rootCmd.AddCommand(newSetUpCmd())
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	//setup-ghCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// setup-ghCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

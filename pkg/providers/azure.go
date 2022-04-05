@@ -69,6 +69,31 @@ func CheckAzCliInstalled()  {
 	}
 }
 
+func IsLoggedInToAz() bool {
+	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
+	out, err := azCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var login string
+	json.Unmarshal(out, &login)
+
+	if login != "" {
+		return true
+	}
+
+	return false
+}
+
+func LoginToAz() {
+	azCmd := exec.Command("az", "login")
+	_, err := azCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 
 func (sc *SetUpCmd) appExistsAlready() bool {
 	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)

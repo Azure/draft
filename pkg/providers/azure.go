@@ -42,12 +42,12 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	}
 
 
-	if !sc.appExistsAlready() {
-		if err := sc.createAzApp(); err != nil {
-			return err
-		}
-	} 
-		
+	if sc.appExistsAlready() {
+		log.Fatal("App already exists")
+	} else if err := sc.createAzApp(); err != nil {
+		return err
+	}
+	
 	if !sc.serviceProviderExistsAlready() {
 		if err := sc.CreateServiceProvider(); err != nil {
 			return err
@@ -80,8 +80,6 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 	
 	if len(azApp) >= 1 {
 		// TODO: tell user app already exists and ask which one they want to use?
-		appId := fmt.Sprint(azApp[0])
-		sc.appId = appId
 		return true
 	}
 

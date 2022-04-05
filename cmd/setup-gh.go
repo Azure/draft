@@ -1,4 +1,3 @@
-
 package cmd
 
 import (
@@ -7,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/Azure/draftv2/pkg/providers"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/manifoldco/promptui"
 )
 
 

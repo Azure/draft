@@ -36,7 +36,9 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		return err
 	}
 
-	hasGhCli()
+	if hasGhCli() {
+		loginToGh()
+	}
 
 	if !sc.appExistsAlready() {
 		if err := sc.createAzApp(); err != nil {
@@ -332,4 +334,12 @@ func hasGhCli() bool {
 	}
 
 	return true
+}
+
+func loginToGh() {
+	ghCmd := exec.Command("gh", "auth", "login")
+	_, err := ghCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal("Error: The github cli is required to complete this process.")
+	}
 }

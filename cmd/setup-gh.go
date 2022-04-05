@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/draftv2/pkg/providers"
+	"github.com/Azure/draftv2/pkg/osutil"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -57,9 +58,9 @@ func hasValidProviderInfo(sc *providers.SetUpCmd) error {
 
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
-		providers.CheckAzCliInstalled()
-		if !providers.IsLoggedInToAz() {
-			providers.LoginToAz()
+		osutil.CheckAzCliInstalled()
+		if !osutil.IsLoggedInToAz() {
+			osutil.LoginToAz()
 		}
 
 		if sc.SubscriptionID == "" {
@@ -171,9 +172,9 @@ func getCloudProvider() string {
 
 func gatherUserInfo(sc *providers.SetUpCmd) {
 	if getCloudProvider() == "azure" {
-		providers.CheckAzCliInstalled()
-		if !providers.IsLoggedInToAz() {
-			providers.LoginToAz()
+		osutil.CheckAzCliInstalled()
+		if !osutil.IsLoggedInToAz() {
+			osutil.LoginToAz()
 		}
 
 		sc.AppName = getAppName()

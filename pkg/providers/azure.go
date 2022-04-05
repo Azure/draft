@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
+	"github.com/Azure/draftv2/pkg/osutil"
 )
 
 type SetUpCmd struct {
@@ -36,8 +37,8 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		return err
 	}
 
-	if hasGhCli() {
-		loginToGh()
+	if osutil.HasGhCli() {
+		osutil.LoginToGh()
 	}
 
 	if !sc.appExistsAlready() {
@@ -61,39 +62,6 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	}
 
 	return nil
-}
-
-func CheckAzCliInstalled()  {
-	azCmd := exec.Command("az")
-	_, err := azCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func IsLoggedInToAz() bool {
-	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
-	out, err := azCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var login string
-	json.Unmarshal(out, &login)
-
-	if login != "" {
-		return true
-	}
-
-	return false
-}
-
-func LoginToAz() {
-	azCmd := exec.Command("az", "login")
-	_, err := azCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 
@@ -324,22 +292,3 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 }
 
-func hasGhCli() bool {
-	ghCmd := exec.Command("gh")
-	_, err := ghCmd.CombinedOutput()
-	if err != nil {
-		// TODO: install gh cli?
-		log.Fatal("Error: The github cli is required to complete this process.")
-		return false
-	}
-
-	return true
-}
-
-func loginToGh() {
-	ghCmd := exec.Command("gh", "auth", "login")
-	_, err := ghCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal("Error: The github cli is required to complete this process.")
-	}
-}

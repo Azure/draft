@@ -26,17 +26,6 @@ func newSetUpCmd() *cobra.Command {
 		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
 		and service principle, and configuring that application to trust github`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			// testing out receiving data from json file
-			// data, _ := os.ReadFile("pkg/providers/fics.json")
-			// var body map[string]interface{} 
-			// jerr := json.Unmarshal(data, &body)
-			// fmt.Printf("%v", body)
-
-			// fmt.Printf(jerr.Error())
-
-
-
 			if !flagsAreSet(cmd.Flags()) {
 				gatherUserInfo(sc)
 			} else {

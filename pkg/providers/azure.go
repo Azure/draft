@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 	"time"
+	
 
 	"github.com/Azure/draftv2/pkg/osutil"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +20,8 @@ type SetUpCmd struct {
 	Repo string
 	appId string
 	tenantId string
-	objectId string
+	appObjectId string
+	spObjectId string
 }
 
 type federatedIdentityCredentials struct {
@@ -46,13 +48,17 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		return err
 	}
 
-	if !sc.serviceProviderExistsAlready() {
-		if err := sc.CreateServiceProvider(); err != nil {
+	if !sc.servicePrincipalExistsAlready() {
+		if err := sc.CreateServicePrincipal(); err != nil {
 			return err
 		}
 	}
 
 	if err := sc.getTenantId(); err != nil {
+		return err
+	}
+
+	if err := sc.getAppObjectId(); err != nil {
 		return err
 	}
 	
@@ -91,8 +97,6 @@ func (sc *SetUpCmd) createAzApp() error {
 	// TODO: need to change command to force create app? or ask for new app name?
 	createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
-	// using the az show app command for testing purposes
-	// createAppCmd := exec.Command("az", "ad", "app", "show", "--id", "864b58c9-1c86-4e22-a472-f866438378d0")
 	out, err := createAppCmd.CombinedOutput()
 	if err != nil {
 		return err
@@ -106,7 +110,7 @@ func (sc *SetUpCmd) createAzApp() error {
 	return nil
 }
 
-func (sc *SetUpCmd) serviceProviderExistsAlready() bool {
+func (sc *SetUpCmd) servicePrincipalExistsAlready() bool {
 	filter := fmt.Sprintf("appId eq '%s'", sc.appId)
 	checkSpExistsCmd := exec.Command("az", "ad", "sp","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
 	out, err := checkSpExistsCmd.CombinedOutput()
@@ -120,32 +124,33 @@ func (sc *SetUpCmd) serviceProviderExistsAlready() bool {
 	if len(azSp) == 1 {
 		// TODO: tell user sp already exists and ask if they want to use it?
 		objectId := fmt.Sprint(azSp[0])
-		sc.objectId = objectId
+		sc.spObjectId = objectId
 		return true
 	}
 
 	return false
 }
 
-func (sc *SetUpCmd) CreateServiceProvider() error {
+func (sc *SetUpCmd) CreateServicePrincipal() error {
 	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 	out, err := createSpCmd.CombinedOutput()
 	if err != nil {
+		log.Fatal(out)
 		return err
 	}
 
-	var serviceProvider map[string]interface{}
-	json.Unmarshal(out, &serviceProvider)
-	objectId := fmt.Sprint(serviceProvider["objectId"])
+	var servicePrincipal map[string]interface{}
+	json.Unmarshal(out, &servicePrincipal)
+	objectId := fmt.Sprint(servicePrincipal["objectId"])
 
-	sc.objectId = objectId
+	sc.spObjectId = objectId
 
 	return nil
 }
 
 func (sc *SetUpCmd) assignSpRole() error {
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.objectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
+	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
 	out, err := assignSpRoleCmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf(string(out))
@@ -212,18 +217,21 @@ func IsSubscriptionIdValid(subscriptionId string) bool {
 }
 
 func (sc *SetUpCmd) hasFederatedCredentials() bool {
-	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.objectId)
+	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appObjectId)
 	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value")
 	out, err := getFicCmd.CombinedOutput()
 	if err != nil {
 		return false
 	}
 
-	var fics map[string]interface{}
+	log.Info(string(out))
+
+	var fics []interface{}
 	json.Unmarshal(out, &fics)
 
 	if len(fics) > 0 {
 		// TODO: ask user if they want to use current credentials?
+		// TODO: check if fics with the name we want exist already
 		return true
 	}
 
@@ -242,42 +250,55 @@ func (sc *SetUpCmd) ValidGhRepo() bool {
 
 
 func (sc *SetUpCmd) createFederatedCredentials() error {
-	fics := &[]federatedIdentityCredentials{
-		{Name: "prfic", Subject: "repo:%s:pull_request", Issuer: "https://token.actions.githubusercontent.com", Description: "pr", Audiences: []string{"api://AzureADTokenExchange"}},
-		{Name: "mainfic", Subject: "repo:%s:ref:refs/heads/main", Issuer: "https://token.actions.githubusercontent.com", Description: "main", Audiences: []string{"api://AzureADTokenExchange"}},
-		{Name: "masterfic", Subject: "repo:%s:ref:refs/heads/master", Issuer: "https://token.actions.githubusercontent.com", Description: "master", Audiences: []string{"api://AzureADTokenExchange"}},
+	fics := &[]string{
+		`{"name":"prfic","subject":"repo:%s:pull_request","issuer":"https://token.actions.githubusercontent.com","description":"pr","audiences":["api://AzureADTokenExchange"]}`,
+		`{"name":"mainfic","subject":"repo:%s:ref:refs/heads/main","issuer":"https://token.actions.githubusercontent.com","description":"main","audiences":["api://AzureADTokenExchange"]}`,
+		`{"name":"masterfic","subject":"repo:%s:ref:refs/heads/master","issuer":"https://token.actions.githubusercontent.com","description":"master","audiences":["api://AzureADTokenExchange"]}`,
 	}
 
-
-	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.objectId)
+	uri := "https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials"
 
 	for _, fic := range *fics {
-		subject := fmt.Sprintf(fic.Subject, sc.Repo)
-		fic.Subject = subject
-
-		ficBody, err := json.Marshal(fic)
-		if err != nil {
-			return err
-		}
-
-		log.Info(string(ficBody))
-	
-
-		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", uri, "--body", string(ficBody))
+		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", fmt.Sprintf(uri, sc.appObjectId), "--body", fmt.Sprintf(fic, sc.Repo))
 		out, ficErr := createFicCmd.CombinedOutput()
 		if ficErr != nil {
 			log.Fatalf(string(out))
-			return ficErr
 		}
 
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
+	count := 0
 
 	// check to make sure credentials were created
-	sc.hasFederatedCredentials()	
+	// count to prevent infinite loop
+	for count < 10	{
+		if sc.hasFederatedCredentials() {
+			break
+		}
+
+		count += 1
+	}
 
 	return nil
 
+}
+
+func (sc *SetUpCmd) getAppObjectId() error {
+	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)
+	getObjectIdCmd := exec.Command("az", "ad", "app","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
+	out, err := getObjectIdCmd.CombinedOutput()
+	if err != nil {
+		log.Fatalf(string(out))
+		return err
+	}
+
+	var objectId []string
+	json.Unmarshal(out, &objectId)
+	objId := objectId[0]
+
+	sc.appObjectId = objId
+
+	return nil
 }
 

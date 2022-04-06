@@ -17,6 +17,11 @@ jobs:
         run: make
       - uses: actions/upload-artifact@v2
         with:
+          name: helm-skaffold
+          path: ./test/skaffold.yaml
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
           name: draftv2-binary
           path: ./draftv2
           if-no-files-found: error
@@ -31,6 +36,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
@@ -76,6 +85,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
@@ -121,6 +134,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
@@ -166,6 +183,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
@@ -211,6 +232,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
@@ -256,6 +281,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
@@ -301,6 +330,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
@@ -346,6 +379,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
@@ -391,6 +428,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
@@ -436,6 +477,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
@@ -481,6 +526,10 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http

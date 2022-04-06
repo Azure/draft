@@ -25,6 +25,11 @@ jobs:
         run: make
       - uses: actions/upload-artifact@v2
         with:
+          name: helm-skaffold
+          path: ./test/skaffold.yaml
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
           name: draftv2-binary
           path: ./draftv2
           if-no-files-found: error" > ../.github/workflows/integration-linux.yml
@@ -107,6 +112,10 @@ languageVariables:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo

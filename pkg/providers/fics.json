@@ -1,0 +1,9 @@
+{
+    "name": "prfic",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "repo:erinborders/Popped:pull_request",
+    "description": "pr",
+    "audiences": [
+        "api://AzureADTokenExchange"
+    ]
+}

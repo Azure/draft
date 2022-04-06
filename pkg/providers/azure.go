@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os/exec"
 	"time"
 
-	
 	"github.com/Azure/draftv2/pkg/osutil"
+	log "github.com/sirupsen/logrus"
 )
 
 type SetUpCmd struct {
@@ -112,7 +111,7 @@ func (sc *SetUpCmd) serviceProviderExistsAlready() bool {
 	checkSpExistsCmd := exec.Command("az", "ad", "sp","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
 	out, err := checkSpExistsCmd.CombinedOutput()
 	if err != nil {
-		return false
+		return true
 	}
 
 	var azSp []string
@@ -243,15 +242,16 @@ func (sc *SetUpCmd) ValidGhRepo() bool {
 
 
 func (sc *SetUpCmd) createFederatedCredentials() error {
-	fics := []federatedIdentityCredentials{
+	fics := &[]federatedIdentityCredentials{
 		{Name: "prfic", Subject: "repo:%s:pull_request", Issuer: "https://token.actions.githubusercontent.com", Description: "pr", Audiences: []string{"api://AzureADTokenExchange"}},
 		{Name: "mainfic", Subject: "repo:%s:ref:refs/heads/main", Issuer: "https://token.actions.githubusercontent.com", Description: "main", Audiences: []string{"api://AzureADTokenExchange"}},
 		{Name: "masterfic", Subject: "repo:%s:ref:refs/heads/master", Issuer: "https://token.actions.githubusercontent.com", Description: "master", Audiences: []string{"api://AzureADTokenExchange"}},
 	}
 
-	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appId)
 
-	for _, fic := range fics {
+	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.objectId)
+
+	for _, fic := range *fics {
 		subject := fmt.Sprintf(fic.Subject, sc.Repo)
 		fic.Subject = subject
 
@@ -259,6 +259,9 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 		if err != nil {
 			return err
 		}
+
+		log.Info(string(ficBody))
+	
 
 		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", uri, "--body", string(ficBody))
 		out, ficErr := createFicCmd.CombinedOutput()

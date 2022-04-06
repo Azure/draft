@@ -224,8 +224,6 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 		return false
 	}
 
-	log.Info(string(out))
-
 	var fics []interface{}
 	json.Unmarshal(out, &fics)
 
@@ -277,6 +275,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 			break
 		}
 
+		log.Info("Credentials not yet created, retrying...")
 		count += 1
 	}
 

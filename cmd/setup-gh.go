@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	//"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	//"os"
 	"strings"
 
 	"github.com/Azure/draftv2/pkg/osutil"

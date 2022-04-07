@@ -32,6 +32,12 @@ type federatedIdentityCredentials struct {
 	Audiences []string 	`json:"audiences"`
 }
 
+var (
+	hasPrFic = false
+	hasMasterFic = false
+	hasMainFic = false
+)
+
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	log.Debug("Commencing github connection with azure...")
 
@@ -70,9 +76,8 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		return err
 	}
 	
-	if !sc.hasFederatedCredentials() {
-		sc.createFederatedCredentials()
-	}
+	sc.hasFederatedCredentials()
+	sc.createFederatedCredentials()
 
 	sc.setAzClientId()
 	sc.setAzSubscriptionId()
@@ -95,7 +100,6 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 	json.Unmarshal(out, &azApp)
 	
 	if len(azApp) >= 1 {
-		// TODO: tell user app already exists and ask which one they want to use?
 		return true
 	}
 
@@ -239,19 +243,29 @@ func IsSubscriptionIdValid(subscriptionId string) bool {
 func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	log.Debug("Checking for existing federated credentials...")
 	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appObjectId)
-	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value")
+	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value[].name")
 	out, err := getFicCmd.CombinedOutput()
 	if err != nil {
 		return false
 	}
 
-	var fics []interface{}
+	var fics []string
 	json.Unmarshal(out, &fics)
 
 	if len(fics) > 0 {
-		log.Debug("Credentials found")
-		// TODO: ask user if they want to use current credentials?
-		// TODO: check if fics with the name we want exist already
+		log.Debug("Found existing credentials")
+		for _,fic := range fics {
+			if fic == "prfic" {
+				log.Debug("Found credentials named prfic")
+				hasPrFic = true
+			} else if fic == "masterfic" {
+				log.Debug("Found credentials named masterfic")
+				hasMasterFic = true
+			} else if fic == "mainfic" {
+				log.Debug("Found credentials named mainfic")
+				hasMainFic = true
+			}
+		}
 		return true
 	}
 
@@ -271,16 +285,25 @@ func (sc *SetUpCmd) ValidGhRepo() bool {
 
 
 func (sc *SetUpCmd) createFederatedCredentials() error {
-	log.Debug("Creating federated credentials...")
-	fics := &[]string{
-		`{"name":"prfic","subject":"repo:%s:pull_request","issuer":"https://token.actions.githubusercontent.com","description":"pr","audiences":["api://AzureADTokenExchange"]}`,
-		`{"name":"mainfic","subject":"repo:%s:ref:refs/heads/main","issuer":"https://token.actions.githubusercontent.com","description":"main","audiences":["api://AzureADTokenExchange"]}`,
-		`{"name":"masterfic","subject":"repo:%s:ref:refs/heads/master","issuer":"https://token.actions.githubusercontent.com","description":"master","audiences":["api://AzureADTokenExchange"]}`,
+	fics := map[string]string{
+		"pr": `{"name":"prfic","subject":"repo:%s:pull_request","issuer":"https://token.actions.githubusercontent.com","description":"pr","audiences":["api://AzureADTokenExchange"]}`,
+		"main": `{"name":"mainfic","subject":"repo:%s:ref:refs/heads/main","issuer":"https://token.actions.githubusercontent.com","description":"main","audiences":["api://AzureADTokenExchange"]}`,
+		"master": `{"name":"masterfic","subject":"repo:%s:ref:refs/heads/master","issuer":"https://token.actions.githubusercontent.com","description":"master","audiences":["api://AzureADTokenExchange"]}`,
 	}
+	
+	if hasPrFic { delete(fics, "pr")}
+	if hasMainFic { delete(fics, "main")}
+	if hasMasterFic { delete(fics, "master")}
+	
+	if len(fics) == 0 {
+		return nil
+	}
+	
+	log.Debug("Creating federated credentials...")
 
 	uri := "https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials"
 
-	for _, fic := range *fics {
+	for _, fic := range fics {
 		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", fmt.Sprintf(uri, sc.appObjectId), "--body", fmt.Sprintf(fic, sc.Repo))
 		out, ficErr := createFicCmd.CombinedOutput()
 		if ficErr != nil {

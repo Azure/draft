@@ -102,7 +102,6 @@ func (sc *SetUpCmd) createAzApp() error {
 
 	out, err := createAppCmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("Error: could not create Azure application. ", out)
 		return err
 	}
 

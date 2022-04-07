@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/draftv2/pkg/configs"
 	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
 )
 
 type TemplatePrompt struct {
@@ -41,4 +42,23 @@ func RunPromptsFromConfig(config *configs.DraftConfig) (map[string]string, error
 	}
 
 	return inputs, nil
+}
+
+func GetInputFromPrompt(desiredInput string) string {
+	prompt := &promptui.Prompt{
+		Label: "Please Enter " + desiredInput,
+		Validate: func(s string) error {
+			if len(s) <= 0 {
+				return fmt.Errorf("input must be greater than 0")
+			}
+			return nil
+		},
+	}
+
+	input, err := prompt.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return input
 }

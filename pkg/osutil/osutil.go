@@ -151,18 +151,20 @@ func IsLoggedInToAz() bool {
 
 
 func HasGhCli() bool {
+	log.Debug("Checking that github cli is installed...")
 	ghCmd := exec.Command("gh")
 	_, err := ghCmd.CombinedOutput()
 	if err != nil {
-		// TODO: install gh cli?
 		log.Fatal("Error: The github cli is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
 		return false
 	}
 
+	log.Debug("Github cli found!")
 	return true
 }
 
 func IsLoggedInToGh() bool {
+	log.Debug("Checking that user is logged in to github...")
 	ghCmd := exec.Command("gh", "auth", "status")
 	out, err := ghCmd.CombinedOutput()
 	if err != nil {
@@ -170,6 +172,7 @@ func IsLoggedInToGh() bool {
 		return false
 	}
 
+	log.Debug("User is logged in!")
 	return true
 
 }

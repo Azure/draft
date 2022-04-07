@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Azure/draftv2/pkg/osutil"
@@ -11,6 +10,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	log "github.com/sirupsen/logrus"
 )
 
 
@@ -52,7 +52,6 @@ func newSetUpCmd() *cobra.Command {
 
 
 func hasValidProviderInfo(sc *providers.SetUpCmd) error {
-	// TODO: move validate set up config here?
 	if sc.Repo == "" {
 		return errors.New("Must provide github repo")
 	}

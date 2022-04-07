@@ -33,6 +33,8 @@ type federatedIdentityCredentials struct {
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
+	log.Debug("Commencing github connection with azure...")
+
 	if !osutil.HasGhCli() || !osutil.IsLoggedInToGh() {
 		log.Fatal("Error: Unable to login to your github account.")
 	}
@@ -40,7 +42,6 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err
 	}
-
 
 	if sc.appExistsAlready() {
 		log.Fatal("App already exists")
@@ -70,6 +71,7 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		sc.createFederatedCredentials()
 	}
 
+	log.Debug("Github connection with azure completed successfully!")
 	return nil
 }
 
@@ -94,11 +96,13 @@ func (sc *SetUpCmd) appExistsAlready() bool {
 }
 
 func (sc *SetUpCmd) createAzApp() error {
-	// TODO: need to change command to force create app? or ask for new app name?
+	log.Debug("Commencing Azure app creation...")
+	
 	createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
 	out, err := createAppCmd.CombinedOutput()
 	if err != nil {
+		log.Fatalf("Error: could not create Azure application. ", out)
 		return err
 	}
 
@@ -107,6 +111,8 @@ func (sc *SetUpCmd) createAzApp() error {
 	appId := fmt.Sprint(azApp["appId"])
 
 	sc.appId = appId
+
+	log.Debug("App created successfully!")
 	return nil
 }
 
@@ -122,6 +128,7 @@ func (sc *SetUpCmd) servicePrincipalExistsAlready() bool {
 	json.Unmarshal(out, &azSp)
 	
 	if len(azSp) == 1 {
+		log.Debug("Service principal already exists - skipping service principal creation.")
 		// TODO: tell user sp already exists and ask if they want to use it?
 		objectId := fmt.Sprint(azSp[0])
 		sc.spObjectId = objectId
@@ -132,6 +139,7 @@ func (sc *SetUpCmd) servicePrincipalExistsAlready() bool {
 }
 
 func (sc *SetUpCmd) CreateServicePrincipal() error {
+	log.Debug("Creating Azure service principal...")
 	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 	out, err := createSpCmd.CombinedOutput()
 	if err != nil {
@@ -145,10 +153,12 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 
 	sc.spObjectId = objectId
 
+	log.Debug("Service principal created successfully!")
 	return nil
 }
 
 func (sc *SetUpCmd) assignSpRole() error {
+	log.Debug("Assigning contributor role to service principal...")
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
 	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
 	out, err := assignSpRoleCmd.CombinedOutput()
@@ -157,10 +167,12 @@ func (sc *SetUpCmd) assignSpRole() error {
 		return err
 	}
 
+	log.Debug("Role assigned successfully!")
 	return nil
 }
 
 func (sc *SetUpCmd) getTenantId() error {
+	log.Debug("Fetching Azure account tenant ID")
 	getTenantIdCmd := exec.Command("az", "account", "show", "--query", "tenantId", "--only-show-errors")
 	out, err := getTenantIdCmd.CombinedOutput()
 	if err != nil {
@@ -178,6 +190,8 @@ func (sc *SetUpCmd) getTenantId() error {
 }
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {
+	log.Debug("Checking that provided information is valid...")
+
 	if !IsSubscriptionIdValid(sc.SubscriptionID) {
 		return errors.New("Subscription id is not valid")
 	}
@@ -217,6 +231,7 @@ func IsSubscriptionIdValid(subscriptionId string) bool {
 }
 
 func (sc *SetUpCmd) hasFederatedCredentials() bool {
+	log.Debug("Checking for existing federated credentials...")
 	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appObjectId)
 	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value")
 	out, err := getFicCmd.CombinedOutput()
@@ -228,11 +243,13 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	json.Unmarshal(out, &fics)
 
 	if len(fics) > 0 {
+		log.Debug("Credentials found")
 		// TODO: ask user if they want to use current credentials?
 		// TODO: check if fics with the name we want exist already
 		return true
 	}
 
+	log.Debug("No existing credentials found")
 	return false
 }
 
@@ -248,6 +265,7 @@ func (sc *SetUpCmd) ValidGhRepo() bool {
 
 
 func (sc *SetUpCmd) createFederatedCredentials() error {
+	log.Debug("Creating federated credentials...")
 	fics := &[]string{
 		`{"name":"prfic","subject":"repo:%s:pull_request","issuer":"https://token.actions.githubusercontent.com","description":"pr","audiences":["api://AzureADTokenExchange"]}`,
 		`{"name":"mainfic","subject":"repo:%s:ref:refs/heads/main","issuer":"https://token.actions.githubusercontent.com","description":"main","audiences":["api://AzureADTokenExchange"]}`,
@@ -265,6 +283,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 	}
 
+	log.Debug("Waiting 10 seconds to allow credentials time to populate")
 	time.Sleep(10 * time.Second)
 	count := 0
 
@@ -275,7 +294,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 			break
 		}
 
-		log.Info("Credentials not yet created, retrying...")
+		log.Debug("Credentials not yet created, retrying...")
 		count += 1
 	}
 
@@ -284,6 +303,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 }
 
 func (sc *SetUpCmd) getAppObjectId() error {
+	log.Debug("Fetching Azure application object ID")
 	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)
 	getObjectIdCmd := exec.Command("az", "ad", "app","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
 	out, err := getObjectIdCmd.CombinedOutput()
@@ -300,4 +320,3 @@ func (sc *SetUpCmd) getAppObjectId() error {
 
 	return nil
 }
-

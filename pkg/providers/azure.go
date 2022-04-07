@@ -36,7 +36,10 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	log.Debug("Commencing github connection with azure...")
 
 	if !osutil.HasGhCli() || !osutil.IsLoggedInToGh() {
-		log.Fatal("Error: Unable to login to your github account.")
+		if err := osutil.LogInToGh(); err != nil {
+			log.Fatal(err)
+		}
+		//log.Fatal("Error: Unable to login to your github account.")
 	}
 
 	if err := sc.ValidateSetUpConfig(); err != nil {

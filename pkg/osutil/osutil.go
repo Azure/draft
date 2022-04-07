@@ -176,3 +176,17 @@ func IsLoggedInToGh() bool {
 	return true
 
 }
+
+func LogInToGh() error {
+	log.Debug("Logging user in to github...")
+	ghCmd := exec.Command("gh", "auth", "login", "-w")
+	ghCmd.Stdin = os.Stdin
+	ghCmd.Stdout = os.Stdout
+	ghCmd.Stderr = os.Stderr
+	err := ghCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

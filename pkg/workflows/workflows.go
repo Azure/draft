@@ -57,7 +57,7 @@ func CreateWorkflows(dest string, config *WorkflowConfig) error {
 	workflowTemplate := getWorkflowFile(workflow)
 	log.Info(workflowTemplate)
 
-	validateAndFillConfig(config, deployType)
+	validateAndFillConfig(config)
 
 	workflowTemplate = replaceWorkflowVars(workflowTemplate, config)
 
@@ -88,7 +88,7 @@ func replaceWorkflowVars(workflowTemplate string, config *WorkflowConfig) string
 	return workflowTemplate
 }
 
-func validateAndFillConfig(config *WorkflowConfig, deployType string) {
+func validateAndFillConfig(config *WorkflowConfig) {
 	if config.acrName == "" {
 		config.acrName = prompts.GetInputFromPrompt("container registry name")
 	}

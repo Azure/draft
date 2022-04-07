@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"os/exec"
+	
 
 	"github.com/Azure/draftv2/pkg/configs"
 	log "github.com/sirupsen/logrus"
@@ -127,4 +129,50 @@ func CopyDir(
 		}
 	}
 	return nil
+}
+
+func CheckAzCliInstalled()  {
+	azCmd := exec.Command("az")
+	_, err := azCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal("Error: AZ cli not installed. Find installation instructions at this link: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli")
+	}
+}
+
+func IsLoggedInToAz() bool {
+	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
+	_, err := azCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+func HasGhCli() bool {
+	log.Debug("Checking that github cli is installed...")
+	ghCmd := exec.Command("gh")
+	_, err := ghCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal("Error: The github cli is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
+		return false
+	}
+
+	log.Debug("Github cli found!")
+	return true
+}
+
+func IsLoggedInToGh() bool {
+	log.Debug("Checking that user is logged in to github...")
+	ghCmd := exec.Command("gh", "auth", "status")
+	out, err := ghCmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf(string(out))
+		return false
+	}
+
+	log.Debug("User is logged in!")
+	return true
+
 }

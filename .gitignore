@@ -2,7 +2,7 @@ vendor/
 .idea/
 /pkg/languages/builders/
 /pkg/deployments/deployTypes/
-/pkg/workflows/workflow/
+/pkg/workflows/workflows/
 .DS_Store
 draftv2
 langtest

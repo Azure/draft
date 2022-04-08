@@ -45,7 +45,7 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		if err := osutil.LogInToGh(); err != nil {
 			log.Fatal(err)
 		}
-		//log.Fatal("Error: Unable to login to your github account.")
+		
 	}
 
 	if err := sc.ValidateSetUpConfig(); err != nil {
@@ -296,7 +296,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 	if hasMasterFic { delete(fics, "master")}
 	
 	if len(fics) == 0 {
-		return nil
+		log.Fatal("The federated credential names prfic, mainfic and masterfic have already been taken - cannot create new ones.")
 	}
 	
 	log.Debug("Creating federated credentials...")

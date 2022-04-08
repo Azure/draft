@@ -36,7 +36,10 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	log.Debug("Commencing github connection with azure...")
 
 	if !osutil.HasGhCli() || !osutil.IsLoggedInToGh() {
-		log.Fatal("Error: Unable to login to your github account.")
+		if err := osutil.LogInToGh(); err != nil {
+			log.Fatal(err)
+		}
+		//log.Fatal("Error: Unable to login to your github account.")
 	}
 
 	if err := sc.ValidateSetUpConfig(); err != nil {
@@ -70,6 +73,10 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	if !sc.hasFederatedCredentials() {
 		sc.createFederatedCredentials()
 	}
+
+	sc.setAzClientId()
+	sc.setAzSubscriptionId()
+	sc.setAzTenantId()
 
 	log.Debug("Github connection with azure completed successfully!")
 	return nil
@@ -318,4 +325,37 @@ func (sc *SetUpCmd) getAppObjectId() error {
 	sc.appObjectId = objId
 
 	return nil
+}
+
+func (sc *SetUpCmd) setAzClientId() {
+	log.Debug("Setting AZURE_CLIENT_ID in github...")
+	setClientIdCmd := exec.Command("gh", "secret", "set", "AZURE_CLIENT_ID", "-b", sc.appId, "--repo", sc.Repo)
+	out, err := setClientIdCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(string(out))
+		
+	}
+		
+}
+
+func (sc *SetUpCmd) setAzSubscriptionId() {
+	log.Debug("Setting AZURE_SUBSCRIPTION_ID in github...")
+	setSubscriptionIdCmd := exec.Command("gh", "secret", "set", "AZURE_SUBSCRIPTION_ID", "-b", sc.SubscriptionID, "--repo", sc.Repo)
+	out, err := setSubscriptionIdCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(string(out))
+		
+	}
+		
+}
+
+func (sc *SetUpCmd) setAzTenantId() {
+	log.Debug("Setting AZURE_TENANT_ID in github...")
+	setTenantIdCmd := exec.Command("gh", "secret", "set", "AZURE_TENANT_ID", "-b", sc.tenantId, "--repo", sc.Repo)
+	out, err := setTenantIdCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(string(out))
+		
+	}
+		
 }

@@ -60,7 +60,9 @@ func hasValidProviderInfo(sc *providers.SetUpCmd) error {
 	if provider == "azure" {
 		osutil.CheckAzCliInstalled()
 		if !osutil.IsLoggedInToAz() {
-			log.Fatal("Error: Must be logged in to az cli. Run the az --help command for more information on logging in via cli")
+			if err := osutil.LogInToAz(); err != nil {
+				return err
+			}
 		}
 
 		if sc.SubscriptionID == "" {

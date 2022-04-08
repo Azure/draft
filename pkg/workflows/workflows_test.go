@@ -16,9 +16,9 @@ func TestWorkflowEmbed(t *testing.T) {
 
 func TestWorkflowReplace(t *testing.T) {
 	config := &WorkflowConfig{
-		acrName:           "test",
-		containerName:     "test",
-		resourceGroupName: "test",
+		AcrName:           "test",
+		ContainerName:     "test",
+		ResourceGroupName: "test",
 	}
 
 	assert.Equal(t, "testing",

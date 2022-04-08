@@ -33,10 +33,10 @@ type workflowType struct {
 }
 
 type WorkflowConfig struct {
-	acrName            string
-	containerName      string
-	resourceGroupName  string
-	aksClusterName     string
+	AcrName            string
+	ContainerName      string
+	ResourceGroupName  string
+	AksClusterName     string
 	manifestsPath      string
 	chartsPath         string
 	chartsOverridePath string
@@ -55,13 +55,12 @@ func CreateWorkflows(dest string, config *WorkflowConfig) error {
 	}
 
 	workflowTemplate := getWorkflowFile(workflow)
-	log.Info(workflowTemplate)
-
-	validateAndFillConfig(config)
 
 	workflowTemplate = replaceWorkflowVars(workflowTemplate, config)
 
 	ghWorkflowPath := dest + "/.github/workflows/"
+	log.Debugf("writing workflow to %s", ghWorkflowPath)
+
 	if err := osutil.EnsureDirectory(ghWorkflowPath); err != nil {
 		return err
 	}
@@ -77,10 +76,10 @@ func CreateWorkflows(dest string, config *WorkflowConfig) error {
 }
 
 func replaceWorkflowVars(workflowTemplate string, config *WorkflowConfig) string {
-	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-azure-container-registry", config.acrName)
-	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-container-name", config.containerName)
-	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-resource-group", config.resourceGroupName)
-	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-cluster-name", config.aksClusterName)
+	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-azure-container-registry", config.AcrName)
+	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-container-name", config.ContainerName)
+	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-resource-group", config.ResourceGroupName)
+	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-cluster-name", config.AksClusterName)
 	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-chart-path", config.chartsPath)
 	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-chart-override-path", config.chartsOverridePath)
 	workflowTemplate = strings.ReplaceAll(workflowTemplate, "your-deployment-manifest-path", config.manifestsPath)
@@ -88,21 +87,21 @@ func replaceWorkflowVars(workflowTemplate string, config *WorkflowConfig) string
 	return workflowTemplate
 }
 
-func validateAndFillConfig(config *WorkflowConfig) {
-	if config.acrName == "" {
-		config.acrName = prompts.GetInputFromPrompt("container registry name")
+func (config *WorkflowConfig) ValidateAndFillConfig() {
+	if config.AcrName == "" {
+		config.AcrName = prompts.GetInputFromPrompt("container registry name")
 	}
 
-	if config.containerName == "" {
-		config.containerName = prompts.GetInputFromPrompt("container name")
+	if config.ContainerName == "" {
+		config.ContainerName = prompts.GetInputFromPrompt("container name")
 	}
 
-	if config.resourceGroupName == "" {
-		config.resourceGroupName = prompts.GetInputFromPrompt("cluster resource group name")
+	if config.ResourceGroupName == "" {
+		config.ResourceGroupName = prompts.GetInputFromPrompt("cluster resource group name")
 	}
 
-	if config.aksClusterName == "" {
-		config.aksClusterName = prompts.GetInputFromPrompt("AKS cluster name")
+	if config.AksClusterName == "" {
+		config.AksClusterName = prompts.GetInputFromPrompt("AKS cluster name")
 	}
 
 	config.chartsPath = "./charts"

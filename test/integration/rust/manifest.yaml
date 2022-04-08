@@ -1,0 +1,10 @@
+deployType: "kustomize"
+languageType: "rust"
+deployVariables:
+  - name: "PORT"
+    value: "8000"
+  - name: "APPNAME"
+    value: "my-app"
+languageVariables:
+  - name: "PORT"
+    value: "8000"

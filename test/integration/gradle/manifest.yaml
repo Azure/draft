@@ -1,0 +1,10 @@
+deployType: "kustomize"
+languageType: "gradle"
+deployVariables:
+  - name: "PORT"
+    value: "8080"
+  - name: "APPNAME"
+    value: "my-app"
+languageVariables:
+  - name: "PORT"
+    value: "8080"

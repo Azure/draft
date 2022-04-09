@@ -11,6 +11,7 @@ echo "name: DraftV2 Linux Integrations
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,6 +26,11 @@ jobs:
         run: make
       - uses: actions/upload-artifact@v2
         with:
+          name: helm-skaffold
+          path: ./test/skaffold.yaml
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
           name: draftv2-binary
           path: ./draftv2
           if-no-files-found: error" > ../.github/workflows/integration-linux.yml
@@ -34,6 +40,7 @@ echo "name: DraftV2 Windows Integrations
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -95,6 +102,18 @@ languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/kustomize.yaml
 
+    # create kustomize.yaml
+    echo "deployType: \"kustomize\"
+languageType: \"$lang\"
+deployVariables:
+  - name: \"PORT\"
+    value: \"$port\"
+  - name: \"APPNAME\"
+    value: \"my-app\"
+languageVariables:
+  - name: \"PORT\"
+    value: \"$port\"" > ./integration/$lang/manifest.yaml
+
     # create helm workflow
     echo "
   $lang-helm:
@@ -110,6 +129,10 @@ languageVariables:
       - uses: actions/checkout@v2
         with:
           repository: $repo
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: helm-skaffold
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml ./langtest/
@@ -137,6 +160,31 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/kustomize.yaml ./langtest/
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+      - run: cd ./langtest && skaffold init --force
+      - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration-linux.yml
+
+  # create manifests workflow
+    echo "
+  $lang-manifests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draftv2-binary
+      - run: chmod +x ./draftv2
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draftv2 -v create -c ./test/integration/$lang/manifest.yaml ./langtest/
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

@@ -1,0 +1,10 @@
+deployType: "kustomize"
+languageType: "python"
+deployVariables:
+  - name: "PORT"
+    value: "5000"
+  - name: "APPNAME"
+    value: "my-app"
+languageVariables:
+  - name: "PORT"
+    value: "5000"

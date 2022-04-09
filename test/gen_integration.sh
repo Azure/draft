@@ -131,9 +131,9 @@ languageVariables:
           repository: $repo
           path: ./langtest
       - uses: actions/download-artifact@v2
-          with:
-            name: helm-skaffold
-            path: ./langtest/skaffold.yaml
+        with:
+          name: helm-skaffold
+          path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml ./langtest/
       - name: start minikube

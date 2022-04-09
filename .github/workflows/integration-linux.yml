@@ -3,6 +3,7 @@ name: DraftV2 Linux Integrations
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch
 
 jobs:
   build:

@@ -11,6 +11,7 @@ echo "name: DraftV2 Linux Integrations
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch
 
 jobs:
   build:
@@ -39,6 +40,7 @@ echo "name: DraftV2 Windows Integrations
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch
 
 jobs:
   build:

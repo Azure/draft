@@ -37,14 +37,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/gomodule/helm.yaml ./langtest/
       - name: start minikube
@@ -109,14 +109,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/python/helm.yaml ./langtest/
       - name: start minikube
@@ -181,14 +181,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/rust/helm.yaml ./langtest/
       - name: start minikube
@@ -253,14 +253,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/javascript/helm.yaml ./langtest/
       - name: start minikube
@@ -325,14 +325,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/ruby/helm.yaml ./langtest/
       - name: start minikube
@@ -397,14 +397,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/csharp/helm.yaml ./langtest/
       - name: start minikube
@@ -469,14 +469,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/java/helm.yaml ./langtest/
       - name: start minikube
@@ -541,14 +541,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/gradle/helm.yaml ./langtest/
       - name: start minikube
@@ -613,14 +613,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/swift/helm.yaml ./langtest/
       - name: start minikube
@@ -685,14 +685,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/erlang/helm.yaml ./langtest/
       - name: start minikube
@@ -757,14 +757,14 @@ jobs:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/clojure/helm.yaml ./langtest/
       - name: start minikube

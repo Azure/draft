@@ -126,14 +126,14 @@ languageVariables:
           name: draftv2-binary
       - run: chmod +x ./draftv2
       - run: mkdir ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
           path: ./langtest
+      - uses: actions/download-artifact@v2
+          with:
+            name: helm-skaffold
+            path: ./langtest/skaffold.yaml
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml ./langtest/
       - name: start minikube

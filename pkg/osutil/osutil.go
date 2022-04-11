@@ -132,6 +132,7 @@ func CopyDir(
 }
 
 func CheckAzCliInstalled()  {
+	log.Debug("Checking that Azure Cli is installed...")
 	azCmd := exec.Command("az")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
@@ -140,6 +141,7 @@ func CheckAzCliInstalled()  {
 }
 
 func IsLoggedInToAz() bool {
+	log.Debug("Checking that user is logged in to Azure CLI...")
 	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {

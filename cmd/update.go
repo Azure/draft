@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/Azure/draftv2/pkg/web"
 )
 
 func newUpdateCmd() *cobra.Command {
@@ -16,6 +17,9 @@ func newUpdateCmd() *cobra.Command {
 		will be able to receive external requests.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("update called")
+			if err := web.UpdateServiceFile(); err != nil {
+				return err
+			}
 			return nil
 		},
 	}

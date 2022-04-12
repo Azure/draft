@@ -6,11 +6,12 @@ replicaCount: 1
 
 containerPort: {{PORT}}
 
-image:
-  repository: nginx
+imageKey:
+  repository: {{APPNAME}}
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
+
 
 imagePullSecrets: []
 nameOverride: ""

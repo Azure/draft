@@ -1,0 +1,5 @@
+imageKey:
+  repository: {{PRODUCTION_CONTAINER_IMAGE}}
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"

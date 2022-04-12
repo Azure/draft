@@ -35,6 +35,13 @@ type federatedIdentityCredentials struct {
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	log.Debug("Commencing github connection with azure...")
 
+	osutil.CheckAzCliInstalled()
+	if !osutil.IsLoggedInToAz() {
+		if err := osutil.LogInToAz(); err != nil {
+			return err
+		}
+	}
+
 	if !osutil.HasGhCli() || !osutil.IsLoggedInToGh() {
 		if err := osutil.LogInToGh(); err != nil {
 			log.Fatal(err)
@@ -202,17 +209,41 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 		return errors.New("Subscription id is not valid")
 	}
 
+	if !isValidResourceGroup(sc.ResourceGroupName) {
+		return errors.New("Resource group is not valid")
+	}
+
 	if sc.AppName == "" {
 		return errors.New("Invalid app name")
-	} else if sc.ResourceGroupName == "" {
-		return errors.New("Invalid resource group name")
-	}
+	} 
 
 	if !sc.ValidGhRepo() {
 		return errors.New("Github repo is not valid")
 	}
 
 	return nil
+}
+
+func isValidResourceGroup(resourceGroup string) bool {
+	if resourceGroup == "" {
+		return false
+	}
+
+	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
+	getResourceGroupCmd := exec.Command("az", "group", "list", "--query", query)
+	out, err := getResourceGroupCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	var rg []interface{}
+	json.Unmarshal(out, &rg)
+
+	if len(rg) ==  0 {
+		return false
+	}
+
+	return true
 }
 
 func IsSubscriptionIdValid(subscriptionId string) bool {

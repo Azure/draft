@@ -5,8 +5,10 @@ all: go-generate vendor build
 go-generate:
 	rm -r ./pkg/languages/builders; \
 	rm -r ./pkg/deployments/deployTypes; \
+	rm -r ./pkg/workflows/workflows; \
 	GO111MODULE=on go generate ./pkg/languages/...; \
-	GO111MODULE=on go generate ./pkg/deployments/...;
+	GO111MODULE=on go generate ./pkg/deployments/...; \
+	GO111MODULE=on go generate ./pkg/workflows/...;
 
 .PHONY: run-unit-tests
 run-unit-tests:

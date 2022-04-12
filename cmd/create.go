@@ -35,7 +35,7 @@ type createCmd struct {
 	createConfig     *configs.CreateConfig
 
 	supportedLangs *languages.Languages
-	fileMatches *filematches.FileMatches
+	fileMatches    *filematches.FileMatches
 }
 
 func newCreateCmd() *cobra.Command {
@@ -46,13 +46,6 @@ func newCreateCmd() *cobra.Command {
 		Short: "add minimum viable files to deploy to k8s",
 		Long:  "This command will add the necessary files to the local directory for deployment to k8s",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Debugf("number of args passed: %d", len(args))
-			if len(args) > 0 {
-				cc.dest = args[0]
-			} else {
-				cc.dest = "."
-			}
-
 			cc.initConfig()
 			return cc.run()
 		},
@@ -63,6 +56,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.createConfigPath, "createConfig", "c", "", "will use configuration given if set")
 	f.StringVarP(&cc.appName, "app", "a", "", "name of helm release by default this is randomly generated")
 	f.StringVarP(&cc.lang, "lang", "l", "", "the name of the language used to create the k8s deployment")
+	f.StringVarP(&cc.dest, "destination", "d", ".", "the repository root for dockerfile and deployment creation")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "will only add Dockerfile to the local directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "will only add deployment files to the local directory")
 
@@ -257,7 +251,7 @@ func (cc *createCmd) createDeployment() error {
 	return d.CopyDeploymentFiles(deployType, customInputs)
 }
 
-func (cc* createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang string) error {
+func (cc *createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang string) error {
 	if cc.dockerfileOnly && cc.deploymentOnly {
 		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
@@ -273,16 +267,15 @@ func (cc* createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang st
 			Label: "We found deployment files in the directory, would you like to create new deployment files?",
 			Items: []string{"yes", "no"},
 		}
-	
+
 		_, selectResponse, err := selection.Run()
 		if err != nil {
 			return err
 		}
-	
+
 		hasDeploymentFiles = strings.EqualFold(selectResponse, "no")
 	}
 
-	
 	if hasDockerFile {
 		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
 	} else if cc.deploymentOnly {
@@ -294,7 +287,7 @@ func (cc* createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang st
 			return err
 		}
 	}
-	
+
 	if hasDeploymentFiles {
 		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
 	} else if cc.dockerfileOnly {
@@ -306,7 +299,7 @@ func (cc* createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang st
 			return err
 		}
 	}
-	
+
 	return nil
 }
 

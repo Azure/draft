@@ -48,7 +48,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/gomodule/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -72,7 +72,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/gomodule/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -96,7 +96,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/python/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/python/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -120,7 +120,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/python/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -144,7 +144,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/rust/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -168,7 +168,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/rust/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -192,7 +192,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/javascript/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -216,7 +216,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/javascript/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -240,7 +240,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/ruby/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -264,7 +264,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/ruby/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -288,7 +288,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/csharp/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -312,7 +312,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/csharp/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -336,7 +336,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/java/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/java/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -360,7 +360,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/java/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -384,7 +384,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/gradle/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -408,7 +408,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/gradle/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -432,7 +432,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/swift/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -456,7 +456,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/swift/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -480,7 +480,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/erlang/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -504,7 +504,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/erlang/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize
@@ -528,7 +528,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/clojure/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -552,7 +552,7 @@ jobs:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/clojure/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize

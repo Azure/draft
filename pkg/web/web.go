@@ -11,9 +11,9 @@ import (
 
 var (
 	parentDir = "."
-	deployNameToServiceYaml = map[string]string{
-		"helm": "charts/values",
-		"kustomize": "base/service",
+	deployNameToServiceYaml = map[string]*service{
+		"helm": {file: "charts/values", annotation: "service.annotations"},
+		"kustomize": {file: "base/service", annotation: "metadata.annotations"},
 
 	}
 	annotations = map[string]string{
@@ -22,6 +22,11 @@ var (
 	}
 )
 
+type service struct {
+	file string
+	annotation string
+}
+
 func UpdateServiceFile() error {
 	// 	deployType, err := filematches.FindDraftDeploymentFiles(dest)
 	// 	if err != nil {
@@ -29,24 +34,24 @@ func UpdateServiceFile() error {
 	// 	}
 
 	// for testing purposes
-	deployType := "kustomize"
-
-	// TODO: change annotations in values.yaml for helm
+	deployType := "helm"
 
 	log.Debug("Loading config...")
-	servicePath := parentDir + "/" + deployNameToServiceYaml[deployType] + ".yaml"
+	servicePath := parentDir + "/" + deployNameToServiceYaml[deployType].file + ".yaml"
 	serviceBytes, err := os.ReadFile(servicePath)
 	if err != nil {
 		return err
 	}
 
+	
 	if err := viper.ReadConfig(bytes.NewBuffer(serviceBytes)); err != nil {
 		return err
 	}
+	
+	viper.Set(deployNameToServiceYaml[deployType].annotation, annotations)
 
-	viper.Set("metadata.annotations", annotations)
-
-	if err := viper.WriteConfigAs("./base/test.yaml"); err != nil {
+	log.Debug("Writing new configuration to manifest...")
+	if err := viper.WriteConfigAs(servicePath); err != nil {
 		return err
 	}
 

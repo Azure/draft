@@ -12,7 +12,7 @@ go-generate:
 
 .PHONY: run-unit-tests
 run-unit-tests:
-	docker build . -t gotest && docker run -t --rm --name draftv2-test gotest
+	docker build . -t gotest && docker run -t --rm --name draftv2-test gotest test ./... -buildvcs=false
 
 .PHONY: generate-integrations
 generate-integrations:

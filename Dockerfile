@@ -8,4 +8,4 @@ RUN apk add build-base
 RUN make go-generate
 
 RUN go mod vendor
-CMD ["go", "test", "./...", "-buildvcs=false"]
+ENTRYPOINT ["go"]

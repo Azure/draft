@@ -24,7 +24,7 @@ func newGenerateWorkflowCmd() *cobra.Command {
 	f.StringVarP(&workflowConfig.AksClusterName, "cluster-name", "c", "", "name of AKS cluster")
 	f.StringVarP(&workflowConfig.AcrName, "registry-name", "r", "", "the Azure container registry name")
 	f.StringVar(&workflowConfig.ContainerName, "container-name", "", "the name of the container image")
-	f.StringVarP(&workflowConfig.ResourceGroupName, "resource-group", "g", "", "the Azure resource group of your ")
+	f.StringVarP(&workflowConfig.ResourceGroupName, "resource-group", "g", "", "the Azure resource group of your AKS cluster")
 	f.StringVarP(&dest, "destination", "d", ".", "root of repository for gh workflow")
 
 	return cmd

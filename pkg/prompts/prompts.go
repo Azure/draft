@@ -46,7 +46,7 @@ func RunPromptsFromConfig(config *configs.DraftConfig) (map[string]string, error
 
 func GetInputFromPrompt(desiredInput string) string {
 	prompt := &promptui.Prompt{
-		Label: "Please Enter " + desiredInput,
+		Label: "Please enter " + desiredInput,
 		Validate: func(s string) error {
 			if len(s) <= 0 {
 				return fmt.Errorf("input must be greater than 0")

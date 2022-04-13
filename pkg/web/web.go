@@ -12,14 +12,12 @@ import (
 var (
 	parentDir = "."
 	deployNameToServiceYaml = map[string]*service{
-		"helm": {file: "charts/values", annotation: "service.annotations"},
-		"kustomize": {file: "base/service", annotation: "metadata.annotations"},
+		"helm": {file: "charts/values.yaml", annotation: "service.annotations"},
+		"kustomize": {file: "base/service.yaml", annotation: "metadata.annotations"},
 
 	}
-	annotations = map[string]string{
-		"kubernetes.azure.com/ingress-host": "placeholder",
-		"kubernetes.azure.com/tls-cert-keyvault-uri": "placeholder",
-	}
+	// for testing purposes
+	deployType = "kustomize"
 )
 
 type service struct {
@@ -27,29 +25,37 @@ type service struct {
 	annotation string
 }
 
-func UpdateServiceFile() error {
+type ServiceAnnotations struct {
+	Host string
+	Cert string
+}
+
+func UpdateServiceFile(sa *ServiceAnnotations) error {
+	annotations := map[string]string{
+		"kubernetes.azure.com/ingress-host": sa.Host,
+		"kubernetes.azure.com/tls-cert-keyvault-uri": sa.Cert,
+	}
+
 	// 	deployType, err := filematches.FindDraftDeploymentFiles(dest)
 	// 	if err != nil {
 	// 		return err
 	// 	}
 
-	// for testing purposes
-	deployType := "helm"
-
 	log.Debug("Loading config...")
-	servicePath := parentDir + "/" + deployNameToServiceYaml[deployType].file + ".yaml"
+	servicePath := deployNameToServiceYaml[deployType].file
+	
 	serviceBytes, err := os.ReadFile(servicePath)
 	if err != nil {
 		return err
 	}
 
-	
+	viper.SetConfigType("yaml")
 	if err := viper.ReadConfig(bytes.NewBuffer(serviceBytes)); err != nil {
 		return err
 	}
 	
 	viper.Set(deployNameToServiceYaml[deployType].annotation, annotations)
-
+	
 	log.Debug("Writing new configuration to manifest...")
 	if err := viper.WriteConfigAs(servicePath); err != nil {
 		return err

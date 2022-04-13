@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/draftv2/pkg/osutil"
+	
 	"github.com/Azure/draftv2/pkg/providers"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	log "github.com/sirupsen/logrus"
+	
 )
 
 
@@ -24,13 +23,7 @@ func newSetUpCmd() *cobra.Command {
 		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
 		and service principle, and configuring that application to trust github`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !flagsAreSet(cmd.Flags()) {
-				gatherUserInfo(sc)
-			} else {
-				if err := hasValidProviderInfo(sc); err != nil {
-					return err
-				}
-			}
+			fillSetUpConfig(sc)
 			
 			if err := runProviderSetUp(sc); err != nil {
 				return err
@@ -41,36 +34,35 @@ func newSetUpCmd() *cobra.Command {
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&sc.AppName, "app", "a", "myRandomApp", "name of Azure Active Directory application")
+	f.StringVarP(&sc.AppName, "app", "a", "", "name of Azure Active Directory application")
 	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
-	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "myNewResourceGroup", "the name of the Azure resource group")
-	f.StringVarP(&sc.Provider, "provider", "p", "azure", "your cloud provider")
+	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "", "the name of the Azure resource group")
+	f.StringVarP(&sc.Provider, "provider", "p", "", "your cloud provider")
 	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "your github repo")
 
 	return cmd
 }
 
-
-func hasValidProviderInfo(sc *providers.SetUpCmd) error {
-	if sc.Repo == "" {
-		return errors.New("Must provide github repo")
+func fillSetUpConfig(sc *providers.SetUpCmd) {
+	if sc.Provider == "" {
+		sc.Provider = getCloudProvider()
 	}
 
-	provider := strings.ToLower(sc.Provider)
-	if provider == "azure" {
-		osutil.CheckAzCliInstalled()
-		if !osutil.IsLoggedInToAz() {
-			if err := osutil.LogInToAz(); err != nil {
-				return err
-			}
-		}
+	if sc.AppName == "" {
+		sc.AppName = getAppName()
+	}
 
-		if sc.SubscriptionID == "" {
-			return errors.New("If provider is azure, must provide azure subscription ID")
-		}
-	} 
+	if sc.SubscriptionID == "" {
+		sc.SubscriptionID = getSubscriptionID()
+	}
 
-	return nil
+	if sc.ResourceGroupName == "" {
+		sc.ResourceGroupName = getResourceGroup()
+	}
+
+	if sc.Repo == "" {
+		sc.Repo = getGhRepo()
+	}
 }
 
 
@@ -86,10 +78,6 @@ func runProviderSetUp(sc *providers.SetUpCmd) error {
 	}
 
 	return nil
-}
-
-func flagsAreSet(f *pflag.FlagSet) bool {
-	return f.Changed("gh-repo") || f.Changed("subscription-id") || f.Changed("provider")
 }
 
 func getAppName() string {
@@ -192,23 +180,6 @@ func getCloudProvider() string {
 	}
 
 	return selectResponse
-}
-
-func gatherUserInfo(sc *providers.SetUpCmd) {
-	if getCloudProvider() == "azure" {
-		osutil.CheckAzCliInstalled()
-		if !osutil.IsLoggedInToAz() {
-			log.Fatal("Error: Must be logged in to az cli. Run the az --help command for more information on logging in via cli")
-		}
-
-		sc.AppName = getAppName()
-		sc.SubscriptionID = getSubscriptionID()
-		sc.ResourceGroupName = getResourceGroup()
-		sc.Repo = getGhRepo()
-	} else {
-		// prompts for other cloud providers
-	}
-
 }
 
 

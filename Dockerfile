@@ -5,8 +5,7 @@ COPY . ./
 
 RUN apk add build-base
 
-RUN GO111MODULE=on go generate ./pkg/languages/...
-RUN GO111MODULE=on go generate ./pkg/deployments/...
+RUN make go-generate
 
 RUN go mod vendor
-CMD ["go", "test", "./...", "-buildvcs=false"]
+ENTRYPOINT ["go"]

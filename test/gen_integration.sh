@@ -135,7 +135,7 @@ languageVariables:
           name: helm-skaffold
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -159,7 +159,7 @@ languageVariables:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/kustomize.yaml ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -184,7 +184,7 @@ languageVariables:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/manifest.yaml ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -210,7 +210,7 @@ languageVariables:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/$lang/helm.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -236,7 +236,7 @@ languageVariables:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/$lang/kustomize.yaml ./langtest/
+      - run: ./draftv2.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize

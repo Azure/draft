@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"os"
 
-	//"github.com/Azure/draftv2/pkg/filematches"
+	"github.com/Azure/draftv2/pkg/filematches"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -17,7 +17,7 @@ var (
 
 	}
 	// for testing purposes
-	deployType = "kustomize"
+	// deployType = "kustomize"
 )
 
 type service struct {
@@ -30,16 +30,16 @@ type ServiceAnnotations struct {
 	Cert string
 }
 
-func UpdateServiceFile(sa *ServiceAnnotations) error {
+func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 	annotations := map[string]string{
 		"kubernetes.azure.com/ingress-host": sa.Host,
 		"kubernetes.azure.com/tls-cert-keyvault-uri": sa.Cert,
 	}
 
-	// 	deployType, err := filematches.FindDraftDeploymentFiles(dest)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	deployType, err := filematches.FindDraftDeploymentFiles(dest)
+	if err != nil {
+		return err
+	}
 
 	log.Debug("Loading config...")
 	servicePath := deployNameToServiceYaml[deployType].file

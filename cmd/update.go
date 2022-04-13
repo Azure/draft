@@ -19,9 +19,9 @@ func newUpdateCmd() *cobra.Command {
 		Long: `This command automatically updates your yaml files as necessary so that your application
 		will be able to receive external requests.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fillSetUpConfig(sa)
+			fillUpdateConfig(sa)
 			
-			if err := web.UpdateServiceFile(sa); err != nil {
+			if err := web.UpdateServiceFile(sa, "."); err != nil {
 				return err
 			}
 			return nil
@@ -36,7 +36,7 @@ func newUpdateCmd() *cobra.Command {
 
 }
 
-func fillSetUpConfig(sa *web.ServiceAnnotations) {
+func fillUpdateConfig(sa *web.ServiceAnnotations) {
 	if sa.Host == "" {
 		sa.Host = getHost()
 	}

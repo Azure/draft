@@ -34,8 +34,6 @@ func TestAddAnotationsKustomize(t *testing.T) {
 	testSa := &ServiceAnnotations{}
 	testSa.Host = "test host"
 	testSa.Cert = "test cert"
-
-	deployType = "kustomize"
 	
 	emptyManifest, fileErr := createTempManifest("./templates/empty_service.yaml")
 	if fileErr != nil {
@@ -45,9 +43,10 @@ func TestAddAnotationsKustomize(t *testing.T) {
 
 	deployNameToServiceYaml = map[string]*service{
 		"kustomize": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
+		"helm": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
 	}
 
-	if err := UpdateServiceFile(testSa); err != nil {
+	if err := UpdateServiceFile(testSa, emptyManifest.Name()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -64,8 +63,6 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 	testSa.Host = "test host"
 	testSa.Cert = "test cert"
 
-	deployType = "kustomize"
-
 	annotatedManifest, fileErr := createTempManifest("./templates/service_w_annotations.yaml")
 	if fileErr != nil {
 		t.Fatal(fileErr)
@@ -74,9 +71,10 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 
 	deployNameToServiceYaml = map[string]*service{
 		"kustomize": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
+		"helm": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
 	}
 
-	if err := UpdateServiceFile(testSa); err != nil {
+	if err := UpdateServiceFile(testSa, annotatedManifest.Name()); err != nil {
 		t.Fatal(err)
 	}
 

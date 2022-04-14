@@ -163,17 +163,15 @@ languageVariables:
           context: ./langtest/
           push: true
           tags: localhost:5000/name/testapp:latest
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         with:
           action: deploy
-          manifests: \${{ steps.bake.outputs.manifestsBundle }}
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-      - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration-linux.yml
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}" >> ../.github/workflows/integration-linux.yml
 
     # create kustomize workflow
     echo "

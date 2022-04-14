@@ -8,7 +8,6 @@ import (
 	"time"
 	
 
-	"github.com/Azure/draftv2/pkg/osutil"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -35,15 +34,15 @@ type federatedIdentityCredentials struct {
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	log.Debug("Commencing github connection with azure...")
 
-	osutil.CheckAzCliInstalled()
-	if !osutil.IsLoggedInToAz() {
-		if err := osutil.LogInToAz(); err != nil {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
 			return err
 		}
 	}
 
-	if !osutil.HasGhCli() || !osutil.IsLoggedInToGh() {
-		if err := osutil.LogInToGh(); err != nil {
+	if !HasGhCli() || !IsLoggedInToGh() {
+		if err := LogInToGh(); err != nil {
 			log.Fatal(err)
 		}
 		//log.Fatal("Error: Unable to login to your github account.")

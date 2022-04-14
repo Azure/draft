@@ -179,3 +179,21 @@ func (sc *SetUpCmd) ServicePrincipalExists() bool {
 
 	return false
 }
+
+func AzAcrExists(acrName string) bool {
+	query := fmt.Sprintf("[?name=='%s']", acrName)
+	checkAcrExistsCmd := exec.Command("az", "acr","list", "--only-show-errors", "--query", query)
+	out, err := checkAcrExistsCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	var azAcr []interface{}
+	json.Unmarshal(out, &azAcr)
+	
+	if len(azAcr) >= 1 {
+		return true
+	}
+
+	return false
+}

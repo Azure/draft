@@ -14,7 +14,7 @@ func newVersionCmd() *cobra.Command {
 		Short: "Get current version of Draft",
 		Long:  `Returns the running version of Draft`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Printf("verison: %s", version)
+			fmt.Printf("version: %s", version)
 			return nil
 		},
 	}

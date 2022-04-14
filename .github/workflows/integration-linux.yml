@@ -79,9 +79,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   gomodule-kustomize:
     runs-on: ubuntu-latest
@@ -181,9 +185,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   python-kustomize:
     runs-on: ubuntu-latest
@@ -283,9 +291,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   rust-kustomize:
     runs-on: ubuntu-latest
@@ -385,9 +397,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   javascript-kustomize:
     runs-on: ubuntu-latest
@@ -487,9 +503,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   ruby-kustomize:
     runs-on: ubuntu-latest
@@ -589,9 +609,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   csharp-kustomize:
     runs-on: ubuntu-latest
@@ -691,9 +715,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   java-kustomize:
     runs-on: ubuntu-latest
@@ -793,9 +821,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   gradle-kustomize:
     runs-on: ubuntu-latest
@@ -895,9 +927,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   swift-kustomize:
     runs-on: ubuntu-latest
@@ -997,9 +1033,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   erlang-kustomize:
     runs-on: ubuntu-latest
@@ -1099,9 +1139,13 @@ jobs:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        id: deploy
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   clojure-kustomize:
     runs-on: ubuntu-latest

@@ -42,9 +42,9 @@ func newCreateCmd() *cobra.Command {
 	cc := &createCmd{}
 
 	cmd := &cobra.Command{
-		Use:   "create [path]",
-		Short: "add minimum viable files to deploy to k8s",
-		Long:  "This command will add the necessary files to the local directory for deployment to k8s",
+		Use:   "create [flags]",
+		Short: "Add minimum required files to the directory",
+		Long:  "This command will add the minimum required files to the local directory for your Kubernetes deployment",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cc.initConfig()
 			return cc.run()
@@ -53,12 +53,12 @@ func newCreateCmd() *cobra.Command {
 
 	f := cmd.Flags()
 
-	f.StringVarP(&cc.createConfigPath, "createConfig", "c", "", "will use configuration given if set")
-	f.StringVarP(&cc.appName, "app", "a", "", "name of helm release by default this is randomly generated")
-	f.StringVarP(&cc.lang, "lang", "l", "", "the name of the language used to create the k8s deployment")
-	f.StringVarP(&cc.dest, "destination", "d", ".", "the repository root for dockerfile and deployment creation")
-	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "will only add Dockerfile to the local directory")
-	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "will only add deployment files to the local directory")
+	f.StringVarP(&cc.createConfigPath, "createConfig", "c", "", "Specify the path to the configuration file")
+	f.StringVarP(&cc.appName, "app", "a", "", "Specify the name of the helm release")
+	f.StringVarP(&cc.lang, "lang", "l", "", "Specify the language used to create the Kubernetes deployment")
+	f.StringVarP(&cc.dest, "destination", "d", ".", "Specify the repository root for dockerfile and deployment creation (default is .)")
+	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "Only create Dockerfile in the directory")
+	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "Only create deployment files in the directory")
 
 	return cmd
 }
@@ -281,7 +281,7 @@ func (cc *createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang st
 	} else if cc.deploymentOnly {
 		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
 	} else if !cc.deploymentOnly {
-		log.Info("--> Dockerfile Creation")
+		log.Info("Dockerfile Creation")
 		err := cc.generateDockerfile(detectedLang, lowerLang)
 		if err != nil {
 			return err
@@ -293,12 +293,15 @@ func (cc *createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang st
 	} else if cc.dockerfileOnly {
 		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
 	} else if !cc.dockerfileOnly {
-		log.Info("--> Deployment File Creation")
+		log.Info("Deployment File Creation")
 		err := cc.createDeployment()
 		if err != nil {
 			return err
 		}
 	}
+
+	log.Info("Draft has successfully created deployment resources for your project 😃")
+	log.Info("Use 'draft setup-gh' to set up Github OIDC.")
 
 	return nil
 }

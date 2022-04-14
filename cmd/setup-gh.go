@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/draftv2/pkg/providers"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	
+	log "github.com/sirupsen/logrus"
 )
 
 
@@ -19,26 +19,31 @@ func newSetUpCmd() *cobra.Command {
 	// setup-ghCmd represents the setup-gh command
 	var cmd = &cobra.Command{
 		Use:   "setup-gh",
-		Short: "automates setting up Github OIDC",
-		Long: `This command automates the process of setting up Github OIDC by creating an Azure Active Directory application 
-		and service principle, and configuring that application to trust github`,
+		Short: "Automates the Github OIDC setup process",
+		Long: `This command will automate the Github OIDC setup process by creating an Azure Active Directory 
+application and service principle, and will configure that application to trust github`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
+
+			log.Info("--> Setting up Github OIDC...")
 			
 			if err := runProviderSetUp(sc); err != nil {
 				return err
 			}
+
+			log.Info("Draft has successfully set up Github OIDC for your project 😃")
+			log.Info("Use 'draft generate-workflow' to generate a Github workflow to build and deploy an application on AKS.")
 
 			return nil		
 		},
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&sc.AppName, "app", "a", "", "name of Azure Active Directory application")
-	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "the Azure subscription ID")
-	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "", "the name of the Azure resource group")
-	f.StringVarP(&sc.Provider, "provider", "p", "", "your cloud provider")
-	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "your github repo")
+	f.StringVarP(&sc.AppName, "app", "a", "", "Specify the name of the Azure Active Directory application")
+	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "Specify the Azure subscription ID")
+	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "", "Specify the name of the Azure resource group")
+	f.StringVarP(&sc.Provider, "provider", "p", "", "Specify the cloud provider")
+	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "Specify the github repository link")
 
 	return cmd
 }
@@ -156,7 +161,7 @@ func getGhRepo() string {
 	}
 
 	repoPrompt := promptui.Prompt{
-		Label:    "Enter github organization and repo; example: organization/repoName",
+		Label:    "Enter github organization and repo (organization/repoName)",
 		Validate: validate,
 	}
 

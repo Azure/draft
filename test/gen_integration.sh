@@ -89,7 +89,7 @@ deployVariables:
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
-    value: \"testapp\"
+    value: \"localhost:5000/name/testapp\"
 languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/helm.yaml
@@ -111,7 +111,7 @@ deployVariables:
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
-    value: \"testapp\"
+    value: \"localhost:5000/name/testapp\"
 languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml

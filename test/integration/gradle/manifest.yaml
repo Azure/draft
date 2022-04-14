@@ -4,7 +4,7 @@ deployVariables:
   - name: "PORT"
     value: "8080"
   - name: "APPNAME"
-    value: "testapp"
+    value: "localhost:5000/name/testapp"
 languageVariables:
   - name: "PORT"
     value: "8080"

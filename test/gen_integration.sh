@@ -120,6 +120,11 @@ languageVariables:
     echo "
   $lang-helm:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -146,11 +151,18 @@ languageVariables:
             replicas:2
           helm-version: 'latest'
         id: bake
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          driver-opts: network=host
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
+          context: ./langtest/
           push: true
-          tags: testapp:latest
+          tags: localhost:5000/name/testapp:latest
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0

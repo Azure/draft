@@ -3,6 +3,8 @@ languageType: "rust"
 deployVariables:
   - name: "PORT"
     value: "8000"
+  - name: "APPNAME"
+    value: "testapp"
 languageVariables:
   - name: "PORT"
     value: "8000"

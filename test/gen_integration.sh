@@ -88,6 +88,8 @@ languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
     value: \"$port\"
+  - name: \"APPNAME\"
+    value: \"testapp\"
 languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/helm.yaml
@@ -109,7 +111,7 @@ deployVariables:
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
-    value: \"my-app\"
+    value: \"testapp\"
 languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
@@ -139,11 +141,16 @@ languageVariables:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
         id: bake
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: testapp:latest
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0

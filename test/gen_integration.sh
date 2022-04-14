@@ -170,9 +170,14 @@ languageVariables:
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
         with:
           action: deploy
-          manifests: \${{ steps.bake.outputs.manifestsBundle }}" >> ../.github/workflows/integration-linux.yml
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create kustomize workflow
     echo "

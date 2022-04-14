@@ -197,3 +197,14 @@ func AzAcrExists(acrName string) bool {
 
 	return false
 }
+
+func AzAksExists(aksName string, resourceGroup string) bool {
+	checkAksExistsCmd := exec.Command("az", "aks","browse", "-g", resourceGroup, "--name", aksName)
+	_, err := checkAksExistsCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+

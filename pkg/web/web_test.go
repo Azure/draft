@@ -35,7 +35,7 @@ func TestAddAnotationsKustomize(t *testing.T) {
 	testSa.Host = "test host"
 	testSa.Cert = "test cert"
 	
-	emptyManifest, fileErr := createTempManifest("./templates/empty_service.yaml")
+	emptyManifest, fileErr := createTempManifest("../../test/templates/empty_service.yaml")
 	if fileErr != nil {
 		t.Fatal(fileErr)
 	}
@@ -52,7 +52,7 @@ func TestAddAnotationsKustomize(t *testing.T) {
 
 	eManifestBytes, _ := os.ReadFile(emptyManifest.Name())
 	annotatedManifest := string(eManifestBytes)
-	oManifestBytes, _ := os.ReadFile("templates/empty_service.yaml.yaml")
+	oManifestBytes, _ := os.ReadFile("../../test/templates/empty_service.yaml.yaml")
 	ogManifest := string(oManifestBytes)
 
 	assert.False(t, annotatedManifest == ogManifest, "annotations weren't added")
@@ -63,7 +63,7 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 	testSa.Host = "test host"
 	testSa.Cert = "test cert"
 
-	annotatedManifest, fileErr := createTempManifest("./templates/service_w_annotations.yaml")
+	annotatedManifest, fileErr := createTempManifest("../../test/templates/service_w_annotations.yaml")
 	if fileErr != nil {
 		t.Fatal(fileErr)
 	}
@@ -80,7 +80,7 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 
 	eManifestBytes, _ := os.ReadFile(annotatedManifest.Name())
 	eManifest := string(eManifestBytes)
-	ogManifestBytes, _ := os.ReadFile("templates/service_w_annotations.yaml")
+	ogManifestBytes, _ := os.ReadFile("../../test/templates/service_w_annotations.yaml")
 	ogManifest := string(ogManifestBytes)
 
 	assert.True(t, eManifest == ogManifest, "annotations weren't replaced correctly")

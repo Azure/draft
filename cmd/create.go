@@ -301,7 +301,7 @@ func (cc *createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang st
 	}
 
 	log.Info("Draft has successfully created deployment resources for your project 😃")
-	log.Into("Use 'draftv2 setup-gh' to set up Github OIDC.")
+	log.Into("Use 'draft setup-gh' to set up Github OIDC.")
 
 	return nil
 }

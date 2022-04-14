@@ -11,13 +11,19 @@ func newGenerateWorkflowCmd() *cobra.Command {
 	dest := ""
 	var cmd = &cobra.Command{
 		Use:   "generate-workflow [flags]",
-		Short: "Generates a github workflow for automatic build and deploy to AKS",
-		Long:  `This command will generate a github workflow to build and deploy an application containerized 
+		Short: "Generates a Github workflow for automatic build and deploy to AKS",
+		Long:  `This command will generate a Github workflow to build and deploy an application containerized 
 with draft on AKS. This command assumes the 'setup-gh' command has been run properly.'`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			workflowConfig.ValidateAndFillConfig()
 
-			return workflows.CreateWorkflows(dest, workflowConfig)
+			log.Info("--> Generating Github workflow")
+
+			if err := workflows.CreateWorkflows(dest, workflowConfig); err != nil {
+				return err
+			}
+			
+			log.Info("Draft has successfully generated a Github workflow for your project 😃")
 		},
 	}
 

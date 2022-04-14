@@ -30,7 +30,7 @@ For more information, please visit the Draft Github page: https://github.com/Azu
 		if verbose {
 			logrus.SetLevel(logrus.DebugLevel)
 		}
-	},\
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

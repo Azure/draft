@@ -31,6 +31,9 @@ application and service principle, and will configure that application to trust 
 				return err
 			}
 
+			log.Info("Draft has successfully set up Github OIDC for your project 😃")
+			log.Into("Use 'draft generate-workflow' to generate a Github workflow to build and deploy an application on AKS.")
+
 			return nil		
 		},
 	}

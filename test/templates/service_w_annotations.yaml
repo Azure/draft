@@ -1,0 +1,14 @@
+apiversion: v1
+kind: Service
+metadata:
+  annotations:
+    kubernetes.azure.com/ingress-host: test host
+    kubernetes.azure.com/tls-cert-keyvault-uri: test cert
+  name: my-app
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: my-app

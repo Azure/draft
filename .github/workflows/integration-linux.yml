@@ -68,7 +68,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -170,7 +170,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -272,7 +272,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -374,7 +374,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -476,7 +476,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -578,7 +578,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -680,7 +680,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -782,7 +782,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -884,7 +884,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -986,7 +986,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1088,7 +1088,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp .
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step

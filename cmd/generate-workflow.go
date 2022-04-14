@@ -3,6 +3,8 @@ package cmd
 import (
 	"github.com/Azure/draftv2/pkg/workflows"
 	"github.com/spf13/cobra"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func newGenerateWorkflowCmd() *cobra.Command {
@@ -24,6 +26,8 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 			}
 			
 			log.Info("Draft has successfully generated a Github workflow for your project 😃")
+			
+			return nil
 		},
 	}
 

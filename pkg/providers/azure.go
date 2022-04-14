@@ -52,13 +52,13 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		return err
 	}
 
-	if sc.appExistsAlready() {
+	if AzAppExists(sc.AppName) {
 		log.Fatal("App already exists")
 	} else if err := sc.createAzApp(); err != nil {
 		return err
 	}
 
-	if !sc.servicePrincipalExistsAlready() {
+	if !sc.ServicePrincipalExists() {
 		if err := sc.CreateServicePrincipal(); err != nil {
 			return err
 		}
@@ -89,25 +89,6 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 }
 
 
-func (sc *SetUpCmd) appExistsAlready() bool {
-	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)
-	checkAppExistsCmd := exec.Command("az", "ad", "app","list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
-	out, err := checkAppExistsCmd.CombinedOutput()
-	if err != nil {
-		return false
-	}
-
-	var azApp []string
-	json.Unmarshal(out, &azApp)
-	
-	if len(azApp) >= 1 {
-		// TODO: tell user app already exists and ask which one they want to use?
-		return true
-	}
-
-	return false
-}
-
 func (sc *SetUpCmd) createAzApp() error {
 	log.Debug("Commencing Azure app creation...")
 	
@@ -126,28 +107,6 @@ func (sc *SetUpCmd) createAzApp() error {
 
 	log.Debug("App created successfully!")
 	return nil
-}
-
-func (sc *SetUpCmd) servicePrincipalExistsAlready() bool {
-	filter := fmt.Sprintf("appId eq '%s'", sc.appId)
-	checkSpExistsCmd := exec.Command("az", "ad", "sp","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
-	out, err := checkSpExistsCmd.CombinedOutput()
-	if err != nil {
-		return true
-	}
-
-	var azSp []string
-	json.Unmarshal(out, &azSp)
-	
-	if len(azSp) == 1 {
-		log.Debug("Service principal already exists - skipping service principal creation.")
-		// TODO: tell user sp already exists and ask if they want to use it?
-		objectId := fmt.Sprint(azSp[0])
-		sc.spObjectId = objectId
-		return true
-	}
-
-	return false
 }
 
 func (sc *SetUpCmd) CreateServicePrincipal() error {
@@ -216,54 +175,11 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 		return errors.New("Invalid app name")
 	} 
 
-	if !sc.ValidGhRepo() {
+	if !isValidGhRepo(sc.Repo) {
 		return errors.New("Github repo is not valid")
 	}
 
 	return nil
-}
-
-func isValidResourceGroup(resourceGroup string) bool {
-	if resourceGroup == "" {
-		return false
-	}
-
-	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
-	getResourceGroupCmd := exec.Command("az", "group", "list", "--query", query)
-	out, err := getResourceGroupCmd.CombinedOutput()
-	if err != nil {
-		return false
-	}
-
-	var rg []interface{}
-	json.Unmarshal(out, &rg)
-
-	if len(rg) ==  0 {
-		return false
-	}
-
-	return true
-}
-
-func IsSubscriptionIdValid(subscriptionId string) bool {
-	if subscriptionId == "" { 
-		return false
-	}
-
-	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "id")
-	out, err := getSubscriptionIdCmd.CombinedOutput()
-	if err != nil {
-		return false
-	}
-
-	var azSubscription string
-	json.Unmarshal(out, &azSubscription)
-
-	if azSubscription != "" {
-		return true
-	}
-
-	return false
 }
 
 func (sc *SetUpCmd) hasFederatedCredentials() bool {
@@ -287,16 +203,6 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 
 	log.Debug("No existing credentials found")
 	return false
-}
-
-func (sc *SetUpCmd) ValidGhRepo() bool {
-	listReposCmd := exec.Command("gh", "repo", "view", sc.Repo)
-		_, err := listReposCmd.CombinedOutput()
-		if err != nil {
-			log.Fatal("Github repo not found")
-			return false
-		}
-		return true
 }
 
 

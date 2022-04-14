@@ -208,3 +208,12 @@ func AzAksExists(aksName string, resourceGroup string) bool {
 	return true
 }
 
+func GetCurrentAzSubscriptionId() string {
+	getAccountCmd := exec.Command("az", "account","show", "--query", "id")
+	out, err := getAccountCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return string(out)
+}

@@ -159,7 +159,7 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t testapp .
+          docker build -f ./Dockerfile -t testapp ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step

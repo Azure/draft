@@ -130,12 +130,26 @@ languageVariables:
         with:
           repository: $repo
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

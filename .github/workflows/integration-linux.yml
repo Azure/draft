@@ -41,12 +41,26 @@ jobs:
         with:
           repository: gambtho/go_echo
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -113,12 +127,26 @@ jobs:
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/python/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -185,12 +213,26 @@ jobs:
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -257,12 +299,26 @@ jobs:
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -329,12 +385,26 @@ jobs:
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -401,12 +471,26 @@ jobs:
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -473,12 +557,26 @@ jobs:
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/java/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -545,12 +643,26 @@ jobs:
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -617,12 +729,26 @@ jobs:
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -689,12 +815,26 @@ jobs:
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -761,12 +901,26 @@ jobs:
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

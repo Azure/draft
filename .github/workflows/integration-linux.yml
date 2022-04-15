@@ -97,7 +97,7 @@ jobs:
           repository: gambtho/go_echo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -143,7 +143,7 @@ jobs:
           repository: gambtho/go_echo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/gomodule/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -234,7 +234,7 @@ jobs:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/python/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -280,7 +280,7 @@ jobs:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/python/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/python/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -371,7 +371,7 @@ jobs:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -417,7 +417,7 @@ jobs:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/rust/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -508,7 +508,7 @@ jobs:
           repository: davidgamero/express-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -554,7 +554,7 @@ jobs:
           repository: davidgamero/express-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/javascript/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -645,7 +645,7 @@ jobs:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -691,7 +691,7 @@ jobs:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/ruby/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -782,7 +782,7 @@ jobs:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -828,7 +828,7 @@ jobs:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/csharp/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -919,7 +919,7 @@ jobs:
           repository: imiller31/simple-java-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/java/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -965,7 +965,7 @@ jobs:
           repository: imiller31/simple-java-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/java/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/java/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -1056,7 +1056,7 @@ jobs:
           repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1102,7 +1102,7 @@ jobs:
           repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/gradle/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -1193,7 +1193,7 @@ jobs:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1239,7 +1239,7 @@ jobs:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/swift/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -1330,7 +1330,7 @@ jobs:
           repository: bfoley13/ErlangExample
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1376,7 +1376,7 @@ jobs:
           repository: bfoley13/ErlangExample
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/erlang/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -1467,7 +1467,7 @@ jobs:
           repository: imiller31/clojure-simple-http
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1513,7 +1513,7 @@ jobs:
           repository: imiller31/clojure-simple-http
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/clojure/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube

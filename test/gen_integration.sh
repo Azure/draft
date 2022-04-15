@@ -190,7 +190,7 @@ languageVariables:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -238,7 +238,7 @@ languageVariables:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/$lang/manifests.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube

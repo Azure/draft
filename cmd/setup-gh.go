@@ -58,7 +58,7 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	}
 
 	if sc.SubscriptionID == "" {
-		if sc.Provider == "azure" {
+		if strings.ToLower(sc.Provider) == "azure" {
 			currentSub := providers.GetCurrentAzSubscriptionId()
 			sc.SubscriptionID = GetAzSubscriptionId(currentSub)
 		} else {

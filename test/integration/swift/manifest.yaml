@@ -1,4 +1,4 @@
-deployType: "kustomize"
+deployType: "manifests"
 languageType: "swift"
 deployVariables:
   - name: "PORT"

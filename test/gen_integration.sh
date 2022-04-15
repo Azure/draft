@@ -105,7 +105,7 @@ languageVariables:
     value: \"$port\"" > ./integration/$lang/kustomize.yaml
 
     # create kustomize.yaml
-    echo "deployType: \"kustomize\"
+    echo "deployType: \"manifests\"
 languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
@@ -238,7 +238,7 @@ languageVariables:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/manifests.yaml -d ./langtest/
+      - run: ./draftv2 -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
       - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube

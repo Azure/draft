@@ -1,4 +1,4 @@
-deployType: "kustomize"
+deployType: "manifests"
 languageType: "ruby"
 deployVariables:
   - name: "PORT"

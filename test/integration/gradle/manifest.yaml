@@ -1,4 +1,4 @@
-deployType: "kustomize"
+deployType: "manifests"
 languageType: "gradle"
 deployVariables:
   - name: "PORT"

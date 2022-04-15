@@ -53,17 +53,17 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 		sc.Provider = getCloudProvider()
 	}
 
-	if sc.Provider == "azure" {
-		currentSub := providers.GetCurrentAzSubscriptionId()
-		sc.SubscriptionID = GetAzSubscriptionId(currentSub)
-	}
-
 	if sc.AppName == "" {
 		sc.AppName = getAppName()
 	}
 
 	if sc.SubscriptionID == "" {
-		sc.SubscriptionID = getSubscriptionID()
+		if sc.Provider == "azure" {
+			currentSub := providers.GetCurrentAzSubscriptionId()
+			sc.SubscriptionID = GetAzSubscriptionId(currentSub)
+		} else {
+			sc.SubscriptionID = getSubscriptionID()
+		}
 	}
 
 	if sc.ResourceGroupName == "" {

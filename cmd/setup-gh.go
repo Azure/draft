@@ -53,6 +53,11 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 		sc.Provider = getCloudProvider()
 	}
 
+	if sc.Provider == "azure" {
+		currentSub := providers.GetCurrentAzSubscriptionId()
+		sc.SubscriptionID = GetAzSubscriptionId(currentSub)
+	}
+
 	if sc.AppName == "" {
 		sc.AppName = getAppName()
 	}
@@ -187,6 +192,19 @@ func getCloudProvider() string {
 	return selectResponse
 }
 
+func GetAzSubscriptionId(subIds []string) string {
+	selection := &promptui.Select{
+		Label: "Please choose the subscription ID you would like to use.",
+		Items: subIds,
+	}
+
+	_, selectResponse, err := selection.Run()
+	if err != nil {
+		return err.Error()
+	}
+
+	return selectResponse
+}
 
 func init() {
 	rootCmd.AddCommand(newSetUpCmd())

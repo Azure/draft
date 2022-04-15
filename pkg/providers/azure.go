@@ -34,13 +34,6 @@ type federatedIdentityCredentials struct {
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	log.Debug("Commencing github connection with azure...")
 
-	CheckAzCliInstalled()
-	if !IsLoggedInToAz() {
-		if err := LogInToAz(); err != nil {
-			return err
-		}
-	}
-
 	if !HasGhCli() || !IsLoggedInToGh() {
 		if err := LogInToGh(); err != nil {
 			log.Fatal(err)

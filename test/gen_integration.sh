@@ -88,6 +88,8 @@ languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
     value: \"$port\"
+  - name: \"APPNAME\"
+    value: \"testapp\"
 languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/helm.yaml
@@ -103,13 +105,13 @@ languageVariables:
     value: \"$port\"" > ./integration/$lang/kustomize.yaml
 
     # create kustomize.yaml
-    echo "deployType: \"kustomize\"
+    echo "deployType: \"manifests\"
 languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
-    value: \"my-app\"
+    value: \"testapp\"
 languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
@@ -118,6 +120,11 @@ languageVariables:
     echo "
   $lang-helm:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -130,17 +137,41 @@ languageVariables:
         with:
           repository: $repo
           path: ./langtest
-      - uses: actions/download-artifact@v2
-        with:
-          name: helm-skaffold
-          path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-      - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration-linux.yml
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create kustomize workflow
     echo "
@@ -160,12 +191,35 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: ./langtest/base
+          kubectl-version: 'latest'
+        id: bake
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-      - run: cd ./langtest && skaffold init --force
-      - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration-linux.yml
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
   # create manifests workflow
     echo "
@@ -185,12 +239,25 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draftv2 -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
+      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - run: curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
-      - run: cd ./langtest && skaffold init --force
-      - run: cd ./langtest && skaffold run" >> ../.github/workflows/integration-linux.yml
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl deploy -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create helm workflow
     echo "

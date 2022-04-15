@@ -1,10 +1,10 @@
-deployType: "kustomize"
+deployType: "manifests"
 languageType: "gomodule"
 deployVariables:
   - name: "PORT"
     value: "1323"
   - name: "APPNAME"
-    value: "my-app"
+    value: "testapp"
 languageVariables:
   - name: "PORT"
     value: "1323"

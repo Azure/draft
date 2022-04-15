@@ -2,8 +2,8 @@ package workflows
 
 import (
 	"github.com/Azure/draftv2/pkg/prompts"
-	"github.com/Azure/draftv2/pkg/providers"
-	log "github.com/sirupsen/logrus"
+	//"github.com/Azure/draftv2/pkg/providers"
+	//log "github.com/sirupsen/logrus"
 )
 
 //GitHubWorkflow is a rough struct to allow for yaml editing including deletion of Job steps
@@ -48,13 +48,14 @@ func (config *WorkflowConfig) ValidateAndFillConfig() {
 		config.AksClusterName = prompts.GetInputFromPrompt("AKS cluster name")
 	}
 
-	if !providers.AzAcrExists(config.AcrName) {
-		log.Fatal("The provided Azure Container Registry resource was not found.")
-	}
+	// validate acr, rg and aks cluster exist
+	// if !providers.AzAcrExists(config.AcrName) {
+	// 	log.Fatal("The provided Azure Container Registry resource was not found.")
+	// }
 
-	if !providers.AzAksExists(config.AksClusterName, config.ResourceGroupName) {
-		log.Fatal("Error: could not find the specified AKS cluster within the given resource group.")
-	}
+	// if !providers.AzAksExists(config.AksClusterName, config.ResourceGroupName) {
+	// 	log.Fatal("Error: could not find the specified AKS cluster within the given resource group.")
+	// }
 
 	config.chartsPath = "./charts"
 	config.chartsOverridePath = "./charts/production.yaml"

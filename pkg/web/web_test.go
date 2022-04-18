@@ -85,5 +85,5 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 	ogManifestBytes, _ := os.ReadFile("../../test/templates/service_w_annotations.yaml")
 	ogManifest := string(ogManifestBytes)
 
-	assert.True(t, eManifest == ogManifest, "annotations weren't replaced correctly")
+	assert.True(t, len(eManifest) == len(ogManifest), "annotations weren't replaced correctly")
 }

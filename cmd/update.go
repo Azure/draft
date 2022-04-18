@@ -1,12 +1,11 @@
-
 package cmd
 
 import (
 	"errors"
 
-	"github.com/spf13/cobra"
+	"github.com/Azure/draft/pkg/web"
 	"github.com/manifoldco/promptui"
-	"github.com/Azure/draftv2/pkg/web"
+	"github.com/spf13/cobra"
 )
 
 func newUpdateCmd() *cobra.Command {
@@ -20,7 +19,7 @@ func newUpdateCmd() *cobra.Command {
 		will be able to receive external requests.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillUpdateConfig(sa)
-			
+
 			if err := web.UpdateServiceFile(sa, "."); err != nil {
 				return err
 			}

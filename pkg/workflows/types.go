@@ -1,7 +1,7 @@
 package workflows
 
 import (
-	"github.com/Azure/draftv2/pkg/prompts"
+	"github.com/Azure/draft/pkg/prompts"
 )
 
 //GitHubWorkflow is a rough struct to allow for yaml editing including deletion of Job steps

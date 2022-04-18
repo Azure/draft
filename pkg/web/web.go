@@ -4,24 +4,23 @@ import (
 	"bytes"
 	"os"
 
-	"github.com/Azure/draftv2/pkg/filematches"
+	"github.com/Azure/draft/pkg/filematches"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 var (
-	parentDir = "."
+	parentDir               = "."
 	deployNameToServiceYaml = map[string]*service{
-		"helm": {file: "charts/values.yaml", annotation: "service.annotations"},
+		"helm":      {file: "charts/values.yaml", annotation: "service.annotations"},
 		"kustomize": {file: "base/service.yaml", annotation: "metadata.annotations"},
-
 	}
 	// for testing purposes
 	// deployType = "kustomize"
 )
 
 type service struct {
-	file string
+	file       string
 	annotation string
 }
 
@@ -32,7 +31,7 @@ type ServiceAnnotations struct {
 
 func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 	annotations := map[string]string{
-		"kubernetes.azure.com/ingress-host": sa.Host,
+		"kubernetes.azure.com/ingress-host":          sa.Host,
 		"kubernetes.azure.com/tls-cert-keyvault-uri": sa.Cert,
 	}
 
@@ -43,7 +42,7 @@ func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 
 	log.Debug("Loading config...")
 	servicePath := deployNameToServiceYaml[deployType].file
-	
+
 	serviceBytes, err := os.ReadFile(servicePath)
 	if err != nil {
 		return err
@@ -53,9 +52,9 @@ func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 	if err := viper.ReadConfig(bytes.NewBuffer(serviceBytes)); err != nil {
 		return err
 	}
-	
+
 	viper.Set(deployNameToServiceYaml[deployType].annotation, annotations)
-	
+
 	log.Debug("Writing new configuration to manifest...")
 	if err := viper.WriteConfigAs(servicePath); err != nil {
 		return err

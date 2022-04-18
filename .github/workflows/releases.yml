@@ -1,4 +1,4 @@
-name: Draftv2 Releases
+name: draft Releases
 
 on: 
   push:

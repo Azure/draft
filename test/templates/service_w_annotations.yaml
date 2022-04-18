@@ -6,6 +6,7 @@ metadata:
     kubernetes.azure.com/tls-cert-keyvault-uri: test cert
   name: my-app
 spec:
+  type: LoadBalancer
   ports:
   - port: 80
     protocol: TCP

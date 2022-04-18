@@ -12,11 +12,11 @@ import (
 var (
 	parentDir               = "."
 	deployNameToServiceYaml = map[string]*service{
-		"helm":      {file: "charts/values.yaml", annotation: "service.annotations"},
+		"helm": {file: "charts/values.yaml", annotation: "service.annotations"},
 		"kustomize": {file: "base/service.yaml", annotation: "metadata.annotations"},
+		"manifests": {file: "manifests/service.yaml", annotation: "metadata.annotations"},
 	}
-	// for testing purposes
-	// deployType = "kustomize"
+
 )
 
 type service struct {

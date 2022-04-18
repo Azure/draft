@@ -44,6 +44,7 @@ func TestAddAnotationsKustomize(t *testing.T) {
 	deployNameToServiceYaml = map[string]*service{
 		"kustomize": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
 		"helm": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
+		"manifests": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
 	}
 
 	if err := UpdateServiceFile(testSa, emptyManifest.Name()); err != nil {
@@ -72,6 +73,7 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 	deployNameToServiceYaml = map[string]*service{
 		"kustomize": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
 		"helm": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
+		"manifests": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
 	}
 
 	if err := UpdateServiceFile(testSa, annotatedManifest.Name()); err != nil {

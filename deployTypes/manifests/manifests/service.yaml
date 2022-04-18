@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{APPNAME}}
 spec:
+  type: LoadBalancer
   selector:
     app: {{APPNAME}}
   ports:

@@ -1,4 +1,4 @@
-name: DraftV2 Linux Integrations
+name: draft Linux Integrations
 
 on:
   pull_request_review:
@@ -23,8 +23,8 @@ jobs:
           if-no-files-found: error
       - uses: actions/upload-artifact@v2
         with:
-          name: draftv2-binary
-          path: ./draftv2
+          name: draft-binary
+          path: ./draft
           if-no-files-found: error
 
   gomodule-helm:
@@ -39,16 +39,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -89,16 +89,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -135,16 +135,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -176,16 +176,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/python/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -226,16 +226,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -272,16 +272,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -313,16 +313,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -363,16 +363,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -409,16 +409,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -450,16 +450,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -500,16 +500,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -546,16 +546,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -587,16 +587,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -637,16 +637,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -683,16 +683,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -724,16 +724,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -774,16 +774,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -820,16 +820,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -861,16 +861,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/java/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -911,16 +911,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -957,16 +957,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -998,16 +998,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1048,16 +1048,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -1094,16 +1094,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1135,16 +1135,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1185,16 +1185,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -1231,16 +1231,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1272,16 +1272,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1322,16 +1322,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -1368,16 +1368,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1409,16 +1409,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1459,16 +1459,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -1505,16 +1505,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

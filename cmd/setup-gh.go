@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	
-	"github.com/Azure/draftv2/pkg/providers"
+	"github.com/Azure/draft/pkg/providers"
 	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
-
 
 func newSetUpCmd() *cobra.Command {
 	sc := &providers.SetUpCmd{}
@@ -26,7 +24,7 @@ application and service principle, and will configure that application to trust 
 			fillSetUpConfig(sc)
 
 			log.Info("--> Setting up Github OIDC...")
-			
+
 			if err := runProviderSetUp(sc); err != nil {
 				return err
 			}
@@ -34,7 +32,7 @@ application and service principle, and will configure that application to trust 
 			log.Info("Draft has successfully set up Github OIDC for your project 😃")
 			log.Info("Use 'draft generate-workflow' to generate a Github workflow to build and deploy an application on AKS.")
 
-			return nil		
+			return nil
 		},
 	}
 
@@ -75,13 +73,12 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	}
 }
 
-
 func runProviderSetUp(sc *providers.SetUpCmd) error {
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		// call azure provider logic
 		return providers.InitiateAzureOIDCFlow(sc)
-			
+
 	} else {
 		// call logic for user-submitted provider
 		fmt.Printf("The provider is %v\n", sc.Provider)

@@ -22,23 +22,23 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/Azure/draftv2">
+  <a href="https://github.com/Azure/draft">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">DraftV2</h3>
+<h3 align="center">draft</h3>
 
   <p align="center">
     A tool to help developers hit the ground running with k8s
     <br />
-    <a href="https://github.com/Azure/draftv2"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Azure/draft"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Azure/draftv2">View Demo</a>
+    <a href="https://github.com/Azure/draft">View Demo</a>
     ·
-    <a href="https://github.com/Azure/draftv2/issues">Report Bug</a>
+    <a href="https://github.com/Azure/draft/issues">Report Bug</a>
     ·
-    <a href="https://github.com/Azure/draftv2/issues">Request Feature</a>
+    <a href="https://github.com/Azure/draft/issues">Request Feature</a>
   </p>
 </div>
 
@@ -77,7 +77,7 @@
 
 [![Draft Screen Shot][product-screenshot]](https://example.com)
 
-Draftv2 aims to simplify starting out with k8s. Draftv2 will create both a working Dockerfile for your application and create the necessary kubernetes manifests needed to hit the ground running with tools like Skaffold.
+draft aims to simplify starting out with k8s. draft will create both a working Dockerfile for your application and create the necessary kubernetes manifests needed to hit the ground running with tools like Skaffold.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
@@ -96,7 +96,7 @@ Draftv2 aims to simplify starting out with k8s. Draftv2 will create both a worki
 
 ### Prerequisites
 
-Draftv2 requires Go version 1.17.x.
+draft requires Go version 1.17.x.
 * Go
   ```sh
   go version
@@ -106,7 +106,7 @@ Draftv2 requires Go version 1.17.x.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/Azure/draftv2.git
+   git clone https://github.com/Azure/draft.git
    ```
 2. Build the binary
    ```sh
@@ -114,7 +114,7 @@ Draftv2 requires Go version 1.17.x.
    ```
 3. Add the binary to your path
    ```js
-   mv draftv2 $GOPATH/bin/
+   mv draft $GOPATH/bin/
    ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -140,7 +140,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [] Feature 3
     - [] Nested Feature
 
-See the [open issues](https://github.com/Azure/draftv2/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/Azure/draft/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -179,7 +179,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
 
-Project Link: [https://github.com/Azure/draftv2](https://github.com/Azure/draftv2)
+Project Link: [https://github.com/Azure/draft](https://github.com/Azure/draft)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -198,16 +198,16 @@ Project Link: [https://github.com/Azure/draftv2](https://github.com/Azure/draftv
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/Azure/draftv2.svg?style=for-the-badge
-[contributors-url]: https://github.com/Azure/draftv2/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Azure/draftv2.svg?style=for-the-badge
-[forks-url]: https://github.com/Azure/draftv2/network/members
-[stars-shield]: https://img.shields.io/github/stars/Azure/draftv2.svg?style=for-the-badge
-[stars-url]: https://github.com/Azure/draftv2/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Azure/draftv2.svg?style=for-the-badge
-[issues-url]: https://github.com/Azure/draftv2/issues
-[license-shield]: https://img.shields.io/github/license/Azure/draftv2.svg?style=for-the-badge
-[license-url]: https://github.com/Azure/draftv2/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/Azure/draft.svg?style=for-the-badge
+[contributors-url]: https://github.com/Azure/draft/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Azure/draft.svg?style=for-the-badge
+[forks-url]: https://github.com/Azure/draft/network/members
+[stars-shield]: https://img.shields.io/github/stars/Azure/draft.svg?style=for-the-badge
+[stars-url]: https://github.com/Azure/draft/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Azure/draft.svg?style=for-the-badge
+[issues-url]: https://github.com/Azure/draft/issues
+[license-shield]: https://img.shields.io/github/license/Azure/draft.svg?style=for-the-badge
+[license-url]: https://github.com/Azure/draft/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: images/screenshot.png

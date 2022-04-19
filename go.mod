@@ -1,4 +1,4 @@
-module github.com/Azure/draftv2
+module github.com/Azure/draft
 
 go 1.18
 

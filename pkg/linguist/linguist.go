@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/draftv2/pkg/osutil"
+	"github.com/Azure/draft/pkg/osutil"
 	log "github.com/sirupsen/logrus"
 )
 

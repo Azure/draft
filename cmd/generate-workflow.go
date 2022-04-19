@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Azure/draftv2/pkg/workflows"
+	"github.com/Azure/draft/pkg/workflows"
 	"github.com/spf13/cobra"
 
 	log "github.com/sirupsen/logrus"
@@ -14,7 +14,7 @@ func newGenerateWorkflowCmd() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "generate-workflow [flags]",
 		Short: "Generates a Github workflow for automatic build and deploy to AKS",
-		Long:  `This command will generate a Github workflow to build and deploy an application containerized 
+		Long: `This command will generate a Github workflow to build and deploy an application containerized 
 with draft on AKS. This command assumes the 'setup-gh' command has been run properly.'`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			workflowConfig.ValidateAndFillConfig()
@@ -24,9 +24,9 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 			if err := workflows.CreateWorkflows(dest, workflowConfig); err != nil {
 				return err
 			}
-			
+
 			log.Info("Draft has successfully generated a Github workflow for your project 😃")
-			
+
 			return nil
 		},
 	}

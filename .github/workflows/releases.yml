@@ -5,6 +5,9 @@ on:
     tags:
       - "v*.*.*"
 
+env:
+  DRAFT_VERSION: "${{github.ref_name}}"
+
 jobs:
   Release-Artifacts:
     runs-on: ubuntu-latest

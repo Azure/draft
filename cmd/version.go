@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"runtime/debug"
@@ -16,9 +17,10 @@ func newVersionCmd() *cobra.Command {
 		Long:  `Returns the running version of Draft`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			getVersionFromRuntime()
+			vcsInfo := getVCSInfoFromRuntime()
 
-			log.Infof("version: %s", VERSION)
+			fmt.Println("version: ", VERSION)
+			fmt.Println("runtime SHA: ", vcsInfo)
 			return nil
 		},
 	}
@@ -27,15 +29,19 @@ func newVersionCmd() *cobra.Command {
 
 }
 
-func getVersionFromRuntime() {
+func getVCSInfoFromRuntime() string {
 	buildInfo, ok := debug.ReadBuildInfo()
 	if !ok {
-		log.Fatal("could not get version at runtime")
+		log.Fatal("could not get vcs info at runtime")
 	}
+
 	for _, kv := range buildInfo.Settings {
-		log.Infof("key: %s", kv.Key)
-		log.Infof("value: %s", kv.Value)
+		if kv.Key == "vcs.revision" {
+			return kv.Value
+		}
 	}
+
+	return ""
 }
 
 func init() {

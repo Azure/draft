@@ -1,7 +1,11 @@
 package cmd
 
-import "testing"
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
 
 func TestGetVersionAtRuntime(t *testing.T) {
-	getVersionFromRuntime()
+	vcsInfo := getVCSInfoFromRuntime()
+	assert.Empty(t, vcsInfo)
 }

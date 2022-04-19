@@ -6,7 +6,7 @@ rm ../.github/workflows/integration-linux.yml
 rm ../.github/workflows/integration-windows.yml
 
 # add build to workflow
-echo "name: DraftV2 Linux Integrations
+echo "name: draft Linux Integrations
 
 on:
   pull_request_review:
@@ -31,11 +31,11 @@ jobs:
           if-no-files-found: error
       - uses: actions/upload-artifact@v2
         with:
-          name: draftv2-binary
-          path: ./draftv2
+          name: draft-binary
+          path: ./draft
           if-no-files-found: error" > ../.github/workflows/integration-linux.yml
 
-echo "name: DraftV2 Windows Integrations
+echo "name: draft Windows Integrations
 
 on:
   pull_request_review:
@@ -55,8 +55,8 @@ jobs:
         run: make
       - uses: actions/upload-artifact@v2
         with:
-          name: draftv2-binary
-          path: ./draftv2.exe
+          name: draft-binary
+          path: ./draft.exe
           if-no-files-found: error
       - uses: actions/upload-artifact@v2
         with:
@@ -130,16 +130,16 @@ languageVariables:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -182,16 +182,16 @@ languageVariables:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -230,16 +230,16 @@ languageVariables:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
-      - run: chmod +x ./draftv2
+          name: draft-binary
+      - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draftv2 -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
-      - run: ./draftv2 -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -268,7 +268,7 @@ languageVariables:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
+          name: draft-binary
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
@@ -277,7 +277,7 @@ languageVariables:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
@@ -294,7 +294,7 @@ languageVariables:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: draftv2-binary
+          name: draft-binary
       - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
@@ -303,7 +303,7 @@ languageVariables:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draftv2.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
+      - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_kustomize

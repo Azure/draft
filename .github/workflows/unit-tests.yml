@@ -1,4 +1,4 @@
-name: DraftV2 Unit Tests
+name: draft Unit Tests
 on:
   pull_request:
     paths:

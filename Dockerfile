@@ -1,6 +1,6 @@
 FROM golang:1.18-alpine
 
-WORKDIR /draftv2
+WORKDIR /draft
 COPY . ./
 
 RUN apk add build-base

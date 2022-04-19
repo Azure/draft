@@ -4,5 +4,5 @@ vendor/
 /pkg/deployments/deployTypes/
 /pkg/workflows/workflows/
 .DS_Store
-draftv2
+draft
 langtest

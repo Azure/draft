@@ -18,13 +18,13 @@ var rootCmd = &cobra.Command{
 	Short: "Draft creates the minimum required files for your application to run on Kubernetes",
 	Long: `Draft is a Command Line Tool (CLI) that creates the miminum required files for your Kubernetes deployments.
 
-To start a k8s deployment with Draftv2, run the 'draftv2 create' command 🤩
+To start a k8s deployment with draft, run the 'draft create' command 🤩
 
 	$ draft create
 
 This will prompt you to create a Dockerfile and deployment files for your project ✨
 
-For more information, please visit the Draft Github page: https://github.com/Azure/draftv2.`,
+For more information, please visit the Draft Github page: https://github.com/Azure/draft.`,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {
@@ -42,7 +42,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Config file (default is $HOME/.draftv2.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Config file (default is $HOME/.draft.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose logging")
 }
 
@@ -56,10 +56,10 @@ func initConfig() {
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".draftv2" (without extension).
+		// Search config in home directory with name ".draft" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".draftv2")
+		viper.SetConfigName(".draft")
 	}
 
 	// If a config file is found, read it in.

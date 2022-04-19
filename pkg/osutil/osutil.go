@@ -7,9 +7,8 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
-	
 
-	"github.com/Azure/draftv2/pkg/configs"
+	"github.com/Azure/draft/pkg/configs"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -129,4 +128,3 @@ func CopyDir(
 	}
 	return nil
 }
-

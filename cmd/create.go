@@ -262,6 +262,20 @@ func (cc *createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang st
 		return err
 	}
 
+	if hasDockerFile {
+		selection := &promptui.Select{
+			Label: "We found Dockerfile in the directory, would you like to recreate the Dockerfile?",
+			Items: []string{"yes", "no"},
+		}
+
+		_, selectResponse, err := selection.Run()
+		if err != nil {
+			return err
+		}
+
+		hasDockerFile = strings.EqualFold(selectResponse, "no")
+	}
+
 	if hasDeploymentFiles {
 		selection := &promptui.Select{
 			Label: "We found deployment files in the directory, would you like to create new deployment files?",

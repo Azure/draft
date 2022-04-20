@@ -96,7 +96,7 @@ func getAppName() string {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Enter app name",
+		Label:    "Enter app registration name",
 		Validate: validate,
 	}
 

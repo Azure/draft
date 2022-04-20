@@ -1,6 +1,8 @@
 package web
 
 import (
+	"github.com/Azure/draft/pkg/workflows"
+	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
@@ -31,38 +33,10 @@ func createTempManifest(path string) (*os.File, error) {
 }
 
 func TestAddAnotationsKustomize(t *testing.T) {
-	testSa := &ServiceAnnotations{}
-	testSa.Host = "test host"
-	testSa.Cert = "test cert"
-	
-	emptyManifest, fileErr := createTempManifest("../../test/templates/empty_service.yaml")
-	if fileErr != nil {
-		t.Fatal(fileErr)
+	annotations := map[string]string{
+		"kubernetes.azure.com/ingress-host":          "test.SA",
+		"kubernetes.azure.com/tls-cert-keyvault-uri": "test.Cert",
 	}
-	defer os.Remove(emptyManifest.Name())
-
-	deployNameToServiceYaml = map[string]*service{
-		"kustomize": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
-		"helm": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
-		"manifests": {file: emptyManifest.Name(), annotation: "metadata.annotations"},
-	}
-
-	if err := UpdateServiceFile(testSa, emptyManifest.Name()); err != nil {
-		t.Fatal(err)
-	}
-
-	eManifestBytes, _ := os.ReadFile(emptyManifest.Name())
-	annotatedManifest := string(eManifestBytes)
-	oManifestBytes, _ := os.ReadFile("../../test/templates/empty_service.yaml.yaml")
-	ogManifest := string(oManifestBytes)
-
-	assert.False(t, annotatedManifest == ogManifest, "annotations weren't added")
-}
-
-func TestReplaceAnnotationsKustomize(t *testing.T) {
-	testSa := &ServiceAnnotations{}
-	testSa.Host = "test host"
-	testSa.Cert = "test cert"
 
 	annotatedManifest, fileErr := createTempManifest("../../test/templates/service_w_annotations.yaml")
 	if fileErr != nil {
@@ -70,20 +44,46 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 	}
 	defer os.Remove(annotatedManifest.Name())
 
-	deployNameToServiceYaml = map[string]*service{
-		"kustomize": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
-		"helm": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
-		"manifests": {file: annotatedManifest.Name(), annotation: "metadata.annotations"},
-	}
-
-	if err := UpdateServiceFile(testSa, annotatedManifest.Name()); err != nil {
+	if err := updateServiceAnnotationsForDeployment(annotatedManifest.Name(), "kustomize", annotations); err != nil {
 		t.Fatal(err)
 	}
 
-	eManifestBytes, _ := os.ReadFile(annotatedManifest.Name())
-	eManifest := string(eManifestBytes)
-	ogManifestBytes, _ := os.ReadFile("../../test/templates/service_w_annotations.yaml")
-	ogManifest := string(ogManifestBytes)
+	var eKustomizeYaml workflows.ServiceYaml
 
-	assert.True(t, len(eManifest) == len(ogManifest), "annotations weren't replaced correctly")
+	eManifestBytes, _ := os.ReadFile(annotatedManifest.Name())
+	_ = yaml.Unmarshal(eManifestBytes, &eKustomizeYaml)
+
+	assert.NotNil(t, eKustomizeYaml.Metadata.Annotations)
+	assert.Equal(t, annotations, eKustomizeYaml.Metadata.Annotations)
+}
+
+func TestReplaceAnnotationsKustomize(t *testing.T) {
+	annotations := map[string]string{
+		"kubernetes.azure.com/ingress-host":          "test.SA",
+		"kubernetes.azure.com/tls-cert-keyvault-uri": "test.Cert",
+	}
+
+	annotatedManifest, fileErr := createTempManifest("../../test/templates/helm_prod_values.yaml")
+	if fileErr != nil {
+		t.Fatal(fileErr)
+	}
+	defer os.Remove(annotatedManifest.Name())
+
+	deployNameToServiceYaml = map[string]*service{
+		"kustomize": {file: annotatedManifest.Name()},
+		"helm":      {file: annotatedManifest.Name()},
+		"manifests": {file: annotatedManifest.Name()},
+	}
+
+	if err := updateServiceAnnotationsForDeployment(annotatedManifest.Name(), "helm", annotations); err != nil {
+		t.Fatal(err)
+	}
+
+	var eHelmYaml workflows.HelmProductionYaml
+
+	eManifestBytes, _ := os.ReadFile(annotatedManifest.Name())
+	_ = yaml.Unmarshal(eManifestBytes, &eHelmYaml)
+
+	assert.NotNil(t, eHelmYaml.Service.Annotations)
+	assert.Equal(t, annotations, eHelmYaml.Service.Annotations)
 }

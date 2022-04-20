@@ -11,6 +11,7 @@ func TestValidateConfig(t *testing.T) {
 		ContainerName:     "test",
 		ResourceGroupName: "test",
 		AksClusterName:    "test",
+		BranchName:        "test",
 	}
 	config.ValidateAndFillConfig()
 	assert.NotEmpty(t, config.kustomizePath)

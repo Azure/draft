@@ -30,8 +30,8 @@ func newUpdateCmd() *cobra.Command {
 
 	f := cmd.Flags()
 	f.StringVarP(&sa.Host, "host", "a", "", "the host of the ingress resource")
-	f.StringVarP(&sa.Cert, "cert", "s", "", "the URI of the Keyvault certificate to present")
-	f.StringVarP(&dest, "dest", "d", ".", "Specify the path to the project directory")
+	f.StringVarP(&sa.Cert, "certificate", "s", "", "the URI of the Keyvault certificate to present")
+	f.StringVarP(&dest, "destination", "d", ".", "Specify the path to the project directory")
 	return cmd
 
 }

@@ -20,9 +20,8 @@ var (
 	workflows     embed.FS
 	parentDirName = "workflows"
 
-	workflowFilePrefix         = "azure-kubernetes-service"
-	productionImagePlaceholder = "{{PRODUCTION_CONTAINER_IMAGE}}"
-	deployNameToWorkflow       = map[string]*workflowType{
+	workflowFilePrefix   = "azure-kubernetes-service"
+	deployNameToWorkflow = map[string]*workflowType{
 		"helm":      {deployPath: "/charts", workflowFileSuffix: "-helm"},
 		"kustomize": {deployPath: "/base", workflowFileSuffix: "-kustomize"},
 		"manifests": {deployPath: "/manifests"},

@@ -10,6 +10,7 @@ import (
 
 func newUpdateCmd() *cobra.Command {
 	sa := &web.ServiceAnnotations{}
+	dest := ""
 
 	// updateCmd represents the update command
 	var cmd = &cobra.Command{
@@ -20,7 +21,7 @@ func newUpdateCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillUpdateConfig(sa)
 
-			if err := web.UpdateServiceFile(sa, "."); err != nil {
+			if err := web.UpdateServiceFile(sa, dest); err != nil {
 				return err
 			}
 			return nil
@@ -30,7 +31,7 @@ func newUpdateCmd() *cobra.Command {
 	f := cmd.Flags()
 	f.StringVarP(&sa.Host, "host", "a", "", "the host of the ingress resource")
 	f.StringVarP(&sa.Cert, "cert", "s", "", "the URI of the Keyvault certificate to present")
-
+	f.StringVarP(&dest, "dest", "d", ".", "Specify the path to the project directory")
 	return cmd
 
 }

@@ -12,16 +12,16 @@ import (
 var (
 	parentDir               = "."
 	deployNameToServiceYaml = map[string]*service{
-		"helm": {file: "charts/values.yaml", annotation: "service.annotations"},
-		"kustomize": {file: "base/service.yaml", annotation: "metadata.annotations"},
-		"manifests": {file: "manifests/service.yaml", annotation: "metadata.annotations"},
+		"helm":      {file: "charts/values.yaml", annotation: "service.annotations", serviceType: "service.type"},
+		"kustomize": {file: "overlays/production/service.yaml", annotation: "metadata.annotations", serviceType: "spec.type"},
+		"manifests": {file: "manifests/service.yaml", annotation: "metadata.annotations", serviceType: "spec.type"},
 	}
-
 )
 
 type service struct {
-	file       string
-	annotation string
+	file        string
+	annotation  string
+	serviceType string
 }
 
 type ServiceAnnotations struct {
@@ -41,7 +41,7 @@ func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 	}
 
 	log.Debug("Loading config...")
-	servicePath := deployNameToServiceYaml[deployType].file
+	servicePath := dest + "/" + deployNameToServiceYaml[deployType].file
 
 	serviceBytes, err := os.ReadFile(servicePath)
 	if err != nil {
@@ -54,8 +54,10 @@ func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 	}
 
 	viper.Set(deployNameToServiceYaml[deployType].annotation, annotations)
-
+	viper.Set(deployNameToServiceYaml[deployType].serviceType, "ClusterIP")
 	log.Debug("Writing new configuration to manifest...")
+
+	viper.
 	if err := viper.WriteConfigAs(servicePath); err != nil {
 		return err
 	}

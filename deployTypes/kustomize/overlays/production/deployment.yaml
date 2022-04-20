@@ -9,4 +9,4 @@ spec:
     spec:
       containers:
         - name: my-app
-          image: {{PRODUCTION_CONTAINER_IMAGE}}
+          image: {{APPNAME}}

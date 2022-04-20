@@ -99,7 +99,7 @@ func SearchDirectory(dest string) (bool, bool, error) {
 	// recursive directory search for valid yaml files
 	fileMatches := createK8sFileMatches(dest)
 	_, err = FindDraftDeploymentFiles(dest)
-	hasDeploymentFiles := fileMatches.hasDeploymentFiles() || err != nil
+	hasDeploymentFiles := fileMatches.hasDeploymentFiles() || err == nil
 	return hasDockerFile, hasDeploymentFiles, nil
 }
 

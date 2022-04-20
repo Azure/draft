@@ -11,7 +11,6 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 //go:generate cp -r ../../starterWorkflows ./workflows
@@ -61,25 +60,14 @@ func CreateWorkflows(dest string, config *WorkflowConfig) error {
 }
 
 func updateProductionDeployments(deployType, dest string, config *WorkflowConfig) error {
-	productionImage := fmt.Sprintf("%s.azurecr.io/%s:latest", config.AcrName, config.ContainerName)
+	productionImage := fmt.Sprintf("%s.azurecr.io/%s", config.AcrName, config.ContainerName)
 	switch deployType {
 	case "helm":
-		return openAndReplace(dest+"/charts/production.yaml", productionImage)
+		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage)
 	case "kustomize":
-		return openAndReplace(dest+"/overlays/production/deployment.yaml", productionImage)
+		return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
 	}
 	return nil
-}
-
-func openAndReplace(filePath, productionImage string) error {
-	file, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	file = []byte(strings.ReplaceAll(string(file), productionImagePlaceholder, productionImage))
-
-	return ioutil.WriteFile(filePath, file, 0644)
 }
 
 func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubWorkflow) {
@@ -107,10 +95,56 @@ func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubW
 		editedJob.Steps = removeStep(editedJob.Steps, 4)
 		ghw.Jobs["build"] = editedJob
 	}
+
+	ghw.On.Push.Branches[0] = config.BranchName
 }
 
 func removeStep(steps []map[string]interface{}, index int) []map[string]interface{} {
 	return append(steps[:index], steps[index+1:]...)
+}
+
+func setDeploymentContainerImage(filePath, productionImage string) error {
+	file, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	var deploy DeploymentYaml
+	err = yaml.Unmarshal(file, &deploy)
+	if err != nil {
+		return err
+	}
+
+	deploy.Spec.Template.Spec.Containers[0].Image = productionImage
+
+	out, err := yaml.Marshal(deploy)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filePath, out, 0644)
+}
+
+func setHelmContainerImage(filePath, productionImage string) error {
+	file, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	var deploy HelmProductionYaml
+	err = yaml.Unmarshal(file, &deploy)
+	if err != nil {
+		return err
+	}
+
+	deploy.ImageKey.Repository = productionImage
+
+	out, err := yaml.Marshal(deploy)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filePath, out, 0644)
 }
 
 func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
@@ -136,8 +170,6 @@ func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw GitHubWorkflow) 
 		return err
 	}
 
-	marshaledYaml := string(workflowBytes)
-	log.Debug(marshaledYaml)
 	if err := osutil.EnsureDirectory(ghWorkflowPath); err != nil {
 		return err
 	}

@@ -1,27 +1,24 @@
 package web
 
 import (
-	"bytes"
-	"os"
-
 	"github.com/Azure/draft/pkg/filematches"
+	"github.com/Azure/draft/pkg/workflows"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 var (
 	parentDir               = "."
 	deployNameToServiceYaml = map[string]*service{
-		"helm": {file: "charts/values.yaml", annotation: "service.annotations"},
-		"kustomize": {file: "base/service.yaml", annotation: "metadata.annotations"},
-		"manifests": {file: "manifests/service.yaml", annotation: "metadata.annotations"},
+		"helm":      {file: "charts/production.yaml"},
+		"kustomize": {file: "overlays/production/service.yaml"},
+		"manifests": {file: "manifests/service.yaml"},
 	}
-
 )
 
 type service struct {
-	file       string
-	annotation string
+	file string
 }
 
 type ServiceAnnotations struct {
@@ -40,25 +37,47 @@ func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 		return err
 	}
 
-	log.Debug("Loading config...")
-	servicePath := deployNameToServiceYaml[deployType].file
+	servicePath := dest + "/" + deployNameToServiceYaml[deployType].file
+	log.Debug("Writing new configuration to manifest...")
 
-	serviceBytes, err := os.ReadFile(servicePath)
+	return updateServiceAnnotationsForDeployment(servicePath, deployType, annotations)
+}
+
+func updateServiceAnnotationsForDeployment(filePath, deployType string, annotations map[string]string) error {
+	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 
-	viper.SetConfigType("yaml")
-	if err := viper.ReadConfig(bytes.NewBuffer(serviceBytes)); err != nil {
-		return err
+	var editedYaml []byte
+
+	log.Debugf("editing service yaml for deployType: %s", deployType)
+	switch deployType {
+	case "helm":
+		var deploy workflows.HelmProductionYaml
+		editedYaml, err = updateDeploymentAnnotations(&deploy, file, annotations)
+		if err != nil {
+			return err
+		}
+	default:
+		var deploy workflows.ServiceYaml
+		editedYaml, err = updateDeploymentAnnotations(&deploy, file, annotations)
+		if err != nil {
+			return err
+		}
 	}
 
-	viper.Set(deployNameToServiceYaml[deployType].annotation, annotations)
+	return ioutil.WriteFile(filePath, editedYaml, 0644)
+}
 
-	log.Debug("Writing new configuration to manifest...")
-	if err := viper.WriteConfigAs(servicePath); err != nil {
-		return err
+func updateDeploymentAnnotations[K workflows.ServiceManifest](deploy K, file []byte, annotations map[string]string) ([]byte, error) {
+	err := yaml.Unmarshal(file, deploy)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	deploy.SetAnnotations(annotations)
+	deploy.SetServiceType("ClusterIP")
+
+	return yaml.Marshal(deploy)
 }

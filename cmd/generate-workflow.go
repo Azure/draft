@@ -37,6 +37,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVar(&workflowConfig.ContainerName, "container-name", "", "Specify the name of the container image")
 	f.StringVarP(&workflowConfig.ResourceGroupName, "resource-group", "g", "", "Specify the Azure resource group of your AKS cluster")
 	f.StringVarP(&dest, "destination", "d", ".", "Specify the path to the project directory")
+	f.StringVarP(&workflowConfig.BranchName, "branch", "b", "", "Specify the Github branch to automatically deploy from")
 
 	return cmd
 }

@@ -2,8 +2,33 @@ package workflows
 
 import (
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v2"
+	"io"
+	"io/ioutil"
+	"os"
 	"testing"
 )
+
+func createTempManifest(path string) (string, error) {
+	file, err := ioutil.TempFile("", "*.yaml")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	var source *os.File
+	source, err = os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer source.Close()
+
+	_, err = io.Copy(file, source)
+	if err != nil {
+		return "", err
+	}
+	return file.Name(), nil
+}
 
 func TestWorkflowEmbed(t *testing.T) {
 	workflow := &workflowType{
@@ -20,12 +45,14 @@ func TestWorkflowReplace(t *testing.T) {
 		AksClusterName:    "test",
 		ContainerName:     "test",
 		ResourceGroupName: "test",
+		BranchName:        "test",
 
 		chartsOverridePath: "testOverride",
 		kustomizePath:      "testKustomize",
 	}
 
 	ghw := &GitHubWorkflow{}
+	ghw.On.Push.Branches = []string{"branch"}
 	replaceWorkflowVars("", config, ghw)
 	assert.NotNil(t, ghw.Env, "check that replace will update a ghw's environment")
 
@@ -59,4 +86,21 @@ func TestUpdateProductionDeployments(t *testing.T) {
 		ResourceGroupName: "test",
 	}
 	assert.Nil(t, updateProductionDeployments("", ".", config))
+
+	helmFileName, _ := createTempManifest("../../test/templates/helm_prod_values.yaml")
+	deploymentFileName, _ := createTempManifest("../../test/templates/deployment.yaml")
+	defer os.Remove(helmFileName)
+	defer os.Remove(deploymentFileName)
+
+	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage"))
+	file, _ := ioutil.ReadFile(helmFileName)
+	var helmDeploy HelmProductionYaml
+	_ = yaml.Unmarshal(file, &helmDeploy)
+	assert.Equal(t, "testImage", helmDeploy.ImageKey.Repository)
+
+	assert.Nil(t, setDeploymentContainerImage(deploymentFileName, "testImage"))
+	file, _ = ioutil.ReadFile(deploymentFileName)
+	var deploy DeploymentYaml
+	_ = yaml.Unmarshal(file, &deploy)
+	assert.Equal(t, "testImage", deploy.Spec.Template.Spec.Containers[0].Image)
 }

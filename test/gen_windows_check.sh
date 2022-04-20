@@ -1,5 +1,6 @@
 deployDir="./deployTypes"
 
+
 deployTypes=("helm" "kustomize")
 
 ignoredFiles=("./draft.yaml" "./skaffold.yaml" "./charts/templates/helpers.tpl" "./charts/helmignore")

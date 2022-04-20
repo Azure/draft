@@ -3,6 +3,8 @@ languageType: "csharp"
 deployVariables:
   - name: "PORT"
     value: "80"
+  - name: "APPNAME"
+    value: "testapp"
 languageVariables:
   - name: "PORT"
     value: "80"

@@ -100,6 +100,8 @@ languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
     value: \"$port\"
+  - name: \"APPNAME\"
+    value: \"testapp\"
 languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/kustomize.yaml

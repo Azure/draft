@@ -3,6 +3,8 @@ languageType: "javascript"
 deployVariables:
   - name: "PORT"
     value: "1313"
+  - name: "APPNAME"
+    value: "testapp"
 languageVariables:
   - name: "PORT"
     value: "1313"

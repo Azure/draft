@@ -39,7 +39,7 @@ application and service principle, and will configure that application to trust 
 	f := cmd.Flags()
 	f.StringVarP(&sc.AppName, "app", "a", "", "Specify the name of the Azure Active Directory application")
 	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "Specify the Azure subscription ID")
-	f.StringVarP(&sc.ResourceGroupName, "resource-group-name", "r", "", "Specify the name of the Azure resource group")
+	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", "", "Specify the name of the Azure resource group")
 	f.StringVarP(&sc.Provider, "provider", "p", "", "Specify the cloud provider")
 	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "Specify the github repository link")
 

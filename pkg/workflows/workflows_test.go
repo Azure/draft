@@ -45,12 +45,14 @@ func TestWorkflowReplace(t *testing.T) {
 		AksClusterName:    "test",
 		ContainerName:     "test",
 		ResourceGroupName: "test",
+		BranchName:        "test",
 
 		chartsOverridePath: "testOverride",
 		kustomizePath:      "testKustomize",
 	}
 
 	ghw := &GitHubWorkflow{}
+	ghw.On.Push.Branches = []string{"branch"}
 	replaceWorkflowVars("", config, ghw)
 	assert.NotNil(t, ghw.Env, "check that replace will update a ghw's environment")
 

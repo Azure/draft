@@ -3,6 +3,6 @@ imageKey:
   pullPolicy: IfNotPresent
   tag: "latest"
 service:
-  annotations:
+  annotations: {}
   type: LoadBalancer
   port: 80

@@ -104,12 +104,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   gomodule-kustomize:
@@ -176,12 +176,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   gomodule-manifests:
@@ -313,12 +313,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   python-kustomize:
@@ -385,12 +385,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   python-manifests:
@@ -522,12 +522,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   rust-kustomize:
@@ -594,12 +594,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   rust-manifests:
@@ -731,12 +731,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   javascript-kustomize:
@@ -803,12 +803,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   javascript-manifests:
@@ -940,12 +940,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   ruby-kustomize:
@@ -1012,12 +1012,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   ruby-manifests:
@@ -1149,12 +1149,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   csharp-kustomize:
@@ -1221,12 +1221,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   csharp-manifests:
@@ -1358,12 +1358,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   java-kustomize:
@@ -1430,12 +1430,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   java-manifests:
@@ -1567,12 +1567,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   gradle-kustomize:
@@ -1639,12 +1639,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   gradle-manifests:
@@ -1776,12 +1776,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   swift-kustomize:
@@ -1848,12 +1848,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   swift-manifests:
@@ -1985,12 +1985,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   erlang-kustomize:
@@ -2057,12 +2057,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   erlang-manifests:
@@ -2194,12 +2194,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   clojure-kustomize:
@@ -2266,12 +2266,12 @@ jobs:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   clojure-manifests:

@@ -197,12 +197,12 @@ languageVariables:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: \${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create kustomize workflow
@@ -271,12 +271,12 @@ languageVariables:
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
         continue-on-error: true
-        id: deploy
+        id: deploy2
         with:
           action: deploy
           manifests: \${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy2.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
   # create manifests workflow

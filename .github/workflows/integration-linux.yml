@@ -220,9 +220,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -234,7 +231,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   python-helm:
     runs-on: ubuntu-latest
@@ -429,9 +429,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -443,7 +440,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   rust-helm:
     runs-on: ubuntu-latest
@@ -638,9 +638,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -652,7 +649,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   javascript-helm:
     runs-on: ubuntu-latest
@@ -847,9 +847,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -861,7 +858,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   ruby-helm:
     runs-on: ubuntu-latest
@@ -1056,9 +1056,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -1070,7 +1067,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   csharp-helm:
     runs-on: ubuntu-latest
@@ -1265,9 +1265,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -1279,7 +1276,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   java-helm:
     runs-on: ubuntu-latest
@@ -1474,9 +1474,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -1488,7 +1485,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   gradle-helm:
     runs-on: ubuntu-latest
@@ -1683,9 +1683,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -1697,7 +1694,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   swift-helm:
     runs-on: ubuntu-latest
@@ -1892,9 +1892,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -1906,7 +1903,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   erlang-helm:
     runs-on: ubuntu-latest
@@ -2101,9 +2101,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -2115,7 +2112,10 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po
 
   clojure-helm:
     runs-on: ubuntu-latest
@@ -2310,9 +2310,6 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -2324,4 +2321,7 @@ jobs:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po

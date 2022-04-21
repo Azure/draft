@@ -317,9 +317,6 @@ languageVariables:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
       - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -331,7 +328,10 @@ languageVariables:
       - name: Deploy application
         run: kubectl deploy -f ./langtest/manifests/
         continue-on-error: true
-        id: deploy" >> ../.github/workflows/integration-linux.yml
+        id: deploy2
+      - name: Check default namespace
+        if: steps.deploy2.outcome != 'success'
+        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create helm workflow
     echo "

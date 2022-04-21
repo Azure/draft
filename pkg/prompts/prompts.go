@@ -3,7 +3,7 @@ package prompts
 import (
 	"fmt"
 
-	"github.com/Azure/draft/pkg/configs"
+	"github.com/Azure/draft/pkg/config"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,7 +13,7 @@ type TemplatePrompt struct {
 	OverrideString string
 }
 
-func RunPromptsFromConfig(config *configs.DraftConfig) (map[string]string, error) {
+func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error) {
 	templatePrompts := make([]*TemplatePrompt, 0)
 	for _, customPrompt := range config.Variables {
 		prompt := &promptui.Prompt{

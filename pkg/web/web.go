@@ -2,10 +2,8 @@ package web
 
 import (
 	"github.com/Azure/draft/pkg/filematches"
-	"github.com/Azure/draft/pkg/workflows"
+	"github.com/Azure/draft/pkg/types"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 var (
@@ -44,40 +42,22 @@ func UpdateServiceFile(sa *ServiceAnnotations, dest string) error {
 }
 
 func updateServiceAnnotationsForDeployment(filePath, deployType string, annotations map[string]string) error {
-	file, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	var editedYaml []byte
-
 	log.Debugf("editing service yaml for deployType: %s", deployType)
 	switch deployType {
 	case "helm":
-		var deploy workflows.HelmProductionYaml
-		editedYaml, err = updateDeploymentAnnotations(&deploy, file, annotations)
-		if err != nil {
-			return err
-		}
-	default:
-		var deploy workflows.ServiceYaml
-		editedYaml, err = updateDeploymentAnnotations(&deploy, file, annotations)
-		if err != nil {
-			return err
-		}
+		return updateDeploymentAnnotations(&types.HelmProductionYaml{}, filePath, annotations)
 	}
 
-	return ioutil.WriteFile(filePath, editedYaml, 0644)
+	return updateDeploymentAnnotations(&types.ServiceYaml{}, filePath, annotations)
 }
 
-func updateDeploymentAnnotations[K workflows.ServiceManifest](deploy K, file []byte, annotations map[string]string) ([]byte, error) {
-	err := yaml.Unmarshal(file, deploy)
-	if err != nil {
-		return nil, err
+func updateDeploymentAnnotations(deploy types.ServiceManifest, filePath string, annotations map[string]string) error {
+	if err := deploy.LoadFromFile(filePath); err != nil {
+		return err
 	}
 
 	deploy.SetAnnotations(annotations)
 	deploy.SetServiceType("ClusterIP")
 
-	return yaml.Marshal(deploy)
+	return deploy.WriteToFile(filePath)
 }

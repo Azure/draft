@@ -14,8 +14,8 @@ func TestValidateConfig(t *testing.T) {
 		BranchName:        "test",
 	}
 	config.ValidateAndFillConfig()
-	assert.NotEmpty(t, config.kustomizePath)
-	assert.NotEmpty(t, config.manifestsPath)
-	assert.NotEmpty(t, config.chartsPath)
-	assert.NotEmpty(t, config.chartsOverridePath)
+	assert.NotEmpty(t, config.KustomizePath)
+	assert.NotEmpty(t, config.ManifestsPath)
+	assert.NotEmpty(t, config.ChartsPath)
+	assert.NotEmpty(t, config.ChartsOverridePath)
 }

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/Azure/draft/pkg/configs"
+	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	log "github.com/sirupsen/logrus"
@@ -24,7 +24,7 @@ var (
 
 type Deployments struct {
 	deploys map[string]fs.DirEntry
-	configs map[string]*configs.DraftConfig
+	configs map[string]*config.DraftConfig
 	dest    string
 }
 
@@ -48,7 +48,7 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 	return nil
 }
 
-func (d *Deployments) loadConfig(lang string) (*configs.DraftConfig, error) {
+func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 	val, ok := d.deploys[lang]
 	if !ok {
 		return nil, fmt.Errorf("language %s unsupported", lang)
@@ -65,16 +65,16 @@ func (d *Deployments) loadConfig(lang string) (*configs.DraftConfig, error) {
 		return nil, err
 	}
 
-	var config configs.DraftConfig
+	var draftConfig config.DraftConfig
 
-	if err = viper.Unmarshal(&config); err != nil {
+	if err = viper.Unmarshal(&draftConfig); err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return &draftConfig, nil
 }
 
-func (d *Deployments) GetConfig(deployTyoe string) *configs.DraftConfig {
+func (d *Deployments) GetConfig(deployTyoe string) *config.DraftConfig {
 	val, ok := d.configs[deployTyoe]
 	if !ok {
 		return nil
@@ -84,12 +84,12 @@ func (d *Deployments) GetConfig(deployTyoe string) *configs.DraftConfig {
 
 func (d *Deployments) PopulateConfigs() {
 	for deployType := range d.deploys {
-		config, err := d.loadConfig(deployType)
+		draftConfig, err := d.loadConfig(deployType)
 		if err != nil {
-			log.Debugf("no config found for language %s", deployType)
-			config = &configs.DraftConfig{}
+			log.Debugf("no draftConfig found for language %s", deployType)
+			draftConfig = &config.DraftConfig{}
 		}
-		d.configs[deployType] = config
+		d.configs[deployType] = draftConfig
 	}
 }
 
@@ -102,7 +102,7 @@ func CreateDeployments(dest string) *Deployments {
 	d := &Deployments{
 		deploys: deployMap,
 		dest:    dest,
-		configs: make(map[string]*configs.DraftConfig),
+		configs: make(map[string]*config.DraftConfig),
 	}
 	d.PopulateConfigs()
 

@@ -1,10 +1,12 @@
 package workflows
 
 import (
+	"github.com/Azure/draft/pkg/types"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 	"os"
 	"testing"
 )
@@ -47,11 +49,11 @@ func TestWorkflowReplace(t *testing.T) {
 		ResourceGroupName: "test",
 		BranchName:        "test",
 
-		chartsOverridePath: "testOverride",
-		kustomizePath:      "testKustomize",
+		ChartsOverridePath: "testOverride",
+		KustomizePath:      "testKustomize",
 	}
 
-	ghw := &GitHubWorkflow{}
+	ghw := &types.GitHubWorkflow{}
 	ghw.On.Push.Branches = []string{"branch"}
 	replaceWorkflowVars("", config, ghw)
 	assert.NotNil(t, ghw.Env, "check that replace will update a ghw's environment")
@@ -93,14 +95,20 @@ func TestUpdateProductionDeployments(t *testing.T) {
 	defer os.Remove(deploymentFileName)
 
 	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage"))
-	file, _ := ioutil.ReadFile(helmFileName)
-	var helmDeploy HelmProductionYaml
-	_ = yaml.Unmarshal(file, &helmDeploy)
+
+	helmDeploy := &types.HelmProductionYaml{}
+	assert.Nil(t, helmDeploy.LoadFromFile(helmFileName))
 	assert.Equal(t, "testImage", helmDeploy.ImageKey.Repository)
 
 	assert.Nil(t, setDeploymentContainerImage(deploymentFileName, "testImage"))
-	file, _ = ioutil.ReadFile(deploymentFileName)
-	var deploy DeploymentYaml
-	_ = yaml.Unmarshal(file, &deploy)
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	file, err := ioutil.ReadFile(deploymentFileName)
+	assert.Nil(t, err)
+
+	k8sObj, _, err := decode(file, nil, nil)
+	assert.Nil(t, err)
+
+	deploy, ok := k8sObj.(*appsv1.Deployment)
+	assert.True(t, ok)
 	assert.Equal(t, "testImage", deploy.Spec.Template.Spec.Containers[0].Image)
 }

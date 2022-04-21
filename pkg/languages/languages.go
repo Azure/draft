@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/Azure/draft/pkg/configs"
+	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	log "github.com/sirupsen/logrus"
@@ -23,7 +23,7 @@ var (
 
 type Languages struct {
 	langs   map[string]fs.DirEntry
-	configs map[string]*configs.DraftConfig
+	configs map[string]*config.DraftConfig
 	dest    string
 }
 
@@ -52,7 +52,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 	return nil
 }
 
-func (l *Languages) loadConfig(lang string) (*configs.DraftConfig, error) {
+func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 	val, ok := l.langs[lang]
 	if !ok {
 		return nil, fmt.Errorf("language %s unsupported", lang)
@@ -69,7 +69,7 @@ func (l *Languages) loadConfig(lang string) (*configs.DraftConfig, error) {
 		return nil, err
 	}
 
-	var config configs.DraftConfig
+	var config config.DraftConfig
 
 	if err = viper.Unmarshal(&config); err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (l *Languages) loadConfig(lang string) (*configs.DraftConfig, error) {
 	return &config, nil
 }
 
-func (l *Languages) GetConfig(lang string) *configs.DraftConfig {
+func (l *Languages) GetConfig(lang string) *config.DraftConfig {
 	val, ok := l.configs[lang]
 	if !ok {
 		return nil
@@ -88,12 +88,12 @@ func (l *Languages) GetConfig(lang string) *configs.DraftConfig {
 
 func (l *Languages) PopulateConfigs() {
 	for lang := range l.langs {
-		config, err := l.loadConfig(lang)
+		draftConfig, err := l.loadConfig(lang)
 		if err != nil {
-			log.Debugf("no config found for language %s", lang)
-			config = &configs.DraftConfig{}
+			log.Debugf("no draftConfig found for language %s", lang)
+			draftConfig = &config.DraftConfig{}
 		}
-		l.configs[lang] = config
+		l.configs[lang] = draftConfig
 	}
 }
 
@@ -106,7 +106,7 @@ func CreateLanguages(dest string) *Languages {
 	l := &Languages{
 		langs:   langMap,
 		dest:    dest,
-		configs: make(map[string]*configs.DraftConfig),
+		configs: make(map[string]*config.DraftConfig),
 	}
 	l.PopulateConfigs()
 

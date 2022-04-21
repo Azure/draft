@@ -6,10 +6,14 @@ import (
 	"fmt"
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/types"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/cli-runtime/pkg/printers"
+	"k8s.io/client-go/kubernetes/scheme"
 	"os"
 )
 
@@ -69,7 +73,7 @@ func updateProductionDeployments(deployType, dest string, config *WorkflowConfig
 	return nil
 }
 
-func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubWorkflow) {
+func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *types.GitHubWorkflow) {
 	envMap := make(map[string]string)
 	envMap["AZURE_CONTAINER_REGISTRY"] = config.AcrName
 	envMap["CONTAINER_NAME"] = config.ContainerName
@@ -78,14 +82,14 @@ func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubW
 
 	switch deployType {
 	case "helm":
-		envMap["CHART_PATH"] = config.chartsPath
-		envMap["CHART_OVERRIDE_PATH"] = config.chartsOverridePath
+		envMap["CHART_PATH"] = config.ChartsPath
+		envMap["CHART_OVERRIDE_PATH"] = config.ChartsOverridePath
 
 	case "manifests":
-		envMap["DEPLOYMENT_MANIFEST_PATH"] = config.manifestsPath
+		envMap["DEPLOYMENT_MANIFEST_PATH"] = config.ManifestsPath
 
 	case "kustomize":
-		envMap["KUSTOMIZE_PATH"] = config.kustomizePath
+		envMap["KUSTOMIZE_PATH"] = config.KustomizePath
 	}
 
 	ghw.Env = envMap
@@ -103,25 +107,37 @@ func removeStep(steps []map[string]interface{}, index int) []map[string]interfac
 }
 
 func setDeploymentContainerImage(filePath, productionImage string) error {
+
+	decode := scheme.Codecs.UniversalDeserializer().Decode
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 
-	var deploy DeploymentYaml
-	err = yaml.Unmarshal(file, &deploy)
+	k8sObj, _, err := decode(file, nil, nil)
 	if err != nil {
 		return err
+	}
+	deploy, ok := k8sObj.(*appsv1.Deployment)
+	if !ok {
+		return errors.New("could not decode kubernetes deployment")
+	}
+
+	if len(deploy.Spec.Template.Spec.Containers) != 1 {
+		return errors.New("unsupported number of containers defined in the deployment spec")
 	}
 
 	deploy.Spec.Template.Spec.Containers[0].Image = productionImage
 
-	out, err := yaml.Marshal(deploy)
-	if err != nil {
-		return err
-	}
+	printer := printers.YAMLPrinter{}
 
-	return ioutil.WriteFile(filePath, out, 0644)
+	out, err := os.OpenFile(filePath, os.O_RDWR, 0755)
+	if err != nil {
+		return nil
+	}
+	defer out.Close()
+
+	return printer.PrintObj(deploy, out)
 }
 
 func setHelmContainerImage(filePath, productionImage string) error {
@@ -130,7 +146,7 @@ func setHelmContainerImage(filePath, productionImage string) error {
 		return err
 	}
 
-	var deploy HelmProductionYaml
+	var deploy types.HelmProductionYaml
 	err = yaml.Unmarshal(file, &deploy)
 	if err != nil {
 		return err
@@ -146,7 +162,7 @@ func setHelmContainerImage(filePath, productionImage string) error {
 	return ioutil.WriteFile(filePath, out, 0644)
 }
 
-func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
+func getWorkflowFile(workflow *workflowType) *types.GitHubWorkflow {
 	embedFilePath := parentDirName + "/" + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
 
 	file, err := fs.ReadFile(workflows, embedFilePath)
@@ -154,7 +170,7 @@ func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
 		log.Fatal(err)
 	}
 
-	var ghw GitHubWorkflow
+	var ghw types.GitHubWorkflow
 
 	err = yaml.Unmarshal(file, &ghw)
 	if err != nil {
@@ -163,7 +179,7 @@ func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
 	return &ghw
 }
 
-func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw GitHubWorkflow) error {
+func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw types.GitHubWorkflow) error {
 	workflowBytes, err := yaml.Marshal(ghw)
 	if err != nil {
 		return err

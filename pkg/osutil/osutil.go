@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/Azure/draft/pkg/configs"
+	"github.com/Azure/draft/pkg/config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -74,7 +74,7 @@ func EnsureFile(file string) error {
 func CopyDir(
 	fileSys fs.FS,
 	src, dest string,
-	config *configs.DraftConfig,
+	config *config.DraftConfig,
 	customInputs map[string]string) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {

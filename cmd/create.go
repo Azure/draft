@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Azure/draft/pkg/configs"
+	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
@@ -32,7 +32,7 @@ type createCmd struct {
 	deploymentOnly bool
 
 	createConfigPath string
-	createConfig     *configs.CreateConfig
+	createConfig     *config.CreateConfig
 
 	supportedLangs *languages.Languages
 	fileMatches    *filematches.FileMatches
@@ -75,7 +75,7 @@ func (cc *createCmd) initConfig() error {
 		if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
 			return err
 		}
-		var cfg configs.CreateConfig
+		var cfg config.CreateConfig
 		if err = viper.Unmarshal(&cfg); err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func (cc *createCmd) initConfig() error {
 	}
 
 	//TODO: create a config for the user and save it for subsequent uses
-	cc.createConfig = &configs.CreateConfig{}
+	cc.createConfig = &config.CreateConfig{}
 
 	return nil
 }
@@ -101,7 +101,7 @@ func (cc *createCmd) run() error {
 	return cc.createFiles(detectedLang, lowerLang)
 }
 
-func (cc *createCmd) detectLanguage() (*configs.DraftConfig, string, error) {
+func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 	hasGo := false
 	hasGoMod := false
 	var langs []*linguist.Language
@@ -186,7 +186,7 @@ func (cc *createCmd) detectLanguage() (*configs.DraftConfig, string, error) {
 	return nil, "", ErrNoLanguageDetected
 }
 
-func (cc *createCmd) generateDockerfile(langConfig *configs.DraftConfig, lowerLang string) error {
+func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLang string) error {
 	if cc.supportedLangs == nil {
 		return errors.New("supported languages were loaded incorrectly")
 	}
@@ -251,7 +251,7 @@ func (cc *createCmd) createDeployment() error {
 	return d.CopyDeploymentFiles(deployType, customInputs)
 }
 
-func (cc *createCmd) createFiles(detectedLang *configs.DraftConfig, lowerLang string) error {
+func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang string) error {
 	if cc.dockerfileOnly && cc.deploymentOnly {
 		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
@@ -324,7 +324,7 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required []configs.BuilderVar, provided []configs.UserInputs) (map[string]string, error) {
+func validateConfigInputsToPrompts(required []config.BuilderVar, provided []config.UserInputs) (map[string]string, error) {
 	customInputs := make(map[string]string)
 	for _, variable := range provided {
 		customInputs[variable.Name] = variable.Value

@@ -1,8 +1,7 @@
 package web
 
 import (
-	"github.com/Azure/draft/pkg/workflows"
-	"gopkg.in/yaml.v2"
+	"github.com/Azure/draft/pkg/types"
 	"io"
 	"io/ioutil"
 	"os"
@@ -44,17 +43,15 @@ func TestAddAnotationsKustomize(t *testing.T) {
 	}
 	defer os.Remove(annotatedManifest.Name())
 
-	if err := updateServiceAnnotationsForDeployment(annotatedManifest.Name(), "kustomize", annotations); err != nil {
-		t.Fatal(err)
-	}
+	err := updateServiceAnnotationsForDeployment(annotatedManifest.Name(), "kustomize", annotations)
+	assert.Nil(t, err)
 
-	var eKustomizeYaml workflows.ServiceYaml
+	eKustomizeYaml := &types.ServiceYaml{}
 
-	eManifestBytes, _ := os.ReadFile(annotatedManifest.Name())
-	_ = yaml.Unmarshal(eManifestBytes, &eKustomizeYaml)
+	eKustomizeYaml.LoadFromFile(annotatedManifest.Name())
 
-	assert.NotNil(t, eKustomizeYaml.Metadata.Annotations)
-	assert.Equal(t, annotations, eKustomizeYaml.Metadata.Annotations)
+	assert.NotNil(t, eKustomizeYaml.Annotations)
+	assert.Equal(t, annotations, eKustomizeYaml.Annotations)
 }
 
 func TestReplaceAnnotationsKustomize(t *testing.T) {
@@ -79,10 +76,8 @@ func TestReplaceAnnotationsKustomize(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var eHelmYaml workflows.HelmProductionYaml
-
-	eManifestBytes, _ := os.ReadFile(annotatedManifest.Name())
-	_ = yaml.Unmarshal(eManifestBytes, &eHelmYaml)
+	eHelmYaml := &types.HelmProductionYaml{}
+	eHelmYaml.LoadFromFile(annotatedManifest.Name())
 
 	assert.NotNil(t, eHelmYaml.Service.Annotations)
 	assert.Equal(t, annotations, eHelmYaml.Service.Annotations)

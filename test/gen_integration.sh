@@ -174,7 +174,7 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
+      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -252,7 +252,7 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
+      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -316,7 +316,7 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
+      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
       - name: Build image
         run: |
           export SHELL=/bin/bash

@@ -31,7 +31,7 @@ func createTempManifest(path string) (*os.File, error) {
 	return file, nil
 }
 
-func TestAddAnotationsKustomize(t *testing.T) {
+func TestAddAnnotationsKustomize(t *testing.T) {
 	annotations := map[string]string{
 		"kubernetes.azure.com/ingress-host":          "test.SA",
 		"kubernetes.azure.com/tls-cert-keyvault-uri": "test.Cert",
@@ -54,7 +54,7 @@ func TestAddAnotationsKustomize(t *testing.T) {
 	assert.Equal(t, annotations, eKustomizeYaml.Annotations)
 }
 
-func TestReplaceAnnotationsKustomize(t *testing.T) {
+func TestAddAnnotationsHelm(t *testing.T) {
 	annotations := map[string]string{
 		"kubernetes.azure.com/ingress-host":          "test.SA",
 		"kubernetes.azure.com/tls-cert-keyvault-uri": "test.Cert",

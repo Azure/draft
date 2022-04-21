@@ -145,17 +145,6 @@ languageVariables:
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -163,6 +152,17 @@ languageVariables:
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n "verifying images:"
           docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/production.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -181,7 +181,7 @@ languageVariables:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
+          overrideFiles: ./langtest/charts/production.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -231,7 +231,7 @@ languageVariables:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
+          kustomizationPath: ./langtest/overlays/production
           kubectl-version: 'latest'
         id: bake
       - name: Build image

@@ -61,17 +61,11 @@ func (hpy *HelmProductionYaml) WriteToFile(filePath string) error {
 }
 
 type ServiceYaml struct {
-	corev1.Service
+	*corev1.Service
 }
 
 func (sy *ServiceYaml) SetAnnotations(annotations map[string]string) {
-	if sy.Annotations == nil {
-		sy.Annotations = annotations
-		return
-	}
-	for k, v := range annotations {
-		annotations[k] = v
-	}
+	sy.Annotations = annotations
 }
 
 func (sy *ServiceYaml) SetServiceType(serviceType string) {
@@ -91,7 +85,7 @@ func (sy *ServiceYaml) LoadFromFile(filePath string) error {
 		return errors.New("could not load file into ServiceYaml")
 	}
 
-	sy.Service = *svc
+	sy.Service = svc
 
 	return nil
 }
@@ -105,7 +99,5 @@ func (hpy *ServiceYaml) WriteToFile(filePath string) error {
 	}
 	defer out.Close()
 
-	svc := &hpy.Service
-
-	return printer.PrintObj(svc, out)
+	return printer.PrintObj(hpy.Service, out)
 }

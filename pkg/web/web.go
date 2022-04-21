@@ -51,7 +51,7 @@ func updateServiceAnnotationsForDeployment(filePath, deployType string, annotati
 	return updateDeploymentAnnotations(&types.ServiceYaml{}, filePath, annotations)
 }
 
-func updateDeploymentAnnotations[K types.ServiceManifest](deploy K, filePath string, annotations map[string]string) error {
+func updateDeploymentAnnotations(deploy types.ServiceManifest, filePath string, annotations map[string]string) error {
 	if err := deploy.LoadFromFile(filePath); err != nil {
 		return err
 	}

@@ -142,6 +142,9 @@ languageVariables:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -153,9 +156,36 @@ languageVariables:
             replicas:2
           helm-version: 'latest'
         id: bake
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -194,6 +224,9 @@ languageVariables:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
@@ -201,9 +234,32 @@ languageVariables:
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: ./langtest/base
+          kubectl-version: 'latest'
+        id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -259,7 +315,23 @@ languageVariables:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
+        run: kubectl get po
+      - run: ./draft -v update -d ./langtest/ -a testHost -d testKV
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl deploy -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy" >> ../.github/workflows/integration-linux.yml
 
     # create helm workflow
     echo "

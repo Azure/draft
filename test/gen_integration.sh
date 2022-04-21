@@ -185,7 +185,7 @@ languageVariables:
           overrides: |
             replicas:2
           helm-version: 'latest'
-        id: bake
+        id: bake2
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -200,7 +200,7 @@ languageVariables:
         id: deploy
         with:
           action: deploy
-          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+          manifests: \${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml
@@ -259,7 +259,7 @@ languageVariables:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
+        id: bake2
       - name: Build image
         run: |
           export SHELL=/bin/bash
@@ -274,7 +274,7 @@ languageVariables:
         id: deploy
         with:
           action: deploy
-          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+          manifests: \${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml

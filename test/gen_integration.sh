@@ -310,7 +310,7 @@ languageVariables:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl deploy -f ./langtest/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -326,7 +326,7 @@ languageVariables:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl deploy -f ./langtest/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy2
       - name: Check default namespace

@@ -23,14 +23,6 @@ type SetUpCmd struct {
 	spObjectId string
 }
 
-type federatedIdentityCredentials struct {
-	Name string `json:"name"`
-	Issuer string `json:"issuer"`
-	Subject string `json:"subject"`
-	Description string `json:"description"`
-	Audiences []string 	`json:"audiences"`
-}
-
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	log.Debug("Commencing github connection with azure...")
 
@@ -38,7 +30,6 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		if err := LogInToGh(); err != nil {
 			log.Fatal(err)
 		}
-		//log.Fatal("Error: Unable to login to your github account.")
 	}
 
 	if err := sc.ValidateSetUpConfig(); err != nil {
@@ -120,7 +111,7 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	for !sc.ServicePrincipalExists(){
 		log.Debug("Service principal not found, retrying...")
 	}
-	
+
 	var servicePrincipal map[string]interface{}
 	json.Unmarshal(out, &servicePrincipal)
 	objectId := fmt.Sprint(servicePrincipal["objectId"])
@@ -168,19 +159,19 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 	log.Debug("Checking that provided information is valid...")
 
 	if !IsSubscriptionIdValid(sc.SubscriptionID) {
-		return errors.New("Subscription id is not valid")
+		return errors.New("subscription id is not valid")
 	}
 
 	if !isValidResourceGroup(sc.ResourceGroupName) {
-		return errors.New("Resource group is not valid")
+		return errors.New("resource group is not valid")
 	}
 
 	if sc.AppName == "" {
-		return errors.New("Invalid app name")
+		return errors.New("invalid app name")
 	} 
 
 	if !isValidGhRepo(sc.Repo) {
-		return errors.New("Github repo is not valid")
+		return errors.New("github repo is not valid")
 	}
 
 	return nil

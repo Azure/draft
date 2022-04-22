@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os/exec"
 	"time"
-	
 
 	log "github.com/sirupsen/logrus"
 )
@@ -16,11 +16,11 @@ type SetUpCmd struct {
 	SubscriptionID    string
 	ResourceGroupName string
 	Provider          string
-	Repo string
-	appId string
-	tenantId string
-	appObjectId string
-	spObjectId string
+	Repo              string
+	appId             string
+	tenantId          string
+	appObjectId       string
+	spObjectId        string
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
@@ -72,10 +72,9 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	return nil
 }
 
-
 func (sc *SetUpCmd) createAzApp() error {
 	log.Debug("Commencing Azure app creation...")
-	
+
 	for {
 		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
@@ -83,7 +82,7 @@ func (sc *SetUpCmd) createAzApp() error {
 		if err != nil {
 			return err
 		}
-		
+
 		log.Debug("Waiting 3 seconds to allow app time to populate")
 		time.Sleep(3 * time.Second)
 
@@ -91,13 +90,13 @@ func (sc *SetUpCmd) createAzApp() error {
 			var azApp map[string]interface{}
 			json.Unmarshal(out, &azApp)
 			appId := fmt.Sprint(azApp["appId"])
-		
+
 			sc.appId = appId
-		
+
 			log.Debug("App created successfully!")
 			break
 		}
-	
+
 	}
 
 	return nil
@@ -105,8 +104,24 @@ func (sc *SetUpCmd) createAzApp() error {
 
 func (sc *SetUpCmd) CreateServicePrincipal() error {
 	log.Debug("Creating Azure service principal...")
-	
-	for {
+
+	var exponentialBackOffCeilingSecs int64 = 1800 // 30 min
+	lastUpdatedAt := time.Now()
+	attempts := 0
+
+	for attempts < 10 {
+		if time.Since(lastUpdatedAt).Hours() >= 12 {
+			attempts = 0
+		}
+
+		lastUpdatedAt = time.Now()
+		attempts += 1
+
+		delaySecs := int64(math.Floor((math.Pow(2, float64(attempts)) - 1) * 0.5))
+		if delaySecs > exponentialBackOffCeilingSecs {
+			delaySecs = exponentialBackOffCeilingSecs
+		}
+
 		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 		out, err := createSpCmd.CombinedOutput()
 		if err != nil {
@@ -115,13 +130,13 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 		}
 
 		log.Debug("Waiting 3 seconds to allow service principal time to populate")
-		time.Sleep(3 * time.Second)
-		
+		time.Sleep(time.Duration(delaySecs))
+
 		if sc.ServicePrincipalExists() {
 			var servicePrincipal map[string]interface{}
 			json.Unmarshal(out, &servicePrincipal)
 			objectId := fmt.Sprint(servicePrincipal["objectId"])
-	
+
 			sc.spObjectId = objectId
 			log.Debug("Service principal created successfully!")
 			break
@@ -175,7 +190,7 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 
 	if sc.AppName == "" {
 		return errors.New("invalid app name")
-	} 
+	}
 
 	if !isValidGhRepo(sc.Repo) {
 		return errors.New("github repo is not valid")
@@ -207,7 +222,6 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	return false
 }
 
-
 func (sc *SetUpCmd) createFederatedCredentials() error {
 	log.Debug("Creating federated credentials...")
 	fics := &[]string{
@@ -233,7 +247,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 	// check to make sure credentials were created
 	// count to prevent infinite loop
-	for count < 10	{
+	for count < 10 {
 		if sc.hasFederatedCredentials() {
 			break
 		}
@@ -249,7 +263,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 func (sc *SetUpCmd) getAppObjectId() error {
 	log.Debug("Fetching Azure application object ID")
 	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)
-	getObjectIdCmd := exec.Command("az", "ad", "app","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
+	getObjectIdCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
 	out, err := getObjectIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf(string(out))
@@ -271,9 +285,9 @@ func (sc *SetUpCmd) setAzClientId() {
 	out, err := setClientIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(string(out))
-		
+
 	}
-		
+
 }
 
 func (sc *SetUpCmd) setAzSubscriptionId() {
@@ -282,9 +296,9 @@ func (sc *SetUpCmd) setAzSubscriptionId() {
 	out, err := setSubscriptionIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(string(out))
-		
+
 	}
-		
+
 }
 
 func (sc *SetUpCmd) setAzTenantId() {
@@ -293,7 +307,7 @@ func (sc *SetUpCmd) setAzTenantId() {
 	out, err := setTenantIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(string(out))
-		
+
 	}
-		
+
 }

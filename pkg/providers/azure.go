@@ -76,50 +76,57 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 func (sc *SetUpCmd) createAzApp() error {
 	log.Debug("Commencing Azure app creation...")
 	
-	createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
+	for {
+		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
-	out, err := createAppCmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
+		out, err := createAppCmd.CombinedOutput()
+		if err != nil {
+			return err
+		}
+		
+		log.Debug("Waiting 3 seconds to allow app time to populate")
+		time.Sleep(3 * time.Second)
+
+		if AzAppExists(sc.AppName) {
+			var azApp map[string]interface{}
+			json.Unmarshal(out, &azApp)
+			appId := fmt.Sprint(azApp["appId"])
+		
+			sc.appId = appId
+		
+			log.Debug("App created successfully!")
+			break
+		}
 	
-	log.Debug("Checking app was created")
-	for !AzAppExists(sc.AppName){
-		log.Debug("App not found, retrying...")
 	}
 
-	var azApp map[string]interface{}
-	json.Unmarshal(out, &azApp)
-	appId := fmt.Sprint(azApp["appId"])
-
-	sc.appId = appId
-
-	log.Debug("App created successfully!")
 	return nil
 }
 
 func (sc *SetUpCmd) CreateServicePrincipal() error {
 	log.Debug("Creating Azure service principal...")
-	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
-	out, err := createSpCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(out)
-		return err
+	
+	for {
+		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
+		out, err := createSpCmd.CombinedOutput()
+		if err != nil {
+			log.Fatal(out)
+			return err
+		}
+
+		log.Debug("Waiting 3 seconds to allow service principal time to populate")
+		time.Sleep(3 * time.Second)
+		
+		if sc.ServicePrincipalExists() {
+			var servicePrincipal map[string]interface{}
+			json.Unmarshal(out, &servicePrincipal)
+			objectId := fmt.Sprint(servicePrincipal["objectId"])
+	
+			sc.spObjectId = objectId
+			log.Debug("Service principal created successfully!")
+			break
+		}
 	}
-
-	log.Debug("Checking service principal was created")
-	for !sc.ServicePrincipalExists(){
-		log.Debug("Service principal not found, retrying...")
-	}
-
-	var servicePrincipal map[string]interface{}
-	json.Unmarshal(out, &servicePrincipal)
-	objectId := fmt.Sprint(servicePrincipal["objectId"])
-
-	sc.spObjectId = objectId
-
-
-	log.Debug("Service principal created successfully!")
 	return nil
 }
 

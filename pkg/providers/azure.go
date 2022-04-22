@@ -91,6 +91,11 @@ func (sc *SetUpCmd) createAzApp() error {
 	if err != nil {
 		return err
 	}
+	
+	log.Debug("Checking app was created")
+	for !AzAppExists(sc.AppName){
+		log.Debug("App not found, retrying...")
+	}
 
 	var azApp map[string]interface{}
 	json.Unmarshal(out, &azApp)
@@ -111,11 +116,17 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 		return err
 	}
 
+	log.Debug("Checking service principal was created")
+	for !sc.ServicePrincipalExists(){
+		log.Debug("Service principal not found, retrying...")
+	}
+	
 	var servicePrincipal map[string]interface{}
 	json.Unmarshal(out, &servicePrincipal)
 	objectId := fmt.Sprint(servicePrincipal["objectId"])
 
 	sc.spObjectId = objectId
+
 
 	log.Debug("Service principal created successfully!")
 	return nil

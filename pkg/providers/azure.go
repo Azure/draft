@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"os/exec"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	bo "github.com/cenkalti/backoff/v4"
 )
 
 type SetUpCmd struct {
@@ -75,16 +75,14 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 func (sc *SetUpCmd) createAzApp() error {
 	log.Debug("Commencing Azure app creation...")
 
-	for {
+	createApp := func () error {
 		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
 		out, err := createAppCmd.CombinedOutput()
 		if err != nil {
+			log.Fatal(out)
 			return err
 		}
-
-		log.Debug("Waiting 3 seconds to allow app time to populate")
-		time.Sleep(3 * time.Second)
 
 		if AzAppExists(sc.AppName) {
 			var azApp map[string]interface{}
@@ -94,9 +92,19 @@ func (sc *SetUpCmd) createAzApp() error {
 			sc.appId = appId
 
 			log.Debug("App created successfully!")
-			break
+			return nil
 		}
 
+		return errors.New("app not found")
+	}
+
+	backoff := bo.NewExponentialBackOff()
+	backoff.MaxElapsedTime = 30 * time.Second
+
+	err := bo.Retry(createApp, backoff)
+	if err != nil {
+		log.Debug(err)
+		return err
 	}
 
 	return nil
@@ -105,32 +113,13 @@ func (sc *SetUpCmd) createAzApp() error {
 func (sc *SetUpCmd) CreateServicePrincipal() error {
 	log.Debug("Creating Azure service principal...")
 
-	var exponentialBackOffCeilingSecs int64 = 1800 // 30 min
-	lastUpdatedAt := time.Now()
-	attempts := 0
-
-	for attempts < 10 {
-		if time.Since(lastUpdatedAt).Hours() >= 12 {
-			attempts = 0
-		}
-
-		lastUpdatedAt = time.Now()
-		attempts += 1
-
-		delaySecs := int64(math.Floor((math.Pow(2, float64(attempts)) - 1) * 0.5))
-		if delaySecs > exponentialBackOffCeilingSecs {
-			delaySecs = exponentialBackOffCeilingSecs
-		}
-
+	createServicePrincipal := func () error {
 		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 		out, err := createSpCmd.CombinedOutput()
 		if err != nil {
 			log.Fatal(out)
 			return err
 		}
-
-		log.Debug("Waiting 3 seconds to allow service principal time to populate")
-		time.Sleep(time.Duration(delaySecs))
 
 		if sc.ServicePrincipalExists() {
 			var servicePrincipal map[string]interface{}
@@ -139,9 +128,21 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 
 			sc.spObjectId = objectId
 			log.Debug("Service principal created successfully!")
-			break
+			return nil
 		}
+
+		return errors.New("service principal not found")
 	}
+
+	backoff := bo.NewExponentialBackOff()
+	backoff.MaxElapsedTime = 30 * time.Second
+
+	err := bo.Retry(createServicePrincipal, backoff)
+	if err != nil {
+		log.Debug(err)
+		return err
+	}
+
 	return nil
 }
 

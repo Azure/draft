@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os/exec"
 	"time"
-	
 
 	log "github.com/sirupsen/logrus"
+	bo "github.com/cenkalti/backoff/v4"
 )
 
 type SetUpCmd struct {
@@ -16,19 +16,11 @@ type SetUpCmd struct {
 	SubscriptionID    string
 	ResourceGroupName string
 	Provider          string
-	Repo string
-	appId string
-	tenantId string
-	appObjectId string
-	spObjectId string
-}
-
-type federatedIdentityCredentials struct {
-	Name string `json:"name"`
-	Issuer string `json:"issuer"`
-	Subject string `json:"subject"`
-	Description string `json:"description"`
-	Audiences []string 	`json:"audiences"`
+	Repo              string
+	appId             string
+	tenantId          string
+	appObjectId       string
+	spObjectId        string
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
@@ -38,7 +30,6 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 		if err := LogInToGh(); err != nil {
 			log.Fatal(err)
 		}
-		//log.Fatal("Error: Unable to login to your github account.")
 	}
 
 	if err := sc.ValidateSetUpConfig(); err != nil {
@@ -81,43 +72,77 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 	return nil
 }
 
-
 func (sc *SetUpCmd) createAzApp() error {
 	log.Debug("Commencing Azure app creation...")
-	
-	createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
-	out, err := createAppCmd.CombinedOutput()
+	createApp := func () error {
+		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
+
+		out, err := createAppCmd.CombinedOutput()
+		if err != nil {
+			log.Fatal(out)
+			return err
+		}
+
+		if AzAppExists(sc.AppName) {
+			var azApp map[string]interface{}
+			json.Unmarshal(out, &azApp)
+			appId := fmt.Sprint(azApp["appId"])
+
+			sc.appId = appId
+
+			log.Debug("App created successfully!")
+			return nil
+		}
+
+		return errors.New("app not found")
+	}
+
+	backoff := bo.NewExponentialBackOff()
+	backoff.MaxElapsedTime = 30 * time.Second
+
+	err := bo.Retry(createApp, backoff)
 	if err != nil {
+		log.Debug(err)
 		return err
 	}
 
-	var azApp map[string]interface{}
-	json.Unmarshal(out, &azApp)
-	appId := fmt.Sprint(azApp["appId"])
-
-	sc.appId = appId
-
-	log.Debug("App created successfully!")
 	return nil
 }
 
 func (sc *SetUpCmd) CreateServicePrincipal() error {
 	log.Debug("Creating Azure service principal...")
-	createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
-	out, err := createSpCmd.CombinedOutput()
+
+	createServicePrincipal := func () error {
+		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
+		out, err := createSpCmd.CombinedOutput()
+		if err != nil {
+			log.Fatal(out)
+			return err
+		}
+
+		if sc.ServicePrincipalExists() {
+			var servicePrincipal map[string]interface{}
+			json.Unmarshal(out, &servicePrincipal)
+			objectId := fmt.Sprint(servicePrincipal["objectId"])
+
+			sc.spObjectId = objectId
+			log.Debug("Service principal created successfully!")
+			return nil
+		}
+
+		return errors.New("service principal not found")
+	}
+
+	backoff := bo.NewExponentialBackOff()
+	backoff.MaxElapsedTime = 30 * time.Second
+
+	err := bo.Retry(createServicePrincipal, backoff)
 	if err != nil {
-		log.Fatal(out)
+		log.Debug(err)
 		return err
 	}
 
-	var servicePrincipal map[string]interface{}
-	json.Unmarshal(out, &servicePrincipal)
-	objectId := fmt.Sprint(servicePrincipal["objectId"])
-
-	sc.spObjectId = objectId
-
-	log.Debug("Service principal created successfully!")
 	return nil
 }
 
@@ -157,19 +182,19 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 	log.Debug("Checking that provided information is valid...")
 
 	if !IsSubscriptionIdValid(sc.SubscriptionID) {
-		return errors.New("Subscription id is not valid")
+		return errors.New("subscription id is not valid")
 	}
 
 	if !isValidResourceGroup(sc.ResourceGroupName) {
-		return errors.New("Resource group is not valid")
+		return errors.New("resource group is not valid")
 	}
 
 	if sc.AppName == "" {
-		return errors.New("Invalid app name")
-	} 
+		return errors.New("invalid app name")
+	}
 
 	if !isValidGhRepo(sc.Repo) {
-		return errors.New("Github repo is not valid")
+		return errors.New("github repo is not valid")
 	}
 
 	return nil
@@ -198,7 +223,6 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	return false
 }
 
-
 func (sc *SetUpCmd) createFederatedCredentials() error {
 	log.Debug("Creating federated credentials...")
 	fics := &[]string{
@@ -224,7 +248,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 	// check to make sure credentials were created
 	// count to prevent infinite loop
-	for count < 10	{
+	for count < 10 {
 		if sc.hasFederatedCredentials() {
 			break
 		}
@@ -240,7 +264,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 func (sc *SetUpCmd) getAppObjectId() error {
 	log.Debug("Fetching Azure application object ID")
 	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)
-	getObjectIdCmd := exec.Command("az", "ad", "app","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
+	getObjectIdCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
 	out, err := getObjectIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf(string(out))
@@ -262,9 +286,9 @@ func (sc *SetUpCmd) setAzClientId() {
 	out, err := setClientIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(string(out))
-		
+
 	}
-		
+
 }
 
 func (sc *SetUpCmd) setAzSubscriptionId() {
@@ -273,9 +297,9 @@ func (sc *SetUpCmd) setAzSubscriptionId() {
 	out, err := setSubscriptionIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(string(out))
-		
+
 	}
-		
+
 }
 
 func (sc *SetUpCmd) setAzTenantId() {
@@ -284,7 +308,7 @@ func (sc *SetUpCmd) setAzTenantId() {
 	out, err := setTenantIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(string(out))
-		
+
 	}
-		
+
 }

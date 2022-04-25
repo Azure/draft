@@ -3,6 +3,7 @@ module github.com/Azure/draft
 go 1.18
 
 require (
+	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/ghodss/yaml v1.0.0
 	github.com/instrumenta/kubeval v0.16.1
 	github.com/jbrukh/bayesian v0.0.0-20200318221351-d726b684ca4a
@@ -11,7 +12,6 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
-	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.23.6
 	k8s.io/cli-runtime v0.23.6
@@ -54,6 +54,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apimachinery v0.23.6 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect

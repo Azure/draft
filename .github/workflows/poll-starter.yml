@@ -7,7 +7,7 @@ on:
 
 env:
   STARTER_WORKFLOW_PATH: "./starterWorkflows/"
-  STARTER_WORKFLOW_REPO_BRANCH: "partner_templates"
+  STARTER_WORKFLOW_REPO_BRANCH: "main"
 
 jobs:
   poll:

@@ -35,6 +35,7 @@ jobs:
           declare -p seenWorkflows > /tmp/seenWorkflows
 
       - name: Download starter workflows
+        id: change-workflows
         run: |
           # get deployment workflows
           echo "Calling GitHub API for starter workflows"
@@ -62,6 +63,9 @@ jobs:
               echo "Writting to seen workflows"
               seenWorkflows["$name"]="$sha"
               declare -p seenWorkflows > /tmp/seenWorkflows
+
+              echo "setting changes step output"
+              echo "::set-output name=changes::true"
             fi
           done
 
@@ -72,6 +76,7 @@ jobs:
           path: /tmp/seenWorkflows
 
       - name: Create Pull Request
+        if: ${{ steps.change-workflows.outputs.changes == 'true' }}
         uses: peter-evans/create-pull-request@v4
         with:
           commit-message: update starter workflows

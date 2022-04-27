@@ -13,9 +13,6 @@ jobs:
   poll:
 
     permissions:
-      pull-requests: write
-      actions: write
-      repository-projects: read
       actions: write
       checks: write
       contents: write

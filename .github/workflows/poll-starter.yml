@@ -11,21 +11,6 @@ env:
 
 jobs:
   poll:
-
-    permissions:
-      actions: write
-      checks: write
-      contents: write
-      deployments: write
-      issues: write
-      packages: write
-      pull-requests: write
-      repository-projects: write 
-      security-events: write
-      statuses: write
-
-
-
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -50,7 +35,7 @@ jobs:
           declare -p seenWorkflows > /tmp/seenWorkflows
 
       - name: Download starter workflows
-        id: change-workflows
+        id: update-workflows
         run: |
           # get deployment workflows
           echo "Calling GitHub API for starter workflows"
@@ -91,7 +76,7 @@ jobs:
           path: /tmp/seenWorkflows
 
       - name: Create Pull Request
-        if: ${{ steps.change-workflows.outputs.changes == 'true' }}
+        if: ${{ steps.update-workflows.outputs.changes == 'true' }}
         uses: peter-evans/create-pull-request@v4
         with:
           commit-message: update starter workflows

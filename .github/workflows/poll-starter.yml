@@ -14,6 +14,9 @@ jobs:
 
     permissions:
       pull-requests: write
+      actions: write
+      repository-projects: read
+
 
     runs-on: ubuntu-latest
     steps:

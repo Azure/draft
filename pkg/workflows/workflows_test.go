@@ -64,7 +64,7 @@ func TestWorkflowReplace(t *testing.T) {
 	ghw = getWorkflowFile(workflow)
 	origLen := len(ghw.Jobs["build"].Steps)
 	replaceWorkflowVars("manifests", config, ghw)
-	assert.Equal(t, origLen-1, len(ghw.Jobs["build"].Steps), "check step is deleted")
+	assert.Equal(t, origLen, len(ghw.Jobs["build"].Steps), "check step is deleted")
 
 	workflow, ok = deployNameToWorkflow["helm"]
 	assert.True(t, ok)

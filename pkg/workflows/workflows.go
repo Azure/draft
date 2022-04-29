@@ -79,6 +79,7 @@ func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *types.G
 	envMap["CONTAINER_NAME"] = config.ContainerName
 	envMap["RESOURCE_GROUP"] = config.ResourceGroupName
 	envMap["CLUSTER_NAME"] = config.AksClusterName
+	envMap["IMAGE_PULL_SECRET_NAME"] = config.AcrName + "secret"
 
 	switch deployType {
 	case "helm":
@@ -93,17 +94,8 @@ func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *types.G
 	}
 
 	ghw.Env = envMap
-	editedJob, ok := ghw.Jobs["build"]
-	if ok {
-		editedJob.Steps = removeStep(editedJob.Steps, 4)
-		ghw.Jobs["build"] = editedJob
-	}
 
 	ghw.On.Push.Branches[0] = config.BranchName
-}
-
-func removeStep(steps []map[string]interface{}, index int) []map[string]interface{} {
-	return append(steps[:index], steps[index+1:]...)
 }
 
 func setDeploymentContainerImage(filePath, productionImage string) error {

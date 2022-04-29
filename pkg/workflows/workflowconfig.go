@@ -2,6 +2,7 @@ package workflows
 
 import (
 	"github.com/Azure/draft/pkg/prompts"
+	"strings"
 )
 
 type WorkflowConfig struct {
@@ -18,11 +19,11 @@ type WorkflowConfig struct {
 
 func (config *WorkflowConfig) ValidateAndFillConfig() {
 	if config.AcrName == "" {
-		config.AcrName = prompts.GetInputFromPrompt("container registry name")
+		config.AcrName = strings.ToLower(prompts.GetInputFromPrompt("container registry name"))
 	}
 
 	if config.ContainerName == "" {
-		config.ContainerName = prompts.GetInputFromPrompt("container name")
+		config.ContainerName = strings.ToLower(prompts.GetInputFromPrompt("container name"))
 	}
 
 	if config.ResourceGroupName == "" {

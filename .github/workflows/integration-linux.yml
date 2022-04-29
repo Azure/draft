@@ -65,7 +65,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -88,7 +88,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -136,7 +136,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -274,7 +274,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -297,7 +297,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -345,7 +345,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -483,7 +483,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -506,7 +506,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -554,7 +554,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -692,7 +692,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -715,7 +715,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -763,7 +763,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -901,7 +901,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -924,7 +924,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -972,7 +972,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -1110,7 +1110,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1133,7 +1133,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1181,7 +1181,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -1319,7 +1319,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1342,7 +1342,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1390,7 +1390,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -1528,7 +1528,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1551,7 +1551,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1599,7 +1599,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -1737,7 +1737,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1760,7 +1760,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1808,7 +1808,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -1946,7 +1946,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1969,7 +1969,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -2017,7 +2017,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -2155,7 +2155,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -2178,7 +2178,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -2226,7 +2226,7 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image

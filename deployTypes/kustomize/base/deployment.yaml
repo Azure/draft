@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: {{APPNAME}}
   labels:
-    app: my-app
+    app: {{APPNAME}}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-app
+      app: {{APPNAME}}
   template:
     metadata:
       labels:
-        app: my-app
+        app: {{APPNAME}}
     spec:
       containers:
-        - name: my-app
-          image: my-app
+        - name: {{APPNAME}}
+          image: {{APPNAME}}
           ports:
             - containerPort: {{PORT}}

@@ -158,7 +158,7 @@ languageVariables:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -181,7 +181,7 @@ languageVariables:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -203,7 +203,10 @@ languageVariables:
           manifests: \${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
-        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6" >> ../.github/workflows/integration-linux.yml
 
     # create kustomize workflow
     echo "
@@ -231,7 +234,7 @@ languageVariables:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
@@ -277,7 +280,10 @@ languageVariables:
           manifests: \${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
-        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6" >> ../.github/workflows/integration-linux.yml
 
   # create manifests workflow
     echo "

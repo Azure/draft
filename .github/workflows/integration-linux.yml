@@ -111,6 +111,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gomodule-kustomize:
     runs-on: ubuntu-latest
@@ -183,6 +186,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gomodule-manifests:
     runs-on: ubuntu-latest
@@ -320,6 +326,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   python-kustomize:
     runs-on: ubuntu-latest
@@ -392,6 +401,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   python-manifests:
     runs-on: ubuntu-latest
@@ -529,6 +541,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   rust-kustomize:
     runs-on: ubuntu-latest
@@ -601,6 +616,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   rust-manifests:
     runs-on: ubuntu-latest
@@ -738,6 +756,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   javascript-kustomize:
     runs-on: ubuntu-latest
@@ -810,6 +831,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   javascript-manifests:
     runs-on: ubuntu-latest
@@ -947,6 +971,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   ruby-kustomize:
     runs-on: ubuntu-latest
@@ -1019,6 +1046,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   ruby-manifests:
     runs-on: ubuntu-latest
@@ -1156,6 +1186,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   csharp-kustomize:
     runs-on: ubuntu-latest
@@ -1228,6 +1261,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   csharp-manifests:
     runs-on: ubuntu-latest
@@ -1365,6 +1401,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   java-kustomize:
     runs-on: ubuntu-latest
@@ -1437,6 +1476,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   java-manifests:
     runs-on: ubuntu-latest
@@ -1574,6 +1616,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gradle-kustomize:
     runs-on: ubuntu-latest
@@ -1646,6 +1691,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gradle-manifests:
     runs-on: ubuntu-latest
@@ -1783,6 +1831,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   swift-kustomize:
     runs-on: ubuntu-latest
@@ -1855,6 +1906,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   swift-manifests:
     runs-on: ubuntu-latest
@@ -1992,6 +2046,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   erlang-kustomize:
     runs-on: ubuntu-latest
@@ -2064,6 +2121,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   erlang-manifests:
     runs-on: ubuntu-latest
@@ -2201,6 +2261,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   clojure-kustomize:
     runs-on: ubuntu-latest
@@ -2273,6 +2336,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   clojure-manifests:
     runs-on: ubuntu-latest

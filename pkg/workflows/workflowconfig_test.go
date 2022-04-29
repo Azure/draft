@@ -7,8 +7,8 @@ import (
 
 func TestValidateConfig(t *testing.T) {
 	config := &WorkflowConfig{
-		AcrName:           "test",
-		ContainerName:     "test",
+		AcrName:           "Test",
+		ContainerName:     "Test",
 		ResourceGroupName: "test",
 		AksClusterName:    "test",
 		BranchName:        "test",

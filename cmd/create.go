@@ -13,6 +13,7 @@ import (
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/prompts"
+	"github.com/Azure/draft/pkg/logger"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -91,6 +92,7 @@ func (cc *createCmd) initConfig() error {
 }
 
 func (cc *createCmd) run() error {
+	log.SetFormatter(new(logger.PlainFormatter))
 	log.Debugf("config: %s", cc.createConfigPath)
 	log.Info("Detecting Language")
 	detectedLang, lowerLang, err := cc.detectLanguage()

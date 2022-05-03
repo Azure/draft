@@ -15,7 +15,7 @@ spec:
         app: {{APPNAME}}
     spec:
       containers:
-        - name: {{APPNAME}}
+        - name: {{APPNAME}}:latest
           image: {{APPNAME}}
           ports:
             - containerPort: {{PORT}}

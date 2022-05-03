@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/draft/pkg/providers"
 	"github.com/briandowns/spinner"
 	"github.com/manifoldco/promptui"
+	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -25,8 +26,10 @@ application and service principle, and will configure that application to trust 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
 			
-			log.Info("--> Setting up Github OIDC...")
-			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+			cyan := color.New(color.FgCyan).SprintFunc()
+			s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+			s.Prefix = fmt.Sprintf("%s --> Setting up Github OIDC... ", cyan("[Draft]"))
+			s.Suffix = " "
 			s.Start()
 			if err := runProviderSetUp(sc); err != nil {
 				return err

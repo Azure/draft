@@ -6,11 +6,9 @@ import (
     "fmt"
 )
 
-type PlainFormatter struct {
-}
+type CustomFormatter struct {}
 
-func (f *PlainFormatter) Format(entry *log.Entry) ([]byte, error) {
-    cyan := color.New(color.Cyan).SprintFunc()
+func (f *CustomFormatter) Format(entry *log.Entry) ([]byte, error) {
+    cyan := color.New(color.FgCyan).SprintFunc()
     return []byte(fmt.Sprintf("%s %s\n",cyan("[Draft]"), entry.Message)), nil
 }
-

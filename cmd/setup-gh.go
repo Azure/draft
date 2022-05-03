@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Azure/draft/pkg/providers"
+	"github.com/briandowns/spinner"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,15 +21,17 @@ func newSetUpCmd() *cobra.Command {
 		Use:   "setup-gh",
 		Short: "Automates the Github OIDC setup process",
 		Long: `This command will automate the Github OIDC setup process by creating an Azure Active Directory 
-application and service principle, and will configure that application to trust github`,
+application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
-
+			
 			log.Info("--> Setting up Github OIDC...")
-
+			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+			s.Start()
 			if err := runProviderSetUp(sc); err != nil {
 				return err
 			}
+			s.Stop()
 
 			log.Info("Draft has successfully set up Github OIDC for your project 😃")
 			log.Info("Use 'draft generate-workflow' to generate a Github workflow to build and deploy an application on AKS.")

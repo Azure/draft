@@ -13,12 +13,10 @@ import (
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/prompts"
-	"github.com/Azure/draft/pkg/logger"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ivanpirog/coloredcobra"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -46,7 +44,7 @@ func newCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create [flags]",
 		Short: "Add minimum required files to the directory",
-		Long:  "This command will add the minimum required files to the local directory for your Kubernetes deployment",
+		Long:  "This command will add the minimum required files to the local directory for your Kubernetes deployment.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cc.initConfig()
 			return cc.run()
@@ -93,9 +91,8 @@ func (cc *createCmd) initConfig() error {
 }
 
 func (cc *createCmd) run() error {
-	log.SetFormatter(new(logger.PlainFormatter))
 	log.Debugf("config: %s", cc.createConfigPath)
-	log.Info("Detecting Language")
+	log.Info("--- Detecting Language ---")
 	detectedLang, lowerLang, err := cc.detectLanguage()
 	if err != nil {
 		return err
@@ -298,7 +295,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	} else if cc.deploymentOnly {
 		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
 	} else if !cc.deploymentOnly {
-		log.Info("Dockerfile Creation")
+		log.Info("--- Dockerfile Creation ---")
 		err := cc.generateDockerfile(detectedLang, lowerLang)
 		if err != nil {
 			return err
@@ -310,7 +307,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	} else if cc.dockerfileOnly {
 		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
 	} else if !cc.dockerfileOnly {
-		log.Info("Deployment File Creation")
+		log.Info("--- Deployment File Creation ---")
 		err := cc.createDeployment()
 		if err != nil {
 			return err

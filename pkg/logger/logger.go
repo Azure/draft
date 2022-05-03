@@ -9,6 +9,6 @@ import (
 type CustomFormatter struct {}
 
 func (f *CustomFormatter) Format(entry *log.Entry) ([]byte, error) {
-    cyan := color.New(color.FgCyan).SprintFunc()
+    cyan := color.New(color.Bold, color.FgCyan).SprintFunc()
     return []byte(fmt.Sprintf("%s %s\n",cyan("[Draft]"), entry.Message)), nil
 }

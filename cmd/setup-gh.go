@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Azure/draft/pkg/providers"
-	"github.com/briandowns/spinner"
+	"github.com/Azure/draft/pkg/spinner"
 	"github.com/manifoldco/promptui"
-	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -26,15 +24,13 @@ application and service principle, and will configure that application to trust 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
 			
-			cyan := color.New(color.FgCyan).SprintFunc()
-			s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-			s.Prefix = fmt.Sprintf("%s --> Setting up Github OIDC... ", cyan("[Draft]"))
-			s.Suffix = " "
+			s := spinner.GetSpinner("--> Setting up Github OIDC...")
 			s.Start()
-			if err := runProviderSetUp(sc); err != nil {
+			err := runProviderSetUp(sc)
+			s.Stop()
+			if err != nil {
 				return err
 			}
-			s.Stop()
 
 			log.Info("Draft has successfully set up Github OIDC for your project 😃")
 			log.Info("Use 'draft generate-workflow' to generate a Github workflow to build and deploy an application on AKS.")
@@ -44,11 +40,11 @@ application and service principle, and will configure that application to trust 
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&sc.AppName, "app", "a", "", "Specify the name of the Azure Active Directory application")
-	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "Specify the Azure subscription ID")
-	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", "", "Specify the name of the Azure resource group")
-	f.StringVarP(&sc.Provider, "provider", "p", "", "Specify the cloud provider")
-	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "Specify the github repository link")
+	f.StringVarP(&sc.AppName, "app", "a", "", "specify the Azure Active Directory application name")
+	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "specify the Azure subscription ID")
+	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", "", "specify the Azure resource group name")
+	f.StringVarP(&sc.Provider, "provider", "p", "", "specify the cloud provider")
+	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "specify the github repository link")
 
 	return cmd
 }

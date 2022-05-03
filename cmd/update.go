@@ -17,7 +17,7 @@ func newUpdateCmd() *cobra.Command {
 		Use:   "update",
 		Short: "Updates your application to be internet accessible",
 		Long: `This command automatically updates your yaml files as necessary so that your application
-		will be able to receive external requests.`,
+will be able to receive external requests.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillUpdateConfig(sa)
 
@@ -29,9 +29,9 @@ func newUpdateCmd() *cobra.Command {
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&sa.Host, "host", "a", "", "the host of the ingress resource")
-	f.StringVarP(&sa.Cert, "certificate", "s", "", "the URI of the Keyvault certificate to present")
-	f.StringVarP(&dest, "destination", "d", ".", "Specify the path to the project directory")
+	f.StringVarP(&sa.Host, "host", "a", "", "specify the host of the ingress resource")
+	f.StringVarP(&sa.Cert, "certificate", "s", "", "specify the URI of the Keyvault certificate to present")
+	f.StringVarP(&dest, "destination", "d", ".", "specify the path to the project directory")
 	return cmd
 
 }

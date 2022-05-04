@@ -74,8 +74,8 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 	return &draftConfig, nil
 }
 
-func (d *Deployments) GetConfig(deployTyoe string) *config.DraftConfig {
-	val, ok := d.configs[deployTyoe]
+func (d *Deployments) GetConfig(deployType string) *config.DraftConfig {
+	val, ok := d.configs[deployType]
 	if !ok {
 		return nil
 	}

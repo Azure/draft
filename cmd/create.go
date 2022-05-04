@@ -44,7 +44,7 @@ func newCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create [flags]",
 		Short: "Add minimum required files to the directory",
-		Long:  "This command will add the minimum required files to the local directory for your Kubernetes deployment",
+		Long:  "This command will add the minimum required files to the local directory for your Kubernetes deployment.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cc.initConfig()
 			return cc.run()
@@ -53,12 +53,12 @@ func newCreateCmd() *cobra.Command {
 
 	f := cmd.Flags()
 
-	f.StringVarP(&cc.createConfigPath, "createConfig", "c", "", "Specify the path to the configuration file")
-	f.StringVarP(&cc.appName, "app", "a", "", "Specify the name of the helm release")
-	f.StringVarP(&cc.lang, "lang", "l", "", "Specify the language used to create the Kubernetes deployment")
-	f.StringVarP(&cc.dest, "destination", "d", ".", "Specify the repository root for dockerfile and deployment creation (default is .)")
-	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "Only create Dockerfile in the directory")
-	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "Only create deployment files in the directory")
+	f.StringVarP(&cc.createConfigPath, "createConfig", "c", "", "specify the path to the configuration file")
+	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
+	f.StringVarP(&cc.lang, "lang", "l", "", "specify the language used to create the Kubernetes deployment")
+	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
+	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
+	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 
 	return cmd
 }
@@ -92,7 +92,7 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
-	log.Info("Detecting Language")
+	log.Info("--- Detecting Language ---")
 	detectedLang, lowerLang, err := cc.detectLanguage()
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 			langConfig := cc.supportedLangs.GetConfig(lowerLang)
 			return langConfig, lowerLang, nil
 		}
-		log.Infof("--> Could not find a pack for %s. Trying to find the next likely language match...\n", detectedLang.Language)
+		log.Infof("--> Could not find a pack for %s. Trying to find the next likely language match...", detectedLang.Language)
 	}
 	return nil, "", ErrNoLanguageDetected
 }
@@ -209,7 +209,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
 
-	log.Infof("--> Creating Dockerfile")
+	log.Info("--> Creating Dockerfile...\n")
 	return err
 }
 
@@ -247,7 +247,7 @@ func (cc *createCmd) createDeployment() error {
 		}
 	}
 
-	log.Infof("--> Creating %s k8s resources", deployType)
+	log.Infof("--> Creating %s Kubernetes resources...\n", deployType)
 	return d.CopyDeploymentFiles(deployType, customInputs)
 }
 
@@ -262,7 +262,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		return err
 	}
 
-	if hasDockerFile {
+	if hasDockerFile && !cc.deploymentOnly {
 		selection := &promptui.Select{
 			Label: "We found Dockerfile in the directory, would you like to recreate the Dockerfile?",
 			Items: []string{"yes", "no"},
@@ -276,7 +276,19 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		hasDockerFile = strings.EqualFold(selectResponse, "no")
 	}
 
-	if hasDeploymentFiles {
+	if cc.deploymentOnly {
+		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
+	} else if hasDockerFile {
+		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
+	} else if !cc.deploymentOnly {
+		log.Info("--- Dockerfile Creation ---")
+		err := cc.generateDockerfile(detectedLang, lowerLang)
+		if err != nil {
+			return err
+		}
+	}
+
+	if hasDeploymentFiles && !cc.dockerfileOnly {
 		selection := &promptui.Select{
 			Label: "We found deployment files in the directory, would you like to create new deployment files?",
 			Items: []string{"yes", "no"},
@@ -290,24 +302,12 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		hasDeploymentFiles = strings.EqualFold(selectResponse, "no")
 	}
 
-	if hasDockerFile {
-		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
-	} else if cc.deploymentOnly {
-		log.Info("--> --deployment-only=true, skipping Dockerfile creation...")
-	} else if !cc.deploymentOnly {
-		log.Info("Dockerfile Creation")
-		err := cc.generateDockerfile(detectedLang, lowerLang)
-		if err != nil {
-			return err
-		}
-	}
-
-	if hasDeploymentFiles {
-		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
-	} else if cc.dockerfileOnly {
+	if cc.dockerfileOnly {
 		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
+	} else if hasDeploymentFiles {
+		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
 	} else if !cc.dockerfileOnly {
-		log.Info("Deployment File Creation")
+		log.Info("--- Deployment File Creation ---")
 		err := cc.createDeployment()
 		if err != nil {
 			return err

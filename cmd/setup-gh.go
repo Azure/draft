@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/draft/pkg/providers"
+	"github.com/Azure/draft/pkg/spinner"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,13 +20,15 @@ func newSetUpCmd() *cobra.Command {
 		Use:   "setup-gh",
 		Short: "Automates the Github OIDC setup process",
 		Long: `This command will automate the Github OIDC setup process by creating an Azure Active Directory 
-application and service principle, and will configure that application to trust github`,
+application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
-
-			log.Info("--> Setting up Github OIDC...")
-
-			if err := runProviderSetUp(sc); err != nil {
+			
+			s := spinner.GetSpinner("--> Setting up Github OIDC...")
+			s.Start()
+			err := runProviderSetUp(sc)
+			s.Stop()
+			if err != nil {
 				return err
 			}
 
@@ -37,11 +40,11 @@ application and service principle, and will configure that application to trust 
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&sc.AppName, "app", "a", "", "Specify the name of the Azure Active Directory application")
-	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "Specify the Azure subscription ID")
-	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", "", "Specify the name of the Azure resource group")
-	f.StringVarP(&sc.Provider, "provider", "p", "", "Specify the cloud provider")
-	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "Specify the github repository link")
+	f.StringVarP(&sc.AppName, "app", "a", "", "specify the Azure Active Directory application name")
+	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "specify the Azure subscription ID")
+	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", "", "specify the Azure resource group name")
+	f.StringVarP(&sc.Provider, "provider", "p", "", "specify the cloud provider")
+	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "specify the github repository link")
 
 	return cmd
 }

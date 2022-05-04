@@ -65,7 +65,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -88,7 +88,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -111,9 +111,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gomodule-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -136,14 +144,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -154,6 +162,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -169,7 +179,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -180,12 +190,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gomodule-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -274,7 +294,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -297,7 +317,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -320,9 +340,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   python-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -345,14 +373,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -363,6 +391,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -378,7 +408,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -389,12 +419,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   python-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -483,7 +523,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -506,7 +546,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -529,9 +569,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   rust-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -554,14 +602,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -572,6 +620,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -587,7 +637,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -598,12 +648,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   rust-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -692,7 +752,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -715,7 +775,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -738,9 +798,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   javascript-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -763,14 +831,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -781,6 +849,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -796,7 +866,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -807,12 +877,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   javascript-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -901,7 +981,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -924,7 +1004,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -947,9 +1027,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   ruby-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -972,14 +1060,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -990,6 +1078,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1005,7 +1095,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1016,12 +1106,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   ruby-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1110,7 +1210,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1133,7 +1233,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1156,9 +1256,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   csharp-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1181,14 +1289,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1199,6 +1307,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1214,7 +1324,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1225,12 +1335,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   csharp-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1319,7 +1439,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1342,7 +1462,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1365,9 +1485,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   java-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1390,14 +1518,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1408,6 +1536,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1423,7 +1553,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1434,12 +1564,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   java-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1528,7 +1668,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1551,7 +1691,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1574,9 +1714,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gradle-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1599,14 +1747,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1617,6 +1765,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1632,7 +1782,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1643,12 +1793,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   gradle-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1737,7 +1897,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1760,7 +1920,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1783,9 +1943,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   swift-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1808,14 +1976,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1826,6 +1994,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1841,7 +2011,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1852,12 +2022,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   swift-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -1946,7 +2126,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1969,7 +2149,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -1992,9 +2172,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   erlang-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -2017,14 +2205,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -2035,6 +2223,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2050,7 +2240,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -2061,12 +2251,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   erlang-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -2155,7 +2355,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -2178,7 +2378,7 @@ jobs:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -2201,9 +2401,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   clojure-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -2226,14 +2434,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -2244,6 +2452,8 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2259,7 +2469,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -2270,12 +2480,22 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6
 
   clojure-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2

@@ -47,10 +47,6 @@ Draft requires Go version 1.18.x.
    mv draft $GOPATH/bin/
    ```
 
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
 ## License
 
 Distributed under the MIT License. See [LISENCE](https://github.com/Azure/draft/blob/main/LICENSE) for more information.

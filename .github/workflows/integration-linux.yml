@@ -151,7 +151,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -162,12 +162,14 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: |
           export POD_NAME=$(kubectl get po -o name)
           kubectl describe $POD_NAME
-          kubectl get po $POD_NAME -o yaml
+          kubectl get $POD_NAME -o yaml
       - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -180,7 +182,7 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -191,12 +193,14 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: |
           export POD_NAME=$(kubectl get po -o name)
           kubectl describe $POD_NAME
-          kubectl get po $POD_NAME -o yaml
+          kubectl get $POD_NAME -o yaml
       - name: Fail if any error
         if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
         run: exit 6

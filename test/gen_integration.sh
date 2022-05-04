@@ -246,7 +246,7 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step
@@ -257,6 +257,8 @@ languageVariables:
         with:
           action: deploy
           manifests: \${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -272,7 +274,7 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step
@@ -283,6 +285,8 @@ languageVariables:
         with:
           action: deploy
           manifests: \${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: kubectl get po

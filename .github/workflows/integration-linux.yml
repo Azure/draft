@@ -167,6 +167,7 @@ jobs:
         run: |
           export POD_NAME=$(kubectl get po -o name)
           kubectl describe $POD_NAME
+          k get po $POD_NAME -o yaml
       - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -195,6 +196,7 @@ jobs:
         run: |
           export POD_NAME=$(kubectl get po -o name)
           kubectl describe $POD_NAME
+          k get po $POD_NAME -o yaml
       - name: Fail if any error
         if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
         run: exit 6

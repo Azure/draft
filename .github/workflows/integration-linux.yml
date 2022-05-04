@@ -164,7 +164,9 @@ jobs:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+        run: |
+          export POD_NAME=$(kubectl get po)
+          kubectl describe $POD_NAME
       - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -190,7 +192,9 @@ jobs:
           manifests: ${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
+        run: |
+          export POD_NAME=$(kubectl get po)
+          kubectl describe $POD_NAME
       - name: Fail if any error
         if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
         run: exit 6

@@ -212,6 +212,11 @@ languageVariables:
     echo "
   $lang-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -289,6 +294,11 @@ languageVariables:
     echo "
   $lang-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2

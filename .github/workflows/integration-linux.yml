@@ -165,7 +165,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: |
-          export POD_NAME=$(kubectl get po)
+          export POD_NAME=$(kubectl get po -o name)
           kubectl describe $POD_NAME
       - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
       - name: Bake deployment
@@ -193,7 +193,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
         run: |
-          export POD_NAME=$(kubectl get po)
+          export POD_NAME=$(kubectl get po -o name)
           kubectl describe $POD_NAME
       - name: Fail if any error
         if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'

@@ -5,12 +5,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Azure/draft/pkg/config"
 	//"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
-	"github.com/stretchr/testify/assert"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestRun(t *testing.T) {
@@ -37,6 +38,17 @@ func TestRun(t *testing.T) {
 	
 	err = mockCC.createDeployment()
 	assert.True(t, err == nil)
+}
+
+func TestInitConfig(t *testing.T) {
+	mockCC := &createCmd{}
+	mockCC.createConfig = &config.CreateConfig{}
+	mockCC.dest = "./.."
+	mockCC.createConfigPath = "./../test/templates/config.yaml"
+
+	err := mockCC.initConfig()
+	assert.True(t, err == nil)
+	assert.True(t, mockCC.createConfig != nil)
 }
 
 func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) {

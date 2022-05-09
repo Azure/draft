@@ -71,7 +71,7 @@ func (cc *createCmd) initConfig() error {
 			return err
 		}
 
-		viper.SetConfigFile("yaml")
+		viper.SetConfigType("yaml")
 		if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
 			return err
 		}

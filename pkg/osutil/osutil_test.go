@@ -91,16 +91,3 @@ func TestEnsureFile(t *testing.T) {
 
 	os.Remove(invalidFile)
 }
-
-// func TestCopyDir(t *testing.T) {
-// 	//go:generate cp -r ../../deployTypes ./deployTypes
-// 	//go:embed all:deployTypes
-// 	var mockDeployTypes embed.FS
-// 	mockSrc := "deployTypes/kustomize"
-// 	mockDest := "."
-// 	mockConfig := &config.DraftConfig{}
-// 	mockInputs := map[string]string{"PORT": "8080"}
-
-// 	err := CopyDir(mockDeployTypes, mockSrc, mockDest, mockConfig, mockInputs)
-// 	assert.Nil(t, err)
-// }

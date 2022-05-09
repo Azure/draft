@@ -6,41 +6,40 @@ import (
 	"testing"
 
 	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/filematches"
+	//"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/stretchr/testify/assert"
 	log "github.com/sirupsen/logrus"
 )
 
-type mockCreateCmd struct {
-	appName string
-	lang    string
-	dest    string
-
-	dockerfileOnly bool
-	deploymentOnly bool
-
-	createConfigPath string
-	createConfig     *config.CreateConfig
-
-	supportedLangs *languages.Languages
-	fileMatches    *filematches.FileMatches
-}
-
 func TestRun(t *testing.T) {
-	mockCC := &mockCreateCmd{}
+	mockCC := &createCmd{}
 	mockCC.createConfig = &config.CreateConfig{}
 	mockCC.dest = "./.."
+	mockCC.createConfig.DeployType = "helm"
+	mockCC.createConfig.LanguageVariables = []config.UserInputs{}
+	mockCC.createConfig.DeployVariables = []config.UserInputs{}
+	mockPortInput := config.UserInputs{Name: "PORT", Value: "8080"}
+	mockAppNameInput := config.UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
+	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
+	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
 
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
 
 	assert.False(t, detectedLang == nil)
 	assert.False(t, lowerLang == "")
 	assert.True(t, err == nil)
+
+	err = mockCC.generateDockerfile(detectedLang, lowerLang)
+	assert.True(t, err == nil)
+
+	
+	err = mockCC.createDeployment()
+	assert.True(t, err == nil)
 }
 
-func (mcc *mockCreateCmd) mockDetectLanguage() (*config.DraftConfig, string, error) {
+func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) {
 	hasGo := false
 	hasGoMod := false
 	var langs []*linguist.Language

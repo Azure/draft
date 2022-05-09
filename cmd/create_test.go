@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/Azure/draft/pkg/config"
 	//"github.com/Azure/draft/pkg/filematches"
@@ -26,6 +28,9 @@ func TestRun(t *testing.T) {
 	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
 
+	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
+	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
+	
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
 
 	assert.False(t, detectedLang == nil)
@@ -38,6 +43,17 @@ func TestRun(t *testing.T) {
 	
 	err = mockCC.createDeployment()
 	assert.True(t, err == nil)
+	err = ioutil.WriteFile("./../Dockerfile", oldDockerfile, 0644)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = ioutil.WriteFile("./../.dockerignore", oldDockerignore, 0644)
+	if err != nil {
+		t.Error(err)
+	}
+
+	os.RemoveAll("./../charts")
 }
 
 func TestInitConfig(t *testing.T) {

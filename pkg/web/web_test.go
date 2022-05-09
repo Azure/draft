@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Azure/draft/pkg/osutil"
 )
 
 func createTempManifest(path string) (*os.File, error) {
@@ -54,6 +56,27 @@ func TestAddAnnotationsKustomize(t *testing.T) {
 	assert.Equal(t, annotations, eKustomizeYaml.Annotations)
 }
 
+func TestUpdateServiceFile(t *testing.T) {
+	tempDest := "./../.."
+	tempFile := tempDest + "/manifests/service.yaml"
+	mockSa := &ServiceAnnotations{Host: "mockHost", Cert: "mockCert"}
+
+	osutil.EnsureDirectory(tempDest + "/manifests")
+	defer os.Remove(tempDest + "/manifests")
+	osutil.EnsureFile(tempFile)
+	defer os.Remove(tempFile)
+
+	contents, err := ioutil.ReadFile("../../test/templates/service_w_annotations.yaml")
+	assert.Nil(t, err)
+	ioutil.WriteFile(tempFile, contents, 0644)
+
+	err = UpdateServiceFile(mockSa, tempDest)
+	assert.Nil(t, err)
+	newContents, _ := ioutil.ReadFile(tempFile)
+
+	assert.NotEqual(t, contents, newContents)
+}
+
 func TestAddAnnotationsHelm(t *testing.T) {
 	annotations := map[string]string{
 		"kubernetes.azure.com/ingress-host":          "test.SA",
@@ -82,3 +105,4 @@ func TestAddAnnotationsHelm(t *testing.T) {
 	assert.NotNil(t, eHelmYaml.Service.Annotations)
 	assert.Equal(t, annotations, eHelmYaml.Service.Annotations)
 }
+

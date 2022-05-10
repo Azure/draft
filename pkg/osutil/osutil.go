@@ -88,7 +88,7 @@ func CopyDir(
 		}
 
 		srcPath := src + "/" + f.Name()
-		destPath := dest + "/" + f.Name()
+		destPath := dest + f.Name()
 
 		if f.IsDir() {
 			if err = EnsureDirectory(destPath); err != nil {
@@ -113,7 +113,7 @@ func CopyDir(
 			fileName := f.Name()
 
 			if config != nil {
-				log.Debugf("checking name override for srcPath: %s, destPath: %s, destPrefix: %s/",
+				log.Debugf("checking name override for srcPath: %s, destPath: %s, destPrefix: %s",
 					srcPath, destPath, dest)
 				if prefix := config.GetNameOverride(fileName); prefix != "" {
 					log.Debugf("overriding file: %s with prefix: %s", destPath, prefix)

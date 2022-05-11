@@ -88,7 +88,7 @@ func CopyDir(
 		}
 
 		srcPath := src + "/" + f.Name()
-		destPath := dest + f.Name()
+		destPath := dest + "/" + f.Name()
 
 		if f.IsDir() {
 			if err = EnsureDirectory(destPath); err != nil {

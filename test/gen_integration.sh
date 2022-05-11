@@ -158,7 +158,7 @@ languageVariables:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -181,7 +181,7 @@ languageVariables:
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/production.yaml
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -203,12 +203,20 @@ languageVariables:
           manifests: \${{ steps.bake2.outputs.manifestsBundle }}
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
-        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6" >> ../.github/workflows/integration-linux.yml
 
     # create kustomize workflow
     echo "
   $lang-kustomize:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -231,14 +239,14 @@ languageVariables:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/overlays/production
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step
@@ -249,6 +257,8 @@ languageVariables:
         with:
           action: deploy
           manifests: \${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -264,7 +274,7 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step
@@ -275,14 +285,24 @@ languageVariables:
         with:
           action: deploy
           manifests: \${{ steps.bake2.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
       - name: Check default namespace
         if: steps.deploy2.outcome != 'success'
-        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        run: exit 6" >> ../.github/workflows/integration-linux.yml
 
   # create manifests workflow
     echo "
   $lang-manifests:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: build
     steps:
       - uses: actions/checkout@v2

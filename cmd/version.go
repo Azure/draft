@@ -13,7 +13,7 @@ func newVersionCmd() *cobra.Command {
 	// versionCmd represents the version command
 	var version = &cobra.Command{
 		Use:   "version",
-		Short: "Get current version of Draft",
+		Short: "Get the current version of Draft",
 		Long:  `Returns the running version of Draft`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 

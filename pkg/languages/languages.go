@@ -64,7 +64,7 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, err
 	}
 
-	viper.SetConfigFile("yaml")
+	viper.SetConfigType("yaml")
 	if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
 		return nil, err
 	}

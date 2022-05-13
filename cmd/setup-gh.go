@@ -24,7 +24,7 @@ application and service principle, and will configure that application to trust 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
 			
-			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
+			s := spinner.GetSpinner()
 			s.Start()
 			err := runProviderSetUp(sc)
 			s.Stop()

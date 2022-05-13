@@ -10,6 +10,10 @@ import (
 
 var s *spinner.Spinner
 
+func init() {
+	CreateSpinner("--> Setting up Github OIDC...")
+}
+
 func CreateSpinner(msg string) *spinner.Spinner {
 	cyan := color.New(color.Bold, color.FgCyan).SprintFunc()
 	s = spinner.New(spinner.CharSets[11], 100*time.Millisecond)

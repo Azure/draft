@@ -25,9 +25,8 @@ type SetUpCmd struct {
 	spObjectId        string
 }
 
-func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
+func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
-	s := spinner.GetSpinner()
 
 	if !HasGhCli() || !IsLoggedInToGh() {
 		s.Stop()

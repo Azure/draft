@@ -27,5 +27,9 @@ func createSpinner(msg string) *spinner.Spinner {
 }
 
 func GetSpinner() *spinner.Spinner {
+	if s == nil {
+		s = createSpinner("--> Setting up Github OIDC...")
+	}
+	
 	return s
 }

@@ -25,9 +25,8 @@ type SetUpCmd struct {
 	spObjectId        string
 }
 
-func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
+func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
-	s := spinner.GetSpinner()
 
 	if !HasGhCli() || !IsLoggedInToGh() {
 		s.Stop()
@@ -82,7 +81,7 @@ func (sc *SetUpCmd) createAzApp() error {
 	start := time.Now()
 	log.Debug(start)
 
-	// createApp := func () error {
+	createApp := func () error {
 		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
 		out, err := createAppCmd.CombinedOutput()
@@ -105,12 +104,12 @@ func (sc *SetUpCmd) createAzApp() error {
 		}
 
 		return errors.New("app not found")
-	// }
+	}
 
-	// backoff := bo.NewExponentialBackOff()
-	// backoff.MaxElapsedTime = 30 * time.Second
+	backoff := bo.NewExponentialBackOff()
+	backoff.MaxElapsedTime = 30 * time.Second
 
-	// err := bo.Retry(createApp, backoff)
+	err := bo.Retry(createApp, backoff)
 	if err != nil {
 		log.Debug(err)
 		return err

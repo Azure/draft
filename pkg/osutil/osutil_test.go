@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExists(t *testing.T) {
@@ -56,4 +58,36 @@ func TestSymlinkWithFallback(t *testing.T) {
 	if err := SymlinkWithFallback(oldFileNamePath, newFileNamePath); err != nil {
 		t.Errorf("expected no error when calling SymlinkWithFallback() on a file that exists, got %v", err)
 	}
+}
+
+func TestEnsureDir(t *testing.T) {
+	validDir := "./../../test/templates"
+	assert.DirExists(t, validDir)
+
+	err := EnsureDirectory(validDir)
+	assert.Nil(t, err)
+
+	invalidDir := "./../../test/EnsureDirTest"
+	err = EnsureDirectory(invalidDir)
+
+	assert.Nil(t, err)
+	assert.DirExists(t, invalidDir)
+
+	os.Remove(invalidDir)
+}
+
+func TestEnsureFile(t *testing.T) {
+	validFile := "./../../test/templates/ensure_file.yaml"
+	assert.FileExists(t, validFile)
+
+	err := EnsureFile(validFile)
+	assert.Nil(t, err)
+
+	invalidFile := "./../../test/templates/ensure_file_create.yaml"
+	err = EnsureFile(invalidFile)
+
+	assert.Nil(t, err)
+	assert.FileExists(t, invalidFile)
+
+	os.Remove(invalidFile)
 }

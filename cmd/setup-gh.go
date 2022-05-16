@@ -24,9 +24,9 @@ application and service principle, and will configure that application to trust 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
 			
-			s := spinner.GetSpinner("--> Setting up Github OIDC...")
+			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
-			err := runProviderSetUp(sc)
+			err := runProviderSetUp(sc, s)
 			s.Stop()
 			if err != nil {
 				return err
@@ -76,11 +76,11 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	}
 }
 
-func runProviderSetUp(sc *providers.SetUpCmd) error {
+func runProviderSetUp(sc *providers.SetUpCmd, s spinner.Spinner) error {
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		// call azure provider logic
-		return providers.InitiateAzureOIDCFlow(sc)
+		return providers.InitiateAzureOIDCFlow(sc, s)
 
 	} else {
 		// call logic for user-submitted provider

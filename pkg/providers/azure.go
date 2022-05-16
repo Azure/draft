@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/Azure/draft/pkg/spinner"
+
 	log "github.com/sirupsen/logrus"
 	bo "github.com/cenkalti/backoff/v4"
 )
@@ -23,13 +25,15 @@ type SetUpCmd struct {
 	spObjectId        string
 }
 
-func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
+func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
 
 	if !HasGhCli() || !IsLoggedInToGh() {
+		s.Stop()
 		if err := LogInToGh(); err != nil {
 			log.Fatal(err)
 		}
+		s.Start()
 	}
 
 	if err := sc.ValidateSetUpConfig(); err != nil {
@@ -74,6 +78,8 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd) error {
 
 func (sc *SetUpCmd) createAzApp() error {
 	log.Debug("Commencing Azure app creation...")
+	start := time.Now()
+	log.Debug(start)
 
 	createApp := func () error {
 		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
@@ -91,7 +97,9 @@ func (sc *SetUpCmd) createAzApp() error {
 
 			sc.appId = appId
 
+			end := time.Since(start)
 			log.Debug("App created successfully!")
+			log.Debug(end)
 			return nil
 		}
 
@@ -112,6 +120,8 @@ func (sc *SetUpCmd) createAzApp() error {
 
 func (sc *SetUpCmd) CreateServicePrincipal() error {
 	log.Debug("Creating Azure service principal...")
+	start := time.Now()
+	log.Debug(start)
 
 	createServicePrincipal := func () error {
 		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
@@ -128,6 +138,8 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 
 			sc.spObjectId = objectId
 			log.Debug("Service principal created successfully!")
+			end := time.Since(start)
+			log.Debug(end)
 			return nil
 		}
 

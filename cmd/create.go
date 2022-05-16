@@ -53,7 +53,7 @@ func newCreateCmd() *cobra.Command {
 
 	f := cmd.Flags()
 
-	f.StringVarP(&cc.createConfigPath, "createConfig", "c", "", "specify the path to the configuration file")
+	f.StringVarP(&cc.createConfigPath, "create-config", "c", "", "specify the path to the configuration file")
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "lang", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
@@ -92,7 +92,6 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
-	log.Info("--- Detecting Language ---")
 	detectedLang, lowerLang, err := cc.detectLanguage()
 	if err != nil {
 		return err
@@ -107,6 +106,7 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 	var langs []*linguist.Language
 	var err error
 	if cc.createConfig.LanguageType == "" {
+		log.Info("--- Detecting Language ---")
 		langs, err = linguist.ProcessDir(cc.dest)
 		log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", cc.dest, err)
 		if err != nil {

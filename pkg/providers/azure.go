@@ -108,7 +108,7 @@ func (sc *SetUpCmd) createAzApp() error {
 	}
 
 	backoff := bo.NewExponentialBackOff()
-	backoff.MaxElapsedTime = 30 * time.Second
+	backoff.MaxElapsedTime = 5 * time.Second
 
 	err := bo.Retry(createApp, backoff)
 	if err != nil {
@@ -148,7 +148,7 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	}
 
 	backoff := bo.NewExponentialBackOff()
-	backoff.MaxElapsedTime = 30 * time.Second
+	backoff.MaxElapsedTime = 5 * time.Second
 
 	err := bo.Retry(createServicePrincipal, backoff)
 	if err != nil {

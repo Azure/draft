@@ -13,6 +13,7 @@ import (
 
 var cfgFile string
 var verbose bool
+var silent bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -31,6 +32,9 @@ For more information, please visit the Draft Github page: https://github.com/Azu
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {
 			logrus.SetLevel(logrus.DebugLevel)
+		} else if silent {
+			logrus.SetLevel(logrus.WarnLevel)
+
 		}
 		logrus.SetFormatter(new(logger.CustomFormatter))
 	},
@@ -55,6 +59,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.draft.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose logging")
+	rootCmd.PersistentFlags().BoolVarP(&silent, "silent", "", false, "enable silent logging")
 }
 
 // initConfig reads in config file and ENV variables if set.

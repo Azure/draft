@@ -23,8 +23,8 @@ func newSetUpCmd() *cobra.Command {
 application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
-			
-			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
+
+			s := spinner.GetSpinner("--> Setting up Github OIDC...")
 			s.Start()
 			err := runProviderSetUp(sc, s)
 			s.Stop()
@@ -43,17 +43,12 @@ application and service principle, and will configure that application to trust 
 	f.StringVarP(&sc.AppName, "app", "a", "", "specify the Azure Active Directory application name")
 	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "specify the Azure subscription ID")
 	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", "", "specify the Azure resource group name")
-	f.StringVarP(&sc.Provider, "provider", "p", "", "specify the cloud provider")
 	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "specify the github repository link")
-
+	sc.Provider = provider
 	return cmd
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {
-	if sc.Provider == "" {
-		sc.Provider = getCloudProvider()
-	}
-
 	if sc.AppName == "" {
 		sc.AppName = getAppName()
 	}

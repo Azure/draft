@@ -1,6 +1,7 @@
 vendor/
 .idea/
 /pkg/workflows/workflows/
+/pkg/addons/addons/
 .DS_Store
 draft
 langtest

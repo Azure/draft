@@ -35,12 +35,12 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 
 	srcDir := parentDirName + "/" + val.Name()
 
-	config, ok := d.configs[deployType]
+	deployConfig, ok := d.configs[deployType]
 	if !ok {
-		config = nil
+		deployConfig = nil
 	}
 
-	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, config, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, customInputs, templateWriter); err != nil {
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, err
 	}
 
-	viper.SetConfigFile("yaml")
+	viper.SetConfigType("yaml")
 	if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
 		return nil, err
 	}

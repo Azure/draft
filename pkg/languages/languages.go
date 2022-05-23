@@ -40,12 +40,12 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 
 	srcDir := parentDirName + "/" + val.Name()
 
-	config, ok := l.configs[lang]
+	draftConfig, ok := l.configs[lang]
 	if !ok {
-		config = nil
+		draftConfig = nil
 	}
 
-	if err := osutil.CopyDir(builders, srcDir, l.dest, config, customInputs); err != nil {
+	if err := osutil.CopyDir(builders, srcDir, l.dest, draftConfig, customInputs); err != nil {
 		return err
 	}
 
@@ -69,13 +69,13 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, err
 	}
 
-	var config config.DraftConfig
+	var draftConfig config.DraftConfig
 
-	if err = viper.Unmarshal(&config); err != nil {
+	if err = viper.Unmarshal(&draftConfig); err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return &draftConfig, nil
 }
 
 func (l *Languages) GetConfig(lang string) *config.DraftConfig {

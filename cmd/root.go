@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Azure/draft/pkg/logger"
+	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/spf13/viper"
-	"github.com/Azure/draft/pkg/logger"
 )
 
 var cfgFile string
 var verbose bool
+var provider string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -40,13 +41,13 @@ For more information, please visit the Draft Github page: https://github.com/Azu
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	cc.Init(&cc.Config{
-        RootCmd:         rootCmd,
-        Headings:        cc.Cyan + cc.Bold + cc.Underline,
-        Commands:        cc.Bold,
-        Example:         cc.Italic,
-        ExecName:        cc.Bold,
-        Flags:           cc.Bold,
-    })
+		RootCmd:  rootCmd,
+		Headings: cc.Cyan + cc.Bold + cc.Underline,
+		Commands: cc.Bold,
+		Example:  cc.Italic,
+		ExecName: cc.Bold,
+		Flags:    cc.Bold,
+	})
 	cobra.CheckErr(rootCmd.Execute())
 }
 
@@ -55,6 +56,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.draft.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose logging")
+	rootCmd.PersistentFlags().StringVarP(&provider, "provider", "p", "azure", "cloud provider")
 }
 
 // initConfig reads in config file and ENV variables if set.

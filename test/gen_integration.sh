@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.18.2
       - name: make
         run: make
       - uses: actions/upload-artifact@v2

@@ -21,7 +21,7 @@ type BuilderVar struct {
 	VarType     string
 }
 
-func (d *DraftConfig) initialize() {
+func (d *DraftConfig) initNameOverrideMap() {
 	d.nameOverrideMap = make(map[string]string)
 	log.Debug("initializing nameOverrideMap")
 	for _, builderVar := range d.NameOverrides {
@@ -32,7 +32,7 @@ func (d *DraftConfig) initialize() {
 
 func (d *DraftConfig) GetNameOverride(path string) string {
 	if d.nameOverrideMap == nil {
-		d.initialize()
+		d.initNameOverrideMap()
 	}
 	prefix, ok := d.nameOverrideMap[path]
 	if !ok {

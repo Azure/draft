@@ -15,6 +15,7 @@ type ServiceManifest interface {
 	WriteToFile(string) error
 	SetAnnotations(map[string]string)
 	SetServiceType(string)
+	GetServiceName() string
 }
 
 type HelmProductionYaml struct {
@@ -40,6 +41,10 @@ func (hpy *HelmProductionYaml) SetAnnotations(annotations map[string]string) {
 
 func (hpy *HelmProductionYaml) SetServiceType(serviceType string) {
 	hpy.Service.ServiceType = serviceType
+}
+
+func (hpy *HelmProductionYaml) GetServiceName() string {
+	return `{{ include "{{APPNAME}}.fullname" . }}`
 }
 
 func (hpy *HelmProductionYaml) LoadFromFile(filePath string) error {
@@ -70,6 +75,10 @@ func (sy *ServiceYaml) SetAnnotations(annotations map[string]string) {
 
 func (sy *ServiceYaml) SetServiceType(serviceType string) {
 	sy.Spec.Type = corev1.ServiceType(serviceType)
+}
+
+func (sy *ServiceYaml) GetServiceName() string {
+	return sy.Name
 }
 
 func (sy *ServiceYaml) LoadFromFile(filePath string) error {

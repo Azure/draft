@@ -67,7 +67,7 @@ func updateProductionDeployments(deployType, dest string, config *WorkflowConfig
 	switch deployType {
 	case "helm":
 		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage)
-	case "kustomize":
+	case "default":
 		return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
 	}
 	return nil

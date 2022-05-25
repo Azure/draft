@@ -131,12 +131,8 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 			return err
 		}
 
+		log.Debug("Checking sp was created...")
 		if sc.ServicePrincipalExists() {
-			var servicePrincipal map[string]interface{}
-			json.Unmarshal(out, &servicePrincipal)
-			objectId := fmt.Sprint(servicePrincipal["objectId"])
-
-			sc.spObjectId = objectId
 			log.Debug("Service principal created successfully!")
 			end := time.Since(start)
 			log.Debug(end)
@@ -275,19 +271,17 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 func (sc *SetUpCmd) getAppObjectId() error {
 	log.Debug("Fetching Azure application object ID")
-	filter := fmt.Sprintf("displayName eq '%s'", sc.AppName)
-	getObjectIdCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
+	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
 	out, err := getObjectIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf(string(out))
 		return err
 	}
 
-	var objectId []string
+	var objectId string
 	json.Unmarshal(out, &objectId)
-	objId := objectId[0]
 
-	sc.appObjectId = objId
+	sc.appObjectId = objectId
 
 	return nil
 }

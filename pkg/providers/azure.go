@@ -46,10 +46,8 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 		return err
 	}
 
-	if !sc.ServicePrincipalExists() {
-		if err := sc.CreateServicePrincipal(); err != nil {
-			return err
-		}
+	if err := sc.CreateServicePrincipal(); err != nil {
+		return err
 	}
 
 	if err := sc.getTenantId(); err != nil {

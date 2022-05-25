@@ -150,34 +150,23 @@ func AzAppExists(appName string) bool {
 	var azApp []string
 	json.Unmarshal(out, &azApp)
 	
-	if len(azApp) >= 1 {
-		// TODO: tell user app already exists and ask which one they want to use?
-		return true
-	}
-
-	return false
+	return len(azApp) >= 1
 }
 
 func (sc *SetUpCmd) ServicePrincipalExists() bool {
-	filter := fmt.Sprintf("appId eq '%s'", sc.appId)
-	checkSpExistsCmd := exec.Command("az", "ad", "sp","list", "--only-show-errors", "--filter", filter, "--query", "[].objectId")
+	checkSpExistsCmd := exec.Command("az", "ad", "sp","show", "--only-show-errors", "--id", sc.appId, "--query", "id")
 	out, err := checkSpExistsCmd.CombinedOutput()
 	if err != nil {
-		return true
+		return false
 	}
 
-	var azSp []string
-	json.Unmarshal(out, &azSp)
+	var objectId string
+	json.Unmarshal(out, &objectId)
 	
-	if len(azSp) == 1 {
-		log.Debug("Service principal already exists - skipping service principal creation.")
-		// TODO: tell user sp already exists and ask if they want to use it?
-		objectId := fmt.Sprint(azSp[0])
-		sc.spObjectId = objectId
-		return true
-	}
-
-	return false
+	log.Debug("Service principal exists")
+	// TODO: tell user sp already exists and ask if they want to use it?
+	sc.spObjectId = objectId
+	return true
 }
 
 func AzAcrExists(acrName string) bool {

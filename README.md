@@ -19,20 +19,26 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Draft makes it easier for developers to get started building apps that run on Kubernetes by taking a non-containerized application and generating the Dockerfiles, Kubernetes manifests, Helm charts, Kustomize configuration, and other artifacts associated with a containerized application. Draft can also generate a GitHub Action workflow file to quickly build and deploy applications onto any Kubernetes cluster.   
+Draft makes it easier for developers to get started building apps that run on Kubernetes by taking a non-containerized application and generating the Dockerfiles, Kubernetes manifests, Helm charts, Kustomize configuration, and other artifacts associated with a containerized application. Draft can also generate a GitHub Action workflow file to quickly build and deploy applications onto any Kubernetes cluster.
 
-* `draft create` adds the minimum required files for your deployment to the project directory.
+### Commands
+
+* `draft create` adds the minimum required Dockerfile and manifest files for your deployment to the project directory.
+  * Supported deployment types: Helm, Kustomize, Kubernetes manifest.
 * `draft setup-gh` automates the Github OIDC setup process for your project.
-* `draft generate-workflow` generates a Github workflow for automatic build and deploy to AKS.
-* `draft update` automatically updates your application to be internet accessible.
+* `draft generate-workflow` generates a Github Action workflow for automatic build and deploy to a Kubernetes cluster.
+* `draft update` automatically make your application to be internet accessible.
 
+Use `draft [command] --help` for more information about a command.
+
+## Prerequisites
 Draft requires Go version 1.18.x.
 * Go
   ```sh
   go version
   ```
 
-### Installation
+## Installation
 
 1. Clone the repo
    ```sh
@@ -47,10 +53,13 @@ Draft requires Go version 1.18.x.
    mv draft $GOPATH/bin/
    ```
 
+## Contributing
+Draft is fully compatible with [Azure Kubernetes Services](https://docs.microsoft.com/en-ca/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!
+
 ## License
 
-Distributed under the MIT License. See [LICENSE](https://github.com/Azure/draft/blob/main/LICENSE) for more information.
+Draft is under the MIT License. See [LICENSE](https://github.com/Azure/draft/blob/main/LICENSE) for more information.
 
 ## Trademark Notice
-Trademarks This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
+Authorized use of Microsoft trademarks or logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
 

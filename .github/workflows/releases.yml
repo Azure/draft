@@ -27,10 +27,3 @@ jobs:
         with:
           files: |
             ./bin/*
-      - name: Release to aks-app
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            ./bin/*
-          token: ${{ secrets.PUBLISH_RELEASE_TOKEN }}
-          repository: "Azure/aks-app"

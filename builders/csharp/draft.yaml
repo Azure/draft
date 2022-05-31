@@ -3,3 +3,6 @@ variables:
   - name: "PORT"
     description: "the port exposed in the application"
     type: int
+  - name: "VERSION"
+    description: "the dotnet SDK version"
+    type: float

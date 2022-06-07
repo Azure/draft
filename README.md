@@ -56,6 +56,9 @@ Draft requires Go version 1.18.x.
 ## Contributing
 Draft is fully compatible with [Azure Kubernetes Services](https://docs.microsoft.com/en-ca/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!
 
+## Issues/Discussions
+The Draft team will be monitoring both the [issues](https://github.com/Azure/draft/issues) and [discussions](https://github.com/Azure/draft/discussions) board. Please feel free to create issues for any problems you run into and the Draft team will be quick to respond. The discussions board will be used for community engagement. We look forward to see you there! 
+
 ## License
 
 Draft is under the MIT License. See [LICENSE](https://github.com/Azure/draft/blob/main/LICENSE) for more information.

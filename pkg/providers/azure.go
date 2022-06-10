@@ -9,8 +9,8 @@ import (
 
 	"github.com/Azure/draft/pkg/spinner"
 
-	log "github.com/sirupsen/logrus"
 	bo "github.com/cenkalti/backoff/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 type SetUpCmd struct {
@@ -57,11 +57,11 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	if err := sc.getAppObjectId(); err != nil {
 		return err
 	}
-	
+
 	if err := sc.assignSpRole(); err != nil {
 		return err
 	}
-	
+
 	if !sc.hasFederatedCredentials() {
 		sc.createFederatedCredentials()
 	}
@@ -79,7 +79,7 @@ func (sc *SetUpCmd) createAzApp() error {
 	start := time.Now()
 	log.Debug(start)
 
-	createApp := func () error {
+	createApp := func() error {
 		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
 		out, err := createAppCmd.CombinedOutput()
@@ -121,7 +121,7 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	start := time.Now()
 	log.Debug(start)
 
-	createServicePrincipal := func () error {
+	createServicePrincipal := func() error {
 		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 		out, err := createSpCmd.CombinedOutput()
 		if err != nil {

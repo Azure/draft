@@ -155,7 +155,7 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 func (sc *SetUpCmd) assignSpRole() error {
 	log.Debug("Assigning contributor role to service principal...")
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
+	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.appId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
 	out, err := assignSpRoleCmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf(string(out))
@@ -269,7 +269,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 func (sc *SetUpCmd) getAppObjectId() error {
 	log.Debug("Fetching Azure application object ID")
-	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
+	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "objectId")
 	out, err := getObjectIdCmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf(string(out))

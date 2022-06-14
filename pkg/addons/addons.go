@@ -55,7 +55,7 @@ func GenerateAddon(provider, addon, dest string) error {
 	}
 
 	var addOnConfig config.AddonConfig
-	if err = yaml.Unmarshal(configBytes, addOnConfig); err != nil {
+	if err = yaml.Unmarshal(configBytes, &addOnConfig); err != nil {
 		return err
 	}
 	userInputs, err := prompts.RunPromptsFromConfig(&addOnConfig.DraftConfig)

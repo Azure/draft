@@ -1,10 +1,14 @@
 deployType: "kustomize"
 languageType: "csharp"
 deployVariables:
+  - name: "VERSION"
+    value: "5.0"
   - name: "PORT"
     value: "80"
   - name: "APPNAME"
     value: "testapp"
 languageVariables:
+  - name: "VERSION"
+    value: "5.0"
   - name: "PORT"
     value: "80"

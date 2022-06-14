@@ -1,10 +1,14 @@
 deployType: "kustomize"
 languageType: "ruby"
 deployVariables:
+  - name: "VERSION"
+    value: "null"
   - name: "PORT"
     value: "8000"
   - name: "APPNAME"
     value: "testapp"
 languageVariables:
+  - name: "VERSION"
+    value: "null"
   - name: "PORT"
     value: "8000"

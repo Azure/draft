@@ -118,7 +118,7 @@ func isValidResourceGroup(resourceGroup string) error {
 	getResourceGroupCmd := exec.Command("az", "group", "list", "--query", query)
 	out, err := getResourceGroupCmd.CombinedOutput()
 	if err != nil {
-		log.Errorf("failed to validate resourcegroup: %w", err)
+		log.Errorf("failed to validate resourcegroup: %s", err)
 		return err
 	}
 

@@ -218,13 +218,13 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value")
 	out, err := getFicCmd.CombinedOutput()
 	if err != nil {
-		log.Errorf("error getting fic: %w", err)
+		log.Errorf("error getting fic: %s", err)
 		return false
 	}
 
 	var fics []interface{}
 	if err = json.Unmarshal(out, &fics); err != nil {
-		log.Errorf("error marshaling fics: %w", err)
+		log.Errorf("error marshaling fics: %s", err)
 		return false
 	}
 

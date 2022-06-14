@@ -1,15 +1,16 @@
 package providers
 
 import (
-	"fmt"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func CheckAzCliInstalled()  {
+func CheckAzCliInstalled() {
 	log.Debug("Checking that Azure Cli is installed...")
 	azCmd := exec.Command("az")
 	_, err := azCmd.CombinedOutput()
@@ -28,7 +29,6 @@ func IsLoggedInToAz() bool {
 
 	return true
 }
-
 
 func HasGhCli() bool {
 	log.Debug("Checking that github cli is installed...")
@@ -75,7 +75,7 @@ func LogInToAz() error {
 	log.Debug("Logging user in to Azure Cli...")
 	azCmd := exec.Command("az", "login", "--allow-no-subscriptions")
 	azCmd.Stdin = os.Stdin
-	azCmd.Stdout  = os.Stdout
+	azCmd.Stdout = os.Stdout
 	azCmd.Stderr = os.Stderr
 	err := azCmd.Run()
 	if err != nil {
@@ -86,62 +86,67 @@ func LogInToAz() error {
 	return nil
 }
 
-func IsSubscriptionIdValid(subscriptionId string) bool {
-	if subscriptionId == "" { 
-		return false
+func IsSubscriptionIdValid(subscriptionId string) error {
+	if subscriptionId == "" {
+		return errors.New("subscriptionId cannot be empty")
 	}
 
 	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "id")
 	out, err := getSubscriptionIdCmd.CombinedOutput()
 	if err != nil {
-		return false
+		return err
 	}
 
 	var azSubscription string
-	json.Unmarshal(out, &azSubscription)
-
-	if azSubscription != "" {
-		return true
+	if err = json.Unmarshal(out, &azSubscription); err != nil {
+		return err
 	}
 
-	return false
+	if azSubscription != "" {
+		return errors.New("subscription not found")
+	}
+
+	return nil
 }
 
-func isValidResourceGroup(resourceGroup string) bool {
+func isValidResourceGroup(resourceGroup string) error {
 	if resourceGroup == "" {
-		return false
+		return errors.New("resource group cannot be empty")
 	}
 
 	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
 	getResourceGroupCmd := exec.Command("az", "group", "list", "--query", query)
 	out, err := getResourceGroupCmd.CombinedOutput()
 	if err != nil {
-		return false
+		log.Errorf("failed to validate resourcegroup: %w", err)
+		return err
 	}
 
 	var rg []interface{}
-	json.Unmarshal(out, &rg)
-
-	if len(rg) ==  0 {
-		return false
+	if err = json.Unmarshal(out, &rg); err != nil {
+		return err
 	}
 
-	return true
+	if len(rg) == 0 {
+		return errors.New("resource group not found")
+	}
+
+	return nil
 }
 
-func isValidGhRepo(repo string) bool {
+func isValidGhRepo(repo string) error {
 	listReposCmd := exec.Command("gh", "repo", "view", repo)
-		_, err := listReposCmd.CombinedOutput()
-		if err != nil {
-			log.Fatal("Github repo not found")
-			return false
-		}
-		return true
+	_, err := listReposCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal("Github repo not found")
+		return err
+	}
+	return nil
 }
 
 func AzAppExists(appName string) bool {
 	filter := fmt.Sprintf("displayName eq '%s'", appName)
-	checkAppExistsCmd := exec.Command("az", "ad", "app","list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
+	checkAppExistsCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
 	out, err := checkAppExistsCmd.CombinedOutput()
 	if err != nil {
 		return false
@@ -149,12 +154,12 @@ func AzAppExists(appName string) bool {
 
 	var azApp []string
 	json.Unmarshal(out, &azApp)
-	
+
 	return len(azApp) >= 1
 }
 
 func (sc *SetUpCmd) ServicePrincipalExists() bool {
-	checkSpExistsCmd := exec.Command("az", "ad", "sp","show", "--only-show-errors", "--id", sc.appId, "--query", "id")
+	checkSpExistsCmd := exec.Command("az", "ad", "sp", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
 	out, err := checkSpExistsCmd.CombinedOutput()
 	if err != nil {
 		return false
@@ -162,7 +167,7 @@ func (sc *SetUpCmd) ServicePrincipalExists() bool {
 
 	var objectId string
 	json.Unmarshal(out, &objectId)
-	
+
 	log.Debug("Service principal exists")
 	// TODO: tell user sp already exists and ask if they want to use it?
 	sc.spObjectId = objectId
@@ -171,7 +176,7 @@ func (sc *SetUpCmd) ServicePrincipalExists() bool {
 
 func AzAcrExists(acrName string) bool {
 	query := fmt.Sprintf("[?name=='%s']", acrName)
-	checkAcrExistsCmd := exec.Command("az", "acr","list", "--only-show-errors", "--query", query)
+	checkAcrExistsCmd := exec.Command("az", "acr", "list", "--only-show-errors", "--query", query)
 	out, err := checkAcrExistsCmd.CombinedOutput()
 	if err != nil {
 		return false
@@ -179,7 +184,7 @@ func AzAcrExists(acrName string) bool {
 
 	var azAcr []interface{}
 	json.Unmarshal(out, &azAcr)
-	
+
 	if len(azAcr) >= 1 {
 		return true
 	}
@@ -188,7 +193,7 @@ func AzAcrExists(acrName string) bool {
 }
 
 func AzAksExists(aksName string, resourceGroup string) bool {
-	checkAksExistsCmd := exec.Command("az", "aks","browse", "-g", resourceGroup, "--name", aksName)
+	checkAksExistsCmd := exec.Command("az", "aks", "browse", "-g", resourceGroup, "--name", aksName)
 	_, err := checkAksExistsCmd.CombinedOutput()
 	if err != nil {
 		return false
@@ -205,13 +210,13 @@ func GetCurrentAzSubscriptionId() []string {
 		}
 	}
 
-	getAccountCmd := exec.Command("az", "account","show", "--query", "[id]")
+	getAccountCmd := exec.Command("az", "account", "show", "--query", "[id]")
 	out, err := getAccountCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var ids []string 
+	var ids []string
 	json.Unmarshal(out, &ids)
 
 	return ids

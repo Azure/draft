@@ -9,8 +9,8 @@ import (
 
 	"github.com/Azure/draft/pkg/spinner"
 
-	log "github.com/sirupsen/logrus"
 	bo "github.com/cenkalti/backoff/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 type SetUpCmd struct {
@@ -57,13 +57,15 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	if err := sc.getAppObjectId(); err != nil {
 		return err
 	}
-	
+
 	if err := sc.assignSpRole(); err != nil {
 		return err
 	}
-	
+
 	if !sc.hasFederatedCredentials() {
-		sc.createFederatedCredentials()
+		if err := sc.createFederatedCredentials(); err != nil {
+			return err
+		}
 	}
 
 	sc.setAzClientId()
@@ -79,7 +81,7 @@ func (sc *SetUpCmd) createAzApp() error {
 	start := time.Now()
 	log.Debug(start)
 
-	createApp := func () error {
+	createApp := func() error {
 		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
 
 		out, err := createAppCmd.CombinedOutput()
@@ -90,7 +92,9 @@ func (sc *SetUpCmd) createAzApp() error {
 
 		if AzAppExists(sc.AppName) {
 			var azApp map[string]interface{}
-			json.Unmarshal(out, &azApp)
+			if err := json.Unmarshal(out, &azApp); err != nil {
+				return err
+			}
 			appId := fmt.Sprint(azApp["appId"])
 
 			sc.appId = appId
@@ -121,7 +125,7 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	start := time.Now()
 	log.Debug(start)
 
-	createServicePrincipal := func () error {
+	createServicePrincipal := func() error {
 		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 		out, err := createSpCmd.CombinedOutput()
 		if err != nil {
@@ -176,7 +180,9 @@ func (sc *SetUpCmd) getTenantId() error {
 	}
 
 	var tenantId string
-	json.Unmarshal(out, &tenantId)
+	if err := json.Unmarshal(out, &tenantId); err != nil {
+		return err
+	}
 	tenantId = fmt.Sprint(tenantId)
 
 	sc.tenantId = tenantId
@@ -187,20 +193,20 @@ func (sc *SetUpCmd) getTenantId() error {
 func (sc *SetUpCmd) ValidateSetUpConfig() error {
 	log.Debug("Checking that provided information is valid...")
 
-	if !IsSubscriptionIdValid(sc.SubscriptionID) {
-		return errors.New("subscription id is not valid")
+	if err := IsSubscriptionIdValid(sc.SubscriptionID); err != nil {
+		return err
 	}
 
-	if !isValidResourceGroup(sc.ResourceGroupName) {
-		return errors.New("resource group is not valid")
+	if err := isValidResourceGroup(sc.ResourceGroupName); err != nil {
+		return err
 	}
 
 	if sc.AppName == "" {
 		return errors.New("invalid app name")
 	}
 
-	if !isValidGhRepo(sc.Repo) {
-		return errors.New("github repo is not valid")
+	if err := isValidGhRepo(sc.Repo); err != nil {
+		return err
 	}
 
 	return nil
@@ -212,11 +218,15 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value")
 	out, err := getFicCmd.CombinedOutput()
 	if err != nil {
+		log.Errorf("error getting fic: %s", err)
 		return false
 	}
 
 	var fics []interface{}
-	json.Unmarshal(out, &fics)
+	if err = json.Unmarshal(out, &fics); err != nil {
+		log.Errorf("error marshaling fics: %s", err)
+		return false
+	}
 
 	if len(fics) > 0 {
 		log.Debug("Credentials found")
@@ -277,7 +287,9 @@ func (sc *SetUpCmd) getAppObjectId() error {
 	}
 
 	var objectId string
-	json.Unmarshal(out, &objectId)
+	if err := json.Unmarshal(out, &objectId); err != nil {
+		return err
+	}
 
 	sc.appObjectId = objectId
 

@@ -22,6 +22,7 @@
   },
   {
     "language": "csharp",
+    "version": "5.0",
     "port": "80",
     "repo": "imiller31/csharp-simple-web-app"
   },

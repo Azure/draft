@@ -36,7 +36,6 @@ For more information, please visit the Draft Github page: https://github.com/Azu
 			logrus.SetLevel(logrus.ErrorLevel)
 
 		}
-		logrus.SetFormatter(&logrus.TextFormatter{})
 		logrus.SetOutput(&logger.OutputSplitter{})
 		logrus.SetFormatter(new(logger.CustomFormatter))
 	},

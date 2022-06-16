@@ -33,7 +33,7 @@ build-all: go-generate vendor build-windows-amd64 build-linux-amd64 build-linux-
 
 .PHONY: build-windows-amd64
 build-windows-amd64:
-	GOOS=windows GOARCH=amd64 go build -ldflags "-X github.com/Azure/draft/cmd.VERSION=${DRAFT_VERSION}" -v -o ./bin/draft-windows-amd64
+	GOOS=windows GOARCH=amd64 go build -ldflags "-X github.com/Azure/draft/cmd.VERSION=${DRAFT_VERSION}" -v -o ./bin/draft-windows-amd64.exe
 
 .PHONY: build-linux-amd64
 build-linux-amd64:

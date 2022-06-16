@@ -102,7 +102,7 @@ func IsSubscriptionIdValid(subscriptionId string) error {
 		return err
 	}
 
-	if azSubscription != "" {
+	if azSubscription == "" {
 		return errors.New("subscription not found")
 	}
 

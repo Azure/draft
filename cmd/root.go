@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Azure/draft/pkg/logger"
+	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/spf13/viper"
-	"github.com/Azure/draft/pkg/logger"
 )
 
 var cfgFile string
@@ -34,9 +34,10 @@ For more information, please visit the Draft Github page: https://github.com/Azu
 		if verbose {
 			logrus.SetLevel(logrus.DebugLevel)
 		} else if silent {
-			logrus.SetLevel(logrus.WarnLevel)
+			logrus.SetLevel(logrus.ErrorLevel)
 
 		}
+		logrus.SetOutput(&logger.OutputSplitter{})
 		logrus.SetFormatter(new(logger.CustomFormatter))
 	},
 }

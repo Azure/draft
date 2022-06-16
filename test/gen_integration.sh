@@ -76,6 +76,7 @@ cat integration_config.json | jq -c '.[]' | while read -r test;
 do 
     # extract from json
     lang=$(echo $test | jq '.language' -r)
+    version=$(echo $test | jq '.version' -r)
     port=$(echo $test | jq '.port' -r)
     repo=$(echo $test | jq '.repo' -r)
     echo "Adding $lang with port $port"
@@ -86,11 +87,15 @@ do
     echo "deployType: \"Helm\"
 languageType: \"$lang\"
 deployVariables:
+  - name: \"VERSION\"
+    value: \"$version\"
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
     value: \"testapp\"
 languageVariables:
+  - name: \"VERSION\"
+    value: \"$version\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/helm.yaml
 
@@ -98,11 +103,15 @@ languageVariables:
     echo "deployType: \"kustomize\"
 languageType: \"$lang\"
 deployVariables:
+  - name: \"VERSION\"
+    value: \"$version\"
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
     value: \"testapp\"
 languageVariables:
+  - name: \"VERSION\"
+    value: \"$version\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/kustomize.yaml
 
@@ -110,11 +119,15 @@ languageVariables:
     echo "deployType: \"manifests\"
 languageType: \"$lang\"
 deployVariables:
+  - name: \"VERSION\"
+    value: \"$version\" 
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
     value: \"testapp\"
 languageVariables:
+  - name: \"VERSION\"
+    value: \"$version\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
 

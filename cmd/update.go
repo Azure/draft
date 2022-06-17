@@ -5,8 +5,8 @@ import (
 
 	"github.com/Azure/draft/pkg/web"
 	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 func newUpdateCmd() *cobra.Command {

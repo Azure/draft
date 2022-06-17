@@ -31,7 +31,7 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	if !HasGhCli() || !IsLoggedInToGh() {
 		s.Stop()
 		if err := LogInToGh(); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		s.Start()
 	}
@@ -41,7 +41,7 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	}
 
 	if AzAppExists(sc.AppName) {
-		log.Fatal("App already exists")
+		return errors.New("app already exists")
 	} else if err := sc.createAzApp(); err != nil {
 		return err
 	}
@@ -68,9 +68,15 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 		}
 	}
 
-	sc.setAzClientId()
-	sc.setAzSubscriptionId()
-	sc.setAzTenantId()
+	if err := sc.setAzClientId(); err != nil {
+		return err
+	}
+	if err := sc.setAzSubscriptionId(); err != nil {
+		return err
+	}
+	if err := sc.setAzTenantId(); err != nil {
+		return err
+	}
 
 	log.Debug("Github connection with azure completed successfully!")
 	return nil
@@ -86,7 +92,7 @@ func (sc *SetUpCmd) createAzApp() error {
 
 		out, err := createAppCmd.CombinedOutput()
 		if err != nil {
-			log.Fatal(out)
+			log.Printf("%s\n", out)
 			return err
 		}
 
@@ -129,7 +135,7 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
 		out, err := createSpCmd.CombinedOutput()
 		if err != nil {
-			log.Fatal(out)
+			log.Printf("%s\n", out)
 			return err
 		}
 
@@ -162,7 +168,7 @@ func (sc *SetUpCmd) assignSpRole() error {
 	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
 	out, err := assignSpRoleCmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf(string(out))
+		log.Printf("%s\n", out)
 		return err
 	}
 
@@ -175,7 +181,7 @@ func (sc *SetUpCmd) getTenantId() error {
 	getTenantIdCmd := exec.Command("az", "account", "show", "--query", "tenantId", "--only-show-errors")
 	out, err := getTenantIdCmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf(string(out))
+		log.Printf("%s\n", out)
 		return err
 	}
 
@@ -251,9 +257,10 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 	for _, fic := range *fics {
 		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", fmt.Sprintf(uri, sc.appObjectId), "--body", fmt.Sprintf(fic, sc.Repo))
-		out, ficErr := createFicCmd.CombinedOutput()
-		if ficErr != nil {
-			log.Fatalf(string(out))
+		out, err := createFicCmd.CombinedOutput()
+		if err != nil {
+			log.Printf("%s\n", out)
+			return err
 		}
 
 	}
@@ -282,7 +289,7 @@ func (sc *SetUpCmd) getAppObjectId() error {
 	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
 	out, err := getObjectIdCmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf(string(out))
+		log.Printf("%s\n", out)
 		return err
 	}
 
@@ -296,35 +303,35 @@ func (sc *SetUpCmd) getAppObjectId() error {
 	return nil
 }
 
-func (sc *SetUpCmd) setAzClientId() {
+func (sc *SetUpCmd) setAzClientId() error {
 	log.Debug("Setting AZURE_CLIENT_ID in github...")
 	setClientIdCmd := exec.Command("gh", "secret", "set", "AZURE_CLIENT_ID", "-b", sc.appId, "--repo", sc.Repo)
 	out, err := setClientIdCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(string(out))
-
+		log.Printf("%s\n", out)
+		return err
 	}
-
+	return nil
 }
 
-func (sc *SetUpCmd) setAzSubscriptionId() {
+func (sc *SetUpCmd) setAzSubscriptionId() error {
 	log.Debug("Setting AZURE_SUBSCRIPTION_ID in github...")
 	setSubscriptionIdCmd := exec.Command("gh", "secret", "set", "AZURE_SUBSCRIPTION_ID", "-b", sc.SubscriptionID, "--repo", sc.Repo)
 	out, err := setSubscriptionIdCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(string(out))
-
+		log.Printf("%s\n", out)
+		return err
 	}
-
+	return nil
 }
 
-func (sc *SetUpCmd) setAzTenantId() {
+func (sc *SetUpCmd) setAzTenantId() error {
 	log.Debug("Setting AZURE_TENANT_ID in github...")
 	setTenantIdCmd := exec.Command("gh", "secret", "set", "AZURE_TENANT_ID", "-b", sc.tenantId, "--repo", sc.Repo)
 	out, err := setTenantIdCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(string(out))
-
+		log.Printf("%s\n", out)
+		return err
 	}
-
+	return err
 }

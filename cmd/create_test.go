@@ -29,7 +29,7 @@ func TestRun(t *testing.T) {
 
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
-	
+
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
 
 	assert.False(t, detectedLang == nil)
@@ -39,7 +39,6 @@ func TestRun(t *testing.T) {
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
 	assert.True(t, err == nil)
 
-	
 	err = mockCC.createDeployment()
 	assert.True(t, err == nil)
 	err = ioutil.WriteFile("./../Dockerfile", oldDockerfile, 0644)

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
 )
 
 type Spinner interface {

@@ -49,7 +49,7 @@ application and service principle, and will configure that application to trust 
 	return cmd
 }
 
-func fillSetUpConfig(sc *providers.SetUpCmd) {
+func fillSetUpConfig(sc *providers.SetUpCmd) error {
 	if sc.Provider == "" {
 		sc.Provider = getCloudProvider()
 	}
@@ -60,7 +60,10 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 
 	if sc.SubscriptionID == "" {
 		if strings.ToLower(sc.Provider) == "azure" {
-			currentSub := providers.GetCurrentAzSubscriptionId()
+			currentSub, err := providers.GetCurrentAzSubscriptionId()
+			if err != nil {
+				return err
+			}
 			sc.SubscriptionID = GetAzSubscriptionId(currentSub)
 		} else {
 			sc.SubscriptionID = getSubscriptionID()
@@ -74,6 +77,7 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	if sc.Repo == "" {
 		sc.Repo = getGhRepo()
 	}
+	return nil
 }
 
 func runProviderSetUp(sc *providers.SetUpCmd, s spinner.Spinner) error {
@@ -159,7 +163,7 @@ func getResourceGroup() string {
 func getGhRepo() string {
 	validate := func(input string) error {
 		if !strings.Contains(input, "/") {
-			return errors.New("Github repo cannot be empty")
+			return errors.New("GitHub repo cannot be empty")
 		}
 
 		return nil

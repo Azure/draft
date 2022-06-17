@@ -97,10 +97,10 @@ func (l *Languages) PopulateConfigs() {
 	}
 }
 
-func CreateLanguages(dest string) *Languages {
+func CreateLanguages(dest string) (*Languages, error) {
 	langMap, err := embedutils.EmbedFStoMap(builders, parentDirName)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	l := &Languages{
@@ -110,5 +110,5 @@ func CreateLanguages(dest string) *Languages {
 	}
 	l.PopulateConfigs()
 
-	return l
+	return l, nil
 }

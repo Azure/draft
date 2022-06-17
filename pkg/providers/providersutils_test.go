@@ -7,7 +7,11 @@ import (
 )
 
 func TestLoggedInToAz(t *testing.T) {
-	assert.False(t, IsLoggedInToAz(), "AZ is returning logged in even when logged out")
+	isLoggedIn, err := IsLoggedInToAz()
+	if err != nil {
+		t.Error(err)
+	}
+	assert.False(t, isLoggedIn, "Azure CLI is returning logged in even when logged out")
 }
 
 func TestLoggedInToGh(t *testing.T) {
@@ -15,10 +19,10 @@ func TestLoggedInToGh(t *testing.T) {
 }
 
 func TestCheckAzCliInstalled(t *testing.T) {
-	var err error 
-	CheckAzCliInstalled()
-
-	assert.Nil(t, err)
+	err := CheckAzCliInstalled()
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestHasGhCli(t *testing.T) {

@@ -1,14 +1,15 @@
 package workflows
 
 import (
-	"github.com/Azure/draft/pkg/types"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/client-go/kubernetes/scheme"
 	"os"
 	"testing"
+
+	"github.com/Azure/draft/pkg/types"
+	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func createTempManifest(path string) (string, error) {
@@ -38,7 +39,12 @@ func TestWorkflowEmbed(t *testing.T) {
 		workflowFileSuffix: "-helm",
 	}
 
-	assert.NotEmptyf(t, getWorkflowFile(workflow), "workflow should be fetched from the embeded file system")
+	res, err := getWorkflowFile(workflow)
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.NotEmptyf(t, res, "workflow should be fetched from the embeded file system")
 }
 
 func TestWorkflowReplace(t *testing.T) {
@@ -61,7 +67,10 @@ func TestWorkflowReplace(t *testing.T) {
 	workflow, ok := deployNameToWorkflow["manifests"]
 	assert.True(t, ok)
 
-	ghw = getWorkflowFile(workflow)
+	ghw, err := getWorkflowFile(workflow)
+	if err != nil {
+		t.Error(err)
+	}
 	origLen := len(ghw.Jobs["build"].Steps)
 	replaceWorkflowVars("manifests", config, ghw)
 	assert.Equal(t, origLen, len(ghw.Jobs["build"].Steps), "check step is deleted")
@@ -69,14 +78,20 @@ func TestWorkflowReplace(t *testing.T) {
 	workflow, ok = deployNameToWorkflow["helm"]
 	assert.True(t, ok)
 
-	ghw = getWorkflowFile(workflow)
+	ghw, err = getWorkflowFile(workflow)
+	if err != nil {
+		t.Error(err)
+	}
 	replaceWorkflowVars("helm", config, ghw)
 	assert.Equal(t, "testOverride", ghw.Env["CHART_OVERRIDE_PATH"], "check helm envs are replaced")
 
 	workflow, ok = deployNameToWorkflow["kustomize"]
 	assert.True(t, ok)
 
-	ghw = getWorkflowFile(workflow)
+	ghw, err = getWorkflowFile(workflow)
+	if err != nil {
+		t.Error(err)
+	}
 	replaceWorkflowVars("kustomize", config, ghw)
 	assert.Equal(t, "testKustomize", ghw.Env["KUSTOMIZE_PATH"], "check kustomize envs are replaces")
 }

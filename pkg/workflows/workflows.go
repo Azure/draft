@@ -4,17 +4,18 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
+	"io/ioutil"
+	"os"
+
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/types"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"io/fs"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
-	"os"
 )
 
 //go:generate cp -r ../../starterWorkflows ./workflows
@@ -51,7 +52,10 @@ func CreateWorkflows(dest string, config *WorkflowConfig) error {
 		return errors.New("unsupported deployment type")
 	}
 
-	workflowTemplate := getWorkflowFile(workflow)
+	workflowTemplate, err := getWorkflowFile(workflow)
+	if err != nil {
+		return err
+	}
 
 	replaceWorkflowVars(deployType, config, workflowTemplate)
 
@@ -156,21 +160,21 @@ func setHelmContainerImage(filePath, productionImage string) error {
 	return ioutil.WriteFile(filePath, out, 0644)
 }
 
-func getWorkflowFile(workflow *workflowType) *types.GitHubWorkflow {
+func getWorkflowFile(workflow *workflowType) (*types.GitHubWorkflow, error) {
 	embedFilePath := parentDirName + "/" + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
 
 	file, err := fs.ReadFile(workflows, embedFilePath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var ghw types.GitHubWorkflow
 
 	err = yaml.Unmarshal(file, &ghw)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		return nil, err
 	}
-	return &ghw
+	return &ghw, nil
 }
 
 func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw types.GitHubWorkflow) error {

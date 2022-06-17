@@ -158,7 +158,10 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 		}
 	}
 
-	cc.supportedLangs = languages.CreateLanguages(cc.dest)
+	cc.supportedLangs, err = languages.CreateLanguages(cc.dest)
+	if err != nil {
+		return nil, "", err
+	}
 
 	if cc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")
@@ -218,10 +221,12 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 
 func (cc *createCmd) createDeployment() error {
 	log.Info("--- Deployment File Creation ---")
-	d := deployments.CreateDeployments(cc.dest)
+	d, err := deployments.CreateDeployments(cc.dest)
+	if err != nil {
+		return err
+	}
 	var deployType string
 	var customInputs map[string]string
-	var err error
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
 		config := d.GetConfig(deployType)

@@ -26,7 +26,7 @@ func (f *FileMatches) findDeploymentFiles(dest string) error {
 
 func (f *FileMatches) walkFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("%s\n", err)
 		return err
 	}
 	if info.IsDir() {
@@ -46,7 +46,8 @@ func (f *FileMatches) walkFunc(path string, info os.FileInfo, err error) error {
 func isValidK8sFile(filePath string) bool {
 	fileContents, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("%s\n", err)
+		return false
 	}
 	config := kubeval.NewDefaultConfig()
 	results, err := kubeval.Validate(fileContents, config)
@@ -69,7 +70,7 @@ func (f *FileMatches) hasDeploymentFiles() bool {
 	return len(f.deploymentFiles) > 0
 }
 
-func createK8sFileMatches(dest string) *FileMatches {
+func createK8sFileMatches(dest string) (*FileMatches, error) {
 	l := &FileMatches{
 		dest:            dest,
 		patterns:        []string{"*.yaml", "*.yml"},
@@ -77,10 +78,10 @@ func createK8sFileMatches(dest string) *FileMatches {
 	}
 	err := l.findDeploymentFiles(dest)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return l
+	return l, nil
 }
 
 func SearchDirectory(dest string) (bool, bool, error) {
@@ -97,7 +98,10 @@ func SearchDirectory(dest string) (bool, bool, error) {
 	}
 
 	// recursive directory search for valid yaml files
-	fileMatches := createK8sFileMatches(dest)
+	fileMatches, err := createK8sFileMatches(dest)
+	if err != nil {
+		return false, false, err
+	}
 	_, err = FindDraftDeploymentFiles(dest)
 	hasDeploymentFiles := fileMatches.hasDeploymentFiles() || err == nil
 	return hasDockerFile, hasDeploymentFiles, nil

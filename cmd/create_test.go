@@ -90,7 +90,10 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		}
 	}
 
-	mcc.supportedLangs = languages.CreateLanguages(mcc.dest)
+	mcc.supportedLangs, err = languages.CreateLanguages(mcc.dest)
+	if err != nil {
+		return nil, "", err
+	}
 
 	if mcc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")

@@ -78,7 +78,7 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 		return err
 	}
 
-	log.Debug("Github connection with azure completed successfully!")
+	log.Debug("GitHub connection with azure completed successfully!")
 	return nil
 }
 

@@ -15,7 +15,7 @@ func TestLoggedInToAz(t *testing.T) {
 }
 
 func TestLoggedInToGh(t *testing.T) {
-	assert.False(t, IsLoggedInToGh(), "Github is returning logged in even when logged out")
+	assert.False(t, IsLoggedInToGh(), "GitHub CLI is returning logged in even when logged out")
 }
 
 func TestCheckAzCliInstalled(t *testing.T) {
@@ -26,5 +26,5 @@ func TestCheckAzCliInstalled(t *testing.T) {
 }
 
 func TestHasGhCli(t *testing.T) {
-	assert.True(t, HasGhCli(), "Github CLI is not installed")
+	assert.True(t, HasGhCli(), "GitHub CLI is not installed")
 }

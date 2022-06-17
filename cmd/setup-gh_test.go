@@ -16,7 +16,7 @@ func TestSetUpConfig(t *testing.T) {
 	mockSetUpCmd.Repo = "test/repo"
 	mockSetUpCmd.ResourceGroupName = "testResourceGroup"
 	mockSetUpCmd.SubscriptionID = "123456789"
-	s := spinner.CreateSpinner("--> Setting up Github OIDC...")
+	s := spinner.CreateSpinner("--> Setting up GitHub OIDC...")
 
 	fillSetUpConfig(mockSetUpCmd)
 

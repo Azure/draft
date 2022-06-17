@@ -1,9 +1,16 @@
 package config
 
 import (
+	"errors"
+	"fmt"
 	"github.com/Azure/draft/pkg/consts"
 	"github.com/Azure/draft/pkg/filematches"
+	log "github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"sigs.k8s.io/kustomize/api/krusty"
+	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/filesys"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 	"strings"
 )
 
@@ -36,13 +43,21 @@ func (ac *AddonConfig) GetReferenceMap(dest string) (map[string]string, error) {
 			}
 
 		case "kustomize":
-			return referenceMap, nil
+			if err = getKustomizeReferenceMap(referenceName, dest, references, referenceMap); err != nil {
+				return nil, err
+			}
+
+		case "manifests":
+			if err = getManifestReferenceMap(referenceName, dest, references, referenceMap); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	return referenceMap, err
 }
 
+// TODO: should consolidate all deployTypes into single interface to abstract the implementations
 func getHelmReferenceMap(referenceName, dest string, references []reference, referenceMap map[string]string) error {
 	chart, err := loader.Load(dest + "/charts/")
 	if err != nil {
@@ -56,4 +71,50 @@ func getHelmReferenceMap(referenceName, dest string, references []reference, ref
 	}
 
 	return nil
+}
+
+func getKustomizeReferenceMap(referenceName, dest string, references []reference, referenceMap map[string]string) error {
+	kustomizer := krusty.MakeKustomizer(&krusty.Options{PluginConfig: &types.PluginConfig{}})
+	production, err := kustomizer.Run(filesys.FileSystemOrOnDisk{}, dest+"/overlays/production/")
+	if err != nil {
+		return err
+	}
+	rNodes := production.ToRNodeSlice()
+
+	return getNativeRefMap(rNodes, referenceName, references, referenceMap)
+}
+
+func getManifestReferenceMap(referenceName, dest string, references []reference, referenceMap map[string]string) error {
+	serviceYaml, err := yaml.ReadFile(dest + "/manifests/service.yaml")
+	if err != nil {
+		return err
+	}
+	rNodes := make([]*yaml.RNode, 0)
+	rNodes = append(rNodes, serviceYaml)
+	return getNativeRefMap(rNodes, referenceName, references, referenceMap)
+}
+
+func getNativeRefMap(referenceNodes []*yaml.RNode, referenceName string, references []reference, referenceMap map[string]string) error {
+	for _, reference := range references {
+		refStr := getRef(referenceNodes, consts.RefPathLookups[referenceName][reference.Name])
+		if refStr == "" {
+			return errors.New(fmt.Sprintf("reference %s not found", reference.Name))
+		}
+
+		referenceMap[reference.Name] = refStr
+	}
+	return nil
+}
+
+func getRef(rNodes []*yaml.RNode, lookupPath []string) string {
+	for _, rNode := range rNodes {
+		port, err := rNode.Pipe(yaml.Lookup(lookupPath...))
+		if port == nil || err != nil {
+			continue
+		}
+		portString, _ := port.String()
+		log.Debugf("found port: %s", portString)
+		return portString
+	}
+	return ""
 }

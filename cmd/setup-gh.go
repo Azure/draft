@@ -18,13 +18,13 @@ func newSetUpCmd() *cobra.Command {
 	// setup-ghCmd represents the setup-gh command
 	var cmd = &cobra.Command{
 		Use:   "setup-gh",
-		Short: "Automates the Github OIDC setup process",
-		Long: `This command will automate the Github OIDC setup process by creating an Azure Active Directory 
+		Short: "Automates the GitHub OIDC setup process",
+		Long: `This command will automate the GitHub OIDC setup process by creating an Azure Active Directory 
 application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
-			
-			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
+
+			s := spinner.CreateSpinner("--> Setting up GitHub OIDC...")
 			s.Start()
 			err := runProviderSetUp(sc, s)
 			s.Stop()
@@ -32,8 +32,8 @@ application and service principle, and will configure that application to trust 
 				return err
 			}
 
-			log.Info("Draft has successfully set up Github OIDC for your project 😃")
-			log.Info("Use 'draft generate-workflow' to generate a Github workflow to build and deploy an application on AKS.")
+			log.Info("Draft has successfully set up GitHub OIDC for your project 😃")
+			log.Info("Use 'draft generate-workflow' to generate a GitHub workflow to build and deploy an application on AKS.")
 
 			return nil
 		},
@@ -170,7 +170,7 @@ func getGhRepo() string {
 	}
 
 	repoPrompt := promptui.Prompt{
-		Label:    "Enter github organization and repo (organization/repoName)",
+		Label:    "Enter GitHub organization and repo (organization/repoName)",
 		Validate: validate,
 	}
 

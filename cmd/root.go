@@ -27,7 +27,7 @@ To start a k8s deployment with draft, run the 'draft create' command 🤩
 
 This will prompt you to create a Dockerfile and deployment files for your project ✨
 
-For more information, please visit the Draft Github page: https://github.com/Azure/draft.`,
+For more information, please visit the Draft GitHub repo: https://github.com/Azure/draft.`,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {
@@ -45,13 +45,13 @@ For more information, please visit the Draft Github page: https://github.com/Azu
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	cc.Init(&cc.Config{
-        RootCmd:         rootCmd,
-        Headings:        cc.Cyan + cc.Bold + cc.Underline,
-        Commands:        cc.Bold,
-        Example:         cc.Italic,
-        ExecName:        cc.Bold,
-        Flags:           cc.Bold,
-    })
+		RootCmd:  rootCmd,
+		Headings: cc.Cyan + cc.Bold + cc.Underline,
+		Commands: cc.Bold,
+		Example:  cc.Italic,
+		ExecName: cc.Bold,
+		Flags:    cc.Bold,
+	})
 	cobra.CheckErr(rootCmd.Execute())
 }
 

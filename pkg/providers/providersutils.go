@@ -38,13 +38,12 @@ func HasGhCli() bool {
 		log.Println("Error: The GitHub CLI is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
 		return false
 	}
-
-	log.Debug("Github cli found!")
+	log.Debug("GitHub CLI found!")
 	return true
 }
 
 func IsLoggedInToGh() bool {
-	log.Debug("Checking that user is logged in to github...")
+	log.Debug("Checking that user is logged in to GitHub...")
 	ghCmd := exec.Command("gh", "auth", "status")
 	out, err := ghCmd.CombinedOutput()
 	if err != nil {
@@ -54,11 +53,10 @@ func IsLoggedInToGh() bool {
 
 	log.Debug("User is logged in!")
 	return true
-
 }
 
 func LogInToGh() error {
-	log.Debug("Logging user in to github...")
+	log.Debug("Logging user in to GitHub...")
 	ghCmd := exec.Command("gh", "auth", "login")
 	ghCmd.Stdin = os.Stdin
 	ghCmd.Stdout = os.Stdout

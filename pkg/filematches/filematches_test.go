@@ -32,7 +32,7 @@ func generateYamlFromTemplate(dir string, valid bool) (*os.File, error) {
 		return nil, err
 	}
 	return file, nil
-} 
+}
 
 func TestCreateK8sFileMatchesValidFile(t *testing.T) {
 	dir, err := ioutil.TempDir("", "filematch")
@@ -64,7 +64,7 @@ func TestCreateK8sFileMatchesInvalidFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(dir)
-	
+
 	file, err := generateYamlFromTemplate(dir, false)
 	if err != nil {
 		t.Fatal(err)
@@ -89,7 +89,7 @@ func TestCreateK8sFileMatchesNestedValidFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(nestedDir)
-	
+
 	file, err := generateYamlFromTemplate(nestedDir, true)
 	if err != nil {
 		t.Fatal(err)
@@ -130,11 +130,11 @@ func TestCreateK8sFileMatchesNestedInvalidFile(t *testing.T) {
 }
 
 func touchDockerfile(name string) error {
-    file, err := os.OpenFile(name, os.O_RDONLY|os.O_CREATE, 0644)
-    if err != nil {
-        return err
-    }
-    return file.Close()
+	file, err := os.OpenFile(name, os.O_RDONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	return file.Close()
 }
 
 func TestSearchDirectoryWithDockerfile(t *testing.T) {

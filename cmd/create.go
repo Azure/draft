@@ -28,8 +28,8 @@ type createCmd struct {
 	lang    string
 	dest    string
 
-	dockerfileOnly bool
-	deploymentOnly bool
+	dockerfileOnly    bool
+	deploymentOnly    bool
 	skipFileDetection bool
 
 	createConfigPath string
@@ -337,7 +337,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	}
 
 	log.Info("Draft has successfully created deployment resources for your project 😃")
-	log.Info("Use 'draft setup-gh' to set up Github OIDC.")
+	log.Info("Use 'draft setup-gh' to set up GitHub OIDC.")
 
 	return nil
 }

@@ -10,32 +10,32 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func CheckAzCliInstalled() {
-	log.Debug("Checking that Azure Cli is installed...")
+func CheckAzCliInstalled() error {
+	log.Debug("Checking that Azure CLI is installed...")
 	azCmd := exec.Command("az")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal("Error: AZ cli not installed. Find installation instructions at this link: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli")
+		return errors.New("Error: Azure CLI is not installed. Find installation instructions at this link: https://docs.microsoft.com/cli/azure/install-azure-cli")
 	}
+	return nil
 }
 
-func IsLoggedInToAz() bool {
+func IsLoggedInToAz() (bool, error) {
 	log.Debug("Checking that user is logged in to Azure CLI...")
 	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
-		return false
+		return false, err
 	}
-
-	return true
+	return true, nil
 }
 
 func HasGhCli() bool {
-	log.Debug("Checking that github cli is installed...")
+	log.Debug("Checking that GitHub CLI is installed...")
 	ghCmd := exec.Command("gh")
 	_, err := ghCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal("Error: The github cli is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
+		log.Println("Error: The GitHub CLI is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
 		return false
 	}
 
@@ -48,7 +48,7 @@ func IsLoggedInToGh() bool {
 	ghCmd := exec.Command("gh", "auth", "status")
 	out, err := ghCmd.CombinedOutput()
 	if err != nil {
-		fmt.Printf(string(out))
+		log.Printf("%s\n", out)
 		return false
 	}
 
@@ -134,14 +134,14 @@ func isValidResourceGroup(resourceGroup string) error {
 	return nil
 }
 
-func isValidGhRepo(repo string) error {
+func isValidGhRepo(repo string) (bool, error) {
 	listReposCmd := exec.Command("gh", "repo", "view", repo)
 	_, err := listReposCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal("Github repo not found")
-		return err
+		log.Println("GitHub repo not found")
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
 func AzAppExists(appName string) bool {
@@ -202,22 +202,32 @@ func AzAksExists(aksName string, resourceGroup string) bool {
 	return true
 }
 
-func GetCurrentAzSubscriptionId() []string {
-	CheckAzCliInstalled()
-	if !IsLoggedInToAz() {
+func GetCurrentAzSubscriptionId() ([]string, error) {
+	err := CheckAzCliInstalled()
+	if err != nil {
+		return nil, &json.InvalidUnmarshalError{}
+	}
+	isLoggedIn, err := IsLoggedInToAz()
+	if err != nil {
+		return nil, err
+	}
+	if !isLoggedIn {
 		if err := LogInToAz(); err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 	}
 
 	getAccountCmd := exec.Command("az", "account", "show", "--query", "[id]")
 	out, err := getAccountCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var ids []string
-	json.Unmarshal(out, &ids)
+	err = json.Unmarshal(out, &ids)
+	if err != nil {
+		return nil, err
+	}
 
-	return ids
+	return ids, nil
 }

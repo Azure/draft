@@ -15,7 +15,7 @@ func CheckAzCliInstalled() error {
 	azCmd := exec.Command("az")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
-		return errors.New("Error: Azure CLI is not installed. Find installation instructions at this link: https://docs.microsoft.com/cli/azure/install-azure-cli")
+		return errors.New("Azure CLI is not installed. Find installation instructions at this link: https://docs.microsoft.com/cli/azure/install-azure-cli")
 	}
 	return nil
 }
@@ -35,7 +35,7 @@ func HasGhCli() bool {
 	ghCmd := exec.Command("gh")
 	_, err := ghCmd.CombinedOutput()
 	if err != nil {
-		log.Println("Error: The GitHub CLI is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
+		log.Println("The GitHub CLI is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
 		return false
 	}
 	log.Debug("GitHub CLI found!")

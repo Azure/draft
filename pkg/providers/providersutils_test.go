@@ -8,7 +8,8 @@ import (
 
 func TestLoggedInToAz(t *testing.T) {
 	isLoggedIn, err := IsLoggedInToAz()
-	if err != nil {
+	// In this case we should return false and receive an error.
+	if err == nil {
 		t.Error(err)
 	}
 	assert.False(t, isLoggedIn, "Azure CLI is returning logged in even when logged out")

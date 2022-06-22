@@ -10,6 +10,13 @@
     <a href="https://github.com/Azure/draft/issues">Report Bug</a>
     ·
     <a href="https://github.com/Azure/draft/issues">Request Feature</a>
+  
+  [![Draft Unit Tests](https://github.com/Azure/draft/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/unit-tests.yml)
+  [![GoDoc](https://godoc.org/github.com/Azure/draft?status.svg)](https://godoc.org/github.com/Azure/draft)
+  [![Go Report Card](https://goreportcard.com/badge/github.com/Azure/draft)](https://goreportcard.com/report/github.com/Azure/draft)
+  [![CodeQL](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml)
+  [![Draft Linux Integrations](https://github.com/Azure/draft/actions/workflows/integration-linux.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/integration-linux.yml)
+  [![Draft Releases](https://github.com/Azure/draft/actions/workflows/releases.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/releases.yml)
   </p>
 </div>
 

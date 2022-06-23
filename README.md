@@ -6,12 +6,17 @@
   <p align="center">
     A tool to help developers hit the ground running with Kubernetes.
     <br />
-    <a href="https://github.com/Azure/draft"><strong>Explore the docs »</strong></a>
-    <br />
     <br />
     <a href="https://github.com/Azure/draft/issues">Report Bug</a>
     ·
     <a href="https://github.com/Azure/draft/issues">Request Feature</a>
+  
+  [![Draft Unit Tests](https://github.com/Azure/draft/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/unit-tests.yml)
+  [![GoDoc](https://godoc.org/github.com/Azure/draft?status.svg)](https://godoc.org/github.com/Azure/draft)
+  [![Go Report Card](https://goreportcard.com/badge/github.com/Azure/draft)](https://goreportcard.com/report/github.com/Azure/draft)
+  [![CodeQL](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml)
+  [![Draft Linux Integrations](https://github.com/Azure/draft/actions/workflows/integration-linux.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/integration-linux.yml)
+  [![Draft Releases](https://github.com/Azure/draft/actions/workflows/releases.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/releases.yml)
   </p>
 </div>
 
@@ -19,21 +24,24 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Draft makes it easier for developers to get started building apps that run on Kubernetes by taking a non-containerized application and generating the Dockerfiles, Kubernetes manifests, Helm charts, Kustomize configuration, and other artifacts associated with a containerized application. Draft can also generate a GitHub Action workflow file to quickly build and deploy applications onto any Kubernetes cluster.
+Draft makes it easier for developers to get started building apps that run on Kubernetes by taking a non-containerized application and generating the Dockerfiles, Kubernetes manifests, Helm charts, Kustomize configuration, and other artifacts associated with a containerized application. Draft can also generate a GitHub Actions workflow file to quickly build and deploy applications onto any Kubernetes cluster.
 
 ### Commands
 
 * `draft create` adds the minimum required Dockerfile and manifest files for your deployment to the project directory.
   * Supported deployment types: Helm, Kustomize, Kubernetes manifest.
-* `draft setup-gh` automates the Github OIDC setup process for your project.
-* `draft generate-workflow` generates a Github Action workflow for automatic build and deploy to a Kubernetes cluster.
+* `draft setup-gh` automates the GitHub OIDC setup process for your project.
+* `draft generate-workflow` generates a GitHub Actions workflow for automatic build and deploy to a Kubernetes cluster.
 * `draft update` automatically make your application to be internet accessible.
 
 Use `draft [command] --help` for more information about a command.
 
 ## Prerequisites
-Draft requires Go version 1.18.x.
-* Go
+
+Draft requires Go version 1.18.x. 
+
+Check your go version.
+
   ```sh
   go version
   ```
@@ -41,22 +49,30 @@ Draft requires Go version 1.18.x.
 ## Installation
 
 1. Clone the repo
+
    ```sh
    git clone https://github.com/Azure/draft.git
    ```
-2. Build the binary
+
+2. Change to the `draft` directory and build the binary
+
    ```sh
+   cd draft/
    make
    ```
-3. Add the binary to your path
+
+3. Add the binary to your path (we use the same directory as [go install](https://pkg.go.dev/cmd/go#hdr-Compile_and_install_packages_and_dependencies))
+
    ```sh
-   mv draft $GOPATH/bin/
+   mv draft $HOME/go/bin/
    ```
 
 ## Contributing
-Draft is fully compatible with [Azure Kubernetes Services](https://docs.microsoft.com/en-ca/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!
+
+Draft is fully compatible with [Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!
 
 ## Issues/Discussions
+
 The Draft team will be monitoring both the [issues](https://github.com/Azure/draft/issues) and [discussions](https://github.com/Azure/draft/discussions) board. Please feel free to create issues for any problems you run into and the Draft team will be quick to respond. The discussions board will be used for community engagement. We look forward to see you there! 
 
 ## License

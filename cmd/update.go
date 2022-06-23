@@ -6,6 +6,7 @@ import (
 	"github.com/Azure/draft/pkg/web"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	log "github.com/sirupsen/logrus"
 )
 
 func newUpdateCmd() *cobra.Command {
@@ -24,6 +25,9 @@ will be able to receive external requests.`,
 			if err := web.UpdateServiceFile(sa, dest); err != nil {
 				return err
 			}
+
+			log.Info("Draft has successfully updated your yaml files so that your application will be able to receive external requests 😃")
+
 			return nil
 		},
 	}

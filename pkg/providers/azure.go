@@ -28,7 +28,7 @@ type SetUpCmd struct {
 func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
 
-	if !HasGhCli() || !IsLoggedInToGh() {
+	if !HasGhCli() || IsLoggedInToGh() != nil {
 		s.Stop()
 		if err := LogInToGh(); err != nil {
 			return err
@@ -92,7 +92,7 @@ func (sc *SetUpCmd) createAzApp() error {
 
 		out, err := createAppCmd.CombinedOutput()
 		if err != nil {
-			log.Printf("%s\n", out)
+			log.Debugf("%s\n", out)
 			return err
 		}
 
@@ -211,9 +211,9 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 		return errors.New("invalid app name")
 	}
 
-	isValid, _ := isValidGhRepo(sc.Repo)
-	if !isValid {
-		return errors.New("repo does not exist")
+	err := isValidGhRepo(sc.Repo)
+	if err != nil {
+		return err
 	}
 
 	return nil

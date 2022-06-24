@@ -20,14 +20,14 @@ func CheckAzCliInstalled() error {
 	return nil
 }
 
-func IsLoggedInToAz() (bool, error) {
+func IsLoggedInToAz() error {
 	log.Debug("Checking that user is logged in to Azure CLI...")
 	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 func HasGhCli() bool {
@@ -42,17 +42,16 @@ func HasGhCli() bool {
 	return true
 }
 
-func IsLoggedInToGh() bool {
+func IsLoggedInToGh() error {
 	log.Debug("Checking that user is logged in to GitHub...")
 	ghCmd := exec.Command("gh", "auth", "status")
 	out, err := ghCmd.CombinedOutput()
 	if err != nil {
-		log.Printf("%s\n", out)
-		return false
+		log.Debugf("%s\n", out)
+		return err
 	}
-
 	log.Debug("User is logged in!")
-	return true
+	return nil
 }
 
 func LogInToGh() error {
@@ -132,14 +131,14 @@ func isValidResourceGroup(resourceGroup string) error {
 	return nil
 }
 
-func isValidGhRepo(repo string) (bool, error) {
+func isValidGhRepo(repo string) error {
 	listReposCmd := exec.Command("gh", "repo", "view", repo)
 	_, err := listReposCmd.CombinedOutput()
 	if err != nil {
 		log.Println("GitHub repo not found")
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 func AzAppExists(appName string) bool {
@@ -205,14 +204,9 @@ func GetCurrentAzSubscriptionId() ([]string, error) {
 	if err != nil {
 		return nil, &json.InvalidUnmarshalError{}
 	}
-	isLoggedIn, err := IsLoggedInToAz()
+	err = IsLoggedInToAz()
 	if err != nil {
 		return nil, err
-	}
-	if !isLoggedIn {
-		if err := LogInToAz(); err != nil {
-			return nil, err
-		}
 	}
 
 	getAccountCmd := exec.Command("az", "account", "show", "--query", "[id]")

@@ -7,11 +7,11 @@ import (
 )
 
 func TestLoggedInToAz(t *testing.T) {
-	assert.Nil(t, IsLoggedInToAz(), "Azure CLI is returning logged in even when logged out")
+	assert.NotNil(t, IsLoggedInToAz(), "Azure CLI is returning logged in even when logged out")
 }
 
 func TestLoggedInToGh(t *testing.T) {
-	assert.Nil(t, IsLoggedInToGh(), "GitHub CLI is returning logged in even when logged out")
+	assert.NotNil(t, IsLoggedInToGh(), "GitHub CLI is returning logged in even when logged out")
 }
 
 func TestCheckAzCliInstalled(t *testing.T) {

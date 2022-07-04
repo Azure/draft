@@ -257,20 +257,25 @@ func (cc *createCmd) createDeployment() error {
 
 func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang string) error {
 	// does no further checks without file detection
-	if cc.skipFileDetection {
-		err := cc.generateDockerfile(detectedLang, lowerLang)
-		if err != nil {
-			return err
-		}
-		err = cc.createDeployment()
-		if err != nil {
-			return err
-		}
-		return nil
-	}
 
 	if cc.dockerfileOnly && cc.deploymentOnly {
 		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
+	}
+
+	if cc.skipFileDetection {
+		if !cc.deploymentOnly {
+			err := cc.generateDockerfile(detectedLang, lowerLang)
+			if err != nil {
+				return err
+			}
+		}
+		if !cc.dockerfileOnly {
+			err := cc.createDeployment()
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	// check if the local directory has dockerfile or charts

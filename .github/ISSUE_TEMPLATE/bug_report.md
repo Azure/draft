@@ -10,6 +10,9 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
+**Mention the platform you are using**
+Mention what platform you are using (az-extension, oss draft, vscode) and pick the corresponding label.
+
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'

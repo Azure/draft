@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -87,8 +88,9 @@ func CopyDir(
 			continue
 		}
 
-		srcPath := src + "/" + f.Name()
-		destPath := dest + "/" + f.Name()
+		srcPath := filepath.Join(src, f.Name())
+		destPath := filepath.Join(dest, f.Name())
+		fileName := f.Name()
 
 		if f.IsDir() {
 			if err = EnsureDirectory(destPath); err != nil {
@@ -110,8 +112,6 @@ func CopyDir(
 				fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
 			}
 
-			fileName := f.Name()
-
 			if config != nil {
 				log.Debugf("checking name override for srcPath: %s, destPath: %s, destPrefix: %s/",
 					srcPath, destPath, dest)
@@ -121,7 +121,7 @@ func CopyDir(
 				}
 			}
 
-			if err = os.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), []byte(fileString), 0644); err != nil {
+			if err = os.WriteFile(filepath.Join(dest, fileName), []byte(fileString), 0644); err != nil {
 				return err
 			}
 		}

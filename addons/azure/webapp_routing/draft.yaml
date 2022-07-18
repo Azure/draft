@@ -11,3 +11,5 @@ references:
       path: "metadata.name"
     - name: "service-port"
       path: "spec.ports.port"
+    - name: "service-namespace"
+      path: "metadata.namespace"

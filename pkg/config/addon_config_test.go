@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetHelmReferenceMap(t *testing.T) {
-	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft_config.yaml")
+	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft.yaml")
 	assert.Nil(t, err)
 
 	var addOnConfig AddonConfig
@@ -22,7 +22,7 @@ func TestGetHelmReferenceMap(t *testing.T) {
 }
 
 func TestGetKustomizeReferenceMap(t *testing.T) {
-	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft_config.yaml")
+	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft.yaml")
 	assert.Nil(t, err)
 
 	var addOnConfig AddonConfig
@@ -35,7 +35,7 @@ func TestGetKustomizeReferenceMap(t *testing.T) {
 }
 
 func TestGetManifestReferenceMap(t *testing.T) {
-	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft_config.yaml")
+	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft.yaml")
 	assert.Nil(t, err)
 
 	var addOnConfig AddonConfig

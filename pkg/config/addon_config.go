@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/draft/pkg/filematches"
 	log "github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"path"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/filesys"
@@ -17,6 +18,8 @@ import (
 type AddonConfig struct {
 	DraftConfig
 	References map[string][]reference
+
+	deployType string
 }
 
 type reference struct {
@@ -28,13 +31,26 @@ type Reference interface {
 	GetReferenceVariables([]reference) map[string]string
 }
 
+func (ac *AddonConfig) getDeployType(dest string) (string, error) {
+	if ac.deployType != "" {
+		return ac.deployType, nil
+	}
+	return filematches.FindDraftDeploymentFiles(dest)
+}
+
+func (ac *AddonConfig) GetAddonDestPath(dest string) (string, error) {
+	deployType, err := ac.getDeployType(dest)
+	if err != nil {
+		return "", err
+	}
+	return path.Join(dest, consts.DeploymentFilePaths[deployType]), err
+}
+
 func (ac *AddonConfig) GetReferenceMap(dest string) (map[string]string, error) {
 	referenceMap := make(map[string]string)
 
-	deployType, err := filematches.FindDraftDeploymentFiles(dest)
-	if err != nil {
-		return nil, err
-	}
+	deployType, err := ac.getDeployType(dest)
+
 	for referenceName, references := range ac.References {
 		switch deployType {
 		case "helm":
@@ -96,8 +112,11 @@ func getManifestReferenceMap(referenceName, dest string, references []reference,
 
 func getNativeRefMap(referenceNodes []*yaml.RNode, referenceName string, references []reference, referenceMap map[string]string) error {
 	for _, reference := range references {
-		refStr := getRef(referenceNodes, consts.RefPathLookups[referenceName][reference.Name])
-		if refStr == "" {
+		refStr := getRef(referenceNodes, consts.RefPathLookups[referenceName][reference.Path])
+		if refStr == "" && strings.Contains(reference.Name, "namespace") {
+			//hack for default namespace
+			refStr = "default"
+		} else if refStr == "" {
 			return errors.New(fmt.Sprintf("reference %s not found", reference.Name))
 		}
 
@@ -108,13 +127,13 @@ func getNativeRefMap(referenceNodes []*yaml.RNode, referenceName string, referen
 
 func getRef(rNodes []*yaml.RNode, lookupPath []string) string {
 	for _, rNode := range rNodes {
-		port, err := rNode.Pipe(yaml.Lookup(lookupPath...))
-		if port == nil || err != nil {
+		ref, err := rNode.Pipe(yaml.Lookup(lookupPath...))
+		if ref == nil || err != nil {
 			continue
 		}
-		portString, _ := port.String()
-		log.Debugf("found port: %s", portString)
-		return portString
+		refStr, _ := ref.String()
+		log.Debugf("found ref: %s", refStr)
+		return refStr
 	}
 	return ""
 }

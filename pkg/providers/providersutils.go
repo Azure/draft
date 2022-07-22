@@ -9,6 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/hashicorp/go-version"
+	"github.com/manifoldco/promptui"
 )
 
 func GetAzCliVersion() string {
@@ -24,6 +25,30 @@ func GetAzCliVersion() string {
 	}
 
 	return fmt.Sprint(version["azure-cli"])
+}
+
+func getAzUpgrade() string {
+	selection := &promptui.Select{
+		Label: "Your Azure CLI version must be at least 2.37.0 - would you like us to update it for you?",
+		Items: []string{"yes", "no"},
+	}
+
+	_, selectResponse, err := selection.Run()
+	if err != nil {
+		return err.Error()
+	}
+
+	return selectResponse
+}
+
+func upgradeAzCli() {
+	azCmd := exec.Command("az", "upgrade", "-y")
+	_, err := azCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal("Error: unable to upgrade az cli version; ", err)
+	}
+
+	log.Info("Azure CLI upgrade was successful!")
 }
 
 func CheckAzCliInstalled() {
@@ -43,10 +68,12 @@ func CheckAzCliInstalled() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if constraints.Check(currentVersion) {
-		fmt.Printf("%s satisfies constraints %s", currentVersion, constraints)
-	} else {
-		log.Fatal("Az cli version must be at least 2.37.0")
+
+	if !constraints.Check(currentVersion) {
+		if ans := getAzUpgrade(); ans == "no" {
+			log.Fatal("Az cli version must be at least 2.37.0")
+		}
+		upgradeAzCli()
 	}
 }
 

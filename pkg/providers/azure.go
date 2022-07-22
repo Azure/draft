@@ -111,7 +111,7 @@ func (sc *SetUpCmd) createAzApp() error {
 			return nil
 		}
 
-		return errors.New("Error: app creation time has exceeded max elapsed time for exponential backoff")
+		return errors.New("app creation time has exceeded max elapsed time for exponential backoff")
 	}
 
 	backoff := bo.NewExponentialBackOff()

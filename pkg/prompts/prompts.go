@@ -16,9 +16,19 @@ type TemplatePrompt struct {
 func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error) {
 	templatePrompts := make([]*TemplatePrompt, 0)
 	for _, customPrompt := range config.Variables {
+		defaultString := ""
+		for _, variableDefault := range config.VariableDefaults {
+			if variableDefault.Name == customPrompt.Name {
+				defaultString = " (default: " + variableDefault.Value + ")"
+			}
+		}
 		prompt := &promptui.Prompt{
-			Label: "Please Enter " + customPrompt.Description,
+			Label: "Please Enter " + customPrompt.Description + defaultString,
 			Validate: func(s string) error {
+				// Allow blank input for variables with defaults
+				if defaultString != "" {
+					return nil
+				}
 				if len(s) <= 0 {
 					return fmt.Errorf("input must be greater than 0")
 				}
@@ -37,6 +47,12 @@ func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error)
 		input, err := prompt.Prompt.Run()
 		if err != nil {
 			return nil, err
+		}
+		// Substitute the default value for variables where the user didn't enter anything
+		for _, variableDefault := range config.VariableDefaults {
+			if inputs[variableDefault.Name] == "" {
+				inputs[variableDefault.Name] = variableDefault.Value
+			}
 		}
 		inputs[prompt.OverrideString] = input
 	}

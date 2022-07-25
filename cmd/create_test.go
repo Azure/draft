@@ -29,7 +29,7 @@ func TestRun(t *testing.T) {
 
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
-	
+
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
 
 	assert.False(t, detectedLang == nil)
@@ -39,7 +39,6 @@ func TestRun(t *testing.T) {
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
 	assert.True(t, err == nil)
 
-	
 	err = mockCC.createDeployment()
 	assert.True(t, err == nil)
 	err = ioutil.WriteFile("./../Dockerfile", oldDockerfile, 0644)
@@ -64,6 +63,37 @@ func TestInitConfig(t *testing.T) {
 	err := mockCC.initConfig()
 	assert.True(t, err == nil)
 	assert.True(t, mockCC.createConfig != nil)
+}
+
+func TestValidateConfigInputsToPromptsPass(t *testing.T) {
+	required := []config.BuilderVar{
+		{Name: "REQUIRED_PROVIDED"},
+		{Name: "REQUIRED_DEFAULTED"},
+	}
+	provided := []config.UserInputs{
+		{Name: "REQUIRED_PROVIDED", Value: "PROVIDED_VALUE"},
+	}
+	defaults := []config.BuilderVarDefault{
+		{Name: "REQUIRED_DEFAULTED", Value: "DEFAULT_VALUE"},
+	}
+
+	vars, err := validateConfigInputsToPrompts(required, provided, defaults)
+	assert.True(t, err == nil)
+	assert.Equal(t, vars["REQUIRED_DEFAULTED"], "DEFAULT_VALUE")
+}
+
+func TestValidateConfigInputsToPromptsMissing(t *testing.T) {
+	required := []config.BuilderVar{
+		{Name: "REQUIRED_PROVIDED"},
+		{Name: "REQUIRED_MISSING"},
+	}
+	provided := []config.UserInputs{
+		{Name: "REQUIRED_PROVIDED"},
+	}
+	defaults := []config.BuilderVarDefault{}
+
+	_, err := validateConfigInputsToPrompts(required, provided, defaults)
+	assert.NotNil(t, err)
 }
 
 func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) {

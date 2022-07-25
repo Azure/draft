@@ -7,16 +7,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/prompts"
-	"github.com/manifoldco/promptui"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -28,8 +29,8 @@ type createCmd struct {
 	lang    string
 	dest    string
 
-	dockerfileOnly bool
-	deploymentOnly bool
+	dockerfileOnly    bool
+	deploymentOnly    bool
 	skipFileDetection bool
 
 	createConfigPath string
@@ -202,7 +203,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 			return err
 		}
 	} else {
-		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables)
+		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables, langConfig.VariableDefaults)
 		if err != nil {
 			return err
 		}
@@ -228,7 +229,7 @@ func (cc *createCmd) createDeployment() error {
 		if config == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(config.Variables, cc.createConfig.DeployVariables)
+		customInputs, err = validateConfigInputsToPrompts(config.Variables, cc.createConfig.DeployVariables, config.VariableDefaults)
 		if err != nil {
 			return err
 		}
@@ -346,8 +347,12 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required []config.BuilderVar, provided []config.UserInputs) (map[string]string, error) {
+func validateConfigInputsToPrompts(required []config.BuilderVar, provided []config.UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
 	customInputs := make(map[string]string)
+	for _, variableDefault := range defaults {
+		customInputs[variableDefault.Name] = variableDefault.Value
+	}
+
 	for _, variable := range provided {
 		customInputs[variable.Name] = variable.Value
 	}

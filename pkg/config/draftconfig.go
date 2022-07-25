@@ -5,9 +5,10 @@ import (
 )
 
 type DraftConfig struct {
-	NameOverrides   []FileNameOverride
-	Variables       []BuilderVar
-	nameOverrideMap map[string]string
+	NameOverrides    []FileNameOverride
+	Variables        []BuilderVar
+	nameOverrideMap  map[string]string
+	VariableDefaults []BuilderVarDefault
 }
 
 type FileNameOverride struct {
@@ -19,6 +20,11 @@ type BuilderVar struct {
 	Name        string
 	Description string
 	VarType     string
+}
+
+type BuilderVarDefault struct {
+	Name  string
+	Value string
 }
 
 func (d *DraftConfig) initialize() {

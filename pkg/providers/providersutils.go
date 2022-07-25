@@ -8,7 +8,48 @@ import (
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/hashicorp/go-version"
+	"github.com/manifoldco/promptui"
 )
+
+func GetAzCliVersion() string {
+	azCmd := exec.Command("az", "version", "-o", "json")
+	out, err := azCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal("Error: unable to obtain az cli version")
+	}
+
+	var version map[string]interface{}
+	if err := json.Unmarshal(out, &version); err != nil {
+		log.Fatal("unable to unmarshal az cli version output to map")
+	}
+
+	return fmt.Sprint(version["azure-cli"])
+}
+
+func getAzUpgrade() string {
+	selection := &promptui.Select{
+		Label: "Your Azure CLI version must be at least 2.37.0 - would you like us to update it for you?",
+		Items: []string{"yes", "no"},
+	}
+
+	_, selectResponse, err := selection.Run()
+	if err != nil {
+		return err.Error()
+	}
+
+	return selectResponse
+}
+
+func upgradeAzCli() {
+	azCmd := exec.Command("az", "upgrade", "-y")
+	_, err := azCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal("Error: unable to upgrade az cli version; ", err)
+	}
+
+	log.Info("Azure CLI upgrade was successful!")
+}
 
 func CheckAzCliInstalled() {
 	log.Debug("Checking that Azure Cli is installed...")
@@ -16,6 +57,23 @@ func CheckAzCliInstalled() {
 	_, err := azCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal("Error: AZ cli not installed. Find installation instructions at this link: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli")
+	}
+
+	currentVersion, err := version.NewVersion(GetAzCliVersion())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	constraints, err := version.NewConstraint(">= 2.37")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !constraints.Check(currentVersion) {
+		if ans := getAzUpgrade(); ans == "no" {
+			log.Fatal("Az cli version must be at least 2.37.0")
+		}
+		upgradeAzCli()
 	}
 }
 

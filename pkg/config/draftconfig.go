@@ -5,9 +5,10 @@ import (
 )
 
 type DraftConfig struct {
-	NameOverrides   []FileNameOverride
-	Variables       []BuilderVar
-	nameOverrideMap map[string]string
+	NameOverrides    []FileNameOverride
+	Variables        []BuilderVar
+	nameOverrideMap  map[string]string
+	VariableDefaults []BuilderVarDefault
 }
 
 type FileNameOverride struct {
@@ -21,7 +22,12 @@ type BuilderVar struct {
 	VarType     string
 }
 
-func (d *DraftConfig) initNameOverrideMap() {
+type BuilderVarDefault struct {
+	Name  string
+	Value string
+}
+
+func (d *DraftConfig) initialize() {
 	d.nameOverrideMap = make(map[string]string)
 	log.Debug("initializing nameOverrideMap")
 	for _, builderVar := range d.NameOverrides {
@@ -32,7 +38,7 @@ func (d *DraftConfig) initNameOverrideMap() {
 
 func (d *DraftConfig) GetNameOverride(path string) string {
 	if d.nameOverrideMap == nil {
-		d.initNameOverrideMap()
+		d.initialize()
 	}
 	prefix, ok := d.nameOverrideMap[path]
 	if !ok {

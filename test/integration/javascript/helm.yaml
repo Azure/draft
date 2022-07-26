@@ -9,6 +9,6 @@ deployVariables:
     value: "testapp"
 languageVariables:
   - name: "VERSION"
-    value: "null"
+    value: "10"
   - name: "PORT"
     value: "1313"

@@ -1,6 +1,7 @@
 .PHONY: all
 all: go-generate vendor build
 
+
 .PHONY: go-generate
 go-generate:
 	rm -r ./pkg/languages/builders; \

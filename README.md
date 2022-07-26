@@ -66,6 +66,15 @@ Check your go version.
    ```sh
    mv draft $HOME/go/bin/
    ```
+   
+### Install with HomeBrew
+
+1. Run the following commands
+
+   ```sh
+   $ brew tap azure/draft
+   $ brew install draft
+   ```
 
 ## Contributing
 

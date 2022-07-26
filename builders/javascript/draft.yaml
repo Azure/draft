@@ -6,3 +6,10 @@ variables:
   - name: "PORT"
     description: "the port exposed in the application"
     type: int
+  - name: "VERSION"
+    description: "the version of node used in the application"
+variableDefaults:
+  - name: "VERSION"
+    value: "14"
+  - name: "PORT"
+    value: "80"

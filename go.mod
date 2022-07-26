@@ -7,6 +7,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/instrumenta/kubeval v0.16.1
 	github.com/ivanpirog/coloredcobra v1.0.1
 	github.com/jbrukh/bayesian v0.0.0-20200318221351-d726b684ca4a

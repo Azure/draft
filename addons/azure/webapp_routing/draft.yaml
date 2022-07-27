@@ -3,6 +3,7 @@ variables:
     description: "the keyvault uri for the tls certificate"
   - name: "ingress-use-osm-mtls"
     description: "use open service mesh mutual-tls"
+    type: "bool"
   - name: "ingress-host"
     description: "specify the host of the ingress resource"
 references:

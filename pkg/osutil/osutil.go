@@ -106,7 +106,7 @@ func CopyDir(
 			}
 
 			fileString := string(file)
-
+			log.Debugf("iterating through customInputs: %s", customInputs)
 			for oldString, newString := range customInputs {
 				log.Debugf("replacing %s with %s", oldString, newString)
 				fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)

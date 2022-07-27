@@ -9,8 +9,10 @@ import (
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 	"io/fs"
-	"k8s.io/apimachinery/pkg/util/yaml"
+
 	"path/filepath"
 	"strings"
 )
@@ -64,42 +66,52 @@ func GenerateAddon(provider, addon, dest string, userInputs map[string]string) e
 		return err
 	}
 
-	err = getAddonValues(dest, userInputs, addOnConfig)
+	log.Debugf("addOnConfig is: %s", addOnConfig)
+
+	addonVals, err := getAddonValues(dest, userInputs, addOnConfig)
 	if err != nil {
 		return err
 	}
+
+	log.Debugf("addonValues are: %s", addonVals)
 
 	addonDestPath, err := addOnConfig.GetAddonDestPath(dest)
 	if err != nil {
 		return err
 	}
 
-	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, userInputs); err != nil {
+	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, addonVals); err != nil {
 		return err
 	}
 
 	return err
 }
 
-func getAddonValues(dest string, userInputs map[string]string, addOnConfig config.AddonConfig) error {
+func getAddonValues(dest string, userInputs map[string]string, addOnConfig config.AddonConfig) (map[string]string, error) {
+	log.Debugf("getAddonValues: %s", userInputs)
 	var err error
 	if userInputs == nil {
+		userInputs = make(map[string]string)
+	}
+
+	if len(userInputs) == 0 {
 		userInputs, err = prompts.RunPromptsFromConfig(&addOnConfig.DraftConfig)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		log.Debug("got user inputs")
 	}
 
 	referenceMap, err := addOnConfig.GetReferenceMap(dest)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
+	log.Debug("got reference map")
 	// merge maps
 	for refName, refVal := range referenceMap {
 		// check for key collision
 		if _, ok := userInputs[refName]; ok {
-			return errors.New("variable name collision between references and userInputs")
+			return nil, errors.New("variable name collision between references and userInputs")
 		}
 		if strings.Contains(strings.ToLower(refName), "namespace") && refVal == "" {
 			refVal = "default" //hack here to have explicit namespacing, probably a better way to do this
@@ -107,7 +119,8 @@ func getAddonValues(dest string, userInputs map[string]string, addOnConfig confi
 		userInputs[refName] = refVal
 	}
 
-	return nil
+	log.Debugf("merged maps into: %s", userInputs)
+	return userInputs, nil
 }
 
 func getKeySet[K comparable, V any](aMap map[K]V) []K {

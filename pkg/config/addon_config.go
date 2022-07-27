@@ -16,8 +16,8 @@ import (
 )
 
 type AddonConfig struct {
-	DraftConfig
-	References map[string][]reference
+	DraftConfig `yaml:",inline"`
+	References  map[string][]reference `yaml:"references"`
 
 	deployType string
 }

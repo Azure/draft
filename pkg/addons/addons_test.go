@@ -10,12 +10,6 @@ import (
 
 const templatePath = "../../test/templates"
 
-var correctUserInputs = map[string]string{
-	"ingress-tls-cert-keyvault-uri": "test.uri",
-	"ingress-use-osm-mtls":          "false",
-	"ingress-host":                  "host",
-}
-
 func TestGenerateAddonErrors(t *testing.T) {
 	userInputs := map[string]string{
 		"test": "test",
@@ -31,6 +25,11 @@ func TestGenerateAddonErrors(t *testing.T) {
 }
 
 func TestGenerateHelmAddonSuccess(t *testing.T) {
+	var correctUserInputs = map[string]string{
+		"ingress-tls-cert-keyvault-uri": "test.uri",
+		"ingress-use-osm-mtls":          "false",
+		"ingress-host":                  "host",
+	}
 	dir, remove, err := setUpTempDir("helm")
 	assert.Nil(t, err)
 
@@ -41,6 +40,11 @@ func TestGenerateHelmAddonSuccess(t *testing.T) {
 }
 
 func TestGenerateKustomizeAddonSuccess(t *testing.T) {
+	var correctUserInputs = map[string]string{
+		"ingress-tls-cert-keyvault-uri": "test.uri",
+		"ingress-use-osm-mtls":          "false",
+		"ingress-host":                  "host",
+	}
 	dir, remove, err := setUpTempDir("kustomize")
 	assert.Nil(t, err)
 

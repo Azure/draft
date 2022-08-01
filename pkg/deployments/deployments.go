@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io/fs"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 //go:generate cp -r ../../deployTypes ./deployTypes
@@ -28,7 +29,7 @@ type Deployments struct {
 	dest    string
 }
 
-func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string) error {
+func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter osutil.TemplateWriter) error {
 	val, ok := d.deploys[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
@@ -41,7 +42,7 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 		config = nil
 	}
 
-	if err := osutil.CopyDir(deployTypes, srcDir, d.dest, config, customInputs); err != nil {
+	if err := osutil.CopyDir(deployTypes, srcDir, d.dest, config, customInputs, templateWriter); err != nil {
 		return err
 	}
 

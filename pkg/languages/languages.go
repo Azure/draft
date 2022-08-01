@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io/fs"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 //go:generate cp -r ../../builders ./builders
@@ -32,7 +33,7 @@ func (l *Languages) ContainsLanguage(lang string) bool {
 	return ok
 }
 
-func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string) error {
+func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string, templateWriter osutil.TemplateWriter) error {
 	val, ok := l.langs[lang]
 	if !ok {
 		return fmt.Errorf("language %s is not supported", lang)
@@ -45,7 +46,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 		config = nil
 	}
 
-	if err := osutil.CopyDir(builders, srcDir, l.dest, config, customInputs); err != nil {
+	if err := osutil.CopyDir(builders, srcDir, l.dest, config, customInputs, templateWriter); err != nil {
 		return err
 	}
 

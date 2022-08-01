@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Azure/draft/pkg/osutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
@@ -26,6 +27,7 @@ func TestRun(t *testing.T) {
 	mockAppNameInput := config.UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
 	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
+	mockCC.templateWriter = &osutil.LocalFSWriter{}
 
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")

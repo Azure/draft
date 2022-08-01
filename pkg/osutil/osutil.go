@@ -8,8 +8,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/Azure/draft/pkg/config"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Azure/draft/pkg/config"
 )
 
 // Exists returns whether the given file or directory exists or not.
@@ -71,11 +72,26 @@ func EnsureFile(file string) error {
 	return nil
 }
 
+type TemplateWriter interface {
+	WriteFile(string, []byte, os.FileMode) error
+	EnsureDirectory(string) error
+}
+
+type LocalFSWriter struct{}
+
+func (w *LocalFSWriter) WriteFile(path string, data []byte, mode os.FileMode) error {
+	return os.WriteFile(path, data, mode)
+}
+func (w *LocalFSWriter) EnsureDirectory(path string) error {
+	return EnsureDirectory(path)
+}
+
 func CopyDir(
 	fileSys fs.FS,
 	src, dest string,
 	config *config.DraftConfig,
-	customInputs map[string]string) error {
+	customInputs map[string]string,
+	templateWriter TemplateWriter) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {
 		return err
@@ -91,10 +107,10 @@ func CopyDir(
 		destPath := dest + "/" + f.Name()
 
 		if f.IsDir() {
-			if err = EnsureDirectory(destPath); err != nil {
+			if err = templateWriter.EnsureDirectory(destPath); err != nil {
 				return err
 			}
-			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs); err != nil {
+			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs, templateWriter); err != nil {
 				return err
 			}
 		} else {
@@ -120,8 +136,7 @@ func CopyDir(
 					fileName = fmt.Sprintf("%s%s", prefix, fileName)
 				}
 			}
-
-			if err = os.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), []byte(fileString), 0644); err != nil {
+			if err = templateWriter.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), []byte(fileString), 0644); err != nil {
 				return err
 			}
 		}

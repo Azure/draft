@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/templates"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
@@ -122,7 +123,7 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		}
 	}
 
-	mcc.supportedLangs = languages.CreateLanguages(mcc.dest)
+	mcc.supportedLangs = languages.CreateLanguages(templates.Builders, mcc.dest)
 
 	if mcc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")

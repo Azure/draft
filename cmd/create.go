@@ -19,6 +19,7 @@ import (
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
+	"github.com/Azure/draft/templates"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -40,7 +41,8 @@ type createCmd struct {
 	supportedLangs *languages.Languages
 	fileMatches    *filematches.FileMatches
 
-	templateWriter osutil.TemplateWriter
+	templateWriter     osutil.TemplateWriter
+	builderVarDefaults []config.BuilderVarDefault
 }
 
 func newCreateCmd() *cobra.Command {
@@ -163,7 +165,7 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 		}
 	}
 
-	cc.supportedLangs = languages.CreateLanguages(cc.dest)
+	cc.supportedLangs = languages.CreateLanguages(templates.Builders, cc.dest)
 
 	if cc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")
@@ -230,6 +232,7 @@ func (cc *createCmd) createDeployment() error {
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
 		config := d.GetConfig(deployType)
+		// merge previously entered defaults
 		if config == nil {
 			return errors.New("invalid deployment type")
 		}

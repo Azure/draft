@@ -14,18 +14,15 @@ import (
 	"github.com/Azure/draft/pkg/osutil"
 )
 
-//go:generate cp -r ../../builders ./builders
-
 var (
-	//go:embed all:builders
-	builders      embed.FS
 	parentDirName = "builders"
 )
 
 type Languages struct {
-	langs   map[string]fs.DirEntry
-	configs map[string]*config.DraftConfig
-	dest    string
+	langs    map[string]fs.DirEntry
+	configs  map[string]*config.DraftConfig
+	dest     string
+	builders fs.FS
 }
 
 func (l *Languages) ContainsLanguage(lang string) bool {
@@ -46,7 +43,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 		config = nil
 	}
 
-	if err := osutil.CopyDir(builders, srcDir, l.dest, config, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(l.builders, srcDir, l.dest, config, customInputs, templateWriter); err != nil {
 		return err
 	}
 
@@ -60,7 +57,7 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 	}
 
 	configPath := parentDirName + "/" + val.Name() + "/draft.yaml"
-	configBytes, err := fs.ReadFile(builders, configPath)
+	configBytes, err := fs.ReadFile(l.builders, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -98,16 +95,17 @@ func (l *Languages) PopulateConfigs() {
 	}
 }
 
-func CreateLanguages(dest string) *Languages {
+func CreateLanguages(builders embed.FS, dest string) *Languages {
 	langMap, err := embedutils.EmbedFStoMap(builders, parentDirName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	l := &Languages{
-		langs:   langMap,
-		dest:    dest,
-		configs: make(map[string]*config.DraftConfig),
+		langs:    langMap,
+		dest:     dest,
+		configs:  make(map[string]*config.DraftConfig),
+		builders: builders,
 	}
 	l.PopulateConfigs()
 

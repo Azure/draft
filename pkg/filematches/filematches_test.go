@@ -18,9 +18,9 @@ func generateYamlFromTemplate(dir string, valid bool) (*os.File, error) {
 
 	var source *os.File
 	if valid {
-		source, err = os.Open("./template/valid_template.yaml")
+		source, err = os.Open("./templates/valid_template.yaml")
 	} else {
-		source, err = os.Open("./template/invalid_template.yaml")
+		source, err = os.Open("./templates/invalid_template.yaml")
 	}
 	if err != nil {
 		return nil, err

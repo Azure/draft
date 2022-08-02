@@ -61,7 +61,7 @@ func TestInitConfig(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &config.CreateConfig{}
 	mockCC.dest = "./.."
-	mockCC.createConfigPath = "./../test/template/config.yaml"
+	mockCC.createConfigPath = "./../test/templates/config.yaml"
 
 	err := mockCC.initConfig()
 	assert.True(t, err == nil)

@@ -291,7 +291,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		return err
 	}
 
-	// prompts user for dockerfiles re-creation
+	// prompts user for dockerfile re-creation
 	if hasDockerFile && !cc.deploymentOnly {
 		selection := &promptui.Select{
 			Label: "We found Dockerfile in the directory, would you like to recreate the Dockerfile?",

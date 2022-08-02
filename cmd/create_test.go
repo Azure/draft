@@ -14,7 +14,7 @@ import (
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/templates"
+	"github.com/Azure/draft/template"
 )
 
 func TestRun(t *testing.T) {
@@ -61,7 +61,7 @@ func TestInitConfig(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &config.CreateConfig{}
 	mockCC.dest = "./.."
-	mockCC.createConfigPath = "./../test/templates/config.yaml"
+	mockCC.createConfigPath = "./../test/template/config.yaml"
 
 	err := mockCC.initConfig()
 	assert.True(t, err == nil)
@@ -123,7 +123,7 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		}
 	}
 
-	mcc.supportedLangs = languages.CreateLanguagesFromEmbedFS(templates.DockerfileTemplates, mcc.dest)
+	mcc.supportedLangs = languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, mcc.dest)
 
 	if mcc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")

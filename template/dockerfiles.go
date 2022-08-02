@@ -1,8 +1,8 @@
-package templates
+package template
 
 import "embed"
 
 var (
 	//go:embed all:dockerfiles
-	DockerfileTemplates embed.FS
+	Dockerfiles embed.FS
 )

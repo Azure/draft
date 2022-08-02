@@ -1,11 +1,12 @@
 package web
 
 import (
-	"github.com/Azure/draft/pkg/types"
 	"io"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/Azure/draft/pkg/types"
 
 	"github.com/stretchr/testify/assert"
 
@@ -39,7 +40,7 @@ func TestAddAnnotationsKustomize(t *testing.T) {
 		"kubernetes.azure.com/tls-cert-keyvault-uri": "test.Cert",
 	}
 
-	annotatedManifest, fileErr := createTempManifest("../../test/templates/service_w_annotations.yaml")
+	annotatedManifest, fileErr := createTempManifest("../../test/template/service_w_annotations.yaml")
 	if fileErr != nil {
 		t.Fatal(fileErr)
 	}
@@ -66,7 +67,7 @@ func TestUpdateServiceFile(t *testing.T) {
 	osutil.EnsureFile(tempFile)
 	defer os.Remove(tempFile)
 
-	contents, err := ioutil.ReadFile("../../test/templates/service_w_annotations.yaml")
+	contents, err := ioutil.ReadFile("../../test/template/service_w_annotations.yaml")
 	assert.Nil(t, err)
 	ioutil.WriteFile(tempFile, contents, 0644)
 
@@ -83,7 +84,7 @@ func TestAddAnnotationsHelm(t *testing.T) {
 		"kubernetes.azure.com/tls-cert-keyvault-uri": "test.Cert",
 	}
 
-	annotatedManifest, fileErr := createTempManifest("../../test/templates/helm_prod_values.yaml")
+	annotatedManifest, fileErr := createTempManifest("../../test/template/helm_prod_values.yaml")
 	if fileErr != nil {
 		t.Fatal(fileErr)
 	}
@@ -105,4 +106,3 @@ func TestAddAnnotationsHelm(t *testing.T) {
 	assert.NotNil(t, eHelmYaml.Service.Annotations)
 	assert.Equal(t, annotations, eHelmYaml.Service.Annotations)
 }
-

@@ -41,8 +41,7 @@ type createCmd struct {
 	supportedLangs *languages.Languages
 	fileMatches    *filematches.FileMatches
 
-	templateWriter     osutil.TemplateWriter
-	builderVarDefaults []config.BuilderVarDefault
+	templateWriter osutil.TemplateWriter
 }
 
 func newCreateCmd() *cobra.Command {
@@ -232,7 +231,6 @@ func (cc *createCmd) createDeployment() error {
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
 		config := d.GetConfig(deployType)
-		// merge previously entered defaults
 		if config == nil {
 			return errors.New("invalid deployment type")
 		}

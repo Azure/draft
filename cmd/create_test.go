@@ -7,14 +7,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/templates"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
+	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/templates"
 )
 
 func TestRun(t *testing.T) {

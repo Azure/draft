@@ -9,7 +9,7 @@ import (
 func TestRootInitConfig(t *testing.T) {
 	initConfig()
 
-	cfgFile := "./../test/templatesgit ch/config.yaml"
+	cfgFile := "./../test/templates/config.yaml"
 	initConfig()
 
 	assert.True(t, cfgFile != "")

@@ -15,14 +15,14 @@ import (
 )
 
 var (
-	parentDirName = "builders"
+	parentDirName = "dockerfiles"
 )
 
 type Languages struct {
-	langs    map[string]fs.DirEntry
-	configs  map[string]*config.DraftConfig
-	dest     string
-	builders fs.FS
+	langs               map[string]fs.DirEntry
+	configs             map[string]*config.DraftConfig
+	dest                string
+	dockerfileTemplates fs.FS
 }
 
 func (l *Languages) ContainsLanguage(lang string) bool {
@@ -43,7 +43,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 		config = nil
 	}
 
-	if err := osutil.CopyDir(l.builders, srcDir, l.dest, config, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(l.dockerfileTemplates, srcDir, l.dest, config, customInputs, templateWriter); err != nil {
 		return err
 	}
 
@@ -57,7 +57,7 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 	}
 
 	configPath := parentDirName + "/" + val.Name() + "/draft.yaml"
-	configBytes, err := fs.ReadFile(l.builders, configPath)
+	configBytes, err := fs.ReadFile(l.dockerfileTemplates, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -95,17 +95,17 @@ func (l *Languages) PopulateConfigs() {
 	}
 }
 
-func CreateLanguages(builders embed.FS, dest string) *Languages {
-	langMap, err := embedutils.EmbedFStoMap(builders, parentDirName)
+func CreateLanguagesFromEmbedFS(dockerfileTemplates embed.FS, dest string) *Languages {
+	langMap, err := embedutils.EmbedFStoMap(dockerfileTemplates, parentDirName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	l := &Languages{
-		langs:    langMap,
-		dest:     dest,
-		configs:  make(map[string]*config.DraftConfig),
-		builders: builders,
+		langs:               langMap,
+		dest:                dest,
+		configs:             make(map[string]*config.DraftConfig),
+		dockerfileTemplates: dockerfileTemplates,
 	}
 	l.PopulateConfigs()
 

@@ -164,7 +164,7 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 		}
 	}
 
-	cc.supportedLangs = languages.CreateLanguages(templates.Builders, cc.dest)
+	cc.supportedLangs = languages.CreateLanguagesFromEmbedFS(templates.DockerfileTemplates, cc.dest)
 
 	if cc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")

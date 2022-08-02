@@ -61,7 +61,7 @@ func TestSymlinkWithFallback(t *testing.T) {
 }
 
 func TestEnsureDir(t *testing.T) {
-	validDir := "./../../test/template"
+	validDir := "./../../test/templates"
 	assert.DirExists(t, validDir)
 
 	err := EnsureDirectory(validDir)
@@ -77,13 +77,13 @@ func TestEnsureDir(t *testing.T) {
 }
 
 func TestEnsureFile(t *testing.T) {
-	validFile := "./../../test/template/ensure_file.yaml"
+	validFile := "./../../test/templates/ensure_file.yaml"
 	assert.FileExists(t, validFile)
 
 	err := EnsureFile(validFile)
 	assert.Nil(t, err)
 
-	invalidFile := "./../../test/template/ensure_file_create.yaml"
+	invalidFile := "./../../test/templates/ensure_file_create.yaml"
 	err = EnsureFile(invalidFile)
 
 	assert.Nil(t, err)

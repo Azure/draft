@@ -6,10 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Azure/draft/pkg/types"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/Azure/draft/pkg/types"
 )
 
 func createTempManifest(path string) (string, error) {
@@ -90,8 +91,8 @@ func TestUpdateProductionDeployments(t *testing.T) {
 	}
 	assert.Nil(t, updateProductionDeployments("", ".", config))
 
-	helmFileName, _ := createTempManifest("../../test/template/helm_prod_values.yaml")
-	deploymentFileName, _ := createTempManifest("../../test/template/deployment.yaml")
+	helmFileName, _ := createTempManifest("../../test/templates/helm_prod_values.yaml")
+	deploymentFileName, _ := createTempManifest("../../test/templates/deployment.yaml")
 	defer os.Remove(helmFileName)
 	defer os.Remove(deploymentFileName)
 

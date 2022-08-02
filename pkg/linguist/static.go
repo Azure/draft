@@ -1399,15 +1399,15 @@ Dockerfile:
   aliases:
   - Containerfile
   color: "#384d54"
-  tm_scope: source.dockerfiles
+  tm_scope: source.dockerfile
   extensions:
-  - ".dockerfiles"
+  - ".dockerfile"
   filenames:
   - Containerfile
   - Dockerfile
-  ace_mode: dockerfiles
-  codemirror_mode: dockerfiles
-  codemirror_mime_type: text/x-dockerfiles
+  ace_mode: dockerfile
+  codemirror_mode: dockerfile
+  codemirror_mime_type: text/x-dockerfile
   language_id: 89
 Dogescript:
   type: programming
@@ -7652,7 +7652,7 @@ xBase:
 ## Python ##
 
 # Sphinx
-- (^|/)docs?/_?(build|themes?|template?|static)/
+- (^|/)docs?/_?(build|themes?|templates?|static)/
 
 # django
 - (^|/)admin_media/

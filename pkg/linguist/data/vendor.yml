@@ -239,7 +239,7 @@
 ## Python ##
 
 # Sphinx
-- (^|/)docs?/_?(build|themes?|template?|static)/
+- (^|/)docs?/_?(build|themes?|templates?|static)/
 
 # django
 - (^|/)admin_media/

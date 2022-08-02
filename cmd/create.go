@@ -63,7 +63,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.BoolVar(&cc.dockerfileOnly, "dockerfiles-only", false, "only create Dockerfile in the project directory")
+	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
 
@@ -266,7 +266,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	// does no further checks without file detection
 
 	if cc.dockerfileOnly && cc.deploymentOnly {
-		return errors.New("can only pass in one of --dockerfiles-only and --deployment-only")
+		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
 
 	if cc.skipFileDetection {
@@ -285,7 +285,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		return nil
 	}
 
-	// check if the local directory has dockerfiles or charts
+	// check if the local directory has dockerfile or charts
 	hasDockerFile, hasDeploymentFiles, err := filematches.SearchDirectory(cc.dest)
 	if err != nil {
 		return err
@@ -333,7 +333,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	}
 
 	if cc.dockerfileOnly {
-		log.Info("--> --dockerfiles-only=true, skipping deployment file creation...")
+		log.Info("--> --dockerfile-only=true, skipping deployment file creation...")
 	} else if hasDeploymentFiles {
 		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
 	} else if !cc.dockerfileOnly {

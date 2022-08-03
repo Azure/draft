@@ -5,7 +5,7 @@ deployTypes=("helm" "kustomize")
 
 ignoredFiles=("./draft.yaml" "./skaffold.yaml" "./charts/templates/helpers.tpl" "./charts/helmignore")
 let count=0
-for deploy in ${deployTypes[@]};do
+for deploy in ${deployments[@]};do
     scriptName=./test/check_windows_$deploy.ps1
     echo "listing files for $deploy"
     cd $deployDir/$deploy

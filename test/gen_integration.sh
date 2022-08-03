@@ -87,8 +87,6 @@ do
     echo "deployType: \"Helm\"
 languageType: \"$lang\"
 deployVariables:
-  - name: \"VERSION\"
-    value: \"$version\"
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
@@ -103,8 +101,6 @@ languageVariables:
     echo "deployType: \"kustomize\"
 languageType: \"$lang\"
 deployVariables:
-  - name: \"VERSION\"
-    value: \"$version\"
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"
@@ -119,8 +115,6 @@ languageVariables:
     echo "deployType: \"manifests\"
 languageType: \"$lang\"
 deployVariables:
-  - name: \"VERSION\"
-    value: \"$version\" 
   - name: \"PORT\"
     value: \"$port\"
   - name: \"APPNAME\"

@@ -1,4 +1,4 @@
-FROM ruby
+FROM ruby:{{VERSION}}
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 RUN bundle config --global frozen 1

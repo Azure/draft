@@ -1,4 +1,4 @@
-FROM node:{{VERSION}}
+FROM node:10
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 

@@ -1,9 +1,9 @@
-FROM gradle:jdk11 as BUILD
+FROM gradle:{{BUILDERVERSION}} as BUILD
 
 COPY --chown=gradle:gradle . /project
 RUN gradle -i -s -b /project/build.gradle clean build
 
-FROM openjdk:11-jre-slim
+FROM openjdk:{{VERSION}}
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 

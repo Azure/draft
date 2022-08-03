@@ -3,7 +3,7 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN lein ring uberjar
 
-FROM openjdk:8-jdk-alpine
+FROM openjdk:{{VERSION}}
 
 RUN apk update && apk upgrade && apk add bash
 ENV PORT {{PORT}}

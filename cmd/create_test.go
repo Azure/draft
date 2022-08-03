@@ -7,13 +7,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Azure/draft/pkg/osutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
+	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/template"
 )
 
 func TestRun(t *testing.T) {
@@ -122,7 +123,7 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		}
 	}
 
-	mcc.supportedLangs = languages.CreateLanguages(mcc.dest)
+	mcc.supportedLangs = languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, mcc.dest)
 
 	if mcc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")

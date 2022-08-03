@@ -19,6 +19,7 @@ import (
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
+	"github.com/Azure/draft/template"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -163,7 +164,7 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 		}
 	}
 
-	cc.supportedLangs = languages.CreateLanguages(cc.dest)
+	cc.supportedLangs = languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, cc.dest)
 
 	if cc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")

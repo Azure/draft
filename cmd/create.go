@@ -224,17 +224,17 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 
 func (cc *createCmd) createDeployment() error {
 	log.Info("--- Deployment File Creation ---")
-	d := deployments.CreateDeployments(cc.dest)
+	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, cc.dest)
 	var deployType string
 	var customInputs map[string]string
 	var err error
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
-		config := d.GetConfig(deployType)
-		if config == nil {
+		deployConfig := d.GetConfig(deployType)
+		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(config.Variables, cc.createConfig.DeployVariables, config.VariableDefaults)
+		customInputs, err = validateConfigInputsToPrompts(deployConfig.Variables, cc.createConfig.DeployVariables, deployConfig.VariableDefaults)
 		if err != nil {
 			return err
 		}
@@ -250,8 +250,8 @@ func (cc *createCmd) createDeployment() error {
 			return err
 		}
 
-		config := d.GetConfig(deployType)
-		customInputs, err = prompts.RunPromptsFromConfig(config)
+		deployConfig := d.GetConfig(deployType)
+		customInputs, err = prompts.RunPromptsFromConfig(deployConfig)
 		if err != nil {
 			return err
 		}

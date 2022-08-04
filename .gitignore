@@ -1,6 +1,5 @@
 vendor/
 .idea/
-/pkg/deployments/deployTypes/
 /pkg/workflows/workflows/
 .DS_Store
 draft

@@ -74,9 +74,11 @@ jobs:
 # read config and add integration test for each language
 cat integration_config.json | jq -c '.[]' | while read -r test; 
 do 
+    note="# this file is generated using gen_integration.sh"
     # extract from json
     lang=$(echo $test | jq '.language' -r)
     version=$(echo $test | jq '.version' -r)
+    builderversion=$(echo $test | jq '.builderversion' -r)
     port=$(echo $test | jq '.port' -r)
     repo=$(echo $test | jq '.repo' -r)
     echo "Adding $lang with port $port"
@@ -84,7 +86,8 @@ do
     mkdir ./integration/$lang
 
     # create helm.yaml
-    echo "deployType: \"Helm\"
+    echo "$note
+deployType: \"Helm\"
 languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
@@ -94,11 +97,14 @@ deployVariables:
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
+  - name: \"BUILDERVERSION\"
+    value: \"$builderversion\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/helm.yaml
 
     # create kustomize.yaml
-    echo "deployType: \"kustomize\"
+    echo "$note
+deployType: \"kustomize\"
 languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
@@ -108,11 +114,14 @@ deployVariables:
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
+  - name: \"BUILDERVERSION\"
+    value: \"$builderversion\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/kustomize.yaml
 
     # create kustomize.yaml
-    echo "deployType: \"manifests\"
+    echo "$note
+deployType: \"manifests\"
 languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
@@ -122,6 +131,8 @@ deployVariables:
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
+  - name: \"BUILDERVERSION\"
+    value: \"$builderversion\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
 

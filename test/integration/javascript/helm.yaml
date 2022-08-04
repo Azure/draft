@@ -1,3 +1,4 @@
+# this file is generated using gen_integration.sh
 deployType: "Helm"
 languageType: "javascript"
 deployVariables:
@@ -7,6 +8,8 @@ deployVariables:
     value: "testapp"
 languageVariables:
   - name: "VERSION"
+    value: "14"
+  - name: "BUILDERVERSION"
     value: "null"
   - name: "PORT"
     value: "1313"

@@ -1,3 +1,4 @@
+# this file is generated using gen_integration.sh
 deployType: "kustomize"
 languageType: "gradle"
 deployVariables:
@@ -7,6 +8,8 @@ deployVariables:
     value: "testapp"
 languageVariables:
   - name: "VERSION"
-    value: "null"
+    value: "11-jre-slim"
+  - name: "BUILDERVERSION"
+    value: "jdk11"
   - name: "PORT"
     value: "8080"

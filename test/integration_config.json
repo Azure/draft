@@ -20,7 +20,7 @@
   },
   {
     "language": "ruby",
-    "version": "3.0",
+    "version": "3.1.2",
     "port": "8000",
     "repo": "OliverMKing/ruby-hello-world"
   },

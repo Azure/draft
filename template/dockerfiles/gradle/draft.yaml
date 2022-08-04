@@ -7,7 +7,7 @@ variables:
     description: "the port exposed in the application"
     type: int
   - name: "BUILDERVERSION"
-    description: "the version of gradle used by the application"
+    description: "the version of gradle used during the builder stage to generate the executable"
   - name: "VERSION"
     description: "the version of openjdk used by the application"
 variableDefaults:

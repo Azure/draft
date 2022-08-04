@@ -14,19 +14,16 @@ import (
 	"github.com/Azure/draft/pkg/osutil"
 )
 
-//go:generate cp -r ../../deployTypes ./deployTypes
-
 var (
-	//go:embed all:deployTypes
-	deployTypes    embed.FS
-	parentDirName  = "deployTypes"
+	parentDirName  = "deployments"
 	configFileName = "draft.yaml"
 )
 
 type Deployments struct {
-	deploys map[string]fs.DirEntry
-	configs map[string]*config.DraftConfig
-	dest    string
+	deploys             map[string]fs.DirEntry
+	configs             map[string]*config.DraftConfig
+	dest                string
+	deploymentTemplates fs.FS
 }
 
 func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter osutil.TemplateWriter) error {
@@ -42,7 +39,7 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 		config = nil
 	}
 
-	if err := osutil.CopyDir(deployTypes, srcDir, d.dest, config, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, config, customInputs, templateWriter); err != nil {
 		return err
 	}
 
@@ -56,7 +53,7 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 	}
 
 	configPath := fmt.Sprintf("%s/%s/%s", parentDirName, val.Name(), configFileName)
-	configBytes, err := fs.ReadFile(deployTypes, configPath)
+	configBytes, err := fs.ReadFile(d.deploymentTemplates, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -94,16 +91,17 @@ func (d *Deployments) PopulateConfigs() {
 	}
 }
 
-func CreateDeployments(dest string) *Deployments {
-	deployMap, err := embedutils.EmbedFStoMap(deployTypes, "deployTypes")
+func CreateDeploymentsFromEmbedFS(deploymentTemplates embed.FS, dest string) *Deployments {
+	deployMap, err := embedutils.EmbedFStoMap(deploymentTemplates, "deployments")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	d := &Deployments{
-		deploys: deployMap,
-		dest:    dest,
-		configs: make(map[string]*config.DraftConfig),
+		deploys:             deployMap,
+		dest:                dest,
+		configs:             make(map[string]*config.DraftConfig),
+		deploymentTemplates: deploymentTemplates,
 	}
 	d.PopulateConfigs()
 

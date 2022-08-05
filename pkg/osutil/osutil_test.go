@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Azure/draft/template"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,4 +91,14 @@ func TestEnsureFile(t *testing.T) {
 	assert.FileExists(t, invalidFile)
 
 	os.Remove(invalidFile)
+}
+
+func TestCopyDirToFileMap(t *testing.T) {
+
+	fileMap, err := CopyDirToFileMap(template.Dockerfiles, "dockerfiles/javascript", "/test/dir", nil, map[string]string{
+		"PORT": "8080",
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, fileMap)
+	assert.NotNil(t, fileMap["/test/dir/Dockerfile"])
 }

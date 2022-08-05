@@ -1,9 +1,9 @@
 package languages
 
 import (
-	"github.com/Azure/draft/pkg/osutil"
 	"testing"
 
+	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/template"
 	"github.com/stretchr/testify/assert"
 )

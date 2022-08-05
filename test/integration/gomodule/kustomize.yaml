@@ -1,14 +1,15 @@
+# this file is generated using gen_integration.sh
 deployType: "kustomize"
 languageType: "gomodule"
 deployVariables:
-  - name: "VERSION"
-    value: "null"
   - name: "PORT"
     value: "1323"
   - name: "APPNAME"
     value: "testapp"
 languageVariables:
   - name: "VERSION"
+    value: "1.18"
+  - name: "BUILDERVERSION"
     value: "null"
   - name: "PORT"
     value: "1323"

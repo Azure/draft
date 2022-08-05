@@ -1,4 +1,4 @@
-FROM swift:5.5
+FROM swift:{{VERSION}}
 
 WORKDIR /src
 COPY . /src

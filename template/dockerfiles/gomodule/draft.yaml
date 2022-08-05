@@ -6,3 +6,10 @@ variables:
   - name: "PORT"
     description: "the port exposed in the application"
     type: int
+  - name: "VERSION"
+    description: "the version of go used by the application"
+variableDefaults:
+  - name: "VERSION"
+    value: "1.18"
+  - name: "PORT"
+    value: "80"

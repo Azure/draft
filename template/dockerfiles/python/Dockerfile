@@ -1,4 +1,4 @@
-FROM python
+FROM python:{{VERSION}}
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 WORKDIR /usr/src/app

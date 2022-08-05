@@ -6,3 +6,14 @@ variables:
   - name: "PORT"
     description: "the port exposed in the application"
     type: int
+  - name: "BUILDERVERSION"
+    description: "the version of maven used during the builder stage to generate the executable"
+  - name: "VERSION"
+    description: "the version of openjdk used by the application"
+variableDefaults:
+  - name: "BUILDERVERSION"
+    value: "3-jdk-11"
+  - name: "VERSION"
+    value: "11-jre-slim"
+  - name: "PORT"
+    value: "80"

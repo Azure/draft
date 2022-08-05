@@ -6,3 +6,8 @@ variables:
   - name: "VERSION"
     description: "the dotnet SDK version"
     type: float
+variableDefaults:
+  - name: "VERSION"
+    value: "5.0"
+  - name: "PORT"
+    value: "80"

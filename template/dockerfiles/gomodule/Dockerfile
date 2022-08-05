@@ -1,4 +1,4 @@
-FROM golang
+FROM golang:{{VERSION}}
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 

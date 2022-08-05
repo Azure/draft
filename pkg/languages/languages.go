@@ -50,27 +50,6 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 	return nil
 }
 
-func (l *Languages) GenerateDockerfileFileMapForLanguage(lang string, customInputs map[string]string) (map[string][]byte, error) {
-	val, ok := l.langs[lang]
-	if !ok {
-		return nil, fmt.Errorf("language %s is not supported", lang)
-	}
-
-	srcDir := parentDirName + "/" + val.Name()
-
-	config, ok := l.configs[lang]
-	if !ok {
-		config = nil
-	}
-
-	fileMap, err := osutil.CopyDirToFileMap(l.dockerfileTemplates, srcDir, l.dest, config, customInputs)
-	if err != nil {
-		return nil, err
-	}
-
-	return fileMap, nil
-}
-
 func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 	val, ok := l.langs[lang]
 	if !ok {

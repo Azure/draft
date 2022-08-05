@@ -95,10 +95,11 @@ func TestEnsureFile(t *testing.T) {
 
 func TestCopyDirToFileMap(t *testing.T) {
 
-	fileMap, err := CopyDirToFileMap(template.Dockerfiles, "dockerfiles/javascript", "/test/dir", nil, map[string]string{
+	templatewriter := &FileMapWriter{}
+	err := CopyDir(template.Dockerfiles, "dockerfiles/javascript", "/test/dir", nil, map[string]string{
 		"PORT": "8080",
-	})
+	}, templatewriter)
 	assert.Nil(t, err)
-	assert.NotNil(t, fileMap)
-	assert.NotNil(t, fileMap["/test/dir/Dockerfile"])
+	assert.NotNil(t, templatewriter.FileMap)
+	assert.NotNil(t, templatewriter.FileMap["/test/dir/Dockerfile"])
 }

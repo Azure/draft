@@ -73,17 +73,41 @@ func EnsureFile(file string) error {
 }
 
 type TemplateWriter interface {
-	WriteFile(string, []byte, os.FileMode) error
+	WriteFile(string, []byte) error
 	EnsureDirectory(string) error
 }
 
-type LocalFSWriter struct{}
+type LocalFSWriter struct {
+	WriteMode os.FileMode
+}
 
-func (w *LocalFSWriter) WriteFile(path string, data []byte, mode os.FileMode) error {
+func (w *LocalFSWriter) WriteFile(path string, data []byte) error {
+	mode := w.WriteMode
+	if w.WriteMode == 0 {
+		mode = 0644
+	}
+
 	return os.WriteFile(path, data, mode)
 }
 func (w *LocalFSWriter) EnsureDirectory(path string) error {
 	return EnsureDirectory(path)
+}
+
+type FileMapWriter struct {
+	FileMap map[string][]byte
+}
+
+func (w *FileMapWriter) WriteFile(path string, data []byte) error {
+	if w.FileMap == nil {
+		w.FileMap = map[string][]byte{}
+	}
+
+	w.FileMap[path] = data
+	return nil
+}
+
+func (w *FileMapWriter) EnsureDirectory(path string) error {
+	return nil
 }
 
 func CopyDir(
@@ -120,53 +144,12 @@ func CopyDir(
 			}
 
 			fileName := checkNameOverrides(f.Name(), srcPath, destPath, config)
-			if err = templateWriter.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), []byte(fileString), 0644); err != nil {
+			if err = templateWriter.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), fileString); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
-}
-
-func CopyDirToFileMap(
-	fileSys fs.FS,
-	src, dest string,
-	config *config.DraftConfig,
-	customInputs map[string]string,
-) (map[string][]byte, error) {
-
-	fileMap := map[string][]byte{}
-	files, err := fs.ReadDir(fileSys, src)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, f := range files {
-
-		if f.Name() == "draft.yaml" {
-			continue
-		}
-
-		srcPath := src + "/" + f.Name()
-		destPath := dest + "/" + f.Name()
-
-		if f.IsDir() {
-			fileMap, err = CopyDirToFileMap(fileSys, srcPath, destPath, config, customInputs)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			fileString, err := handleTemplateReplacement(fileSys, srcPath, customInputs)
-			if err != nil {
-				return nil, err
-			}
-
-			fileName := checkNameOverrides(f.Name(), srcPath, destPath, config)
-			fileMap[fmt.Sprintf("%s/%s", dest, fileName)] = fileString
-		}
-	}
-	return fileMap, nil
-
 }
 
 func handleTemplateReplacement(fileSys fs.FS, srcPath string, customInputs map[string]string) ([]byte, error) {

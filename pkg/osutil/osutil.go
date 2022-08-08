@@ -100,7 +100,7 @@ func CopyDir(
 				return err
 			}
 		} else {
-			fileString, err := handleTemplateReplacement(fileSys, srcPath, customInputs)
+			fileString, err := replaceTemplateVariables(fileSys, srcPath, customInputs)
 			if err != nil {
 				return err
 			}
@@ -114,7 +114,7 @@ func CopyDir(
 	return nil
 }
 
-func handleTemplateReplacement(fileSys fs.FS, srcPath string, customInputs map[string]string) ([]byte, error) {
+func replaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[string]string) ([]byte, error) {
 	file, err := fs.ReadFile(fileSys, srcPath)
 	if err != nil {
 		return nil, err

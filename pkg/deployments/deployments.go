@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/templatewriter"
 )
 
 var (
@@ -26,7 +27,7 @@ type Deployments struct {
 	deploymentTemplates fs.FS
 }
 
-func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter osutil.TemplateWriter) error {
+func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := d.deploys[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)

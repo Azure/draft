@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/templatewriter"
 )
 
 var (
@@ -30,7 +31,7 @@ func (l *Languages) ContainsLanguage(lang string) bool {
 	return ok
 }
 
-func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string, templateWriter osutil.TemplateWriter) error {
+func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := l.langs[lang]
 	if !ok {
 		return fmt.Errorf("language %s is not supported", lang)

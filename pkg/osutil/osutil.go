@@ -8,9 +8,9 @@ import (
 	"strings"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/templatewriter"
+	log "github.com/sirupsen/logrus"
 )
 
 // Exists returns whether the given file or directory exists or not.
@@ -72,50 +72,12 @@ func EnsureFile(file string) error {
 	return nil
 }
 
-type TemplateWriter interface {
-	WriteFile(string, []byte) error
-	EnsureDirectory(string) error
-}
-
-type LocalFSWriter struct {
-	WriteMode os.FileMode
-}
-
-func (w *LocalFSWriter) WriteFile(path string, data []byte) error {
-	mode := w.WriteMode
-	if w.WriteMode == 0 {
-		mode = 0644
-	}
-
-	return os.WriteFile(path, data, mode)
-}
-func (w *LocalFSWriter) EnsureDirectory(path string) error {
-	return EnsureDirectory(path)
-}
-
-type FileMapWriter struct {
-	FileMap map[string][]byte
-}
-
-func (w *FileMapWriter) WriteFile(path string, data []byte) error {
-	if w.FileMap == nil {
-		w.FileMap = map[string][]byte{}
-	}
-
-	w.FileMap[path] = data
-	return nil
-}
-
-func (w *FileMapWriter) EnsureDirectory(path string) error {
-	return nil
-}
-
 func CopyDir(
 	fileSys fs.FS,
 	src, dest string,
 	config *config.DraftConfig,
 	customInputs map[string]string,
-	templateWriter TemplateWriter) error {
+	templateWriter templatewriter.TemplateWriter) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {
 		return err

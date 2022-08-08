@@ -3,13 +3,14 @@ package languages
 import (
 	"testing"
 
-	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/template"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/Azure/draft/template"
 )
 
 func TestLanguagesCreateDockerfileFileMap(t *testing.T) {
-	templateWriter := &osutil.FileMapWriter{}
+	templateWriter := &writers.FileMapWriter{}
 	l := CreateLanguagesFromEmbedFS(template.Dockerfiles, "/test/dest/dir")
 	err := l.CreateDockerfileForLanguage("go", map[string]string{
 		"PORT": "8080",

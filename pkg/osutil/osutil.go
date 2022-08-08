@@ -1,4 +1,4 @@
-spackage osutil
+package osutil
 
 import (
 	"fmt"
@@ -9,9 +9,10 @@ import (
 	"strings"
 	"syscall"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/templatewriter"
-	log "github.com/sirupsen/logrus"
 )
 
 // Exists returns whether the given file or directory exists or not.

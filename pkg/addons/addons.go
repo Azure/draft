@@ -4,33 +4,26 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
+	"path/filepath"
+	"strings"
+
+	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
-	"github.com/manifoldco/promptui"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
-	"io/fs"
-
-	"path/filepath"
-	"strings"
+	"github.com/Azure/draft/pkg/templatewriter"
 )
 
-//go:generate cp -r ../../addons ./addons
-
 var (
-	//go:embed addons
-	addons        embed.FS
 	parentDirName = "addons"
 )
 
-type AddOn struct {
-	templates fs.DirEntry
-	dest      string
-}
-
-func GenerateAddon(provider, addon, dest string, userInputs map[string]string) error {
+func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
 	providerPath := filepath.Join(parentDirName, strings.ToLower(provider))
 	addonMap, err := embedutils.EmbedFStoMap(addons, providerPath)
 	if err != nil {
@@ -80,7 +73,7 @@ func GenerateAddon(provider, addon, dest string, userInputs map[string]string) e
 		return err
 	}
 
-	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, addonVals); err != nil {
+	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, addonVals, templateWriter); err != nil {
 		return err
 	}
 

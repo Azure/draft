@@ -1,14 +1,17 @@
 package config
 
 import (
+	"io/fs"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"testing"
+
+	"github.com/Azure/draft/template"
 )
 
 func TestGetHelmReferenceMap(t *testing.T) {
-	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft.yaml")
+	configBytes, err := fs.ReadFile(template.Addons, "addons/azure/webapp_routing/draft.yaml")
 	assert.Nil(t, err)
 
 	var addOnConfig AddonConfig
@@ -22,7 +25,7 @@ func TestGetHelmReferenceMap(t *testing.T) {
 }
 
 func TestGetKustomizeReferenceMap(t *testing.T) {
-	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft.yaml")
+	configBytes, err := fs.ReadFile(template.Addons, "addons/azure/webapp_routing/draft.yaml")
 	assert.Nil(t, err)
 
 	var addOnConfig AddonConfig
@@ -35,7 +38,7 @@ func TestGetKustomizeReferenceMap(t *testing.T) {
 }
 
 func TestGetManifestReferenceMap(t *testing.T) {
-	configBytes, err := ioutil.ReadFile("../addons/addons/azure/webapp_routing/draft.yaml")
+	configBytes, err := fs.ReadFile(template.Addons, "addons/azure/webapp_routing/draft.yaml")
 	assert.Nil(t, err)
 
 	var addOnConfig AddonConfig

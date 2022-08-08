@@ -1,30 +1,36 @@
 package addons
 
 import (
-	"github.com/Azure/draft/pkg/osutil"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/Azure/draft/template"
 )
 
 const templatePath = "../../test/templates"
 
 func TestGenerateAddonErrors(t *testing.T) {
+	templateWriter := &writers.LocalFSWriter{}
 	userInputs := map[string]string{
 		"test": "test",
 	}
-	err := GenerateAddon("azure", "webapp_routing", "fakeDest", userInputs)
+	err := GenerateAddon(template.Addons, "azure", "webapp_routing", "fakeDest", userInputs, templateWriter)
 	assert.NotNil(t, err, "should fail with fake destination")
 
-	err = GenerateAddon("azure", "fakeAddon", "../../test/templates/helm", userInputs)
+	err = GenerateAddon(template.Addons, "azure", "fakeAddon", "../../test/templates/helm", userInputs, templateWriter)
 	assert.NotNil(t, err, "should fail with fake addon name")
 
-	err = GenerateAddon("fakeProvider", "fakeAddon", "../../test/templates/helm", userInputs)
+	err = GenerateAddon(template.Addons, "fakeProvider", "fakeAddon", "../../test/templates/helm", userInputs, templateWriter)
 	assert.NotNil(t, err, "should fail with fake provider name")
 }
 
 func TestGenerateHelmAddonSuccess(t *testing.T) {
+	templateWriter := &writers.LocalFSWriter{}
 	var correctUserInputs = map[string]string{
 		"ingress-tls-cert-keyvault-uri": "test.uri",
 		"ingress-use-osm-mtls":          "false",
@@ -33,13 +39,14 @@ func TestGenerateHelmAddonSuccess(t *testing.T) {
 	dir, remove, err := setUpTempDir("helm")
 	assert.Nil(t, err)
 
-	err = GenerateAddon("azure", "webapp_routing", dir, correctUserInputs)
+	err = GenerateAddon(template.Addons, "azure", "webapp_routing", dir, correctUserInputs, templateWriter)
 	assert.Nil(t, err)
 
 	assert.Nil(t, remove())
 }
 
 func TestGenerateKustomizeAddonSuccess(t *testing.T) {
+	templateWriter := &writers.LocalFSWriter{}
 	var correctUserInputs = map[string]string{
 		"ingress-tls-cert-keyvault-uri": "test.uri",
 		"ingress-use-osm-mtls":          "false",
@@ -48,13 +55,14 @@ func TestGenerateKustomizeAddonSuccess(t *testing.T) {
 	dir, remove, err := setUpTempDir("kustomize")
 	assert.Nil(t, err)
 
-	err = GenerateAddon("azure", "webapp_routing", dir, correctUserInputs)
+	err = GenerateAddon(template.Addons, "azure", "webapp_routing", dir, correctUserInputs, templateWriter)
 	assert.Nil(t, err)
 
 	assert.Nil(t, remove())
 }
 
 func setUpTempDir(deploy string) (dir string, close func() error, err error) {
+	templateWriter := &writers.LocalFSWriter{}
 	dir, err = ioutil.TempDir("", "addonTest")
 	if err != nil {
 		return
@@ -63,7 +71,7 @@ func setUpTempDir(deploy string) (dir string, close func() error, err error) {
 		return os.RemoveAll(dir)
 	}
 	fs := os.DirFS(templatePath)
-	if err = osutil.CopyDir(fs, deploy, dir, nil, nil); err != nil {
+	if err = osutil.CopyDir(fs, deploy, dir, nil, nil, templateWriter); err != nil {
 		return
 	}
 

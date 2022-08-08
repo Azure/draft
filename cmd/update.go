@@ -1,9 +1,12 @@
 package cmd
 
 import (
-	"github.com/Azure/draft/pkg/addons"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/Azure/draft/pkg/addons"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/Azure/draft/template"
 )
 
 func newUpdateCmd() *cobra.Command {
@@ -11,6 +14,7 @@ func newUpdateCmd() *cobra.Command {
 	provider := ""
 	addon := ""
 	userInputs := make(map[string]string)
+	templateWriter := &writers.LocalFSWriter{}
 	// updateCmd represents the update command
 	var cmd = &cobra.Command{
 		Use:   "update",
@@ -18,7 +22,7 @@ func newUpdateCmd() *cobra.Command {
 		Long: `This command automatically updates your yaml files as necessary so that your application
 will be able to receive external requests.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := addons.GenerateAddon(provider, addon, dest, userInputs); err != nil {
+			if err := addons.GenerateAddon(template.Addons, provider, addon, dest, userInputs, templateWriter); err != nil {
 				return err
 			}
 

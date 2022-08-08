@@ -1,8 +1,7 @@
+# this file is generated using gen_integration.sh
 deployType: "kustomize"
 languageType: "csharp"
 deployVariables:
-  - name: "VERSION"
-    value: "5.0"
   - name: "PORT"
     value: "80"
   - name: "APPNAME"
@@ -10,5 +9,7 @@ deployVariables:
 languageVariables:
   - name: "VERSION"
     value: "5.0"
+  - name: "BUILDERVERSION"
+    value: "null"
   - name: "PORT"
     value: "80"

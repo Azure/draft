@@ -105,4 +105,3 @@ func TestAddAnnotationsHelm(t *testing.T) {
 	assert.NotNil(t, eHelmYaml.Service.Annotations)
 	assert.Equal(t, annotations, eHelmYaml.Service.Annotations)
 }
-

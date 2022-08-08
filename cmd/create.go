@@ -18,6 +18,9 @@ import (
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/prompts"
+	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/Azure/draft/template"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -38,6 +41,8 @@ type createCmd struct {
 
 	supportedLangs *languages.Languages
 	fileMatches    *filematches.FileMatches
+
+	templateWriter templatewriter.TemplateWriter
 }
 
 func newCreateCmd() *cobra.Command {
@@ -65,6 +70,7 @@ func newCreateCmd() *cobra.Command {
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
 
+	cc.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }
 
@@ -161,7 +167,7 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 		}
 	}
 
-	cc.supportedLangs = languages.CreateLanguages(cc.dest)
+	cc.supportedLangs = languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, cc.dest)
 
 	if cc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")
@@ -211,7 +217,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
-	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs); err != nil {
+	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs, cc.templateWriter); err != nil {
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
 
@@ -221,17 +227,17 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 
 func (cc *createCmd) createDeployment() error {
 	log.Info("--- Deployment File Creation ---")
-	d := deployments.CreateDeployments(cc.dest)
+	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, cc.dest)
 	var deployType string
 	var customInputs map[string]string
 	var err error
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
-		config := d.GetConfig(deployType)
-		if config == nil {
+		deployConfig := d.GetConfig(deployType)
+		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(config.Variables, cc.createConfig.DeployVariables, config.VariableDefaults)
+		customInputs, err = validateConfigInputsToPrompts(deployConfig.Variables, cc.createConfig.DeployVariables, deployConfig.VariableDefaults)
 		if err != nil {
 			return err
 		}
@@ -247,15 +253,16 @@ func (cc *createCmd) createDeployment() error {
 			return err
 		}
 
-		config := d.GetConfig(deployType)
-		customInputs, err = prompts.RunPromptsFromConfig(config)
+		deployConfig := d.GetConfig(deployType)
+		customInputs, err = prompts.RunPromptsFromConfig(deployConfig)
 		if err != nil {
 			return err
 		}
 	}
 
 	log.Infof("--> Creating %s Kubernetes resources...\n", deployType)
-	return d.CopyDeploymentFiles(deployType, customInputs)
+
+	return d.CopyDeploymentFiles(deployType, customInputs, cc.templateWriter)
 }
 
 func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang string) error {

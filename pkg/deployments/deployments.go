@@ -6,29 +6,28 @@ import (
 	"fmt"
 	"io/fs"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"github.com/Azure/draft/pkg/templatewriter"
 )
 
-//go:generate cp -r ../../deployTypes ./deployTypes
-
 var (
-	//go:embed all:deployTypes
-	deployTypes    embed.FS
-	parentDirName  = "deployTypes"
+	parentDirName  = "deployments"
 	configFileName = "draft.yaml"
 )
 
 type Deployments struct {
-	deploys map[string]fs.DirEntry
-	configs map[string]*config.DraftConfig
-	dest    string
+	deploys             map[string]fs.DirEntry
+	configs             map[string]*config.DraftConfig
+	dest                string
+	deploymentTemplates fs.FS
 }
 
-func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string) error {
+func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := d.deploys[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
@@ -41,7 +40,7 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 		deployConfig = nil
 	}
 
-	if err := osutil.CopyDir(deployTypes, srcDir, d.dest, deployConfig, customInputs); err != nil {
+	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, customInputs, templateWriter); err != nil {
 		return err
 	}
 
@@ -55,7 +54,7 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 	}
 
 	configPath := fmt.Sprintf("%s/%s/%s", parentDirName, val.Name(), configFileName)
-	configBytes, err := fs.ReadFile(deployTypes, configPath)
+	configBytes, err := fs.ReadFile(d.deploymentTemplates, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -93,16 +92,17 @@ func (d *Deployments) PopulateConfigs() {
 	}
 }
 
-func CreateDeployments(dest string) *Deployments {
-	deployMap, err := embedutils.EmbedFStoMap(deployTypes, "deployTypes")
+func CreateDeploymentsFromEmbedFS(deploymentTemplates embed.FS, dest string) *Deployments {
+	deployMap, err := embedutils.EmbedFStoMap(deploymentTemplates, "deployments")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	d := &Deployments{
-		deploys: deployMap,
-		dest:    dest,
-		configs: make(map[string]*config.DraftConfig),
+		deploys:             deployMap,
+		dest:                dest,
+		configs:             make(map[string]*config.DraftConfig),
+		deploymentTemplates: deploymentTemplates,
 	}
 	d.PopulateConfigs()
 

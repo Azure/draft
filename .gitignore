@@ -1,10 +1,9 @@
 vendor/
 .idea/
-/pkg/languages/builders/
-/pkg/deployments/deployTypes/
 /pkg/workflows/workflows/
 /pkg/addons/addons/
 .DS_Store
 draft
 langtest
 .vscode/
+/pkg/languages/builders

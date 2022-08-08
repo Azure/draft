@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
-	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
 )
 
@@ -28,7 +28,7 @@ func TestRun(t *testing.T) {
 	mockAppNameInput := config.UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
 	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
-	mockCC.templateWriter = &osutil.LocalFSWriter{}
+	mockCC.templateWriter = &writers.LocalFSWriter{}
 
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")

@@ -17,8 +17,9 @@ import (
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
-	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
+	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
 )
 
@@ -41,7 +42,7 @@ type createCmd struct {
 	supportedLangs *languages.Languages
 	fileMatches    *filematches.FileMatches
 
-	templateWriter osutil.TemplateWriter
+	templateWriter templatewriter.TemplateWriter
 }
 
 func newCreateCmd() *cobra.Command {
@@ -67,7 +68,7 @@ func newCreateCmd() *cobra.Command {
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
 
-	cc.templateWriter = &osutil.LocalFSWriter{}
+	cc.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }
 

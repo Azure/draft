@@ -1,0 +1,6 @@
+namePrefix: production-
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - deployment.yaml
+  - service.yaml

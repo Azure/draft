@@ -19,7 +19,7 @@ func TestGetHelmReferenceMap(t *testing.T) {
 	assert.Nil(t, err)
 
 	refMap := make(map[string]string)
-	err = getHelmReferenceMap("service", "../../test/templates/helm", addOnConfig.References["service"], refMap)
+	err = extractHelmValuesToMap("service", "../../test/templates/helm", addOnConfig.ReferenceComponents["service"], refMap)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, refMap)
 }
@@ -32,7 +32,7 @@ func TestGetKustomizeReferenceMap(t *testing.T) {
 	err = yaml.Unmarshal(configBytes, &addOnConfig)
 	refMap := make(map[string]string)
 
-	err = getKustomizeReferenceMap("service", "../../test/templates/kustomize", addOnConfig.References["service"], refMap)
+	err = extractKustomizeValuesToMap("service", "../../test/templates/kustomize", addOnConfig.ReferenceComponents["service"], refMap)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, refMap)
 }
@@ -45,7 +45,7 @@ func TestGetManifestReferenceMap(t *testing.T) {
 	err = yaml.Unmarshal(configBytes, &addOnConfig)
 	refMap := make(map[string]string)
 
-	err = getManifestReferenceMap("service", "../../test/templates/manifests", addOnConfig.References["service"], refMap)
+	err = extractManifestValuesToMap("service", "../../test/templates/manifests", addOnConfig.ReferenceComponents["service"], refMap)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, refMap)
 }

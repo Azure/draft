@@ -10,6 +10,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
@@ -30,7 +31,7 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map
 		return err
 	}
 	if addon == "" {
-		addonNames := getKeySet(addonMap)
+		addonNames := maps.Keys(addonMap)
 		prompt := promptui.Select{
 			Label: fmt.Sprintf("Select %s addon", provider),
 			Items: addonNames,
@@ -95,7 +96,7 @@ func getAddonValues(dest string, userInputs map[string]string, addOnConfig confi
 		log.Debug("got user inputs")
 	}
 
-	referenceMap, err := addOnConfig.GetReferenceMap(dest)
+	referenceMap, err := addOnConfig.GetReferenceValueMap(dest)
 	if err != nil {
 		return nil, err
 	}
@@ -114,12 +115,4 @@ func getAddonValues(dest string, userInputs map[string]string, addOnConfig confi
 
 	log.Debugf("merged maps into: %s", userInputs)
 	return userInputs, nil
-}
-
-func getKeySet[K comparable, V any](aMap map[K]V) []K {
-	keys := make([]K, 0, len(aMap))
-	for key := range aMap {
-		keys = append(keys, key)
-	}
-	return keys
 }

@@ -3,32 +3,36 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/Azure/draft/pkg/consts"
-	"github.com/Azure/draft/pkg/filematches"
+	"path"
+	"strings"
+
 	log "github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/chart/loader"
-	"path"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
-	"strings"
+
+	"github.com/Azure/draft/pkg/consts"
+	"github.com/Azure/draft/pkg/filematches"
 )
 
+// AddonConfig is a struct that extends the base DraftConfig to allow for the Referencing previously generated
+// k8s objects. This allows an addon creator to reference pre-entered data from the deployment files.
 type AddonConfig struct {
-	DraftConfig `yaml:",inline"`
-	References  map[string][]reference `yaml:"references"`
+	DraftConfig         `yaml:",inline"`
+	ReferenceComponents map[string][]referenceResource `yaml:"references"`
 
 	deployType string
 }
 
-type reference struct {
+type referenceResource struct {
 	Name string
 	Path string
 }
 
 type Reference interface {
-	GetReferenceVariables([]reference) map[string]string
+	GetReferenceVariables([]referenceResource) map[string]string
 }
 
 func (ac *AddonConfig) getDeployType(dest string) (string, error) {
@@ -46,25 +50,26 @@ func (ac *AddonConfig) GetAddonDestPath(dest string) (string, error) {
 	return path.Join(dest, consts.DeploymentFilePaths[deployType]), err
 }
 
-func (ac *AddonConfig) GetReferenceMap(dest string) (map[string]string, error) {
+// GetReferenceValueMap extracts k8s object values into a mapping of template strings to k8s object value.
+func (ac *AddonConfig) GetReferenceValueMap(dest string) (map[string]string, error) {
 	referenceMap := make(map[string]string)
 
 	deployType, err := ac.getDeployType(dest)
 
-	for referenceName, references := range ac.References {
+	for referenceName, referenceResources := range ac.ReferenceComponents {
 		switch deployType {
 		case "helm":
-			if err = getHelmReferenceMap(referenceName, dest, references, referenceMap); err != nil {
+			if err = extractHelmValuesToMap(referenceName, dest, referenceResources, referenceMap); err != nil {
 				return nil, err
 			}
 
 		case "kustomize":
-			if err = getKustomizeReferenceMap(referenceName, dest, references, referenceMap); err != nil {
+			if err = extractKustomizeValuesToMap(referenceName, dest, referenceResources, referenceMap); err != nil {
 				return nil, err
 			}
 
 		case "manifests":
-			if err = getManifestReferenceMap(referenceName, dest, references, referenceMap); err != nil {
+			if err = extractManifestValuesToMap(referenceName, dest, referenceResources, referenceMap); err != nil {
 				return nil, err
 			}
 		}
@@ -74,7 +79,7 @@ func (ac *AddonConfig) GetReferenceMap(dest string) (map[string]string, error) {
 }
 
 // TODO: should consolidate all deployTypes into single interface to abstract the implementations
-func getHelmReferenceMap(referenceName, dest string, references []reference, referenceMap map[string]string) error {
+func extractHelmValuesToMap(referenceName, dest string, references []referenceResource, referenceMap map[string]string) error {
 	chart, err := loader.Load(dest + "/charts/")
 	if err != nil {
 		return err
@@ -89,7 +94,7 @@ func getHelmReferenceMap(referenceName, dest string, references []reference, ref
 	return nil
 }
 
-func getKustomizeReferenceMap(referenceName, dest string, references []reference, referenceMap map[string]string) error {
+func extractKustomizeValuesToMap(referenceName, dest string, references []referenceResource, referenceMap map[string]string) error {
 	kustomizer := krusty.MakeKustomizer(&krusty.Options{PluginConfig: &types.PluginConfig{}})
 	production, err := kustomizer.Run(filesys.FileSystemOrOnDisk{}, dest+"/overlays/production/")
 	if err != nil {
@@ -97,27 +102,27 @@ func getKustomizeReferenceMap(referenceName, dest string, references []reference
 	}
 	rNodes := production.ToRNodeSlice()
 
-	return getNativeRefMap(rNodes, referenceName, references, referenceMap)
+	return extractNativeRefMap(rNodes, referenceName, references, referenceMap)
 }
 
-func getManifestReferenceMap(referenceName, dest string, references []reference, referenceMap map[string]string) error {
+func extractManifestValuesToMap(referenceName, dest string, references []referenceResource, referenceMap map[string]string) error {
 	serviceYaml, err := yaml.ReadFile(dest + "/manifests/service.yaml")
 	if err != nil {
 		return err
 	}
 	rNodes := make([]*yaml.RNode, 0)
 	rNodes = append(rNodes, serviceYaml)
-	return getNativeRefMap(rNodes, referenceName, references, referenceMap)
+	return extractNativeRefMap(rNodes, referenceName, references, referenceMap)
 }
 
-func getNativeRefMap(referenceNodes []*yaml.RNode, referenceName string, references []reference, referenceMap map[string]string) error {
+func extractNativeRefMap(referenceNodes []*yaml.RNode, referenceName string, references []referenceResource, referenceMap map[string]string) error {
 	for _, reference := range references {
-		refStr := getRef(referenceNodes, consts.RefPathLookups[referenceName][reference.Path])
+		refStr := extractRef(referenceNodes, consts.RefPathLookups[referenceName][reference.Path])
 		if refStr == "" && strings.Contains(reference.Name, "namespace") {
 			//hack for default namespace
 			refStr = "default"
 		} else if refStr == "" {
-			return errors.New(fmt.Sprintf("reference %s not found", reference.Name))
+			return errors.New(fmt.Sprintf("referenceResource %s not found", reference.Name))
 		}
 
 		referenceMap[reference.Name] = refStr
@@ -125,7 +130,7 @@ func getNativeRefMap(referenceNodes []*yaml.RNode, referenceName string, referen
 	return nil
 }
 
-func getRef(rNodes []*yaml.RNode, lookupPath []string) string {
+func extractRef(rNodes []*yaml.RNode, lookupPath []string) string {
 	for _, rNode := range rNodes {
 		ref, err := rNode.Pipe(yaml.Lookup(lookupPath...))
 		if ref == nil || err != nil {

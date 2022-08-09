@@ -129,6 +129,7 @@ func replaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[st
 		fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
 	}
 
+
 	return []byte(fileString), nil
 }
 

@@ -1,14 +1,16 @@
 package workflows
 
 import (
-	"github.com/Azure/draft/pkg/types"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/client-go/kubernetes/scheme"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/Azure/draft/pkg/types"
 )
 
 func createTempManifest(path string) (string, error) {

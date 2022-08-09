@@ -6,25 +6,24 @@ import (
 	"fmt"
 	"io/fs"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"github.com/Azure/draft/pkg/templatewriter"
 )
 
-//go:generate cp -r ../../builders ./builders
-
 var (
-	//go:embed all:builders
-	builders      embed.FS
-	parentDirName = "builders"
+	parentDirName = "dockerfiles"
 )
 
 type Languages struct {
-	langs   map[string]fs.DirEntry
-	configs map[string]*config.DraftConfig
-	dest    string
+	langs               map[string]fs.DirEntry
+	configs             map[string]*config.DraftConfig
+	dest                string
+	dockerfileTemplates fs.FS
 }
 
 func (l *Languages) ContainsLanguage(lang string) bool {
@@ -32,7 +31,7 @@ func (l *Languages) ContainsLanguage(lang string) bool {
 	return ok
 }
 
-func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string) error {
+func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := l.langs[lang]
 	if !ok {
 		return fmt.Errorf("language %s is not supported", lang)
@@ -45,7 +44,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 		draftConfig = nil
 	}
 
-	if err := osutil.CopyDir(builders, srcDir, l.dest, draftConfig, customInputs); err != nil {
+	if err := osutil.CopyDir(l.dockerfileTemplates, srcDir, l.dest, draftConfig, customInputs, templateWriter); err != nil {
 		return err
 	}
 
@@ -59,7 +58,7 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 	}
 
 	configPath := parentDirName + "/" + val.Name() + "/draft.yaml"
-	configBytes, err := fs.ReadFile(builders, configPath)
+	configBytes, err := fs.ReadFile(l.dockerfileTemplates, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -97,16 +96,17 @@ func (l *Languages) PopulateConfigs() {
 	}
 }
 
-func CreateLanguages(dest string) *Languages {
-	langMap, err := embedutils.EmbedFStoMap(builders, parentDirName)
+func CreateLanguagesFromEmbedFS(dockerfileTemplates embed.FS, dest string) *Languages {
+	langMap, err := embedutils.EmbedFStoMap(dockerfileTemplates, parentDirName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	l := &Languages{
-		langs:   langMap,
-		dest:    dest,
-		configs: make(map[string]*config.DraftConfig),
+		langs:               langMap,
+		dest:                dest,
+		configs:             make(map[string]*config.DraftConfig),
+		dockerfileTemplates: dockerfileTemplates,
 	}
 	l.PopulateConfigs()
 

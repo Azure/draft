@@ -13,6 +13,8 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/Azure/draft/template"
 )
 
 func TestRun(t *testing.T) {
@@ -26,6 +28,7 @@ func TestRun(t *testing.T) {
 	mockAppNameInput := config.UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
 	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
+	mockCC.templateWriter = &writers.LocalFSWriter{}
 
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
@@ -120,7 +123,7 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		}
 	}
 
-	mcc.supportedLangs = languages.CreateLanguages(mcc.dest)
+	mcc.supportedLangs = languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, mcc.dest)
 
 	if mcc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")

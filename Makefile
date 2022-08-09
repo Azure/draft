@@ -4,7 +4,6 @@ all: go-generate vendor build
 
 .PHONY: go-generate
 go-generate:
-	rm -r ./pkg/languages/builders; \
 	rm -r ./pkg/deployments/deployTypes; \
 	rm -r ./pkg/workflows/workflows; \
 	rm -r ./pkg/addons/addons; \

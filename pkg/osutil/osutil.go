@@ -9,8 +9,10 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/Azure/draft/pkg/config"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/templatewriter"
 )
 
 // Exists returns whether the given file or directory exists or not.
@@ -76,7 +78,8 @@ func CopyDir(
 	fileSys fs.FS,
 	src, dest string,
 	config *config.DraftConfig,
-	customInputs map[string]string) error {
+	customInputs map[string]string,
+	templateWriter templatewriter.TemplateWriter) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {
 		return err
@@ -90,41 +93,52 @@ func CopyDir(
 
 		srcPath := filepath.Join(src, f.Name())
 		destPath := filepath.Join(dest, f.Name())
-		fileName := f.Name()
 
 		if f.IsDir() {
-			if err = EnsureDirectory(destPath); err != nil {
+			if err = templateWriter.EnsureDirectory(destPath); err != nil {
 				return err
 			}
-			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs); err != nil {
+			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs, templateWriter); err != nil {
 				return err
 			}
 		} else {
-			file, err := fs.ReadFile(fileSys, srcPath)
+			fileString, err := replaceTemplateVariables(fileSys, srcPath, customInputs)
 			if err != nil {
 				return err
 			}
 
-			fileString := string(file)
-			log.Debugf("iterating through customInputs: %s", customInputs)
-			for oldString, newString := range customInputs {
-				log.Debugf("replacing %s with %s", oldString, newString)
-				fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
-			}
-
-			if config != nil {
-				log.Debugf("checking name override for srcPath: %s, destPath: %s, destPrefix: %s/",
-					srcPath, destPath, dest)
-				if prefix := config.GetNameOverride(fileName); prefix != "" {
-					log.Debugf("overriding file: %s with prefix: %s", destPath, prefix)
-					fileName = fmt.Sprintf("%s%s", prefix, fileName)
-				}
-			}
-
-			if err = os.WriteFile(filepath.Join(dest, fileName), []byte(fileString), 0644); err != nil {
+			fileName := checkNameOverrides(f.Name(), srcPath, destPath, config)
+			if err = templateWriter.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), fileString); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+func replaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[string]string) ([]byte, error) {
+	file, err := fs.ReadFile(fileSys, srcPath)
+	if err != nil {
+		return nil, err
+	}
+
+	fileString := string(file)
+
+	for oldString, newString := range customInputs {
+		log.Debugf("replacing %s with %s", oldString, newString)
+		fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
+	}
+
+	return []byte(fileString), nil
+}
+
+func checkNameOverrides(fileName, srcPath, destPath string, config *config.DraftConfig) string {
+	if config != nil {
+		log.Debugf("checking name override for srcPath: %s, destPath: %s", srcPath, destPath)
+		if prefix := config.GetNameOverride(fileName); prefix != "" {
+			log.Debugf("overriding file: %s with prefix: %s", destPath, prefix)
+			fileName = fmt.Sprintf("%s%s", prefix, fileName)
+		}
+	}
+	return fileName
 }

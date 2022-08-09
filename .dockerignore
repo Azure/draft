@@ -1,6 +1,5 @@
 vendor/
 .idea/
-/pkg/languages/builders/
 /pkg/deployments/deployTypes/
 /pkg/workflows/workflow/
 .DS_Store

@@ -80,6 +80,7 @@ do
     version=$(echo $test | jq '.version' -r)
     builderversion=$(echo $test | jq '.builderversion' -r)
     port=$(echo $test | jq '.port' -r)
+    serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
     echo "Adding $lang with port $port"
 
@@ -92,6 +93,8 @@ languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
     value: \"$port\"
+  - name: \"SERVICEPORT\"
+    value: \"$serviceport\"
   - name: \"APPNAME\"
     value: \"testapp\"
 languageVariables:
@@ -109,6 +112,8 @@ languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
     value: \"$port\"
+  - name: \"SERVICEPORT\"
+    value: \"$serviceport\"
   - name: \"APPNAME\"
     value: \"testapp\"
 languageVariables:
@@ -126,6 +131,8 @@ languageType: \"$lang\"
 deployVariables:
   - name: \"PORT\"
     value: \"$port\"
+  - name: \"SERVICEPORT\"
+    value: \"$serviceport\"
   - name: \"APPNAME\"
     value: \"testapp\"
 languageVariables:

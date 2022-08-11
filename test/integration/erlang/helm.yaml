@@ -4,6 +4,8 @@ languageType: "erlang"
 deployVariables:
   - name: "PORT"
     value: "8080"
+  - name: "SERVICEPORT"
+    value: "80"
   - name: "APPNAME"
     value: "testapp"
 languageVariables:

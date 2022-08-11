@@ -1,33 +1,38 @@
 [
-  { "language": "gomodule", "version": "1.18", "port": "1323", "repo": "gambtho/go_echo" },
+  { "language": "gomodule", "version": "1.18", "port": "1323", "serviceport": 80, "repo": "gambtho/go_echo" },
   {
     "language": "python",
     "version": "3",
     "port": "5000",
+    "serviceport": 80,
     "repo": "OliverMKing/flask-hello-world"
   },
   {
     "language": "rust",
     "version": "1.58.0",
     "port": "8000",
+    "serviceport": 80,
     "repo": "OliverMKing/tiny-http-hello-world"
   },
   {
     "language": "javascript",
     "version": "14",
     "port": "1313",
+    "serviceport": 80,
     "repo": "davidgamero/express-hello-world"
   },
   {
     "language": "ruby",
     "version": "3.1.2",
     "port": "8000",
+    "serviceport": 80,
     "repo": "OliverMKing/ruby-hello-world"
   },
   {
     "language": "csharp",
     "version": "5.0",
     "port": "80",
+    "serviceport": 80,
     "repo": "imiller31/csharp-simple-web-app"
   },
   {
@@ -35,6 +40,7 @@
     "version": "11-jre-slim",
     "builderversion": "3-jdk-11",
     "port": "8080",
+    "serviceport": 80,
     "repo": "imiller31/simple-java-server"
   },
   {
@@ -42,12 +48,14 @@
     "version": "11-jre-slim",
     "builderversion": "jdk11",
     "port": "8080",
+    "serviceport": 80,
     "repo": "imiller31/simple-gradle-server"
   },
   {
     "language": "swift",
     "version": "5.5",
     "port": "8080",
+    "serviceport": 80,
     "repo": "OliverMKing/swift-hello-world"
   },
   {
@@ -55,12 +63,14 @@
     "version": "3.15",
     "builderversion": "24.2-alpine",
     "port": "8080",
+    "serviceport": 80,
     "repo": "bfoley13/ErlangExample"
   },
   {
     "language": "clojure",
     "version": "8-jdk-alpine",
     "port": "8080",
+    "serviceport": 80,
     "repo": "imiller31/clojure-simple-http"
   }
 ]

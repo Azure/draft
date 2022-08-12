@@ -13,7 +13,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.18.2
       - name: make
         run: make
       - uses: actions/upload-artifact@v2
@@ -81,38 +81,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   gomodule-kustomize:
@@ -167,36 +137,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   gomodule-manifests:
@@ -238,22 +180,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   python-helm:
@@ -310,38 +236,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   python-kustomize:
@@ -396,36 +292,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   python-manifests:
@@ -467,22 +335,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   rust-helm:
@@ -539,38 +391,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   rust-kustomize:
@@ -625,36 +447,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   rust-manifests:
@@ -696,22 +490,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   javascript-helm:
@@ -768,38 +546,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   javascript-kustomize:
@@ -854,36 +602,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   javascript-manifests:
@@ -925,22 +645,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   ruby-helm:
@@ -997,38 +701,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   ruby-kustomize:
@@ -1083,36 +757,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   ruby-manifests:
@@ -1154,22 +800,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   csharp-helm:
@@ -1226,38 +856,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   csharp-kustomize:
@@ -1312,36 +912,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   csharp-manifests:
@@ -1383,22 +955,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   java-helm:
@@ -1455,38 +1011,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   java-kustomize:
@@ -1541,36 +1067,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   java-manifests:
@@ -1612,22 +1110,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   gradle-helm:
@@ -1684,38 +1166,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   gradle-kustomize:
@@ -1770,36 +1222,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   gradle-manifests:
@@ -1841,22 +1265,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   swift-helm:
@@ -1913,38 +1321,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   swift-kustomize:
@@ -1999,36 +1377,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   swift-manifests:
@@ -2070,22 +1420,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   erlang-helm:
@@ -2142,38 +1476,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   erlang-kustomize:
@@ -2228,36 +1532,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   erlang-manifests:
@@ -2299,22 +1575,6 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po
 
   clojure-helm:
@@ -2371,38 +1631,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   clojure-kustomize:
@@ -2457,36 +1687,8 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: ${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6
 
   clojure-manifests:
@@ -2528,20 +1730,4 @@ jobs:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po

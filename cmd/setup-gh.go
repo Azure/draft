@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/draft/pkg/providers"
-	"github.com/Azure/draft/pkg/spinner"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/Azure/draft/pkg/providers"
+	"github.com/Azure/draft/pkg/spinner"
 )
 
 func newSetUpCmd() *cobra.Command {
@@ -24,7 +25,7 @@ application and service principle, and will configure that application to trust 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fillSetUpConfig(sc)
 
-			s := spinner.GetSpinner("--> Setting up Github OIDC...")
+			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
 			err := runProviderSetUp(sc, s)
 			s.Stop()

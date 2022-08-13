@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -91,7 +92,7 @@ func CopyDir(
 			continue
 		}
 
-		srcPath := filepath.Join(src, f.Name())
+		srcPath := path.Join(src, f.Name())
 		destPath := filepath.Join(dest, f.Name())
 
 		if f.IsDir() {

@@ -4,6 +4,8 @@ languageType: "python"
 deployVariables:
   - name: "PORT"
     value: "5000"
+  - name: "SERVICEPORT"
+    value: "80"
   - name: "APPNAME"
     value: "testapp"
 languageVariables:

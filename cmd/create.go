@@ -54,7 +54,7 @@ func newCreateCmd() *cobra.Command {
 		Long:  "This command will add the minimum required files to the local directory for your Kubernetes deployment.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := cc.initConfig(); err != nil {
-				return err
+				fmt.Printf(err.Error())
 			}
 			return cc.run()
 		},

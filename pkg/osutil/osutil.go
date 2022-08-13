@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
+	"path"
 	"runtime"
 	"strings"
 	"syscall"
@@ -91,8 +91,8 @@ func CopyDir(
 			continue
 		}
 
-		srcPath := filepath.Join(src, f.Name())
-		destPath := filepath.Join(dest, f.Name())
+		srcPath := path.Join(src, f.Name())
+		destPath := path.Join(dest, f.Name())
 
 		if f.IsDir() {
 			if err = templateWriter.EnsureDirectory(destPath); err != nil {

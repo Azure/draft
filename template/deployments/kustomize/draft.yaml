@@ -1,5 +1,12 @@
 variables:
   - name: "PORT"
-    description: "the port exposed in the application"
+    description: "the container port exposed in the application"
   - name: "APPNAME"
     description: "the name of the application"
+  - name: "SERVICEPORT"
+    description: "the port used by the service to make the application accessible outside the cluster"
+variableDefaults:
+  - name: "PORT"
+    value: 80
+  - name: "SERVICEPORT"
+    value: 80

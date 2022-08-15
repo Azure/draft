@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.18.2
       - name: make
         run: make
       - uses: actions/upload-artifact@v2
@@ -199,38 +199,8 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n "verifying images:"
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: \${{ steps.bake2.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6" >> ../.github/workflows/integration-linux.yml
 
     # create kustomize workflow
@@ -287,36 +257,8 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/base
-          kubectl-version: 'latest'
-        id: bake2
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n "verifying images:"
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy2
-        with:
-          action: deploy
-          manifests: \${{ steps.bake2.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
-        run: kubectl get po
       - name: Fail if any error
-        if: steps.deploy2.outcome != 'success' || steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success'
         run: exit 6" >> ../.github/workflows/integration-linux.yml
 
   # create manifests workflow
@@ -360,22 +302,6 @@ languageVariables:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - run: ./draft -v update -d ./langtest/ -a testHost -s testKV
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n "verifying images:"
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/manifests/
-        continue-on-error: true
-        id: deploy2
-      - name: Check default namespace
-        if: steps.deploy2.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create helm workflow

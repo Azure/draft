@@ -4,30 +4,32 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//TODO: remove Name Overrides since we don't need them anymore
 type DraftConfig struct {
-	NameOverrides    []FileNameOverride
-	Variables        []BuilderVar
-	nameOverrideMap  map[string]string
-	VariableDefaults []BuilderVarDefault
+	NameOverrides    []FileNameOverride  `yaml:"nameOverrides"`
+	Variables        []BuilderVar        `yaml:"variables"`
+	VariableDefaults []BuilderVarDefault `yaml:"variableDefaults"`
+
+	nameOverrideMap map[string]string
 }
 
 type FileNameOverride struct {
-	Path   string
-	Prefix string
+	Path   string `yaml:"path"`
+	Prefix string `yaml:"prefix"`
 }
 
 type BuilderVar struct {
-	Name        string
-	Description string
-	VarType     string
+	Name        string `yaml:"name"`
+	Description string `yaml:"description"`
+	VarType     string `yaml:"type"`
 }
 
 type BuilderVarDefault struct {
-	Name  string
-	Value string
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
 }
 
-func (d *DraftConfig) initialize() {
+func (d *DraftConfig) initNameOverrideMap() {
 	d.nameOverrideMap = make(map[string]string)
 	log.Debug("initializing nameOverrideMap")
 	for _, builderVar := range d.NameOverrides {
@@ -38,7 +40,7 @@ func (d *DraftConfig) initialize() {
 
 func (d *DraftConfig) GetNameOverride(path string) string {
 	if d.nameOverrideMap == nil {
-		d.initialize()
+		d.initNameOverrideMap()
 	}
 	prefix, ok := d.nameOverrideMap[path]
 	if !ok {

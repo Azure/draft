@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 	"syscall"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/templatewriter"
-	log "github.com/sirupsen/logrus"
 )
 
 // Exists returns whether the given file or directory exists or not.
@@ -89,8 +91,8 @@ func CopyDir(
 			continue
 		}
 
-		srcPath := src + "/" + f.Name()
-		destPath := dest + "/" + f.Name()
+		srcPath := path.Join(src, f.Name())
+		destPath := path.Join(dest, f.Name())
 
 		if f.IsDir() {
 			if err = templateWriter.EnsureDirectory(destPath); err != nil {

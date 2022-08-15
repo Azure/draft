@@ -66,12 +66,6 @@ func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error)
 		if err != nil {
 			return nil, err
 		}
-		// Substitute the default value for variables where the user didn't enter anything
-		for _, variableDefault := range config.VariableDefaults {
-			if inputs[variableDefault.Name] == "" {
-				inputs[variableDefault.Name] = variableDefault.Value
-			}
-		}
 		inputs[prompt.OverrideString] = input
 	}
 
@@ -80,13 +74,14 @@ func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error)
 		if err != nil {
 			return nil, err
 		}
-		// Substitute the default value for variables where the user didn't enter anything
-		for _, variableDefault := range config.VariableDefaults {
-			if inputs[variableDefault.Name] == "" {
-				inputs[variableDefault.Name] = variableDefault.Value
-			}
-		}
 		inputs[prompt.OverrideString] = input
+	}
+
+	// Substitute the default value for variables where the user didn't enter anything
+	for _, variableDefault := range config.VariableDefaults {
+		if inputs[variableDefault.Name] == "" {
+			inputs[variableDefault.Name] = variableDefault.Value
+		}
 	}
 
 	return inputs, nil

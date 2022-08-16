@@ -13,7 +13,6 @@ import (
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
@@ -55,7 +54,7 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map
 		return err
 	}
 
-	var addOnConfig config.AddonConfig
+	var addOnConfig AddonConfig
 	if err = yaml.Unmarshal(configBytes, &addOnConfig); err != nil {
 		return err
 	}
@@ -81,7 +80,7 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map
 	return err
 }
 
-func getAddonValues(dest string, userInputs map[string]string, addOnConfig config.AddonConfig) (map[string]string, error) {
+func getAddonValues(dest string, userInputs map[string]string, addOnConfig AddonConfig) (map[string]string, error) {
 	log.Debugf("getAddonValues: %s", userInputs)
 	var err error
 	if userInputs == nil {

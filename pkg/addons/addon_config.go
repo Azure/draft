@@ -1,4 +1,4 @@
-package config
+package addons
 
 import (
 	"errors"
@@ -13,6 +13,7 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
+	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/consts"
 	"github.com/Azure/draft/pkg/filematches"
 )
@@ -20,7 +21,7 @@ import (
 // AddonConfig is a struct that extends the base DraftConfig to allow for the Referencing previously generated
 // k8s objects. This allows an addon creator to reference pre-entered data from the deployment files.
 type AddonConfig struct {
-	DraftConfig         `yaml:",inline"`
+	config.DraftConfig  `yaml:",inline"`
 	ReferenceComponents map[string][]referenceResource `yaml:"references"`
 
 	deployType string

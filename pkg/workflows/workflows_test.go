@@ -9,8 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	"github.com/Azure/draft/pkg/types"
 )
 
 func createTempManifest(path string) (string, error) {
@@ -55,7 +53,7 @@ func TestWorkflowReplace(t *testing.T) {
 		KustomizePath:      "testKustomize",
 	}
 
-	ghw := &types.GitHubWorkflow{}
+	ghw := &GitHubWorkflow{}
 	ghw.On.Push.Branches = []string{"branch"}
 	replaceWorkflowVars("", config, ghw)
 	assert.NotNil(t, ghw.Env, "check that replace will update a ghw's environment")
@@ -98,7 +96,7 @@ func TestUpdateProductionDeployments(t *testing.T) {
 
 	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage"))
 
-	helmDeploy := &types.HelmProductionYaml{}
+	helmDeploy := &HelmProductionYaml{}
 	assert.Nil(t, helmDeploy.LoadFromFile(helmFileName))
 	assert.Equal(t, "testImage", helmDeploy.ImageKey.Repository)
 

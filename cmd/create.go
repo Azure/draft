@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -10,7 +9,7 @@ import (
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"
@@ -37,7 +36,7 @@ type createCmd struct {
 	skipFileDetection bool
 
 	createConfigPath string
-	createConfig     *config.CreateConfig
+	createConfig     *CreateConfig
 
 	supportedLangs *languages.Languages
 	fileMatches    *filematches.FileMatches
@@ -82,12 +81,8 @@ func (cc *createCmd) initConfig() error {
 			return err
 		}
 
-		viper.SetConfigType("yaml")
-		if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
-			return err
-		}
-		var cfg config.CreateConfig
-		if err = viper.Unmarshal(&cfg); err != nil {
+		var cfg CreateConfig
+		if err = yaml.Unmarshal(configBytes, &cfg); err != nil {
 			return err
 		}
 
@@ -96,7 +91,7 @@ func (cc *createCmd) initConfig() error {
 	}
 
 	//TODO: create a config for the user and save it for subsequent uses
-	cc.createConfig = &config.CreateConfig{}
+	cc.createConfig = &CreateConfig{}
 
 	return nil
 }
@@ -356,7 +351,7 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required []config.BuilderVar, provided []config.UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
+func validateConfigInputsToPrompts(required []config.BuilderVar, provided []UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
 	customInputs := make(map[string]string)
 	for _, variableDefault := range defaults {
 		customInputs[variableDefault.Name] = variableDefault.Value

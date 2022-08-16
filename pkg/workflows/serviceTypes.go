@@ -1,13 +1,14 @@
-package types
+package workflows
 
 import (
 	"errors"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"os"
+
+	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
-	"os"
 )
 
 type ServiceManifest interface {

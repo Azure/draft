@@ -164,8 +164,9 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 
 func (sc *SetUpCmd) assignSpRole() error {
 	log.Debug("Assigning contributor role to service principal...")
+	contributorId := "b24988ac-6180-42a0-ab88-20f7382dd24c"
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
+	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", contributorId, "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
 	out, err := assignSpRoleCmd.CombinedOutput()
 	if err != nil {
 		log.Printf("%s\n", out)

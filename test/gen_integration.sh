@@ -274,7 +274,7 @@ languageVariables:
 
   # create manifests workflow
     echo "
-  $lang-manifests:
+  $lang-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -314,8 +314,12 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  $lang-ingress-manifests:
-    needs: $lang-manifests
+      - uses: actions/upload-artifact@v2
+        with:
+          name: $lang-manifests-create
+          path: ./langtest
+  $lang-manifests-update:
+    needs: $lang-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -328,14 +332,11 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: $repo
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
       - run: ./draft -v update -d ./langtest/ $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: $lang-manifests-create
+          path: ./langtest/
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -357,7 +358,7 @@ languageVariables:
 
     # create helm workflow
     echo "
-  $lang-helm:
+  $lang-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -380,19 +381,22 @@ languageVariables:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  $lang-ingress-helm:
-    needs: $lang-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-helm-create
+          path: ./langtest
+  $lang-helm-update:
+    needs: $lang-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: $repo
-          path: ./langtest
+          name: $lang-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
       - uses: actions/download-artifact@v2

@@ -42,7 +42,7 @@ jobs:
           path: ./test/check_windows_addon_kustomize.ps1
           if-no-files-found: error
 
-  gomodule-helm:
+  gomodule-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -65,19 +65,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  gomodule-ingress-helm:
-    needs: gomodule-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gomodule-helm-create
+          path: ./langtest
+  gomodule-helm-update:
+    needs: gomodule-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: gambtho/go_echo
-          path: ./langtest
+          name: gomodule-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -135,7 +138,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  python-helm:
+  python-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -158,19 +161,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  python-ingress-helm:
-    needs: python-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: python-helm-create
+          path: ./langtest
+  python-helm-update:
+    needs: python-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/flask-hello-world
-          path: ./langtest
+          name: python-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -228,7 +234,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  rust-helm:
+  rust-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -251,19 +257,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  rust-ingress-helm:
-    needs: rust-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rust-helm-create
+          path: ./langtest
+  rust-helm-update:
+    needs: rust-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/tiny-http-hello-world
-          path: ./langtest
+          name: rust-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -321,7 +330,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  javascript-helm:
+  javascript-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -344,19 +353,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  javascript-ingress-helm:
-    needs: javascript-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: javascript-helm-create
+          path: ./langtest
+  javascript-helm-update:
+    needs: javascript-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: davidgamero/express-hello-world
-          path: ./langtest
+          name: javascript-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -414,7 +426,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  ruby-helm:
+  ruby-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -437,19 +449,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  ruby-ingress-helm:
-    needs: ruby-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ruby-helm-create
+          path: ./langtest
+  ruby-helm-update:
+    needs: ruby-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/ruby-hello-world
-          path: ./langtest
+          name: ruby-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -507,7 +522,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  csharp-helm:
+  csharp-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -530,19 +545,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  csharp-ingress-helm:
-    needs: csharp-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: csharp-helm-create
+          path: ./langtest
+  csharp-helm-update:
+    needs: csharp-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/csharp-simple-web-app
-          path: ./langtest
+          name: csharp-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -600,7 +618,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  java-helm:
+  java-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -623,19 +641,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  java-ingress-helm:
-    needs: java-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: java-helm-create
+          path: ./langtest
+  java-helm-update:
+    needs: java-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/simple-java-server
-          path: ./langtest
+          name: java-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -693,7 +714,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  gradle-helm:
+  gradle-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -716,19 +737,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  gradle-ingress-helm:
-    needs: gradle-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gradle-helm-create
+          path: ./langtest
+  gradle-helm-update:
+    needs: gradle-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/simple-gradle-server
-          path: ./langtest
+          name: gradle-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -786,7 +810,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  swift-helm:
+  swift-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -809,19 +833,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  swift-ingress-helm:
-    needs: swift-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: swift-helm-create
+          path: ./langtest
+  swift-helm-update:
+    needs: swift-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/swift-hello-world
-          path: ./langtest
+          name: swift-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -879,7 +906,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  erlang-helm:
+  erlang-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -902,19 +929,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  erlang-ingress-helm:
-    needs: erlang-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: erlang-helm-create
+          path: ./langtest
+  erlang-helm-update:
+    needs: erlang-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: bfoley13/ErlangExample
-          path: ./langtest
+          name: erlang-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -972,7 +1002,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  clojure-helm:
+  clojure-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -995,19 +1025,22 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-  clojure-ingress-helm:
-    needs: clojure-helm 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: clojure-helm-create
+          path: ./langtest
+  clojure-helm-update:
+    needs: clojure-helm-create
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/clojure-simple-http
-          path: ./langtest
+          name: clojure-helm-create
+          path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2

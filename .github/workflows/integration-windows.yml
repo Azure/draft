@@ -115,7 +115,7 @@ jobs:
           name: gomodule-kustomize-create
           path: ./langtest
   gomodule-kustomize-update:
-    needs: gomodule-kustomize 
+    needs: gomodule-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -208,7 +208,7 @@ jobs:
           name: python-kustomize-create
           path: ./langtest
   python-kustomize-update:
-    needs: python-kustomize 
+    needs: python-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -301,7 +301,7 @@ jobs:
           name: rust-kustomize-create
           path: ./langtest
   rust-kustomize-update:
-    needs: rust-kustomize 
+    needs: rust-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -394,7 +394,7 @@ jobs:
           name: javascript-kustomize-create
           path: ./langtest
   javascript-kustomize-update:
-    needs: javascript-kustomize 
+    needs: javascript-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -487,7 +487,7 @@ jobs:
           name: ruby-kustomize-create
           path: ./langtest
   ruby-kustomize-update:
-    needs: ruby-kustomize 
+    needs: ruby-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -580,7 +580,7 @@ jobs:
           name: csharp-kustomize-create
           path: ./langtest
   csharp-kustomize-update:
-    needs: csharp-kustomize 
+    needs: csharp-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -673,7 +673,7 @@ jobs:
           name: java-kustomize-create
           path: ./langtest
   java-kustomize-update:
-    needs: java-kustomize 
+    needs: java-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -766,7 +766,7 @@ jobs:
           name: gradle-kustomize-create
           path: ./langtest
   gradle-kustomize-update:
-    needs: gradle-kustomize 
+    needs: gradle-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -859,7 +859,7 @@ jobs:
           name: swift-kustomize-create
           path: ./langtest
   swift-kustomize-update:
-    needs: swift-kustomize 
+    needs: swift-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -952,7 +952,7 @@ jobs:
           name: erlang-kustomize-create
           path: ./langtest
   erlang-kustomize-update:
-    needs: erlang-kustomize 
+    needs: erlang-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -1045,7 +1045,7 @@ jobs:
           name: clojure-kustomize-create
           path: ./langtest
   clojure-kustomize-update:
-    needs: clojure-kustomize 
+    needs: clojure-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2

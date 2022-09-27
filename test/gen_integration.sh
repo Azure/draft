@@ -432,7 +432,7 @@ languageVariables:
           name: $lang-kustomize-create
           path: ./langtest
   $lang-kustomize-update:
-    needs: $lang-kustomize 
+    needs: $lang-kustomize-create 
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v2

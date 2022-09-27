@@ -334,15 +334,11 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: ./draft -v update -d ./langtest/ $ingress_test_args
-      - uses: actions/download-artifact@v2
-        with:
-          name: $lang-manifests-create
-          path: ./langtest
       - uses: actions/download-artifact@v2
         with:
           name: $lang-manifests-create
           path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

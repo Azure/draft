@@ -305,7 +305,7 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  $lang-ingress-manifests
+  $lang-ingress-manifests:
     needs: $lang-manifests
     runs-on: ubuntu-latest
     services:
@@ -313,7 +313,6 @@ languageVariables:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

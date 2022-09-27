@@ -181,7 +181,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  gomodule-ingress-manifests
+  gomodule-ingress-manifests:
     needs: gomodule-manifests
     runs-on: ubuntu-latest
     services:
@@ -189,7 +189,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -377,7 +376,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  python-ingress-manifests
+  python-ingress-manifests:
     needs: python-manifests
     runs-on: ubuntu-latest
     services:
@@ -385,7 +384,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -573,7 +571,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  rust-ingress-manifests
+  rust-ingress-manifests:
     needs: rust-manifests
     runs-on: ubuntu-latest
     services:
@@ -581,7 +579,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -769,7 +766,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  javascript-ingress-manifests
+  javascript-ingress-manifests:
     needs: javascript-manifests
     runs-on: ubuntu-latest
     services:
@@ -777,7 +774,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -965,7 +961,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  ruby-ingress-manifests
+  ruby-ingress-manifests:
     needs: ruby-manifests
     runs-on: ubuntu-latest
     services:
@@ -973,7 +969,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1161,7 +1156,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  csharp-ingress-manifests
+  csharp-ingress-manifests:
     needs: csharp-manifests
     runs-on: ubuntu-latest
     services:
@@ -1169,7 +1164,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1357,7 +1351,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  java-ingress-manifests
+  java-ingress-manifests:
     needs: java-manifests
     runs-on: ubuntu-latest
     services:
@@ -1365,7 +1359,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1553,7 +1546,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  gradle-ingress-manifests
+  gradle-ingress-manifests:
     needs: gradle-manifests
     runs-on: ubuntu-latest
     services:
@@ -1561,7 +1554,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1749,7 +1741,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  swift-ingress-manifests
+  swift-ingress-manifests:
     needs: swift-manifests
     runs-on: ubuntu-latest
     services:
@@ -1757,7 +1749,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1945,7 +1936,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  erlang-ingress-manifests
+  erlang-ingress-manifests:
     needs: erlang-manifests
     runs-on: ubuntu-latest
     services:
@@ -1953,7 +1944,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2141,7 +2131,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  clojure-ingress-manifests
+  clojure-ingress-manifests:
     needs: clojure-manifests
     runs-on: ubuntu-latest
     services:
@@ -2149,7 +2139,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

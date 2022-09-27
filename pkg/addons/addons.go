@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -49,7 +49,7 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map
 }
 
 func GetAddonPath(addons embed.FS, provider, addon string) (string, error) {
-	providerPath := filepath.Join(parentDirName, strings.ToLower(provider))
+	providerPath := path.Join(parentDirName, strings.ToLower(provider))
 	addonMap, err := embedutils.EmbedFStoMap(addons, providerPath)
 	if err != nil {
 		return "", err
@@ -60,7 +60,7 @@ func GetAddonPath(addons embed.FS, provider, addon string) (string, error) {
 		return "", errors.New("addon not found")
 	}
 
-	selectedAddonPath := filepath.Join(providerPath, selectedAddon.Name())
+	selectedAddonPath := path.Join(providerPath, selectedAddon.Name())
 
 	return selectedAddonPath, nil
 }
@@ -71,7 +71,7 @@ func GetAddonConfig(addons embed.FS, provider, addon string) (config.AddonConfig
 		return config.AddonConfig{}, err
 	}
 
-	configBytes, err := fs.ReadFile(addons, filepath.Join(selectedAddonPath, "draft.yaml"))
+	configBytes, err := fs.ReadFile(addons, path.Join(selectedAddonPath, "draft.yaml"))
 	if err != nil {
 		return config.AddonConfig{}, err
 	}
@@ -84,7 +84,7 @@ func GetAddonConfig(addons embed.FS, provider, addon string) (config.AddonConfig
 }
 
 func PromptAddon(addons embed.FS, provider string) (string, error) {
-	providerPath := filepath.Join(parentDirName, strings.ToLower(provider))
+	providerPath := path.Join(parentDirName, strings.ToLower(provider))
 	addonMap, err := embedutils.EmbedFStoMap(addons, providerPath)
 	if err != nil {
 		return "", err

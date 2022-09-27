@@ -181,6 +181,46 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+gomodule-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   python-helm:
     runs-on: ubuntu-latest
@@ -318,6 +358,46 @@ jobs:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+python-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -491,6 +571,46 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+rust-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   javascript-helm:
     runs-on: ubuntu-latest
@@ -628,6 +748,46 @@ jobs:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+javascript-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -801,6 +961,46 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+ruby-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   csharp-helm:
     runs-on: ubuntu-latest
@@ -938,6 +1138,46 @@ jobs:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+csharp-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1111,6 +1351,46 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+java-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-java-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   gradle-helm:
     runs-on: ubuntu-latest
@@ -1248,6 +1528,46 @@ jobs:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+gradle-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-gradle-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1421,6 +1741,46 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+swift-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   erlang-helm:
     runs-on: ubuntu-latest
@@ -1576,6 +1936,46 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+erlang-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: bfoley13/ErlangExample
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
 
   clojure-helm:
     runs-on: ubuntu-latest
@@ -1713,6 +2113,46 @@ jobs:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+clojure-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/clojure-simple-http
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

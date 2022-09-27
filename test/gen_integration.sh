@@ -304,6 +304,46 @@ languageVariables:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+$lang-ingress-manifests
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create helm workflow
@@ -330,6 +370,27 @@ languageVariables:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  $lang-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
 
     # create kustomize workflow
@@ -374,7 +435,7 @@ languageVariables:
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/

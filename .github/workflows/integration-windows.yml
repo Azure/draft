@@ -55,6 +55,27 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
+  gomodule-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/
 
   gomodule-kustomize:
     runs-on: windows-latest
@@ -96,7 +117,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -124,6 +145,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  python-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   python-kustomize:
@@ -166,7 +208,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -194,6 +236,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  rust-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   rust-kustomize:
@@ -236,7 +299,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -264,6 +327,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  javascript-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   javascript-kustomize:
@@ -306,7 +390,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -334,6 +418,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  ruby-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   ruby-kustomize:
@@ -376,7 +481,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -404,6 +509,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  csharp-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   csharp-kustomize:
@@ -446,7 +572,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -474,6 +600,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  java-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-java-server
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   java-kustomize:
@@ -516,7 +663,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -544,6 +691,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  gradle-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-gradle-server
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   gradle-kustomize:
@@ -586,7 +754,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -614,6 +782,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  swift-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   swift-kustomize:
@@ -656,7 +845,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -684,6 +873,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  erlang-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: bfoley13/ErlangExample
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   erlang-kustomize:
@@ -726,7 +936,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
@@ -754,6 +964,27 @@ jobs:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+  clojure-ingress-helm:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/clojure-simple-http
+          path: ./langtest
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
   clojure-kustomize:
@@ -796,7 +1027,7 @@ jobs:
       - run: ./draft.exe -v update -d ./langtest/ --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
-          name: check_windows_kustomize
+          name: check_windows_addon_kustomize
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/

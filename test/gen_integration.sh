@@ -305,7 +305,8 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  $lang-ingress-manifests:
+  $lang-ingress-manifests
+    needs: $lang-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -372,8 +373,8 @@ languageVariables:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   $lang-ingress-helm:
+    needs: $lang-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -419,8 +420,8 @@ languageVariables:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   $lang-ingress-kustomize:
-    runs-on: windows-latest
     needs: $lang-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

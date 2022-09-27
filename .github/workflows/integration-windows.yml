@@ -56,8 +56,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   gomodule-ingress-helm:
+    needs: gomodule-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -101,8 +101,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   gomodule-ingress-kustomize:
-    runs-on: windows-latest
     needs: gomodule-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -147,8 +147,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   python-ingress-helm:
+    needs: python-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -192,8 +192,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   python-ingress-kustomize:
-    runs-on: windows-latest
     needs: python-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -238,8 +238,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   rust-ingress-helm:
+    needs: rust-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -283,8 +283,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   rust-ingress-kustomize:
-    runs-on: windows-latest
     needs: rust-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -329,8 +329,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   javascript-ingress-helm:
+    needs: javascript-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -374,8 +374,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   javascript-ingress-kustomize:
-    runs-on: windows-latest
     needs: javascript-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -420,8 +420,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   ruby-ingress-helm:
+    needs: ruby-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -465,8 +465,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   ruby-ingress-kustomize:
-    runs-on: windows-latest
     needs: ruby-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -511,8 +511,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   csharp-ingress-helm:
+    needs: csharp-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -556,8 +556,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   csharp-ingress-kustomize:
-    runs-on: windows-latest
     needs: csharp-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -602,8 +602,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   java-ingress-helm:
+    needs: java-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -647,8 +647,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   java-ingress-kustomize:
-    runs-on: windows-latest
     needs: java-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -693,8 +693,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   gradle-ingress-helm:
+    needs: gradle-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -738,8 +738,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   gradle-ingress-kustomize:
-    runs-on: windows-latest
     needs: gradle-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -784,8 +784,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   swift-ingress-helm:
+    needs: swift-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -829,8 +829,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   swift-ingress-kustomize:
-    runs-on: windows-latest
     needs: swift-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -875,8 +875,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   erlang-ingress-helm:
+    needs: erlang-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -920,8 +920,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   erlang-ingress-kustomize:
-    runs-on: windows-latest
     needs: erlang-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -966,8 +966,8 @@ jobs:
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
   clojure-ingress-helm:
+    needs: clojure-helm 
     runs-on: windows-latest
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1011,8 +1011,8 @@ jobs:
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
   clojure-ingress-kustomize:
-    runs-on: windows-latest
     needs: clojure-kustomize 
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

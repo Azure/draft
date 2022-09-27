@@ -181,7 +181,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-gomodule-ingress-manifests
+  gomodule-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -376,7 +376,7 @@ gomodule-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-python-ingress-manifests
+  python-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -571,7 +571,7 @@ python-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-rust-ingress-manifests
+  rust-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -766,7 +766,7 @@ rust-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-javascript-ingress-manifests
+  javascript-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -961,7 +961,7 @@ javascript-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-ruby-ingress-manifests
+  ruby-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1156,7 +1156,7 @@ ruby-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-csharp-ingress-manifests
+  csharp-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1351,7 +1351,7 @@ csharp-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-java-ingress-manifests
+  java-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1546,7 +1546,7 @@ java-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-gradle-ingress-manifests
+  gradle-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1741,7 +1741,7 @@ gradle-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-swift-ingress-manifests
+  swift-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1936,7 +1936,7 @@ swift-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-erlang-ingress-manifests
+  erlang-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2131,7 +2131,7 @@ erlang-ingress-manifests
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-clojure-ingress-manifests
+  clojure-ingress-manifests
     runs-on: ubuntu-latest
     services:
       registry:

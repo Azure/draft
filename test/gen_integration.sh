@@ -65,10 +65,19 @@ jobs:
           if-no-files-found: error
       - uses: actions/upload-artifact@v2
         with:
+          name: check_windows_addon_helm
+          path: ./test/check_windows_addon_helm.ps1
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
           name: check_windows_kustomize
           path: ./test/check_windows_kustomize.ps1
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
+          name: check_windows_addon_kustomize
+          path: ./test/check_windows_addon_kustomize.ps1
           if-no-files-found: error" > ../.github/workflows/integration-windows.yml
-
 
 
 # read config and add integration test for each language

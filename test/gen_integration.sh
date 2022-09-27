@@ -431,6 +431,10 @@ languageVariables:
         with:
           repository: $repo
           path: ./langtest
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
       - uses: actions/download-artifact@v2

@@ -82,6 +82,11 @@ do
     port=$(echo $test | jq '.port' -r)
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
+    # addon integration testing vars
+    ingress_test_args="|
+      --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri |
+      --variable ingress-use-osm-mtls=true |
+      --variable ingress-host=host1"
     echo "Adding $lang with port $port"
 
     mkdir ./integration/$lang
@@ -354,5 +359,27 @@ languageVariables:
           name: check_windows_kustomize
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
-        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
+        working-directory: ./langtest/
+  $lang-ingress-kustomize:
+    runs-on: windows-latest
+    needs: $lange-customize 
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest
+      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_kustomize
+          path: ./langtest/
+      - run: ./check_windows_addon_kustomize.ps1
+        working-directory: ./langtest/
+      " >> ../.github/workflows/integration-windows.yml
 done

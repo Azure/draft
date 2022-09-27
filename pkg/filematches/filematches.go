@@ -107,7 +107,7 @@ func FindDraftDeploymentFiles(dest string) (deploymentType string, err error) {
 	if _, err := os.Stat(dest + "/charts"); !os.IsNotExist(err) {
 		return "helm", nil
 	}
-	if _, err := os.Stat(dest + "/base"); !os.IsNotExist(err) {
+	if _, err := os.Stat(dest + "/overlays"); !os.IsNotExist(err) {
 		return "kustomize", nil
 	}
 	if _, err := os.Stat(dest + "/manifests"); !os.IsNotExist(err) {

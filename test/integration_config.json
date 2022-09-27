@@ -1,10 +1,10 @@
 [
-  { 
-    "language": "gomodule", 
-    "version": "1.18", 
-    "port": "1323", 
-    "serviceport": 80, 
-    "repo": "gambtho/go_echo" 
+  {
+    "language": "gomodule",
+    "version": "1.18",
+    "port": "1323",
+    "serviceport": 80,
+    "repo": "gambtho/go_echo"
   },
   {
     "language": "python",
@@ -15,7 +15,7 @@
   },
   {
     "language": "rust",
-    "version": "1.58.0",
+    "version": "1.59.0",
     "port": "8000",
     "serviceport": 80,
     "repo": "OliverMKing/tiny-http-hello-world"

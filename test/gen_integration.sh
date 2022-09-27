@@ -338,6 +338,10 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: $lang-manifests-create
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: $lang-manifests-create
           path: ./langtest/
       - name: start minikube
         id: minikube

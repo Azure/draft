@@ -205,6 +205,10 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: gomodule-manifests-create
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: gomodule-manifests-create
           path: ./langtest/
       - name: start minikube
         id: minikube
@@ -400,6 +404,10 @@ jobs:
           name: draft-binary
       - run: chmod +x ./draft
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: python-manifests-create
+          path: ./langtest
       - uses: actions/download-artifact@v2
         with:
           name: python-manifests-create
@@ -601,6 +609,10 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: rust-manifests-create
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: rust-manifests-create
           path: ./langtest/
       - name: start minikube
         id: minikube
@@ -796,6 +808,10 @@ jobs:
           name: draft-binary
       - run: chmod +x ./draft
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: javascript-manifests-create
+          path: ./langtest
       - uses: actions/download-artifact@v2
         with:
           name: javascript-manifests-create
@@ -997,6 +1013,10 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: ruby-manifests-create
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: ruby-manifests-create
           path: ./langtest/
       - name: start minikube
         id: minikube
@@ -1192,6 +1212,10 @@ jobs:
           name: draft-binary
       - run: chmod +x ./draft
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: csharp-manifests-create
+          path: ./langtest
       - uses: actions/download-artifact@v2
         with:
           name: csharp-manifests-create
@@ -1393,6 +1417,10 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: java-manifests-create
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: java-manifests-create
           path: ./langtest/
       - name: start minikube
         id: minikube
@@ -1588,6 +1616,10 @@ jobs:
           name: draft-binary
       - run: chmod +x ./draft
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: gradle-manifests-create
+          path: ./langtest
       - uses: actions/download-artifact@v2
         with:
           name: gradle-manifests-create
@@ -1789,6 +1821,10 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: swift-manifests-create
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: swift-manifests-create
           path: ./langtest/
       - name: start minikube
         id: minikube
@@ -1987,6 +2023,10 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: erlang-manifests-create
+          path: ./langtest
+      - uses: actions/download-artifact@v2
+        with:
+          name: erlang-manifests-create
           path: ./langtest/
       - name: start minikube
         id: minikube
@@ -2182,6 +2222,10 @@ jobs:
           name: draft-binary
       - run: chmod +x ./draft
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: clojure-manifests-create
+          path: ./langtest
       - uses: actions/download-artifact@v2
         with:
           name: clojure-manifests-create

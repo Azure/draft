@@ -156,7 +156,7 @@ languageVariables:
 
     # create helm workflow
     echo "
-  $lang-helm:
+  $lang-helm-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -178,6 +178,7 @@ languageVariables:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -216,7 +217,7 @@ languageVariables:
 
     # create kustomize workflow
     echo "
-  $lang-kustomize:
+  $lang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -238,6 +239,7 @@ languageVariables:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

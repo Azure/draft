@@ -87,7 +87,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  gomodule-kustomize:
+  gomodule-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -110,23 +110,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  gomodule-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gomodule-kustomize-create
+          path: ./langtest
+  gomodule-kustomize-update:
     needs: gomodule-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: gambtho/go_echo
+          name: gomodule-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -182,7 +180,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  python-kustomize:
+  python-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -205,23 +203,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  python-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: python-kustomize-create
+          path: ./langtest
+  python-kustomize-update:
     needs: python-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/flask-hello-world
+          name: python-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -277,7 +273,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  rust-kustomize:
+  rust-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -300,23 +296,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  rust-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rust-kustomize-create
+          path: ./langtest
+  rust-kustomize-update:
     needs: rust-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/tiny-http-hello-world
+          name: rust-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -372,7 +366,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  javascript-kustomize:
+  javascript-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -395,23 +389,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  javascript-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: javascript-kustomize-create
+          path: ./langtest
+  javascript-kustomize-update:
     needs: javascript-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: davidgamero/express-hello-world
+          name: javascript-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -467,7 +459,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  ruby-kustomize:
+  ruby-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -490,23 +482,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  ruby-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ruby-kustomize-create
+          path: ./langtest
+  ruby-kustomize-update:
     needs: ruby-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          name: ruby-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -562,7 +552,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  csharp-kustomize:
+  csharp-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -585,23 +575,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  csharp-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: csharp-kustomize-create
+          path: ./langtest
+  csharp-kustomize-update:
     needs: csharp-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/csharp-simple-web-app
+          name: csharp-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -657,7 +645,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  java-kustomize:
+  java-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -680,23 +668,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  java-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: java-kustomize-create
+          path: ./langtest
+  java-kustomize-update:
     needs: java-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/simple-java-server
+          name: java-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -752,7 +738,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  gradle-kustomize:
+  gradle-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -775,23 +761,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  gradle-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gradle-kustomize-create
+          path: ./langtest
+  gradle-kustomize-update:
     needs: gradle-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/simple-gradle-server
+          name: gradle-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -847,7 +831,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  swift-kustomize:
+  swift-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -870,23 +854,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  swift-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: swift-kustomize-create
+          path: ./langtest
+  swift-kustomize-update:
     needs: swift-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: OliverMKing/swift-hello-world
+          name: swift-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -942,7 +924,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  erlang-kustomize:
+  erlang-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -965,23 +947,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  erlang-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: erlang-kustomize-create
+          path: ./langtest
+  erlang-kustomize-update:
     needs: erlang-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: bfoley13/ErlangExample
+          name: erlang-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
@@ -1037,7 +1017,7 @@ jobs:
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/
 
-  clojure-kustomize:
+  clojure-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -1060,23 +1040,21 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  clojure-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: clojure-kustomize-create
+          path: ./langtest
+  clojure-kustomize-update:
     needs: clojure-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: imiller31/clojure-simple-http
+          name: clojure-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test-cert-keyvault-uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2

@@ -404,7 +404,7 @@ languageVariables:
 
     # create kustomize workflow
     echo "
-  $lang-kustomize:
+  $lang-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -427,23 +427,21 @@ languageVariables:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-  $lang-ingress-kustomize:
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-kustomize-create
+          path: ./langtest
+  $lang-kustomize-update:
     needs: $lang-kustomize 
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
         with:
-          repository: $repo
+          name: $lang-kustomize-create
           path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
       - uses: actions/download-artifact@v2

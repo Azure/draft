@@ -305,7 +305,7 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-  $lang-ingress-manifests
+  $lang-ingress-manifests:
     runs-on: ubuntu-latest
     services:
       registry:

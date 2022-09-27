@@ -359,7 +359,7 @@ languageVariables:
         working-directory: ./langtest/
   $lang-ingress-kustomize:
     runs-on: windows-latest
-    needs: $lang-customize 
+    needs: $lang-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

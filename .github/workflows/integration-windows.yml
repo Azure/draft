@@ -81,7 +81,7 @@ jobs:
         working-directory: ./langtest/
   gomodule-ingress-kustomize:
     runs-on: windows-latest
-    needs: gomodule-customize 
+    needs: gomodule-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -151,7 +151,7 @@ jobs:
         working-directory: ./langtest/
   python-ingress-kustomize:
     runs-on: windows-latest
-    needs: python-customize 
+    needs: python-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -221,7 +221,7 @@ jobs:
         working-directory: ./langtest/
   rust-ingress-kustomize:
     runs-on: windows-latest
-    needs: rust-customize 
+    needs: rust-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -291,7 +291,7 @@ jobs:
         working-directory: ./langtest/
   javascript-ingress-kustomize:
     runs-on: windows-latest
-    needs: javascript-customize 
+    needs: javascript-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -361,7 +361,7 @@ jobs:
         working-directory: ./langtest/
   ruby-ingress-kustomize:
     runs-on: windows-latest
-    needs: ruby-customize 
+    needs: ruby-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -431,7 +431,7 @@ jobs:
         working-directory: ./langtest/
   csharp-ingress-kustomize:
     runs-on: windows-latest
-    needs: csharp-customize 
+    needs: csharp-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -501,7 +501,7 @@ jobs:
         working-directory: ./langtest/
   java-ingress-kustomize:
     runs-on: windows-latest
-    needs: java-customize 
+    needs: java-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -571,7 +571,7 @@ jobs:
         working-directory: ./langtest/
   gradle-ingress-kustomize:
     runs-on: windows-latest
-    needs: gradle-customize 
+    needs: gradle-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -641,7 +641,7 @@ jobs:
         working-directory: ./langtest/
   swift-ingress-kustomize:
     runs-on: windows-latest
-    needs: swift-customize 
+    needs: swift-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -711,7 +711,7 @@ jobs:
         working-directory: ./langtest/
   erlang-ingress-kustomize:
     runs-on: windows-latest
-    needs: erlang-customize 
+    needs: erlang-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -781,7 +781,7 @@ jobs:
         working-directory: ./langtest/
   clojure-ingress-kustomize:
     runs-on: windows-latest
-    needs: clojure-customize 
+    needs: clojure-kustomize 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

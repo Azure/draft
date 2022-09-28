@@ -65,10 +65,19 @@ jobs:
           if-no-files-found: error
       - uses: actions/upload-artifact@v2
         with:
+          name: check_windows_addon_helm
+          path: ./test/check_windows_addon_helm.ps1
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
           name: check_windows_kustomize
           path: ./test/check_windows_kustomize.ps1
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
+          name: check_windows_addon_kustomize
+          path: ./test/check_windows_addon_kustomize.ps1
           if-no-files-found: error" > ../.github/workflows/integration-windows.yml
-
 
 
 # read config and add integration test for each language
@@ -82,6 +91,8 @@ do
     port=$(echo $test | jq '.port' -r)
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
+    # addon integration testing vars
+    ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     echo "Adding $lang with port $port"
 
     mkdir ./integration/$lang
@@ -145,7 +156,7 @@ languageVariables:
 
     # create helm workflow
     echo "
-  $lang-helm:
+  $lang-helm-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -167,6 +178,7 @@ languageVariables:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -205,7 +217,7 @@ languageVariables:
 
     # create kustomize workflow
     echo "
-  $lang-kustomize:
+  $lang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -227,6 +239,7 @@ languageVariables:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
       - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -263,7 +276,7 @@ languageVariables:
 
   # create manifests workflow
     echo "
-  $lang-manifests:
+  $lang-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -302,11 +315,52 @@ languageVariables:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - uses: actions/upload-artifact@v2
+        with:
+          name: $lang-manifests-create
+          path: ./langtest
+  $lang-manifests-update:
+    needs: $lang-manifests-create
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - uses: actions/download-artifact@v2
+        with:
+          name: $lang-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n "verifying images:"
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
     # create helm workflow
     echo "
-  $lang-helm:
+  $lang-helm-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -328,11 +382,35 @@ languageVariables:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-helm-create
+          path: ./langtest
+  $lang-helm-update:
+    needs: $lang-helm-create
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: $lang-helm-create
+          path: ./langtest/
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
 
     # create kustomize workflow
     echo "
-  $lang-kustomize:
+  $lang-kustomize-create:
     runs-on: windows-latest
     needs: build
     steps:
@@ -354,5 +432,29 @@ languageVariables:
           name: check_windows_kustomize
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
-        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
+        working-directory: ./langtest/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-kustomize-create
+          path: ./langtest
+  $lang-kustomize-update:
+    needs: $lang-kustomize-create 
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: $lang-kustomize-create
+          path: ./langtest
+      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_kustomize
+          path: ./langtest/
+      - run: ./check_windows_addon_kustomize.ps1
+        working-directory: ./langtest/
+      " >> ../.github/workflows/integration-windows.yml
 done

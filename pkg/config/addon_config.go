@@ -39,7 +39,9 @@ func (ac *AddonConfig) getDeployType(dest string) (string, error) {
 	if ac.deployType != "" {
 		return ac.deployType, nil
 	}
-	return filematches.FindDraftDeploymentFiles(dest)
+	deploymentType, err := filematches.FindDraftDeploymentFiles(dest)
+	log.Debugf("found deployment type: %s", deploymentType)
+	return deploymentType, err
 }
 
 func (ac *AddonConfig) GetAddonDestPath(dest string) (string, error) {

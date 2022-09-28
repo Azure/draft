@@ -40,7 +40,6 @@ type createCmd struct {
 	createConfig     *config.CreateConfig
 
 	supportedLangs *languages.Languages
-	fileMatches    *filematches.FileMatches
 
 	templateWriter templatewriter.TemplateWriter
 }

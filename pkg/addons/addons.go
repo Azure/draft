@@ -109,11 +109,14 @@ func PromptAddonValues(dest string, userInputs map[string]string, addOnConfig co
 
 	inputsToSkip := maps.Keys(userInputs)
 	log.Debugf("inputsToSkip: %s", inputsToSkip)
-	userInputs, err = prompts.RunPromptsFromConfigWithSkips(&addOnConfig.DraftConfig, inputsToSkip)
+	promptInputs, err := prompts.RunPromptsFromConfigWithSkips(&addOnConfig.DraftConfig, inputsToSkip)
 	if err != nil {
 		return nil, err
 	}
 	log.Debug("got user inputs")
+	for k, v := range promptInputs {
+		userInputs[k] = v
+	}
 
 	referenceMap, err := addOnConfig.GetReferenceValueMap(dest)
 	if err != nil {

@@ -75,11 +75,11 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	addonInputs, err := addons.PromptAddonValues(uc.dest, flagVariablesMap, addonConfig)
+	uc.userInputs, err = addons.PromptAddonValues(uc.dest, flagVariablesMap, addonConfig)
 	if err != nil {
 		return err
 	}
-	log.Debugf("addonInputs is: %s", addonInputs)
+	log.Debugf("addonInputs is: %s", uc.userInputs)
 
 	return addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, uc.userInputs, uc.templateWriter)
 }

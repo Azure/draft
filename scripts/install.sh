@@ -12,7 +12,6 @@
 # usage: 
 #    curl -fsSL https://raw.githubusercontent.com/Tatsinnit/draft/feature/draft-installer/scripts/install.sh | sh
 set -e
-set -o pipefail
 set -f
 
 log() {
@@ -94,6 +93,11 @@ check_jq_processor_present(){
   log INFO "Locally installed JQ Processor version is $jqversion"
   if [ -z "${jqversion}" ]; then
     $PACKAGER install jq
+  fi
+  jqversion=$(jq --version)
+  if [ -z "${jqversion}" ]; then
+    echo "Your machine donot have JQ processor installed, plaese make sure JQ Processor is installed."
+    exit 1
   fi
 }
 

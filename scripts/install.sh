@@ -10,7 +10,7 @@
 # ######  #    # #    # #        #       #####  ####### ###    
 #                                                               
 # usage: 
-#    curl -fsSL ./scripts/install.sh | sh
+#    curl -fsSL https://raw.githubusercontent.com/Tatsinnit/draft/feature/draft-installer/scripts/install.sh | sh
 set -e
 set -o pipefail
 set -f

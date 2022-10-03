@@ -1,4 +1,5 @@
 namePrefix: production-
+namespace: {{NAMESPACE}}
 resources:
   - ../../base
 patchesStrategicMerge:

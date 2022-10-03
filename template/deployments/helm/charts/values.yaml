@@ -4,6 +4,8 @@
 
 replicaCount: 1
 
+namespace: {{namespace}}
+
 containerPort: {{PORT}}
 
 imageKey:

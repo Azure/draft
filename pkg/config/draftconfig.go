@@ -25,8 +25,9 @@ type BuilderVar struct {
 }
 
 type BuilderVarDefault struct {
-	Name  string `yaml:"name"`
-	Value string `yaml:"value"`
+	Name         string `yaml:"name"`
+	Value        string `yaml:"value"`
+	ReferenceVar string `yaml:"referenceVar"`
 }
 
 func (d *DraftConfig) initNameOverrideMap() {

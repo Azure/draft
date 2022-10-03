@@ -23,13 +23,12 @@ func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error)
 }
 
 func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []string) (map[string]string, error) {
-	templatePrompts := make([]*TemplatePrompt, 0)
-	templateSelects := make([]*TemplateSelect, 0)
-
 	skipMap := make(map[string]interface{})
 	for _, v := range varsToSkip {
 		skipMap[v] = interface{}(nil)
 	}
+
+	inputs := make(map[string]string)
 
 	for _, customPrompt := range config.Variables {
 		if _, ok := skipMap[customPrompt.Name]; ok {
@@ -44,15 +43,27 @@ func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []stri
 				Items: []bool{true, false},
 			}
 
-			templateSelects = append(templateSelects, &TemplateSelect{
+			// TODO: we probably don't need this struct anymore since we are getting rid of override strings
+			newSelect := &TemplateSelect{
 				Select:         prompt,
 				OverrideString: customPrompt.Name,
-			})
+			}
+
+			_, input, err := newSelect.Select.Run()
+			if err != nil {
+				return nil, err
+			}
+			inputs[newSelect.OverrideString] = input
 		} else {
 			defaultString := ""
 			for _, variableDefault := range config.VariableDefaults {
 				if variableDefault.Name == customPrompt.Name {
-					defaultString = " (default: " + variableDefault.Value + ")"
+					defaultValue := variableDefault.Value
+					if variableDefault.ReferenceVar != "" {
+						defaultValue = inputs[variableDefault.ReferenceVar]
+						log.Debugf("setting default value for %s to %s from referenceVar %s", customPrompt.Name, defaultValue, variableDefault.ReferenceVar)
+					}
+					defaultString = " (default: " + defaultValue + ")"
 				}
 			}
 
@@ -70,29 +81,17 @@ func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []stri
 				},
 			}
 
-			templatePrompts = append(templatePrompts, &TemplatePrompt{
+			// TODO: we probably don't need this struct anymore since we are getting rid of override strings
+			newPrompt := &TemplatePrompt{
 				Prompt:         prompt,
 				OverrideString: customPrompt.Name,
-			})
+			}
+			input, err := newPrompt.Prompt.Run()
+			if err != nil {
+				return nil, err
+			}
+			inputs[newPrompt.OverrideString] = input
 		}
-	}
-
-	inputs := make(map[string]string)
-
-	for _, prompt := range templatePrompts {
-		input, err := prompt.Prompt.Run()
-		if err != nil {
-			return nil, err
-		}
-		inputs[prompt.OverrideString] = input
-	}
-
-	for _, prompt := range templateSelects {
-		_, input, err := prompt.Select.Run()
-		if err != nil {
-			return nil, err
-		}
-		inputs[prompt.OverrideString] = input
 	}
 
 	// Substitute the default value for variables where the user didn't enter anything

@@ -4,6 +4,7 @@ metadata:
   name: {{APPNAME}}
   labels:
     app: {{APPNAME}}
+  namespace: {{NAMESPACE}}
 spec:
   replicas: 1
   selector:

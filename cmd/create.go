@@ -357,12 +357,26 @@ func init() {
 
 func validateConfigInputsToPrompts(required []config.BuilderVar, provided []config.UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
 	customInputs := make(map[string]string)
-	for _, variableDefault := range defaults {
-		customInputs[variableDefault.Name] = variableDefault.Value
-	}
 
+	// set inputs to provided values
 	for _, variable := range provided {
 		customInputs[variable.Name] = variable.Value
+	}
+
+	// fill in missing vars using variable default references
+	for _, variableDefault := range defaults {
+		if customInputs[variableDefault.Name] == "" && variableDefault.ReferenceVar != "" {
+			log.Debugf("variable %s is empty, using default referenceVar value from %s", variableDefault.Name, variableDefault.ReferenceVar)
+			customInputs[variableDefault.Name] = customInputs[variableDefault.ReferenceVar]
+		}
+	}
+
+	// fill in missing vars using variable default values
+	for _, variableDefault := range defaults {
+		if customInputs[variableDefault.Name] == "" && variableDefault.Value != "" {
+			log.Debugf("setting default value for %s to %s", variableDefault.Name, variableDefault.Value)
+			customInputs[variableDefault.Name] = variableDefault.Value
+		}
 	}
 
 	for _, variable := range required {

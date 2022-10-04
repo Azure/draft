@@ -13,4 +13,4 @@ variableDefaults:
   - name: "SERVICEPORT"
     referenceVar: "PORT"
   - name: "NAMESPACE"
-    referenceVar: "APPNAME"
+    value: "default"

@@ -7,6 +7,8 @@ variables:
     description: "the port the service uses to make the application accessible from outside the cluster"
   - name: "NAMESPACE"
     description: " the namespace to place new resources in"
+  - name: "IMAGENAME"
+    description: "the name of the image to use in the deployment"
 variableDefaults:
   - name: "PORT"
     value: 80
@@ -14,3 +16,5 @@ variableDefaults:
     referenceVar: "PORT"
   - name: "NAMESPACE"
     value: default
+  - name: "IMAGENAME"
+    referenceVar: "APPNAME"

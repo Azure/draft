@@ -16,17 +16,12 @@ jobs:
       with:
         validation_depth: 10
         path: './CHANGELOG.md'
-    # Set the DRAFT_VERSION variable
+     # Set the DRAFT_VERSION variable
     - name: Set the draft version value
-      id: step_one
       run: |
-        echo "${{ steps.changelog_reader.outputs.version }} ++ ${{ steps.changelog_reader.outputs.version }}"
-        echo "${{ steps.changelog_reader.outputs.changes }}"
+        echo "Version: ${{ steps.changelog_reader.outputs.version }}"
+        echo "Changes: ${{ steps.changelog_reader.outputs.changes }}"
         echo "DRAFT_VERSION=${{ steps.changelog_reader.outputs.version }}" >> $GITHUB_ENV
-    - name: Check the value is set for draft version
-      id: step_two
-      run: |
-        echo "${{ env.DRAFT_VERSION }}" & echo "test var value set: $DRAFT_VERSION" # This will output to the env var
     # Do the build etc and make it part of that release.
     - name: Make Release Dir
       run: mkdir bin
@@ -48,6 +43,6 @@ jobs:
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
-        tag_name : ${{ teps.changelog_reader.outputs.version }}
-        release_name: ${{ teps.changelog_reader.outputs.version }}
+        tag_name : "v${{ steps.changelog_reader.outputs.version }}"
+        release_name: "v${{ steps.changelog_reader.outputs.version }}"
         body: Publish ${{ steps.changelog_reader.outputs.changes }}

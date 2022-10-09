@@ -1,7 +1,3 @@
 # Change Log
 
-## [0.0.26]
-
-* What is getting released here + @commit
-
-Thanks to whoever was involved, pm.
+## For help: please refer: ./docs/maintenance/README.md (Please delete this line)

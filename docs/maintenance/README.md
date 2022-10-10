@@ -7,7 +7,7 @@ To make a new release and publish please follow the following steps.
 3. Create a new PR, get approval and merge
 4. Run the `Draft Release & Publish` workflow manually from the GH Actions tab
 
-Note: `DRAFT_VERSION` can be written as on step env var. For more reference: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable 
+Note: `DRAFT_VERSION` can be written as a step env var. For more reference: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable 
 
 ### Sample Changelog content for first release.
 

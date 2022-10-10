@@ -6,7 +6,7 @@ jobs:
     name: Draft Release
     runs-on: ubuntu-latest
     steps:
-    # Checkcout code
+    # Checkout code
     - name: Checkout
       uses: actions/checkout@v2
     # Read changelog and read versions etc.

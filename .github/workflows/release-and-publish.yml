@@ -1,0 +1,45 @@
+name: Draft Release & Publish
+on: [workflow_dispatch]
+
+jobs:
+  Release-Artifacts:
+    name: Draft Release
+    runs-on: ubuntu-latest
+    steps:
+    # Checkout code
+    - name: Checkout
+      uses: actions/checkout@v2
+    # Read changelog and read versions etc.
+    - name: Check version is mentioned in Changelog.md
+      id: changelog_reader
+      uses: mindsers/changelog-reader-action@v2
+      with:
+        validation_depth: 10
+        path: './CHANGELOG.md'
+    # Set the DRAFT_VERSION variable
+    - name: Set the draft version value and print other values.
+      run: |
+        echo "Version: ${{ steps.changelog_reader.outputs.version }}"
+        echo "Changes: ${{ steps.changelog_reader.outputs.changes }}"
+        echo "DRAFT_VERSION=${{ steps.changelog_reader.outputs.version }}" >> $GITHUB_ENV
+    # Make Release Dir
+    - name: Make Release Dir
+      run: mkdir bin
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18.2
+    # Build Binaries
+    - name: Build Draft Release Binaries
+      run: make build-all
+    # Create Release
+    - name: Create Draft Release
+      uses: softprops/action-gh-release@v1
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      with:
+        tag_name : "v${{ steps.changelog_reader.outputs.version }}"
+        name: "v${{ steps.changelog_reader.outputs.version }}"
+        body: ${{ steps.changelog_reader.outputs.changes }}
+        files: |
+          ./bin/*

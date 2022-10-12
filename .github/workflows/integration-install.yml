@@ -17,3 +17,5 @@ jobs:
               echo "draft could not be found"
               exit 1
           fi
+      - name: Validate Draft Command Runs
+        run: draft -h

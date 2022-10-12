@@ -1,4 +1,4 @@
-name: draft Unit Tests
+name: draft install script integration test
 on:
   pull_request:
 

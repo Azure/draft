@@ -132,7 +132,7 @@ copy_draft_files() {
   else
       echo "installation target directory is write protected, run as root to override"
       sudo mv /tmp/draftcli /usr/local/bin/draftcli
-      echo "installing to "/usr/local/bin"
+      echo "installing to /usr/local/bin"
   fi
 }
 

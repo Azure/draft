@@ -128,7 +128,7 @@ copy_draft_files() {
         mkdir -p "$HOME/.local/bin"
       fi
       mv /tmp/draftcli "$HOME/.local/bin/draftcli"
-      echo "installing to "$HOME/.local/bin"
+      echo "installing to $HOME/.local/bin"
   else
       echo "installation target directory is write protected, run as root to override"
       sudo mv /tmp/draftcli /usr/local/bin/draftcli

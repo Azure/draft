@@ -128,11 +128,11 @@ copy_draft_files() {
         mkdir -p "$HOME/.local/bin"
       fi
       mv /tmp/draftcli "$HOME/.local/bin/draft"
-      echo "installing to $HOME/.local/bin"
+      echo "Installing to $HOME/.local/bin"
   else
-      echo "installation target directory is write protected, run as root to override"
+      echo "Installation target directory is write protected, run as root to override"
       sudo mv /tmp/draftcli /usr/local/bin/draft
-      echo "installing to /usr/local/bin"
+      echo "Installing to /usr/local/bin"
   fi
 }
 
@@ -146,13 +146,13 @@ install() {
   elif [[ "$OSTYPE" == "win32" ]]; then
       OS="win"
   else
-      echo "Draft cli isn't supported for your platform - $OSTYPE"
+      echo "Draft CLI isn't supported for your platform - $OSTYPE"
       file_issue_prompt
       exit 1
   fi
 
   if [[ "$ARCH" != "x86_64" ]]; then
-       echo "Draft cli is only available for linux x86_64 architecture"
+       echo "Draft CLI is only available for linux x86_64 architecture"
        file_issue_prompt
        exit 1
   fi
@@ -164,7 +164,8 @@ install() {
   check_jq_processor_present
   download_draft_cli_stable_version
   copy_draft_files
-  echo "Draft CLI kubernetes installed."
+  echo "Draft CLI installed."
+  echo "Run `draft -h for usage`"
 }
 
 install

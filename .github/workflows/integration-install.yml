@@ -9,8 +9,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Run Install Script 
         run: ./scripts/install.sh
-      - name: add .local/bin to path
-        run: echo "${HOME}/.local/bin" >> $GITHUB_PATH
       - name: Validate Command is Installed
         run: |
           if ! command -v draft &> /dev/null

@@ -165,7 +165,7 @@ install() {
   download_draft_cli_stable_version
   copy_draft_files
   echo "Draft CLI installed."
-  echo "Run `draft -h for usage`"
+  echo "Run 'draft -h' for usage"
 }
 
 install

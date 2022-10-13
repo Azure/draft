@@ -1,5 +1,10 @@
 name: Draft Release & Publish
-on: [workflow_dispatch]
+on: 
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'CHANGELOG.md'
 
 jobs:
   Release-Artifacts:
@@ -32,8 +37,26 @@ jobs:
     # Build Binaries
     - name: Build Draft Release Binaries
       run: make build-all
-    # Create Release
+    # Check if the newest tag already exists
+    - uses: mukunku/tag-exists-action@v1.0.0
+      id: check-tag-exists
+      with: 
+        tag:  "v${{ steps.changelog_reader.outputs.version }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # If the tag already exists, we don't upload release artifacts
+    - name: Update Draft Release Body
+      if: ${{ steps.check-tag-exists.outputs.exists == 'true' }}
+      uses: softprops/action-gh-release@v1
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      with:
+        tag_name : "v${{ steps.changelog_reader.outputs.version }}"
+        name: "v${{ steps.changelog_reader.outputs.version }}"
+        body: ${{ steps.changelog_reader.outputs.changes }}
+    # Create Release with artifacts
     - name: Create Draft Release
+      if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
       uses: softprops/action-gh-release@v1
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/Azure/draft/pkg/logger"
 	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+
+	"github.com/Azure/draft/pkg/logger"
 )
 
 var cfgFile string
@@ -57,32 +54,8 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.draft.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose logging")
 	rootCmd.PersistentFlags().StringVarP(&provider, "provider", "p", "azure", "cloud provider")
 	rootCmd.PersistentFlags().BoolVarP(&silent, "silent", "", false, "enable silent logging")
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".draft" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".draft")
-	}
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"sigs.k8s.io/kustomize/kyaml/yaml"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"

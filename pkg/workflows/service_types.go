@@ -5,10 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 
+	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
-	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
 type ServiceManifest interface {

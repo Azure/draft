@@ -104,6 +104,14 @@ go version
    $ brew install draft
    ```
 
+### Installation using script
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Azure/draft/main/scripts/install.sh | bash
+```
+
+* Windows isn't currently supported (you can use WSL)
+
 ## Contributing
 
 Draft is fully compatible with [Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!

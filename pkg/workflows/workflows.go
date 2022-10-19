@@ -9,10 +9,10 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/osutil"

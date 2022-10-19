@@ -6,7 +6,7 @@ import (
 	"io/fs"
 
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"

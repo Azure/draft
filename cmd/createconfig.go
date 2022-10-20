@@ -1,13 +1,13 @@
 package cmd
 
 type CreateConfig struct {
-	DeployType        string
-	LanguageType      string
-	DeployVariables   []UserInputs
-	LanguageVariables []UserInputs
+	DeployType        string       `yaml:"deployType"`
+	LanguageType      string       `yaml:"languageType"`
+	DeployVariables   []UserInputs `yaml:"deployVariables"`
+	LanguageVariables []UserInputs `yaml:"languageVariables"`
 }
 
 type UserInputs struct {
-	Name  string
-	Value string
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
 }

@@ -80,9 +80,11 @@ func (cc *createCmd) initConfig() error {
 			return err
 		}
 
-		if err = yaml.Unmarshal(configBytes, &cc.createConfig); err != nil {
+		var cfg CreateConfig
+		if err = yaml.Unmarshal(configBytes, &cfg); err != nil {
 			return err
 		}
+		cc.createConfig = &cfg
 		return nil
 	}
 

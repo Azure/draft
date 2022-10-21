@@ -13,7 +13,6 @@ import (
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
@@ -65,19 +64,19 @@ func GetAddonPath(addons embed.FS, provider, addon string) (string, error) {
 	return selectedAddonPath, nil
 }
 
-func GetAddonConfig(addons embed.FS, provider, addon string) (config.AddonConfig, error) {
+func GetAddonConfig(addons embed.FS, provider, addon string) (AddonConfig, error) {
 	selectedAddonPath, err := GetAddonPath(addons, provider, addon)
 	if err != nil {
-		return config.AddonConfig{}, err
+		return AddonConfig{}, err
 	}
 
 	configBytes, err := fs.ReadFile(addons, path.Join(selectedAddonPath, "draft.yaml"))
 	if err != nil {
-		return config.AddonConfig{}, err
+		return AddonConfig{}, err
 	}
-	var addOnConfig config.AddonConfig
+	var addOnConfig AddonConfig
 	if err = yaml.Unmarshal(configBytes, &addOnConfig); err != nil {
-		return config.AddonConfig{}, err
+		return AddonConfig{}, err
 	}
 
 	return addOnConfig, nil
@@ -103,7 +102,7 @@ func PromptAddon(addons embed.FS, provider string) (string, error) {
 	return addon, nil
 }
 
-func PromptAddonValues(dest string, userInputs map[string]string, addOnConfig config.AddonConfig) (map[string]string, error) {
+func PromptAddonValues(dest string, userInputs map[string]string, addOnConfig AddonConfig) (map[string]string, error) {
 	log.Debugf("getAddonValues: %s", userInputs)
 	var err error
 

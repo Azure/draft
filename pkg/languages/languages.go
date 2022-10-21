@@ -1,13 +1,12 @@
 package languages
 
 import (
-	"bytes"
 	"embed"
 	"fmt"
 	"io/fs"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -63,14 +62,8 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, err
 	}
 
-	viper.SetConfigType("yaml")
-	if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
-		return nil, err
-	}
-
 	var draftConfig config.DraftConfig
-
-	if err = viper.Unmarshal(&draftConfig); err != nil {
+	if err = yaml.Unmarshal(configBytes, &draftConfig); err != nil {
 		return nil, err
 	}
 

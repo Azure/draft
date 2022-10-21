@@ -1,4 +1,4 @@
-package config
+package addons
 
 import (
 	"io/fs"

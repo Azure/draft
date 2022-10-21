@@ -1,4 +1,4 @@
-package types
+package workflows
 
 //GitHubWorkflow is a rough struct to allow for yaml editing including deletion of Job steps
 type GitHubWorkflow struct {
@@ -19,7 +19,7 @@ type push struct {
 
 type job struct {
 	Permissions map[string]string
-	RunsOn      string `yaml:"runs-on"`
-	Needs	    []string `yaml:"needs,omitempty"`
+	RunsOn      string   `yaml:"runs-on"`
+	Needs       []string `yaml:"needs,omitempty"`
 	Steps       []map[string]interface{}
 }

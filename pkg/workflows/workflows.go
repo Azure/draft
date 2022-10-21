@@ -4,17 +4,18 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"github.com/Azure/draft/pkg/filematches"
-	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/pkg/types"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
+	"os"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
-	"os"
+
+	"github.com/Azure/draft/pkg/filematches"
+	"github.com/Azure/draft/pkg/osutil"
 )
 
 //go:generate cp -r ../../starterWorkflows ./workflows
@@ -75,7 +76,7 @@ func updateProductionDeployments(deployType, dest string, config *WorkflowConfig
 	return nil
 }
 
-func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *types.GitHubWorkflow) {
+func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubWorkflow) {
 	envMap := make(map[string]string)
 	envMap["AZURE_CONTAINER_REGISTRY"] = config.AcrName
 	envMap["CONTAINER_NAME"] = config.ContainerName
@@ -129,7 +130,11 @@ func setDeploymentContainerImage(filePath, productionImage string) error {
 	if err != nil {
 		return nil
 	}
-	defer out.Close()
+	defer func() {
+		if err := out.Close(); err != nil {
+			log.Errorf("error closing file: %v", err)
+		}
+	}()
 
 	return printer.PrintObj(deploy, out)
 }
@@ -140,7 +145,7 @@ func setHelmContainerImage(filePath, productionImage string) error {
 		return err
 	}
 
-	var deploy types.HelmProductionYaml
+	var deploy HelmProductionYaml
 	err = yaml.Unmarshal(file, &deploy)
 	if err != nil {
 		return err
@@ -156,7 +161,7 @@ func setHelmContainerImage(filePath, productionImage string) error {
 	return ioutil.WriteFile(filePath, out, 0644)
 }
 
-func getWorkflowFile(workflow *workflowType) *types.GitHubWorkflow {
+func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
 	embedFilePath := parentDirName + "/" + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
 
 	file, err := fs.ReadFile(workflows, embedFilePath)
@@ -164,7 +169,7 @@ func getWorkflowFile(workflow *workflowType) *types.GitHubWorkflow {
 		log.Fatal(err)
 	}
 
-	var ghw types.GitHubWorkflow
+	var ghw GitHubWorkflow
 
 	err = yaml.Unmarshal(file, &ghw)
 	if err != nil {
@@ -173,7 +178,7 @@ func getWorkflowFile(workflow *workflowType) *types.GitHubWorkflow {
 	return &ghw
 }
 
-func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw types.GitHubWorkflow) error {
+func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw GitHubWorkflow) error {
 	workflowBytes, err := yaml.Marshal(ghw)
 	if err != nil {
 		return err

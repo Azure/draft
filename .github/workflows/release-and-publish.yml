@@ -35,7 +35,7 @@ jobs:
       with:
         go-version: 1.18.2
     # Check if the newest tag already exists
-    - uses: mukunku/tag-exists-action@v1.0.0
+    - uses: mukunku/tag-exists-action@v1.1.0
       id: check-tag-exists
       with: 
         tag:  "v${{ steps.changelog_reader.outputs.version }}"

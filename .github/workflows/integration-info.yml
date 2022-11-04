@@ -14,7 +14,7 @@ jobs:
           go-version: 1.18.2
       - name: make
         run: make
-      - run:
+      - run: |
         ./draft info > info.json
       - name: Validate JSON
         uses: docker://orrosenblatt/validate-json-action:latest

@@ -15,7 +15,7 @@ jobs:
       - name: make
         run: make
       - run: |
-          ./draft info > info.json
+          ./draft info > ./info.json
       - name: Validate JSON
         uses: docker://orrosenblatt/validate-json-action:latest
         env:

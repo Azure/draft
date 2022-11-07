@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -17,7 +17,7 @@ jobs:
       - run: |
           ./draft info > ./info.json
       - name: Validate JSON
-        uses: docker://orrosenblatt/validate-json-action:latest
+        uses: nhalstead/validate-json-action@0.1.3
         env:
           INPUT_SCHEMA: ./test/integration/info_json_schema.json
           INPUT_JSONS: ./info.json

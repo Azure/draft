@@ -16,6 +16,7 @@ jobs:
         run: make
       - run: |
           ./draft info > ./info.json
+          ls
       - name: Validate JSON
         uses: nhalstead/validate-json-action@0.1.3
         with:

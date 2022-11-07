@@ -18,6 +18,6 @@ jobs:
           ./draft info > ./info.json
       - name: Validate JSON
         uses: nhalstead/validate-json-action@0.1.3
-        env:
-          INPUT_SCHEMA: ./test/integration/info_json_schema.json
-          INPUT_JSONS: ./info.json
+        with:
+          schema: ./test/integration/info_json_schema.json
+          jsons: ./info.json

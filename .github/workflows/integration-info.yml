@@ -8,22 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: "$GITHUB_WORKSPACE/src"
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18.2
       - name: make
         run: |
-          cd $GITHUB_WORKSPACE/src
+          ls
+          pwd
           make
       - run: |
-          $GITHUB_WORKSPACE/src/draft info > $GITHUB_WORKSPACE/info.json
+          ./draft info > ./info.json
           ls
           pwd
       - name: Validate JSON
         uses: nhalstead/validate-json-action@0.1.3
         with:
-          schema: ./src/test/integration/info_json_schema.json
-          jsons: ./info.json
+          schema: /home/runner/work/draft/draft/test/integration/info_json_schema.json
+          jsons: /home/runner/work/draft/draft/info.json

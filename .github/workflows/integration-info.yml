@@ -19,11 +19,11 @@ jobs:
           cd src
           make
       - run: |
-          ./draft info > ./info.json
+          ./src/draft info > ./info.json
           ls
           pwd
       - name: Validate JSON
         uses: nhalstead/validate-json-action@0.1.3
         with:
           schema: ./src/test/integration/info_json_schema.json
-          jsons: ./src/info.json
+          jsons: ./info.json

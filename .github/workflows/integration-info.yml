@@ -16,7 +16,7 @@ jobs:
         run: make
       - run: |
           ./draft info > ./info.json
-          ls
+          ls ./test/integration
           pwd
       - name: Validate JSON
         run: |

@@ -61,7 +61,7 @@ func (ic *infoCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("could not marshal draft info into json: %w", err)
 	}
-	log.Println(string(infoText))
+	fmt.Println(string(infoText))
 	return nil
 }
 

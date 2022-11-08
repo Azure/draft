@@ -9,17 +9,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          path: "./src"
+          path: "$GITHUB_WORKSPACE/src"
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18.2
       - name: make
         run: |
-          cd src
+          cd $GITHUB_WORKSPACE/src
           make
       - run: |
-          ./src/draft info > ./info.json
+          $GITHUB_WORKSPACE/src/draft info > $GITHUB_WORKSPACE/info.json
           ls
           pwd
       - name: Validate JSON

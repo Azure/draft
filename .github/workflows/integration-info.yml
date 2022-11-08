@@ -16,10 +16,10 @@ jobs:
         run: make
       - run: |
           ./draft info > ./info.json
-          ls
-          pwd
-          ls ./test
+          echo "Draft Info JSON schema:"
           cat test/info_schema.json
+            echo "Draft Info JSON:"
+          cat info.json
       - name: Validate JSON
         run: |
           npm install -g ajv-cli

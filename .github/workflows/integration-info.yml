@@ -17,6 +17,7 @@ jobs:
       - run: |
           ./draft info > ./info.json
           pwd
+          ls
           ls ./pkg/test/integration
       - name: Validate JSON
         run: |

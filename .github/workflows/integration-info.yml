@@ -16,9 +16,7 @@ jobs:
         run: make
       - run: |
           ./draft info > ./info.json
-          ls ./test/integration
-          pwd
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
-          ajv validate -s ./test/integration/info_schema.json -d ./info.json
+          ajv validate -s .pkg/test/integration/info_schema.json -d ./info.json

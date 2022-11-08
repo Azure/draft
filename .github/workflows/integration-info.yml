@@ -18,8 +18,8 @@ jobs:
           ./draft info > ./info.json
           pwd
           ls
-          ls ./pkg/test/integration
+          ls ./test/integration
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
-          ajv validate -s ./pkg/test/integration/info_schema.json -d ./info.json
+          ajv validate -s ./test/integration/info_schema.json -d ./info.json

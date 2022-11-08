@@ -8,23 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          - path: ${{ github.workspace }}
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18.2
       - name: make
-        run: |
-          ls
-          pwd
-          make
       - run: |
           ./draft info > ./info.json
           ls
           pwd
       - name: Validate JSON
-        uses: nhalstead/validate-json-action@0.1.3
-        with:
-          schema: /home/runner/work/draft/draft/test/integration/info_json_schema.json
-          jsons: /home/runner/work/draft/draft/info.json
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s ./test/integration/info.schema.json -d ./info.json

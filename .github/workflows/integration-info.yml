@@ -19,8 +19,8 @@ jobs:
           ls
           pwd
           ls ./test/integration
-          cat test/integration/info_schema.json
+          cat test/integration/info.json
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
-          ajv validate -s test/integration/info_schema.json -d info.json
+          ajv validate -s test/integration/info.json -d info.json

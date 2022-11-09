@@ -48,6 +48,33 @@ If you don’t plan on using the GitHub Action, you can directly apply your depl
 
 If you plan on deploying your application through your GitHub Action, commit all the files to your repository and watch your application get deployed!
 
+### `draft info`
+The `draft info` command prints information about supported languages and deployment types.
+Example output:
+```
+{
+  "supported_languages": [
+    "php",
+    "python",
+    "rust",
+    "swift",
+    "csharp",
+    "go",
+    "gradle",
+    "javascript",
+    "ruby",
+    "clojure",
+    "erlang",
+    "gomodule",
+    "java"
+  ],
+  "supported_deployment_types": [
+    "helm",
+    "kustomize",
+    "manifests"
+  ]
+}
+```
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
@@ -61,6 +88,7 @@ Draft makes it easier for developers to get started building apps that run on Ku
 - `draft setup-gh` automates the GitHub OIDC setup process for your project.
 - `draft generate-workflow` generates a GitHub Actions workflow for automatic build and deploy to a Kubernetes cluster.
 - `draft update` automatically make your application to be internet accessible.
+- `draft info` print supported language and field information in json format.
 
 Use `draft [command] --help` for more information about a command.
 

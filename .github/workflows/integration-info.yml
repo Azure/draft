@@ -1,0 +1,26 @@
+name: Draft Info Integration Test
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18.2
+      - name: make
+        run: make
+      - run: |
+          ./draft info > ./info.json
+          echo "Draft Info JSON schema:"
+          cat test/info_schema.json
+            echo "Draft Info JSON:"
+          cat info.json
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/info_schema.json -d info.json

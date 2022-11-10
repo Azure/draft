@@ -6,6 +6,7 @@ import (
 	"io/fs"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
@@ -23,6 +24,12 @@ type Languages struct {
 	configs             map[string]*config.DraftConfig
 	dest                string
 	dockerfileTemplates fs.FS
+}
+
+// Names returns a slice of the names of the supported languages
+func (l *Languages) Names() []string {
+	names := maps.Keys(l.langs)
+	return names
 }
 
 func (l *Languages) ContainsLanguage(lang string) bool {

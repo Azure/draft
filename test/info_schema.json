@@ -1,0 +1,38 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Root",
+  "type": "object",
+  "required": [
+    "supported_languages",
+    "supported_deployment_types"
+  ],
+  "properties": {
+    "supported_languages": {
+      "$id": "#root/supported_languages",
+      "title": "Supported_languages",
+      "type": "array",
+      "default": [],
+      "items":{
+        "$id": "#root/supported_languages/items",
+        "title": "Items",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      }
+    },
+    "supported_deployment_types": {
+      "$id": "#root/supported_deployment_types",
+      "title": "Supported_deployment_types",
+      "type": "array",
+      "default": [],
+      "items":{
+        "$id": "#root/supported_deployment_types/items",
+        "title": "Items",
+        "type": "string",
+        "default": "",
+        "pattern": "^.*$"
+      }
+    }
+  }
+}

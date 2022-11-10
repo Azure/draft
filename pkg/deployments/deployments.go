@@ -6,6 +6,7 @@ import (
 	"io/fs"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
@@ -24,6 +25,12 @@ type Deployments struct {
 	configs             map[string]*config.DraftConfig
 	dest                string
 	deploymentTemplates fs.FS
+}
+
+// DeployTypes returns a slice of the supported deployment types
+func (d *Deployments) DeployTypes() []string {
+	names := maps.Keys(d.deploys)
+	return names
 }
 
 func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {

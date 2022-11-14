@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"path"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
@@ -43,7 +44,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 		return fmt.Errorf("language %s is not supported", lang)
 	}
 
-	srcDir := parentDirName + "/" + val.Name()
+	srcDir := path.Join(parentDirName, val.Name())
 
 	draftConfig, ok := l.configs[lang]
 	if !ok {
@@ -63,7 +64,7 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("language %s unsupported", lang)
 	}
 
-	configPath := parentDirName + "/" + val.Name() + "/draft.yaml"
+	configPath := path.Join(parentDirName, val.Name(), "/draft.yaml")
 	configBytes, err := fs.ReadFile(l.dockerfileTemplates, configPath)
 	if err != nil {
 		return nil, err

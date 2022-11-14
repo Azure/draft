@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"path"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
@@ -39,7 +40,7 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
 
-	srcDir := parentDirName + "/" + val.Name()
+	srcDir := path.Join(parentDirName, val.Name())
 
 	deployConfig, ok := d.configs[deployType]
 	if !ok {
@@ -59,7 +60,7 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("language %s unsupported", lang)
 	}
 
-	configPath := fmt.Sprintf("%s/%s/%s", parentDirName, val.Name(), configFileName)
+	configPath := path.Join(parentDirName, val.Name(), configFileName)
 	configBytes, err := fs.ReadFile(d.deploymentTemplates, configPath)
 	if err != nil {
 		return nil, err

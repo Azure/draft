@@ -16,7 +16,7 @@
   [![Go Report Card](https://goreportcard.com/badge/github.com/Azure/draft)](https://goreportcard.com/report/github.com/Azure/draft)
   [![CodeQL](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml)
   [![Draft Linux Integrations](https://github.com/Azure/draft/actions/workflows/integration-linux.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/integration-linux.yml)
-  [![Draft Releases](https://github.com/Azure/draft/actions/workflows/releases.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/releases.yml)
+  [![Draft Release & Publish](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml/badge.svg)](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml)
   </p>
 </div>
 

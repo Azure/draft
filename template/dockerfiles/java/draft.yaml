@@ -1,4 +1,5 @@
 language: java
+displayName: Java
 nameOverrides:
   - path: "dockerignore"
     prefix: "."
@@ -8,8 +9,10 @@ variables:
     type: int
   - name: "BUILDERVERSION"
     description: "the version of maven used during the builder stage to generate the executable"
+    exampleValues: ["3-jdk-11"]
   - name: "VERSION"
     description: "the version of openjdk used by the application"
+    exampleValues: ["11-jre-slim"]
 variableDefaults:
   - name: "BUILDERVERSION"
     value: "3-jdk-11"

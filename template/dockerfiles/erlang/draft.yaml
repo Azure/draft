@@ -1,4 +1,5 @@
 language: erlang
+displayName: Erlang
 nameOverrides:
   - path: "dockerignore"
     prefix: "."
@@ -8,8 +9,10 @@ variables:
     type: int
   - name: "BUILDERVERSION"
     description: "the version of erlang used during the builder stage to generate the executable"
+    exampleValues: ["24.2-alpine"]
   - name: "VERSION"
     description: "the version of alpine used by the application"
+    exampleValues: ["3.15"]
 variableDefaults:
   - name: "BUILDERVERSION"
     value: "24.2-alpine"

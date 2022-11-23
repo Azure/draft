@@ -1,4 +1,5 @@
 language: csharp
+displayName: C#
 variables:
   - name: "PORT"
     description: "the port exposed in the application"
@@ -6,6 +7,7 @@ variables:
   - name: "VERSION"
     description: "the dotnet SDK version"
     type: float
+    exampleValues: ["3.1","4.0","5.0","6.0"]
 variableDefaults:
   - name: "VERSION"
     value: "5.0"

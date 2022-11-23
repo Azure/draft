@@ -1,4 +1,5 @@
 language: javascript
+displayName: JavaScript
 nameOverrides:
   - path: "dockerignore"
     prefix: "."
@@ -8,6 +9,7 @@ variables:
     type: int
   - name: "VERSION"
     description: "the version of node used in the application"
+    exampleValues: ["14.15.4", "12.16.3", "10.16.3"]
 variableDefaults:
   - name: "VERSION"
     value: "14"

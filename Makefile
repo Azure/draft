@@ -16,6 +16,11 @@ go-generate:
 run-unit-tests:
 	docker build . -t gotest && docker run -t --rm --name draft-test gotest test ./... -buildvcs=false
 
+#TODO: add more e2e tests to the local testing
+.PHONY: run-e2e-tests-local
+run-e2e-tests-local: go-generate vendor build
+	test/check_info_schema.sh;
+
 .PHONY: generate-integrations
 generate-integrations:
 	cd ./test; \

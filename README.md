@@ -53,22 +53,19 @@ The `draft info` command prints information about supported languages and deploy
 Example output:
 ```
 {
-  "supported_languages": [
-    "php",
-    "python",
-    "rust",
-    "swift",
-    "csharp",
-    "go",
-    "gradle",
-    "javascript",
-    "ruby",
-    "clojure",
-    "erlang",
-    "gomodule",
-    "java"
+  "supportedLanguages": [
+    {
+      "name": "clojure",
+      "displayName": "Clojure",
+      "variableExampleValues": {
+        "VERSION": [
+          "8-jdk-alpine",
+          "11-jdk-alpine"
+        ]
+      }
+    }
   ],
-  "supported_deployment_types": [
+  "supportedDeploymentTypes": [
     "helm",
     "kustomize",
     "manifests"

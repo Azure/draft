@@ -1,4 +1,5 @@
 language: swift
+displayName: Swift
 nameOverrides:
   - path: "dockerignore"
     prefix: "."
@@ -8,6 +9,7 @@ variables:
     type: int
   - name: "VERSION"
     description: "the version of swift used by the application"
+    exampleValues: ["5.2","5.5"]
 variableDefaults:
   - name: "VERSION"
     value: "5.5"

@@ -1,36 +1,107 @@
 {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1669231392.json",
   "title": "Root",
   "type": "object",
   "required": [
-    "supported_languages",
-    "supported_deployment_types"
+    "supportedLanguages",
+    "supportedDeploymentTypes"
   ],
   "properties": {
-    "supported_languages": {
-      "$id": "#root/supported_languages",
-      "title": "Supported_languages",
+    "supportedLanguages": {
+      "$id": "#root/supportedLanguages",
+      "title": "Supportedlanguages",
       "type": "array",
       "default": [],
       "items":{
-        "$id": "#root/supported_languages/items",
+        "$id": "#root/supportedLanguages/items",
         "title": "Items",
-        "type": "string",
-        "default": "",
-        "pattern": "^.*$"
+        "type": "object",
+        "required": [
+          "name",
+          "displayName",
+          "variableExampleValues"
+        ],
+        "properties": {
+          "name": {
+            "$id": "#root/supportedLanguages/items/name",
+            "title": "Name",
+            "type": "string",
+            "default": "",
+            "examples": [
+              "erlang"
+            ],
+            "pattern": "^.*$"
+          },
+          "displayName": {
+            "$id": "#root/supportedLanguages/items/displayName",
+            "title": "DisplayName",
+            "type": "string",
+            "default": "",
+            "examples": [
+              "Erlang"
+            ],
+            "pattern": "^.*$"
+          },
+          "variableExampleValues": {
+            "$id": "#root/supportedLanguages/items/variableExampleValues",
+            "title": "VariableExampleValues",
+            "type": "object",
+            "required": [
+              "VERSION"
+            ],
+            "properties": {
+              "BUILDERVERSION": {
+                "$id": "#root/supportedLanguages/items/variableExampleValues/BUILDERVERSION",
+                "title": "Builderversion",
+                "type": "array",
+                "default": [],
+                "items":{
+                  "$id": "#root/supportedLanguages/items/variableExampleValues/BUILDERVERSION/items",
+                  "title": "Items",
+                  "type": "string",
+                  "default": "",
+                  "examples": [
+                    "24.2-alpine"
+                  ],
+                  "pattern": "^.*$"
+                }
+              },
+              "VERSION": {
+                "$id": "#root/supportedLanguages/items/variableExampleValues/VERSION",
+                "title": "Version",
+                "type": "array",
+                "default": [],
+                "items":{
+                  "$id": "#root/supportedLanguages/items/variableExampleValues/VERSION/items",
+                  "title": "Items",
+                  "type": "string",
+                  "default": "",
+                  "examples": [
+                    "3.15"
+                  ],
+                  "pattern": "^.*$"
+                }
+              }
+            }
+          }
+        }
       }
     },
-    "supported_deployment_types": {
-      "$id": "#root/supported_deployment_types",
-      "title": "Supported_deployment_types",
+    "supportedDeploymentTypes": {
+      "$id": "#root/supportedDeploymentTypes",
+      "title": "SupportedDeploymentTypes",
       "type": "array",
       "default": [],
       "items":{
-        "$id": "#root/supported_deployment_types/items",
+        "$id": "#root/supportedDeploymentTypes/items",
         "title": "Items",
         "type": "string",
         "default": "",
+        "examples": [
+          "helm"
+        ],
         "pattern": "^.*$"
       }
     }

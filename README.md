@@ -50,25 +50,24 @@ If you plan on deploying your application through your GitHub Action, commit all
 
 ### `draft info`
 The `draft info` command prints information about supported languages and deployment types.
-Example output:
+
+Example output (for brevity, only the first supported language is shown):
 ```
 {
-  "supported_languages": [
-    "php",
-    "python",
-    "rust",
-    "swift",
-    "csharp",
-    "go",
-    "gradle",
-    "javascript",
-    "ruby",
-    "clojure",
-    "erlang",
-    "gomodule",
-    "java"
-  ],
-  "supported_deployment_types": [
+  "supportedLanguages": [
+    {
+      "name": "clojure",
+      "displayName": "Clojure",
+      "variableExampleValues": {
+        "VERSION": [
+          "8-jdk-alpine",
+          "11-jdk-alpine"
+        ]
+      }
+    }
+  ]
+  ...,
+  "supportedDeploymentTypes": [
     "helm",
     "kustomize",
     "manifests"

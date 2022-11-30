@@ -23,9 +23,16 @@ type infoCmd struct {
 	info   *draftInfo
 }
 
+// draftConfigInfo is a struct that contains information about the example usage of variables for a single draft.yaml
+type draftConfigInfo struct {
+	Name                  string              `json:"name"`
+	DisplayName           string              `json:"displayName,omitempty"`
+	VariableExampleValues map[string][]string `json:"variableExampleValues,omitempty"`
+}
+
 type draftInfo struct {
-	SupportedLanguages       []string `json:"supported_languages"`
-	SupportedDeploymentTypes []string `json:"supported_deployment_types"`
+	SupportedLanguages       []draftConfigInfo `json:"supportedLanguages"`
+	SupportedDeploymentTypes []string          `json:"supportedDeploymentTypes"`
 }
 
 func newInfoCmd() *cobra.Command {
@@ -52,8 +59,19 @@ func (ic *infoCmd) run() error {
 	l := languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, "")
 	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, "")
 
+	languagesInfo := make([]draftConfigInfo, 0)
+	for _, lang := range l.Names() {
+		langConfig := l.GetConfig(lang)
+		newConfig := draftConfigInfo{
+			Name:                  lang,
+			DisplayName:           langConfig.DisplayName,
+			VariableExampleValues: langConfig.GetVariableExampleValues(),
+		}
+		languagesInfo = append(languagesInfo, newConfig)
+	}
+
 	ic.info = &draftInfo{
-		SupportedLanguages:       l.Names(),
+		SupportedLanguages:       languagesInfo,
 		SupportedDeploymentTypes: d.DeployTypes(),
 	}
 

@@ -7,3 +7,4 @@ draft
 langtest
 .vscode/
 /pkg/languages/builders
+info.json

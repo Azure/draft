@@ -9,7 +9,7 @@ variables:
     type: int
   - name: "VERSION"
     description: "the version of go used by the application"
-    exampleValues: [ "1.19", "1.18", "1.17", "1.16" ]
+    exampleValues: ["1.16", "1.17", "1.18", "1.19"]
 variableDefaults:
   - name: "VERSION"
     value: "1.18"

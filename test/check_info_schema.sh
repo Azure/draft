@@ -3,7 +3,7 @@
 ./draft info > ./info.json
 echo "Draft Info JSON schema:"
 cat ./test/info_schema.json
-  echo "Draft Info JSON:"
+echo "Draft Info JSON:"
 cat info.json
 
 npm install -g ajv-cli

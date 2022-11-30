@@ -36,7 +36,7 @@
           },
           "displayName": {
             "$id": "#root/supportedLanguages/items/displayName",
-            "title": "Displayname",
+            "title": "DisplayName",
             "type": "string",
             "default": "",
             "examples": [
@@ -46,7 +46,7 @@
           },
           "variableExampleValues": {
             "$id": "#root/supportedLanguages/items/variableExampleValues",
-            "title": "Variableexamplevalues",
+            "title": "VariableExampleValues",
             "type": "object",
             "required": [
               "VERSION"
@@ -91,7 +91,7 @@
     },
     "supportedDeploymentTypes": {
       "$id": "#root/supportedDeploymentTypes",
-      "title": "Supporteddeploymenttypes",
+      "title": "SupportedDeploymentTypes",
       "type": "array",
       "default": [],
       "items":{

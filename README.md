@@ -50,7 +50,8 @@ If you plan on deploying your application through your GitHub Action, commit all
 
 ### `draft info`
 The `draft info` command prints information about supported languages and deployment types.
-Example output:
+
+Example output (for brevity, only the first supported language is shown):
 ```
 {
   "supportedLanguages": [
@@ -64,7 +65,8 @@ Example output:
         ]
       }
     }
-  ],
+  ]
+  ...,
   "supportedDeploymentTypes": [
     "helm",
     "kustomize",

@@ -27,6 +27,27 @@ jobs:
           path: ./draft
           if-no-files-found: error
 
+  gomodule-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: gambtho/go_echo
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gomodule/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   gomodule-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -34,7 +55,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: gomodule-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -164,6 +185,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  gomodule-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: gambtho/go_echo
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gomodule/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   gomodule-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -171,7 +213,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: gomodule-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -246,6 +288,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  python-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/flask-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/python/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   python-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -253,7 +316,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: python-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -383,6 +446,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  python-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/flask-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/python/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   python-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -390,7 +474,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: python-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -465,6 +549,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  rust-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/tiny-http-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/rust/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   rust-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -472,7 +577,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: rust-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -602,6 +707,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  rust-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/tiny-http-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/rust/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   rust-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -609,7 +735,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: rust-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -684,6 +810,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  javascript-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: davidgamero/express-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/javascript/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   javascript-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -691,7 +838,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: javascript-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -821,6 +968,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  javascript-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: davidgamero/express-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/javascript/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   javascript-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -828,7 +996,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: javascript-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -903,6 +1071,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  ruby-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/ruby-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/ruby/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   ruby-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -910,7 +1099,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: ruby-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1040,6 +1229,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  ruby-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/ruby-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/ruby/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   ruby-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1047,7 +1257,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: ruby-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1122,6 +1332,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  csharp-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/csharp-simple-web-app
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/csharp/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   csharp-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1129,7 +1360,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: csharp-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1259,6 +1490,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  csharp-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/csharp-simple-web-app
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/csharp/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   csharp-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1266,7 +1518,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: csharp-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1341,6 +1593,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  java-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/simple-java-server
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/java/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   java-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1348,7 +1621,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: java-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1478,6 +1751,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  java-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/simple-java-server
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/java/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   java-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1485,7 +1779,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: java-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1560,6 +1854,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  gradle-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/simple-gradle-server
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gradle/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   gradle-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1567,7 +1882,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: gradle-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1697,6 +2012,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  gradle-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/simple-gradle-server
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gradle/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   gradle-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1704,7 +2040,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: gradle-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1779,6 +2115,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  swift-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/swift-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/swift/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   swift-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1786,7 +2143,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: swift-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1916,6 +2273,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  swift-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/swift-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/swift/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   swift-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1923,7 +2301,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: swift-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1998,6 +2376,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  erlang-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: bfoley13/ErlangExample
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/erlang/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   erlang-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2005,7 +2404,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: erlang-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2135,6 +2534,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  erlang-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: bfoley13/ErlangExample
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/erlang/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   erlang-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -2142,7 +2562,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: erlang-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2217,6 +2637,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
+  clojure-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/clojure-simple-http
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/clojure/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   clojure-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2224,7 +2665,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: clojure-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2354,6 +2795,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  clojure-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/clojure-simple-http
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/clojure/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   clojure-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -2361,7 +2823,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: clojure-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

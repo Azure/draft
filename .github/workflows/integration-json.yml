@@ -47,23 +47,23 @@ jobs:
           ajv validate -s test/info_schema.json -d info.json
   dryrun:
     runs-on: ubuntu-latest
-      steps:
+    steps:
+        - uses: actions/checkout@v2
+          - uses: actions/download-artifact@v2
+            with:
+              name: draft-binary
+          - run: chmod +x ./draft
+          - run: |
+              mkdir ./langtest
           - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
               with:
-                name: draft-binary
-            - run: chmod +x ./draft
-            - run: |
-                mkdir ./langtest
-            - uses: actions/checkout@v2
-                with:
-                  repository: gambtho/go_echo
-                  path: ./langtest
-            - run: |
-                ./draft --dry-run --dry-run-file dry-run.json \
-                create -c ./test/integration/gomodule/helm.yaml \
-                -d ./langtest/ --skip-file-detection
-            - name: Validate JSON
-              run: |
-                npm install -g ajv-cli
-                ajv validate -s test/info_schema.json -d info.json
+                repository: gambtho/go_echo
+                path: ./langtest
+          - run: |
+              ./draft --dry-run --dry-run-file dry-run.json \
+              create -c ./test/integration/gomodule/helm.yaml \
+              -d ./langtest/ --skip-file-detection
+          - name: Validate JSON
+            run: |
+              npm install -g ajv-cli
+              ajv validate -s test/info_schema.json -d info.json

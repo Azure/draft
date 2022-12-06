@@ -193,7 +193,7 @@ languageVariables:
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
-  renderEngine: 'helm'
+          renderEngine: 'helm'
           helmChart: ./langtest/charts
           overrideFiles: ./langtest/charts/values.yaml
           overrides: |

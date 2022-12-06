@@ -12,6 +12,8 @@ var cfgFile string
 var verbose bool
 var provider string
 var silent bool
+var dryRun bool
+var dryRunFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -58,4 +60,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose logging")
 	rootCmd.PersistentFlags().StringVarP(&provider, "provider", "p", "azure", "cloud provider")
 	rootCmd.PersistentFlags().BoolVarP(&silent, "silent", "", false, "enable silent logging")
+	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dry-run", "", false, "enable dry run mode in which no files are written to disk")
+	rootCmd.PersistentFlags().StringVar(&dryRunFile, "dry-run-file", "", "optional file to write dry run summary in json format into")
 }

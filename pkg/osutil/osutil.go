@@ -107,8 +107,7 @@ func CopyDir(
 				return err
 			}
 
-			fileName := checkNameOverrides(f.Name(), srcPath, destPath, config)
-			if err = templateWriter.WriteFile(fmt.Sprintf("%s/%s", dest, fileName), fileString); err != nil {
+			if err = templateWriter.WriteFile(destPath, fileString); err != nil {
 				return err
 			}
 		}

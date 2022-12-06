@@ -1,0 +1,69 @@
+name: Draft JSON Integration Tests
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18.2
+      - name: make
+        run: make
+      - uses: actions/upload-artifact@v2
+        with:
+          name: helm-skaffold
+          path: ./test/skaffold.yaml
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
+          name: draft-binary
+          path: ./draft
+          if-no-files-found:
+            error
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: |
+          mkdir ./langtest
+      - run: |
+          ./draft info > ./info.json
+          echo "Draft Info JSON schema:"
+          cat test/info_schema.json
+            echo "Draft Info JSON:"
+          cat info.json
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/info_schema.json -d info.json
+  dryrun:
+    runs-on: ubuntu-latest
+      steps:
+          - uses: actions/checkout@v2
+            - uses: actions/download-artifact@v2
+              with:
+                name: draft-binary
+            - run: chmod +x ./draft
+            - run: |
+                mkdir ./langtest
+            - uses: actions/checkout@v2
+                with:
+                  repository: gambtho/go_echo
+                  path: ./langtest
+            - run: |
+                ./draft --dry-run --dry-run-file dry-run.json \
+                create -c ./test/integration/gomodule/helm.yaml \
+                -d ./langtest/ --skip-file-detection
+            - name: Validate JSON
+              run: |
+                npm install -g ajv-cli
+                ajv validate -s test/info_schema.json -d info.json

@@ -217,6 +217,29 @@ languageVariables:
 
     # create kustomize workflow
     echo "
+  $lang-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json \
+        create -c ./test/integration/$lang/kustomize.yaml \
+        -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   $lang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -224,7 +247,7 @@ languageVariables:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: $lang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

@@ -1,4 +1,5 @@
 language: rust
+displayName: Rust
 nameOverrides:
   - path: "dockerignore"
     prefix: "."
@@ -8,6 +9,7 @@ variables:
     type: int
   - name: "VERSION"
     description: "the version of rust used by the application"
+    exampleValues: ["1.58.0","1.56", "1.55", "1.54", "1.53"]
 variableDefaults:
   - name: "VERSION"
     value: "1.58.0"

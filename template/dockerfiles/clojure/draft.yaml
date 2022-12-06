@@ -1,10 +1,12 @@
 language: clojure
+displayName: Clojure
 variables:
   - name: "PORT"
     description: "the port exposed in the application"
     type: int
   - name: "VERSION"
     description: "the version of openjdk that the application uses"
+    exampleValues: ["8-jdk-alpine","11-jdk-alpine"]
 variableDefaults:
   - name: "VERSION"
     value: "8-jdk-alpine"

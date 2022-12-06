@@ -1,4 +1,5 @@
 language: python
+displayName: Python
 nameOverrides:
   - path: "dockerignore"
     prefix: "."
@@ -8,6 +9,7 @@ variables:
     type: int
   - name: "VERSION"
     description: "the version of python used by the application"
+    exampleValues: ["3.9", "3.8", "3.7", "3.6"]
 variableDefaults:
   - name: "VERSION"
     value: "3"

@@ -1,0 +1,22 @@
+{
+  "supported_languages": [
+    "java",
+    "php",
+    "ruby",
+    "rust",
+    "gradle",
+    "javascript",
+    "python",
+    "clojure",
+    "csharp",
+    "erlang",
+    "go",
+    "gomodule",
+    "swift"
+  ],
+  "supported_deployment_types": [
+    "helm",
+    "kustomize",
+    "manifests"
+  ]
+}

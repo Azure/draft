@@ -102,7 +102,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/gomodule/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/gomodule/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -321,7 +321,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/python/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/python/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -540,7 +540,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/rust/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/rust/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -759,7 +759,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/javascript/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/javascript/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -978,7 +978,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/ruby/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/ruby/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -1197,7 +1197,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/csharp/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/csharp/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -1416,7 +1416,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/java/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/java/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -1635,7 +1635,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/gradle/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/gradle/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -1854,7 +1854,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/swift/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/swift/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -2073,7 +2073,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/erlang/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/erlang/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli
@@ -2292,7 +2292,7 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/clojure/kustomize.yaml         -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/clojure/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli

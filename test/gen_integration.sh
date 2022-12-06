@@ -233,9 +233,9 @@ languageVariables:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-        ./draft --dry-run --dry-run-file dry-run.json \
-        create -c ./test/integration/$lang/kustomize.yaml \
-        -d ./langtest/ --skip-file-detection
+          ./draft --dry-run --dry-run-file dry-run.json \
+          create -c ./test/integration/$lang/kustomize.yaml \
+          -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli

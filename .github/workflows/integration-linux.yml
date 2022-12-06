@@ -86,6 +86,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  gomodule-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/gomodule/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   gomodule-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -93,7 +114,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: gomodule-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -284,6 +305,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  python-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/python/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   python-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -291,7 +333,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: python-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -482,6 +524,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  rust-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/rust/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   rust-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -489,7 +552,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: rust-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -680,6 +743,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  javascript-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/javascript/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   javascript-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -687,7 +771,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: javascript-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -878,6 +962,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  ruby-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/ruby/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   ruby-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -885,7 +990,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: ruby-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1076,6 +1181,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  csharp-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/csharp/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   csharp-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1083,7 +1209,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: csharp-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1274,6 +1400,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  java-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-java-server
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/java/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   java-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1281,7 +1428,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: java-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1472,6 +1619,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  gradle-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-gradle-server
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/gradle/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   gradle-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1479,7 +1647,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: gradle-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1670,6 +1838,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  swift-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/swift/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   swift-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1677,7 +1866,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: swift-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1868,6 +2057,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  erlang-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: bfoley13/ErlangExample
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/erlang/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   erlang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1875,7 +2085,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: erlang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2066,6 +2276,27 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  clojure-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/clojure-simple-http
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+        ./draft --dry-run --dry-run-file dry-run.json         create -c ./test/integration/clojure/kustomize.yaml         -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   clojure-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2073,7 +2304,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: clojure-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

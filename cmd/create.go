@@ -44,8 +44,8 @@ type createCmd struct {
 
 	supportedLangs *languages.Languages
 
-	templateWriter templatewriter.TemplateWriter
-	dryRunWriter   *dryrunpkg.DryRunWriter
+	templateWriter   templatewriter.TemplateWriter
+	variableRecorder config.VariableRecorder
 }
 
 func newCreateCmd() *cobra.Command {
@@ -100,9 +100,11 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
+	var dryRunRecorder *dryrunpkg.DryRunRecorder
 	if dryRun {
-		cc.dryRunWriter = dryrunpkg.NewDryRunWriter()
-		cc.templateWriter = cc.dryRunWriter
+		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
+		cc.variableRecorder = dryRunRecorder
+		cc.templateWriter = dryRunRecorder
 	} else {
 		cc.templateWriter = &writers.LocalFSWriter{}
 	}
@@ -114,8 +116,8 @@ func (cc *createCmd) run() error {
 
 	err = cc.createFiles(detectedLangDraftConfig, languageName)
 	if dryRun {
-		cc.dryRunWriter.SetVariable(LANGUAGE_VARIABLE, languageName)
-		dryRunText, err := json.MarshalIndent(cc.dryRunWriter.DryRunInfo, "", "  ")
+		cc.variableRecorder.Record(LANGUAGE_VARIABLE, languageName)
+		dryRunText, err := json.MarshalIndent(dryRunRecorder.DryRunInfo, "", "  ")
 		if err != nil {
 			return err
 		}
@@ -239,9 +241,9 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
-	if cc.dryRunWriter != nil {
+	if cc.variableRecorder != nil {
 		for k, v := range inputs {
-			cc.dryRunWriter.SetVariable(k, v)
+			cc.variableRecorder.Record(k, v)
 		}
 	}
 
@@ -288,9 +290,9 @@ func (cc *createCmd) createDeployment() error {
 		}
 	}
 
-	if cc.dryRunWriter != nil {
+	if cc.variableRecorder != nil {
 		for k, v := range customInputs {
-			cc.dryRunWriter.SetVariable(k, v)
+			cc.variableRecorder.Record(k, v)
 		}
 	}
 

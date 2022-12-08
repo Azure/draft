@@ -61,5 +61,5 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&provider, "provider", "p", "azure", "cloud provider")
 	rootCmd.PersistentFlags().BoolVarP(&silent, "silent", "", false, "enable silent logging")
 	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dry-run", "", false, "enable dry run mode in which no files are written to disk")
-	rootCmd.PersistentFlags().StringVar(&dryRunFile, "dry-run-file", "", "optional file to write dry run summary in json format into")
+	rootCmd.PersistentFlags().StringVar(&dryRunFile, "dry-run-file", "", "optional file to write dry run summary in json format into (requires --dry-run flag)")
 }

@@ -62,3 +62,8 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 
 	return prefix
 }
+
+// TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
+type TemplateVariableRecorder interface {
+	Record(key, value string)
+}

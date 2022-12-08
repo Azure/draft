@@ -177,7 +177,7 @@ languageVariables:
             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
-            npm install -g ajv-cli
+            npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d dry-run.json
   $lang-helm-create-update:
     runs-on: ubuntu-latest
@@ -261,7 +261,7 @@ languageVariables:
           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
-          npm install -g ajv-cli
+          npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d dry-run.json
   $lang-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -343,7 +343,7 @@ languageVariables:
             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
-            npm install -g ajv-cli
+            npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest

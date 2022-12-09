@@ -91,6 +91,38 @@ Draft makes it easier for developers to get started building apps that run on Ku
 
 Use `draft [command] --help` for more information about a command.
 
+### Dry Run
+The following flags can be used for enabling dry running, which is currently supported by the following commands: `create`
+- ` --dry-run` enables dry run mode in which no files are written to disk
+-  `--dry-run-file` specifies a file to write the dry run summary in json format into
+
+```json
+// Example dry run output
+{
+  "variables": {
+    "APPNAME": "testapp",
+    "BUILDERVERSION": "null",
+    "IMAGENAME": "testapp",
+    "LANGUAGE": "gomodule",  // Note that this variable is in addition to the draft config variables
+    "NAMESPACE": "default",
+    "PORT": "1323",
+    "SERVICEPORT": "80",
+    "VERSION": "1.18"
+  },
+  "filesToWrite": [
+    "langtest/.dockerignore",
+    "langtest/Dockerfile",
+    "langtest/charts/.helmignore",
+    "langtest/charts/Chart.yaml",
+    "langtest/charts/production.yaml",
+    "langtest/charts/templates/_helpers.tpl",
+    "langtest/charts/templates/deployment.yaml",
+    "langtest/charts/templates/namespace.yaml",
+    "langtest/charts/templates/service.yaml",
+    "langtest/charts/values.yaml"
+  ]
+}
+```
 ## Prerequisites
 
 Draft requires Go version 1.18.x.

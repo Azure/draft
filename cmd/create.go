@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"
+	dryrunpkg "github.com/Azure/draft/pkg/dryrun"
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
@@ -25,6 +27,9 @@ import (
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
 // code for linguist to classify, or if there are no packs available for the detected languages.
 var ErrNoLanguageDetected = errors.New("no supported languages were detected")
+
+const LANGUAGE_VARIABLE = "LANGUAGE"
+const TWO_SPACES = "  "
 
 type createCmd struct {
 	appName string
@@ -40,7 +45,8 @@ type createCmd struct {
 
 	supportedLangs *languages.Languages
 
-	templateWriter templatewriter.TemplateWriter
+	templateWriter           templatewriter.TemplateWriter
+	templateVariableRecorder config.TemplateVariableRecorder
 }
 
 func newCreateCmd() *cobra.Command {
@@ -68,7 +74,6 @@ func newCreateCmd() *cobra.Command {
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
 
-	cc.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }
 
@@ -96,14 +101,41 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
-	detectedLang, lowerLang, err := cc.detectLanguage()
+	var dryRunRecorder *dryrunpkg.DryRunRecorder
+	if dryRun {
+		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
+		cc.templateVariableRecorder = dryRunRecorder
+		cc.templateWriter = dryRunRecorder
+	} else {
+		cc.templateWriter = &writers.LocalFSWriter{}
+	}
+
+	detectedLangDraftConfig, languageName, err := cc.detectLanguage()
 	if err != nil {
 		return err
 	}
 
-	return cc.createFiles(detectedLang, lowerLang)
+	err = cc.createFiles(detectedLangDraftConfig, languageName)
+	if dryRun {
+		cc.templateVariableRecorder.Record(LANGUAGE_VARIABLE, languageName)
+		dryRunText, err := json.MarshalIndent(dryRunRecorder.DryRunInfo, "", TWO_SPACES)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(dryRunText))
+		if dryRunFile != "" {
+			log.Printf("writing dry run info to file %s", dryRunFile)
+			err = os.WriteFile(dryRunFile, dryRunText, 0644)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return err
 }
 
+// detectLanguage detects the language used in a project destination directory
+// It returns the DraftConfig for that language and the name of the language
 func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 	hasGo := false
 	hasGoMod := false
@@ -210,6 +242,12 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
+	if cc.templateVariableRecorder != nil {
+		for k, v := range inputs {
+			cc.templateVariableRecorder.Record(k, v)
+		}
+	}
+
 	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs, cc.templateWriter); err != nil {
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
@@ -250,6 +288,12 @@ func (cc *createCmd) createDeployment() error {
 		customInputs, err = prompts.RunPromptsFromConfig(deployConfig)
 		if err != nil {
 			return err
+		}
+	}
+
+	if cc.templateVariableRecorder != nil {
+		for k, v := range customInputs {
+			cc.templateVariableRecorder.Record(k, v)
 		}
 	}
 

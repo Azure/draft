@@ -9,8 +9,8 @@ rm ../.github/workflows/integration-windows.yml
 echo "name: draft Linux Integrations
 
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -156,6 +156,29 @@ languageVariables:
 
     # create helm workflow
     echo "
+  $lang-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: $repo
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json \
+            create -c ./test/integration/$lang/helm.yaml \
+            -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   $lang-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -163,7 +186,7 @@ languageVariables:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: $lang-helm-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -217,6 +240,29 @@ languageVariables:
 
     # create kustomize workflow
     echo "
+  $lang-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+          ./draft --dry-run --dry-run-file dry-run.json \
+          create -c ./test/integration/$lang/kustomize.yaml \
+          -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d dry-run.json
   $lang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -224,7 +270,7 @@ languageVariables:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: $lang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -276,6 +322,29 @@ languageVariables:
 
   # create manifests workflow
     echo "
+  $lang-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: $repo
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            ./draft --dry-run --dry-run-file dry-run.json \
+            create -c ./test/integration/$lang/manifest.yaml \
+            -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -283,7 +352,7 @@ languageVariables:
         image: registry:2
         ports:
           - 5000:5000
-    needs: build
+    needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

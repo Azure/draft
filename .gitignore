@@ -9,3 +9,4 @@ langtest
 /pkg/languages/builders
 dry-run.json
 info.json
+test/info.json

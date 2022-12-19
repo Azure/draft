@@ -36,11 +36,15 @@ build:
 	GO111MODULE=on go build -v -o .
 
 .PHONY: build-all
-build-all: go-generate vendor build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
+build-all: go-generate vendor build-windows-amd64 build-windows-386 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
 
 .PHONY: build-windows-amd64
 build-windows-amd64:
 	GOOS=windows GOARCH=amd64 go build -ldflags "-X github.com/Azure/draft/cmd.VERSION=${DRAFT_VERSION}" -v -o ./bin/draft-windows-amd64.exe
+
+.PHONY: build-windows-386
+build-windows-386:
+	GOOS=windows GOARCH=386 go build -ldflags "-X github.com/Azure/draft/cmd.VERSION=${DRAFT_VERSION}" -v -o ./bin/draft-windows-386.exe
 
 .PHONY: build-linux-amd64
 build-linux-amd64:

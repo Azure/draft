@@ -178,6 +178,7 @@ languageVariables:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-helm-create-update:
     runs-on: ubuntu-latest
@@ -262,6 +263,7 @@ languageVariables:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -344,6 +346,7 @@ languageVariables:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest

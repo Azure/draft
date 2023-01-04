@@ -47,6 +47,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-helm-create-update:
     runs-on: ubuntu-latest
@@ -127,6 +128,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -205,6 +207,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-manifests-create:
     runs-on: ubuntu-latest
@@ -308,6 +311,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-helm-create-update:
     runs-on: ubuntu-latest
@@ -388,6 +392,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -466,6 +471,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-manifests-create:
     runs-on: ubuntu-latest
@@ -569,6 +575,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-helm-create-update:
     runs-on: ubuntu-latest
@@ -649,6 +656,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -727,6 +735,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-manifests-create:
     runs-on: ubuntu-latest
@@ -830,6 +839,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-helm-create-update:
     runs-on: ubuntu-latest
@@ -910,6 +920,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -988,6 +999,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-manifests-create:
     runs-on: ubuntu-latest
@@ -1091,6 +1103,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-helm-create-update:
     runs-on: ubuntu-latest
@@ -1171,6 +1184,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -1249,6 +1263,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-manifests-create:
     runs-on: ubuntu-latest
@@ -1352,6 +1367,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-helm-create-update:
     runs-on: ubuntu-latest
@@ -1432,6 +1448,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -1510,6 +1527,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-manifests-create:
     runs-on: ubuntu-latest
@@ -1613,6 +1631,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-helm-create-update:
     runs-on: ubuntu-latest
@@ -1693,6 +1712,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -1771,6 +1791,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-manifests-create:
     runs-on: ubuntu-latest
@@ -1874,6 +1895,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-helm-create-update:
     runs-on: ubuntu-latest
@@ -1954,6 +1976,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -2032,6 +2055,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-manifests-create:
     runs-on: ubuntu-latest
@@ -2135,6 +2159,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-helm-create-update:
     runs-on: ubuntu-latest
@@ -2215,6 +2240,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -2293,6 +2319,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-manifests-create:
     runs-on: ubuntu-latest
@@ -2396,6 +2423,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-helm-create-update:
     runs-on: ubuntu-latest
@@ -2476,6 +2504,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -2554,6 +2583,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-manifests-create:
     runs-on: ubuntu-latest
@@ -2657,6 +2687,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-helm-create-update:
     runs-on: ubuntu-latest
@@ -2737,6 +2768,7 @@ jobs:
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
+          mkdir -p test/temp
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-kustomize-create-update:
     runs-on: ubuntu-latest
@@ -2815,6 +2847,7 @@ jobs:
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
+            mkdir -p test/temp
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-manifests-create:
     runs-on: ubuntu-latest

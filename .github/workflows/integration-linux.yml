@@ -43,11 +43,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gomodule/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -123,11 +124,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/gomodule/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gomodule/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -201,11 +203,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gomodule/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -304,11 +307,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/python/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -384,11 +388,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/python/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/python/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -462,11 +467,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/python/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -565,11 +571,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/rust/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -645,11 +652,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/rust/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/rust/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -723,11 +731,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/rust/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -826,11 +835,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/javascript/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -906,11 +916,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/javascript/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/javascript/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -984,11 +995,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/javascript/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1087,11 +1099,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/ruby/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1167,11 +1180,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/ruby/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/ruby/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1245,11 +1259,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/ruby/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1348,11 +1363,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/csharp/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1428,11 +1444,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/csharp/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/csharp/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1506,11 +1523,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/csharp/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1609,11 +1627,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/java/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1689,11 +1708,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/java/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/java/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1767,11 +1787,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/java/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -1870,11 +1891,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gradle/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -1950,11 +1972,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/gradle/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gradle/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2028,11 +2051,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/gradle/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -2131,11 +2155,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/swift/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2211,11 +2236,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/swift/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/swift/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2289,11 +2315,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/swift/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -2392,11 +2419,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/erlang/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2472,11 +2500,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/erlang/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/erlang/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2550,11 +2579,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/erlang/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-manifests-create:
     runs-on: ubuntu-latest
     services:
@@ -2653,11 +2683,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/clojure/helm.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/helm.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2733,11 +2764,12 @@ jobs:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json           create -c ./test/integration/clojure/kustomize.yaml           -d ./langtest/ --skip-file-detection
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/clojure/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -2811,11 +2843,12 @@ jobs:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json             create -c ./test/integration/clojure/manifest.yaml             -d ./langtest/ --skip-file-detection
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-manifests-create:
     runs-on: ubuntu-latest
     services:

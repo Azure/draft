@@ -7,5 +7,4 @@ draft
 langtest
 .vscode/
 /pkg/languages/builders
-dry-run.json
-info.json
+test/temp/

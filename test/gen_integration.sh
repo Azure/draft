@@ -172,13 +172,14 @@ languageVariables:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json \
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/helm.yaml \
             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-helm-create-update:
     runs-on: ubuntu-latest
     services:
@@ -256,13 +257,14 @@ languageVariables:
           path: ./langtest
       - name: Execute Dry Run
         run: |
-          ./draft --dry-run --dry-run-file dry-run.json \
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
           create -c ./test/integration/$lang/kustomize.yaml \
           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d dry-run.json
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
@@ -338,13 +340,14 @@ languageVariables:
             path: ./langtest
         - name: Execute Dry Run
           run: |
-            ./draft --dry-run --dry-run-file dry-run.json \
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/manifest.yaml \
             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d dry-run.json
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest
     services:

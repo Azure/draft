@@ -150,7 +150,7 @@ jobs:
 
     # Deploys application based on given manifest file
     - name: Deploys application
-      uses: Azure/k8s-deploy@v3.1
+      uses: Azure/k8s-deploy@v4
       with:
         action: deploy
         manifests: ${{ env.DEPLOYMENT_MANIFEST_PATH }}

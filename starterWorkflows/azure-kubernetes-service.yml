@@ -98,7 +98,7 @@ jobs:
           admin: 'false'
           use-kubelogin: 'true'
 
-      # Deploys application based on given manifest file
+      # Deploys application based on given manifest  file
       - name: Deploys application
         uses: Azure/k8s-deploy@v4
         with:

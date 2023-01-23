@@ -82,7 +82,6 @@ func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubW
 	envMap["CONTAINER_NAME"] = config.ContainerName
 	envMap["RESOURCE_GROUP"] = config.ResourceGroupName
 	envMap["CLUSTER_NAME"] = config.AksClusterName
-	envMap["IMAGE_PULL_SECRET_NAME"] = config.AcrName + "secret"
 
 	switch deployType {
 	case "helm":

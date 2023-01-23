@@ -21,6 +21,7 @@ func TestRun(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
+	mockCC.subDirectory = "/folder"
 	mockCC.createConfig.DeployType = "helm"
 	mockCC.createConfig.LanguageVariables = []UserInputs{}
 	mockCC.createConfig.DeployVariables = []UserInputs{}
@@ -66,6 +67,19 @@ func TestInitConfig(t *testing.T) {
 	err := mockCC.initConfig()
 	assert.True(t, err == nil)
 	assert.True(t, mockCC.createConfig != nil)
+}
+
+func TestInitConfigWithSubDirectory(t *testing.T) {
+	mockCC := &createCmd{}
+	mockCC.createConfig = &CreateConfig{}
+	mockCC.dest = "./.."
+	mockCC.createConfigPath = "./../test/templates/config.yaml"
+	mockCC.subDirectory = "/folder"
+
+	err := mockCC.initConfig()
+	assert.True(t, err == nil)
+	assert.True(t, mockCC.createConfig != nil)
+	assert.True(t, mockCC.dest == "./../folder")
 }
 
 func TestValidateConfigInputsToPromptsPass(t *testing.T) {

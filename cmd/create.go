@@ -32,9 +32,10 @@ const LANGUAGE_VARIABLE = "LANGUAGE"
 const TWO_SPACES = "  "
 
 type createCmd struct {
-	appName string
-	lang    string
-	dest    string
+	appName      string
+	lang         string
+	dest         string
+	subDirectory string
 
 	dockerfileOnly    bool
 	deploymentOnly    bool
@@ -70,6 +71,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
+	f.StringVarP(&cc.subDirectory, "sub-directory", "s", "", "specify the output sub-directory")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
@@ -90,12 +92,25 @@ func (cc *createCmd) initConfig() error {
 			return err
 		}
 		cc.createConfig = &cfg
-		return nil
 	}
 
 	//TODO: create a config for the user and save it for subsequent uses
 	cc.createConfig = &CreateConfig{}
 
+	if cc.subDirectory != "" {
+		log.Debug("updating destination")
+
+		dest := cc.dest
+		subDir := cc.subDirectory
+
+		if dest[len(dest)-1] == '/' {
+			dest = dest[:len(dest)-1]
+		}
+		if subDir[0] == '/' {
+			subDir = subDir[1:]
+		}
+		cc.dest = dest + "/" + subDir
+	}
 	return nil
 }
 

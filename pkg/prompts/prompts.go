@@ -3,9 +3,10 @@ package prompts
 import (
 	"fmt"
 
-	"github.com/Azure/draft/pkg/config"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Azure/draft/pkg/config"
 )
 
 type TemplatePrompt struct {
@@ -56,9 +57,10 @@ func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []stri
 			inputs[newSelect.OverrideString] = input
 		} else {
 			defaultString := ""
+			defaultValue := ""
 			for _, variableDefault := range config.VariableDefaults {
 				if variableDefault.Name == customPrompt.Name {
-					defaultValue := variableDefault.Value
+					defaultValue = variableDefault.Value
 					if variableDefault.ReferenceVar != "" {
 						defaultValue = inputs[variableDefault.ReferenceVar]
 						log.Debugf("setting default value for %s to %s from referenceVar %s", customPrompt.Name, defaultValue, variableDefault.ReferenceVar)
@@ -89,6 +91,10 @@ func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []stri
 			input, err := newPrompt.Prompt.Run()
 			if err != nil {
 				return nil, err
+			}
+			// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
+			if input == "" && defaultString != "" {
+				input = defaultValue
 			}
 			inputs[newPrompt.OverrideString] = input
 		}

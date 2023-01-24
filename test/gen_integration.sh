@@ -111,7 +111,7 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/$subf
+      - run: mkdir -p ./langtest/$subf
       - uses: actions/checkout@v2
         with:
           repository: $repo

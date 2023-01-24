@@ -68,7 +68,7 @@ func GetVariableDefaultValue(variableName string, variableDefaults []config.Buil
 		if variableDefault.Name == variableName {
 			defaultValue = variableDefault.Value
 			log.Debugf("setting default value for %s to %s from variable default rule", variableName, defaultValue)
-			if variableDefault.ReferenceVar != "" {
+			if variableDefault.ReferenceVar != "" && inputs[variableDefault.ReferenceVar] != "" {
 				defaultValue = inputs[variableDefault.ReferenceVar]
 				log.Debugf("setting default value for %s to %s from referenceVar %s", variableName, defaultValue, variableDefault.ReferenceVar)
 			}

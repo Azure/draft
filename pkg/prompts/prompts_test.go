@@ -52,6 +52,21 @@ func TestGetVariableDefaultValue(t *testing.T) {
 				"var2": "this-value",
 			},
 			want: "this-value",
+		}, {
+			testName:     "forwardReferencesAreIgnored",
+			variableName: "beforeVar",
+			variableDefaults: []config.BuilderVarDefault{
+				{
+					Name:         "beforeVar",
+					Value:        "before-default-value",
+					ReferenceVar: "afterVar",
+				}, {
+					Name:  "afterVar",
+					Value: "not-this-value",
+				},
+			},
+			inputs: map[string]string{},
+			want:   "before-default-value",
 		},
 	}
 	for _, tt := range tests {

@@ -172,7 +172,7 @@ languageVariables:
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s subFolder
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm

@@ -118,7 +118,7 @@ languageVariables:
           path: ./langtest/$subf
       - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

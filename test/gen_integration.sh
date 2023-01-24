@@ -86,13 +86,13 @@ languageVariables:
         - uses: actions/checkout@v2
           with:
             repository: $repo
-            path: ./langtest
+            path: ./langtest/$subf
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/helm.yaml \
-            -d ./langtest/ --skip-file-detection
+            -d ./langtest/$subf --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -111,15 +111,15 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest
+      - run: mkdir ./langtest/$subf
       - uses: actions/checkout@v2
         with:
           repository: $repo
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ $ingress_test_args
+          path: ./langtest/$subf
+      - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
+      - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s subfolder
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -s subfolder $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -127,7 +127,7 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker build -f ./langtest/$subf/Dockerfile -t testapp ./langtest/$subf
           echo -n "verifying images:"
           docker images
       # Runs Helm to create manifest files
@@ -135,8 +135,8 @@ languageVariables:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
+          helmChart: ./langtest/$subf/charts
+          overrideFiles: ./langtest/$subf/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'

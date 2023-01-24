@@ -82,7 +82,7 @@ languageVariables:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/$subf
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
             repository: $repo
@@ -155,4 +155,53 @@ languageVariables:
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
         run: exit 6" >> ../.github/workflows/integration-linux.yml
+    # create helm workflow
+    echo "
+  $lang-helm-create:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/$subf
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest/$subf
+      - run: Remove-Item ./langtest/$subf/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subf/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subf/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s $subf
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/$subf
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/$subf
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-helm-create
+          path: ./langtest/$subf
+  $lang-helm-update:
+    needs: $lang-helm-create
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: $lang-helm-create
+          path: ./langtest/$subf
+      - run: Remove-Item ./langtest/$subf/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s $subf $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/$subf
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/$subf" >> ../.github/workflows/integration-windows.yml
 done

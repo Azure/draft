@@ -9,8 +9,8 @@ rm ../.github/workflows/integration-windows.yml
 echo "name: draft Linux Integrations
 
 on:
-  pull_request:
-    branches: [ main ]
+  push:
+    branches: [ int-tests ]
   workflow_dispatch:
 
 jobs:
@@ -38,8 +38,8 @@ jobs:
 echo "name: draft Windows Integrations
 
 on:
-  pull_request_review:
-    types: [submitted]
+  push:
+    branches: [ int-tests ]
   workflow_dispatch:
 
 jobs:

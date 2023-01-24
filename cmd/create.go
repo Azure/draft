@@ -81,6 +81,7 @@ func newCreateCmd() *cobra.Command {
 
 func (cc *createCmd) initConfig() error {
 	if cc.subDirectory != "" {
+		var fullPath string
 		log.Debug("updating destination")
 
 		dest := cc.dest
@@ -92,7 +93,14 @@ func (cc *createCmd) initConfig() error {
 		if subDir[0] == '/' {
 			subDir = subDir[1:]
 		}
-		cc.dest = dest + "/" + subDir
+		fullPath = dest + "/" + subDir
+
+		// TODO: Ask team about expected behavior if subdirectory doesn't exist
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			return errors.New("specified sub-directory does not exist")
+		}
+
+		cc.dest = fullPath
 	}
 
 	if cc.createConfigPath != "" {

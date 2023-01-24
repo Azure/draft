@@ -47,6 +47,7 @@ do
     repo=$(echo $test | jq '.repo' -r)
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+    subf="subfolder"
     echo "Adding $lang with port $port"
 
     mkdir ./integration/$lang
@@ -164,25 +165,25 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest
+      - run: mkdir -p ./langtest/$subf
       - uses: actions/checkout@v2
         with:
           repository: $repo
-          path: ./langtest
-      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s subFolder
+          path: ./langtest/$subf
+      - run: Remove-Item ./langtest/$subf/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subf/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subf/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s $subf
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
-          path: ./langtest/
+          path: ./langtest/$subf
       - run: ./check_windows_helm.ps1
-        working-directory: ./langtest/
+        working-directory: ./langtest/$subf
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-helm-create
-          path: ./langtest
+          path: ./langtest/$subf
   $lang-helm-update:
     needs: $lang-helm-create
     runs-on: windows-latest
@@ -194,13 +195,13 @@ languageVariables:
       - uses: actions/download-artifact@v3
         with:
           name: $lang-helm-create
-          path: ./langtest/
-      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-      - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
+          path: ./langtest/$subf
+      - run: Remove-Item ./langtest/$subf/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s $subf $ingress_test_args
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_addon_helm
-          path: ./langtest/
+          path: ./langtest/$subf
       - run: ./check_windows_addon_helm.ps1
-        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
+        working-directory: ./langtest/$subf" >> ../.github/workflows/integration-windows.yml
 done

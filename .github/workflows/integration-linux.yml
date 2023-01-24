@@ -49,7 +49,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gomodule-helm-create-update:
+  gomodule-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -71,7 +71,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -130,7 +129,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  python-helm-create-update:
+  python-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -152,7 +151,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -211,7 +209,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  rust-helm-create-update:
+  rust-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -233,7 +231,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -292,7 +289,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  javascript-helm-create-update:
+  javascript-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -314,7 +311,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -373,7 +369,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  ruby-helm-create-update:
+  ruby-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -395,7 +391,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -454,7 +449,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  csharp-helm-create-update:
+  csharp-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -476,7 +471,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -535,7 +529,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  java-helm-create-update:
+  java-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -557,7 +551,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -616,7 +609,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gradle-helm-create-update:
+  gradle-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -638,7 +631,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -697,7 +689,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  swift-helm-create-update:
+  swift-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -719,7 +711,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -778,7 +769,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  erlang-helm-create-update:
+  erlang-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -800,7 +791,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -859,7 +849,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  clojure-helm-create-update:
+  clojure-helm-create-ubuntu:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -881,7 +871,6 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/ -s subfolder
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -s subfolder -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

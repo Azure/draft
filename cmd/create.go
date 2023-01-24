@@ -80,23 +80,6 @@ func newCreateCmd() *cobra.Command {
 }
 
 func (cc *createCmd) initConfig() error {
-	if cc.createConfigPath != "" {
-		log.Debug("loading config")
-		configBytes, err := os.ReadFile(cc.createConfigPath)
-		if err != nil {
-			return err
-		}
-
-		var cfg CreateConfig
-		if err = yaml.Unmarshal(configBytes, &cfg); err != nil {
-			return err
-		}
-		cc.createConfig = &cfg
-	}
-
-	//TODO: create a config for the user and save it for subsequent uses
-	cc.createConfig = &CreateConfig{}
-
 	if cc.subDirectory != "" {
 		log.Debug("updating destination")
 
@@ -111,6 +94,24 @@ func (cc *createCmd) initConfig() error {
 		}
 		cc.dest = dest + "/" + subDir
 	}
+
+	if cc.createConfigPath != "" {
+		log.Debug("loading config")
+		configBytes, err := os.ReadFile(cc.createConfigPath)
+		if err != nil {
+			return err
+		}
+		var cfg CreateConfig
+		if err = yaml.Unmarshal(configBytes, &cfg); err != nil {
+			return err
+		}
+		cc.createConfig = &cfg
+		return nil
+	}
+
+	//TODO: create a config for the user and save it for subsequent uses
+	cc.createConfig = &CreateConfig{}
+
 	return nil
 }
 

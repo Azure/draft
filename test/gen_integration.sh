@@ -479,4 +479,53 @@ languageVariables:
           path: ./langtest/$subf/
       - run: ./check_windows_addon_helm.ps1
         working-directory: ./langtest/$subf/" >> ../.github/workflows/integration-windows.yml
+    # create kustomize workflow
+    echo "
+  $lang-kustomize-create:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest/$subf
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest/$subf
+      - run: Remove-Item ./langtest/$subf/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subf/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subf/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/ -s $subf
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_kustomize
+          path: ./langtest/$subf/
+      - run: ./check_windows_kustomize.ps1
+        working-directory: ./langtest/$subf/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-kustomize-create
+          path: ./langtest/$subf/
+  $lang-kustomize-update:
+    needs: $lang-kustomize-create
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: $lang-kustomize-create
+          path: ./langtest/$subf/
+      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s $subf $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_kustomize
+          path: ./langtest/$subf/
+      - run: ./check_windows_addon_kustomize.ps1
+        working-directory: ./langtest/$subf/
+      " >> ../.github/workflows/integration-windows.yml
 done

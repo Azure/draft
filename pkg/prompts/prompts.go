@@ -28,8 +28,8 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 
 	for _, customPrompt := range config.Variables {
 		promptVariableName := customPrompt.Name
-		if _, ok := skipMap[customPrompt.Name]; ok {
-			log.Debugf("Skipping prompt for %s", customPrompt.Name)
+		if _, ok := skipMap[promptVariableName]; ok {
+			log.Debugf("Skipping prompt for %s", promptVariableName)
 			continue
 		}
 

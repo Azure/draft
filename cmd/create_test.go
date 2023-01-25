@@ -69,6 +69,19 @@ func TestInitConfig(t *testing.T) {
 	assert.True(t, mockCC.createConfig != nil)
 }
 
+func TestInitConfigWithSubDirectory(t *testing.T) {
+	mockCC := &createCmd{}
+	mockCC.createConfig = &CreateConfig{}
+	mockCC.dest = "./.."
+	mockCC.createConfigPath = "./../test/templates/config.yaml"
+	mockCC.subDirectory = "/test/alpha/beta/gamma"
+
+	err := mockCC.initConfig()
+	assert.True(t, err == nil)
+	assert.True(t, mockCC.createConfig != nil)
+	assert.True(t, mockCC.dest == "./../test/alpha/beta/gamma")
+}
+
 func TestInitConfigWithFakeSubDirectory(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}

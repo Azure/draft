@@ -9,8 +9,8 @@ rm ../.github/workflows/integration-windows.yml
 echo "name: draft Linux Integrations
 
 on:
-  push:
-    branches: [asgayle/create-sub-d]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -38,8 +38,8 @@ jobs:
 echo "name: draft Windows Integrations
 
 on:
-  push:
-    branches: [asgayle/create-sub-d]
+  pull_request_review:
+    types: [submitted]
   workflow_dispatch:
 
 jobs:
@@ -81,8 +81,8 @@ jobs:
 
 
 # read config and add integration test for each language
-cat integration_config.json | jq -c '.[]' | while read -r test;
-do
+cat integration_config.json | jq -c '.[]' | while read -r test; 
+do 
     note="# this file is generated using gen_integration.sh"
     # extract from json
     lang=$(echo $test | jq '.language' -r)
@@ -166,22 +166,22 @@ languageVariables:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/$subf
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
             repository: $repo
-            path: ./langtest/$subf
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/helm.yaml \
-            -d ./langtest -s $subf --skip-file-detection
+            -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  $lang-helm-create-ubuntu:
+  $lang-helm-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -195,14 +195,15 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/$subf
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
-          path: ./langtest/$subf
-      - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
-      - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s $subf
-      - run: ./draft -b main -v generate-workflow -d ./langtest/$subf -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -210,7 +211,7 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/$subf/Dockerfile -t testapp ./langtest/$subf
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n "verifying images:"
           docker images
       # Runs Helm to create manifest files
@@ -218,8 +219,8 @@ languageVariables:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'helm'
-          helmChart: ./langtest/$subf/charts
-          overrideFiles: ./langtest/$subf/charts/values.yaml
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
           helm-version: 'latest'
@@ -250,17 +251,17 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/$subf
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
-          path: ./langtest/$subf
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json \
           create -c ./test/integration/$lang/kustomize.yaml \
-          -d ./langtest/ -s $subf --skip-file-detection
+          -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -279,15 +280,15 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/$subf
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
-          path: ./langtest/$subf
-      - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
-      - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/ -s $subf
-      - run: ./draft -v generate-workflow -b main -d ./langtest/$subf/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/$subf/ $ingress_test_args
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -295,14 +296,14 @@ languageVariables:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/$subf/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/$subf/Dockerfile -t testapp:curr ./langtest/$subf/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step
@@ -333,7 +334,7 @@ languageVariables:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/$subf
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
             repository: $repo
@@ -343,7 +344,7 @@ languageVariables:
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/manifest.yaml \
-            -d ./langtest/ -s $subf --skip-file-detection
+            -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -362,14 +363,14 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/$subf
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
-          path: ./langtest/$subf/
-      - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
-      - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/ -s $subf
-      - run: ./draft -v generate-workflow -d ./langtest/$subf/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -377,12 +378,12 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/$subf/Dockerfile -t testapp ./langtest/$subf/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/$subf/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -391,7 +392,7 @@ languageVariables:
       - uses: actions/upload-artifact@v2
         with:
           name: $lang-manifests-create
-          path: ./langtest/$subf/
+          path: ./langtest
   $lang-manifests-update:
     needs: $lang-manifests-create
     runs-on: ubuntu-latest
@@ -409,8 +410,8 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: $lang-manifests-create
-          path: ./langtest/$subf/
-      - run: ./draft -v update -d ./langtest/$subf/ $ingress_test_args
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -418,12 +419,12 @@ languageVariables:
         run: |
           export SHELL=/bin/bash
           eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/$subf/Dockerfile -t testapp ./langtest/$subf/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n "verifying images:"
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/$subf/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -440,25 +441,25 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/$subf
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
           repository: $repo
-          path: ./langtest/$subf/
-      - run: Remove-Item ./langtest/$subf/manifests -Recurse -Force -ErrorAction Ignore
-      - run: Remove-Item ./langtest/$subf/Dockerfile -ErrorAction Ignore
-      - run: Remove-Item ./langtest/$subf/.dockerignore -ErrorAction Ignore
-      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s $subf
+          path: ./langtest
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_helm
-          path: ./langtest/$subf/
+          path: ./langtest/
       - run: ./check_windows_helm.ps1
-        working-directory: ./langtest/$subf/
+        working-directory: ./langtest/
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-helm-create
-          path: ./langtest/$subf/
+          path: ./langtest
   $lang-helm-update:
     needs: $lang-helm-create
     runs-on: windows-latest
@@ -470,13 +471,63 @@ languageVariables:
       - uses: actions/download-artifact@v3
         with:
           name: $lang-helm-create
-          path: ./langtest/$subf/
-      - run: Remove-Item ./langtest/$subf/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-      - run: ./draft.exe -v update -d ./langtest/$subf/ $ingress_test_args
+          path: ./langtest/
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_addon_helm
-          path: ./langtest/$subf/
+          path: ./langtest/
       - run: ./check_windows_addon_helm.ps1
-        working-directory: ./langtest/$subf/" >> ../.github/workflows/integration-windows.yml
+        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
+
+    # create kustomize workflow
+    echo "
+  $lang-kustomize-create:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_kustomize
+          path: ./langtest/
+      - run: ./check_windows_kustomize.ps1
+        working-directory: ./langtest/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-kustomize-create
+          path: ./langtest
+  $lang-kustomize-update:
+    needs: $lang-kustomize-create 
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: $lang-kustomize-create
+          path: ./langtest
+      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_kustomize
+          path: ./langtest/
+      - run: ./check_windows_addon_kustomize.ps1
+        working-directory: ./langtest/
+      " >> ../.github/workflows/integration-windows.yml
 done

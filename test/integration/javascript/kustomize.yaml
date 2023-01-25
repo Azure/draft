@@ -1,0 +1,17 @@
+# this file is generated using gen_integration.sh
+deployType: "kustomize"
+languageType: "javascript"
+deployVariables:
+  - name: "PORT"
+    value: "1313"
+  - name: "SERVICEPORT"
+    value: "80"
+  - name: "APPNAME"
+    value: "testapp"
+languageVariables:
+  - name: "VERSION"
+    value: "14"
+  - name: "BUILDERVERSION"
+    value: "null"
+  - name: "PORT"
+    value: "1313"

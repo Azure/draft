@@ -69,7 +69,7 @@ func TestInitConfig(t *testing.T) {
 	assert.True(t, mockCC.createConfig != nil)
 }
 
-func TestInitConfigWithSubDirectory(t *testing.T) {
+func TestInitConfigWithFakeSubDirectory(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
@@ -77,9 +77,9 @@ func TestInitConfigWithSubDirectory(t *testing.T) {
 	mockCC.subDirectory = "/folder"
 
 	err := mockCC.initConfig()
-	assert.True(t, err == nil)
+	assert.False(t, err == nil)
 	assert.True(t, mockCC.createConfig != nil)
-	assert.True(t, mockCC.dest == "./../folder")
+	assert.True(t, mockCC.dest == "./..")
 }
 
 func TestValidateConfigInputsToPromptsPass(t *testing.T) {

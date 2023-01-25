@@ -50,7 +50,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
@@ -98,7 +98,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
@@ -146,7 +146,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
@@ -194,7 +194,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
@@ -242,7 +242,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
@@ -290,7 +290,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
@@ -338,7 +338,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
@@ -386,7 +386,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
@@ -434,7 +434,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
@@ -482,7 +482,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
@@ -530,7 +530,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http

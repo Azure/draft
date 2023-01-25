@@ -116,7 +116,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
@@ -143,7 +143,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
@@ -195,7 +195,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: gambtho/go_echo
@@ -222,7 +222,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: gambtho/go_echo
@@ -379,7 +379,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
@@ -406,7 +406,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
@@ -458,7 +458,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/flask-hello-world
@@ -485,7 +485,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/flask-hello-world
@@ -642,7 +642,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
@@ -669,7 +669,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
@@ -721,7 +721,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/tiny-http-hello-world
@@ -748,7 +748,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/tiny-http-hello-world
@@ -905,7 +905,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
@@ -932,7 +932,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
@@ -984,7 +984,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: davidgamero/express-hello-world
@@ -1011,7 +1011,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: davidgamero/express-hello-world
@@ -1168,7 +1168,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
@@ -1195,7 +1195,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
@@ -1247,7 +1247,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/ruby-hello-world
@@ -1274,7 +1274,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/ruby-hello-world
@@ -1431,7 +1431,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
@@ -1458,7 +1458,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
@@ -1510,7 +1510,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: imiller31/csharp-simple-web-app
@@ -1537,7 +1537,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/csharp-simple-web-app
@@ -1694,7 +1694,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
@@ -1721,7 +1721,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
@@ -1773,7 +1773,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: imiller31/simple-java-server
@@ -1800,7 +1800,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-java-server
@@ -1957,7 +1957,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
@@ -1984,7 +1984,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
@@ -2036,7 +2036,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: imiller31/simple-gradle-server
@@ -2063,7 +2063,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/simple-gradle-server
@@ -2220,7 +2220,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
@@ -2247,7 +2247,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
@@ -2299,7 +2299,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/swift-hello-world
@@ -2326,7 +2326,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: OliverMKing/swift-hello-world
@@ -2483,7 +2483,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
@@ -2510,7 +2510,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
@@ -2562,7 +2562,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: bfoley13/ErlangExample
@@ -2589,7 +2589,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: bfoley13/ErlangExample
@@ -2746,7 +2746,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http
@@ -2773,7 +2773,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http
@@ -2825,7 +2825,7 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/subfolder
+        - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
             repository: imiller31/clojure-simple-http
@@ -2852,7 +2852,7 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/subfolder
+      - run: mkdir -p ./langtest/subfolder
       - uses: actions/checkout@v2
         with:
           repository: imiller31/clojure-simple-http

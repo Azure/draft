@@ -250,7 +250,7 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/$subf
+      - run: mkdir -p ./langtest/$subf
       - uses: actions/checkout@v2
         with:
           repository: $repo
@@ -279,7 +279,7 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/$subf
+      - run: mkdir -p ./langtest/$subf
       - uses: actions/checkout@v2
         with:
           repository: $repo
@@ -333,7 +333,7 @@ languageVariables:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir ./langtest/$subf
+        - run: mkdir -p ./langtest/$subf
         - uses: actions/checkout@v2
           with:
             repository: $repo
@@ -362,7 +362,7 @@ languageVariables:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir ./langtest/$subf
+      - run: mkdir -p ./langtest/$subf
       - uses: actions/checkout@v2
         with:
           repository: $repo
@@ -440,7 +440,7 @@ languageVariables:
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
-      - run: mkdir ./langtest/$subf
+      - run: mkdir -p ./langtest/$subf
       - uses: actions/checkout@v2
         with:
           repository: $repo

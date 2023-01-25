@@ -199,7 +199,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: gambtho/go_echo
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -462,7 +462,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/flask-hello-world
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -725,7 +725,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/tiny-http-hello-world
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -988,7 +988,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: davidgamero/express-hello-world
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -1251,7 +1251,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/ruby-hello-world
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -1514,7 +1514,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: imiller31/csharp-simple-web-app
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -1777,7 +1777,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: imiller31/simple-java-server
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -2040,7 +2040,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: imiller31/simple-gradle-server
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -2303,7 +2303,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: OliverMKing/swift-hello-world
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -2566,7 +2566,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: bfoley13/ErlangExample
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
@@ -2829,7 +2829,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             repository: imiller31/clojure-simple-http
-            path: ./langtest
+            path: ./langtest/subfolder
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp

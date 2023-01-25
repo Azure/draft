@@ -337,7 +337,7 @@ languageVariables:
         - uses: actions/checkout@v2
           with:
             repository: $repo
-            path: ./langtest
+            path: ./langtest/$subf
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp

@@ -520,7 +520,7 @@ languageVariables:
           name: $lang-kustomize-create
           path: ./langtest/$subf/
       - run: Remove-Item ./langtest/$subf/overlays/production/ingress.yaml -ErrorAction Ignore
-      - run: ./draft.exe -v update -d ./langtest/ -s $subf $ingress_test_args
+      - run: ./draft.exe -v update -d ./langtest/$subf/ $ingress_test_args
       - uses: actions/download-artifact@v2
         with:
           name: check_windows_addon_kustomize

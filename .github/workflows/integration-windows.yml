@@ -128,7 +128,7 @@ jobs:
         with:
           name: gomodule-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -224,7 +224,7 @@ jobs:
         with:
           name: python-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -320,7 +320,7 @@ jobs:
         with:
           name: rust-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -416,7 +416,7 @@ jobs:
         with:
           name: javascript-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -512,7 +512,7 @@ jobs:
         with:
           name: ruby-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -608,7 +608,7 @@ jobs:
         with:
           name: csharp-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -704,7 +704,7 @@ jobs:
         with:
           name: java-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -800,7 +800,7 @@ jobs:
         with:
           name: gradle-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -896,7 +896,7 @@ jobs:
         with:
           name: swift-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -992,7 +992,7 @@ jobs:
         with:
           name: erlang-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:
@@ -1088,7 +1088,7 @@ jobs:
         with:
           name: clojure-kustomize-create
           path: ./langtest/subfolder/
-      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subfolder/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -s subfolder -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@v2
         with:

@@ -87,6 +87,7 @@ func (cc *createCmd) initConfig() error {
 		dest := cc.dest
 		subDir := cc.subDirectory
 
+		// Cleaning path to avoid double /
 		if dest[len(dest)-1] == '/' {
 			dest = dest[:len(dest)-1]
 		}
@@ -95,9 +96,8 @@ func (cc *createCmd) initConfig() error {
 		}
 		fullPath = dest + "/" + subDir
 
-		// TODO: Ask team about expected behavior if subdirectory doesn't exist
 		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			return errors.New("specified sub-directory does not exist")
+			return errors.New(fmt.Sprintf("specified directory %v does not exist", fullPath))
 		}
 
 		cc.dest = fullPath

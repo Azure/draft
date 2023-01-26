@@ -138,7 +138,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  gomodule-helm-create:
+  gomodule-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -165,7 +165,7 @@ jobs:
         with:
           name: gomodule-helm-create
           path: ./langtest/subfolder/
-  gomodule-helm-update:
+  gomodule-helm-update-subd:
     needs: gomodule-helm-create
     runs-on: windows-latest
     steps:
@@ -282,7 +282,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  python-helm-create:
+  python-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -309,7 +309,7 @@ jobs:
         with:
           name: python-helm-create
           path: ./langtest/subfolder/
-  python-helm-update:
+  python-helm-update-subd:
     needs: python-helm-create
     runs-on: windows-latest
     steps:
@@ -426,7 +426,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  rust-helm-create:
+  rust-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -453,7 +453,7 @@ jobs:
         with:
           name: rust-helm-create
           path: ./langtest/subfolder/
-  rust-helm-update:
+  rust-helm-update-subd:
     needs: rust-helm-create
     runs-on: windows-latest
     steps:
@@ -570,7 +570,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  javascript-helm-create:
+  javascript-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -597,7 +597,7 @@ jobs:
         with:
           name: javascript-helm-create
           path: ./langtest/subfolder/
-  javascript-helm-update:
+  javascript-helm-update-subd:
     needs: javascript-helm-create
     runs-on: windows-latest
     steps:
@@ -714,7 +714,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  ruby-helm-create:
+  ruby-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -741,7 +741,7 @@ jobs:
         with:
           name: ruby-helm-create
           path: ./langtest/subfolder/
-  ruby-helm-update:
+  ruby-helm-update-subd:
     needs: ruby-helm-create
     runs-on: windows-latest
     steps:
@@ -858,7 +858,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  csharp-helm-create:
+  csharp-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -885,7 +885,7 @@ jobs:
         with:
           name: csharp-helm-create
           path: ./langtest/subfolder/
-  csharp-helm-update:
+  csharp-helm-update-subd:
     needs: csharp-helm-create
     runs-on: windows-latest
     steps:
@@ -1002,7 +1002,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  java-helm-create:
+  java-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -1029,7 +1029,7 @@ jobs:
         with:
           name: java-helm-create
           path: ./langtest/subfolder/
-  java-helm-update:
+  java-helm-update-subd:
     needs: java-helm-create
     runs-on: windows-latest
     steps:
@@ -1146,7 +1146,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  gradle-helm-create:
+  gradle-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -1173,7 +1173,7 @@ jobs:
         with:
           name: gradle-helm-create
           path: ./langtest/subfolder/
-  gradle-helm-update:
+  gradle-helm-update-subd:
     needs: gradle-helm-create
     runs-on: windows-latest
     steps:
@@ -1290,7 +1290,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  swift-helm-create:
+  swift-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -1317,7 +1317,7 @@ jobs:
         with:
           name: swift-helm-create
           path: ./langtest/subfolder/
-  swift-helm-update:
+  swift-helm-update-subd:
     needs: swift-helm-create
     runs-on: windows-latest
     steps:
@@ -1434,7 +1434,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  erlang-helm-create:
+  erlang-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -1461,7 +1461,7 @@ jobs:
         with:
           name: erlang-helm-create
           path: ./langtest/subfolder/
-  erlang-helm-update:
+  erlang-helm-update-subd:
     needs: erlang-helm-create
     runs-on: windows-latest
     steps:
@@ -1578,7 +1578,7 @@ jobs:
         working-directory: ./langtest/
       
 
-  clojure-helm-create:
+  clojure-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -1605,7 +1605,7 @@ jobs:
         with:
           name: clojure-helm-create
           path: ./langtest/subfolder/
-  clojure-helm-update:
+  clojure-helm-update-subd:
     needs: clojure-helm-create
     runs-on: windows-latest
     steps:

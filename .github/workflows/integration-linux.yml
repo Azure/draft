@@ -291,7 +291,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  gomodule-dry-run-subd:
+  gomodule-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -313,7 +313,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gomodule-create-update-subd:
+  gomodule-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -636,7 +636,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  python-dry-run-subd:
+  python-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -658,7 +658,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  python-create-update-subd:
+  python-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -981,7 +981,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  rust-dry-run-subd:
+  rust-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1003,7 +1003,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  rust-create-update-subd:
+  rust-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1326,7 +1326,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  javascript-dry-run-subd:
+  javascript-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1348,7 +1348,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  javascript-create-update-subd:
+  javascript-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1671,7 +1671,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  ruby-dry-run-subd:
+  ruby-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1693,7 +1693,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  ruby-create-update-subd:
+  ruby-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2016,7 +2016,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  csharp-dry-run-subd:
+  csharp-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2038,7 +2038,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  csharp-create-update-subd:
+  csharp-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2361,7 +2361,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  java-dry-run-subd:
+  java-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2383,7 +2383,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  java-create-update-subd:
+  java-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2706,7 +2706,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  gradle-dry-run-subd:
+  gradle-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2728,7 +2728,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gradle-create-update-subd:
+  gradle-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -3051,7 +3051,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  swift-dry-run-subd:
+  swift-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -3073,7 +3073,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  swift-create-update-subd:
+  swift-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -3396,7 +3396,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  erlang-dry-run-subd:
+  erlang-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -3418,7 +3418,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  erlang-create-update-subd:
+  erlang-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -3741,7 +3741,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  clojure-dry-run-subd:
+  clojure-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -3763,7 +3763,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  clojure-create-update-subd:
+  clojure-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:

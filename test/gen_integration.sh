@@ -533,7 +533,7 @@ languageVariables:
 
     # create helm workflow with subdirectories
     echo "
-  $lang-dry-run-subd:
+  $lang-helm-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -557,7 +557,7 @@ languageVariables:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  $lang-create-update-subd:
+  $lang-helm-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -618,7 +618,7 @@ languageVariables:
 
     # create helm workflow with subdirectories
     echo "
-  $lang-helm-create:
+  $lang-helm-create-subd:
     runs-on: windows-latest
     needs: build
     steps:
@@ -645,7 +645,7 @@ languageVariables:
         with:
           name: $lang-helm-create
           path: ./langtest/$subf/
-  $lang-helm-update:
+  $lang-helm-update-subd:
     needs: $lang-helm-create
     runs-on: windows-latest
     steps:

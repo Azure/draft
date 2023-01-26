@@ -2,27 +2,23 @@ package prompts
 
 import (
 	"fmt"
+	"io"
 
-	"github.com/Azure/draft/pkg/config"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Azure/draft/pkg/config"
 )
-
-type TemplatePrompt struct {
-	Prompt         *promptui.Prompt
-	OverrideString string
-}
-
-type TemplateSelect struct {
-	Select         *promptui.Select
-	OverrideString string
-}
 
 func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error) {
 	return RunPromptsFromConfigWithSkips(config, []string{})
 }
 
 func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []string) (map[string]string, error) {
+	return RunPromptsFromConfigWithSkipsIO(config, varsToSkip, nil, nil)
+}
+
+func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []string, Stdin io.ReadCloser, Stdout io.WriteCloser) (map[string]string, error) {
 	skipMap := make(map[string]interface{})
 	for _, v := range varsToSkip {
 		skipMap[v] = interface{}(nil)
@@ -31,66 +27,27 @@ func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []stri
 	inputs := make(map[string]string)
 
 	for _, customPrompt := range config.Variables {
-		if _, ok := skipMap[customPrompt.Name]; ok {
-			log.Debugf("Skipping prompt for %s", customPrompt.Name)
+		promptVariableName := customPrompt.Name
+		if _, ok := skipMap[promptVariableName]; ok {
+			log.Debugf("Skipping prompt for %s", promptVariableName)
 			continue
 		}
 
 		log.Debugf("constructing prompt for: %s", customPrompt)
 		if customPrompt.VarType == "bool" {
-			prompt := &promptui.Select{
-				Label: "Please select " + customPrompt.Description,
-				Items: []bool{true, false},
-			}
-
-			// TODO: we probably don't need this struct anymore since we are getting rid of override strings
-			newSelect := &TemplateSelect{
-				Select:         prompt,
-				OverrideString: customPrompt.Name,
-			}
-
-			_, input, err := newSelect.Select.Run()
+			input, err := RunBoolPrompt(customPrompt, Stdin, Stdout)
 			if err != nil {
 				return nil, err
 			}
-			inputs[newSelect.OverrideString] = input
+			inputs[promptVariableName] = input
 		} else {
-			defaultString := ""
-			for _, variableDefault := range config.VariableDefaults {
-				if variableDefault.Name == customPrompt.Name {
-					defaultValue := variableDefault.Value
-					if variableDefault.ReferenceVar != "" {
-						defaultValue = inputs[variableDefault.ReferenceVar]
-						log.Debugf("setting default value for %s to %s from referenceVar %s", customPrompt.Name, defaultValue, variableDefault.ReferenceVar)
-					}
-					defaultString = " (default: " + defaultValue + ")"
-				}
-			}
+			defaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
 
-			prompt := &promptui.Prompt{
-				Label: "Please enter " + customPrompt.Description + defaultString,
-				Validate: func(s string) error {
-					// Allow blank input for variables with defaults
-					if defaultString != "" {
-						return nil
-					}
-					if len(s) <= 0 {
-						return fmt.Errorf("input must be greater than 0")
-					}
-					return nil
-				},
-			}
-
-			// TODO: we probably don't need this struct anymore since we are getting rid of override strings
-			newPrompt := &TemplatePrompt{
-				Prompt:         prompt,
-				OverrideString: customPrompt.Name,
-			}
-			input, err := newPrompt.Prompt.Run()
+			stringInput, err := RunDefaultableStringPrompt(customPrompt, defaultValue, nil, Stdin, Stdout)
 			if err != nil {
 				return nil, err
 			}
-			inputs[newPrompt.OverrideString] = input
+			inputs[promptVariableName] = stringInput
 		}
 	}
 
@@ -102,6 +59,81 @@ func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []stri
 	}
 
 	return inputs, nil
+}
+
+// GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.
+func GetVariableDefaultValue(variableName string, variableDefaults []config.BuilderVarDefault, inputs map[string]string) string {
+	defaultValue := ""
+	for _, variableDefault := range variableDefaults {
+		if variableDefault.Name == variableName {
+			defaultValue = variableDefault.Value
+			log.Debugf("setting default value for %s to %s from variable default rule", variableName, defaultValue)
+			if variableDefault.ReferenceVar != "" && inputs[variableDefault.ReferenceVar] != "" {
+				defaultValue = inputs[variableDefault.ReferenceVar]
+				log.Debugf("setting default value for %s to %s from referenceVar %s", variableName, defaultValue, variableDefault.ReferenceVar)
+			}
+		}
+	}
+	return defaultValue
+}
+
+func RunBoolPrompt(customPrompt config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+	newSelect := &promptui.Select{
+		Label:  "Please select " + customPrompt.Description,
+		Items:  []bool{true, false},
+		Stdin:  Stdin,
+		Stdout: Stdout,
+	}
+
+	_, input, err := newSelect.Run()
+	if err != nil {
+		return "", err
+	}
+	return input, nil
+}
+
+// AllowAllStringValidator is a string validator that allows any string
+func AllowAllStringValidator(_ string) error {
+	return nil
+}
+
+// NoBlankStringValidator is a string validator that does not allow blank strings
+func NoBlankStringValidator(s string) error {
+	if len(s) <= 0 {
+		return fmt.Errorf("input must be greater than 0")
+	}
+	return nil
+}
+
+// RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
+func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue string, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+	var validatorFunc func(string) error
+	if validate == nil {
+		validatorFunc = NoBlankStringValidator
+	}
+
+	defaultString := ""
+	if defaultValue != "" {
+		validatorFunc = AllowAllStringValidator
+		defaultString = " (default: " + defaultValue + ")"
+	}
+
+	prompt := &promptui.Prompt{
+		Label:    "Please enter " + customPrompt.Description + defaultString,
+		Validate: validatorFunc,
+		Stdin:    Stdin,
+		Stdout:   Stdout,
+	}
+
+	input, err := prompt.Run()
+	if err != nil {
+		return "", err
+	}
+	// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
+	if input == "" && defaultString != "" {
+		input = defaultValue
+	}
+	return input, nil
 }
 
 func GetInputFromPrompt(desiredInput string) string {

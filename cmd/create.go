@@ -32,10 +32,10 @@ const LANGUAGE_VARIABLE = "LANGUAGE"
 const TWO_SPACES = "  "
 
 type createCmd struct {
-	appName      string
-	lang         string
-	dest         string
-	subDirectory string
+	appName string
+	lang    string
+	dest    string
+	subDir  string
 
 	dockerfileOnly    bool
 	deploymentOnly    bool
@@ -71,7 +71,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.StringVarP(&cc.subDirectory, "sub-directory", "s", "", "specify the output sub-directory")
+	f.StringVarP(&cc.subDir, "sub-directory", "s", "", "specify the output sub-directory")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
@@ -80,18 +80,18 @@ func newCreateCmd() *cobra.Command {
 }
 
 func (cc *createCmd) initConfig() error {
-	if cc.subDirectory != "" {
+	if cc.subDir != "" {
 		var fullPath string
 		log.Debug("updating destination")
 
 		dest := cc.dest
-		subDir := cc.subDirectory
+		subDir := cc.subDir
 
 		// Cleaning path to avoid double /
-		if dest[len(dest)-1] == '/' {
+		for dest[len(dest)-1] == '/' {
 			dest = dest[:len(dest)-1]
 		}
-		if subDir[0] == '/' {
+		for subDir[0] == '/' {
 			subDir = subDir[1:]
 		}
 		fullPath = dest + "/" + subDir

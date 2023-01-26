@@ -10,7 +10,7 @@ echo "name: draft Linux Integrations
 
 on:
   push:
-    branches: [asgayle/create-sub-d]
+    branches: [asgayle/update-sub-d]
   workflow_dispatch:
 
 jobs:
@@ -39,7 +39,7 @@ echo "name: draft Windows Integrations
 
 on:
   push:
-    branches: [asgayle/create-sub-d]
+    branches: [asgayle/update-sub-d]
   workflow_dispatch:
 
 jobs:

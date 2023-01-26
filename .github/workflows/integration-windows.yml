@@ -2,7 +2,7 @@ name: draft Windows Integrations
 
 on:
   push:
-    branches: [asgayle/update-sub-d]
+    branches: [update-sub-d]
   workflow_dispatch:
 
 jobs:

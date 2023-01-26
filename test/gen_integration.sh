@@ -288,7 +288,7 @@ languageVariables:
       - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/ -s $subf
       - run: ./draft -v generate-workflow -b main -d ./langtest/$subf/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s $subf/ $ingress_test_args
+      - run: ./draft -v update -d ./langtest/ -s $subf/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

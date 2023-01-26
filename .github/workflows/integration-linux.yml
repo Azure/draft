@@ -152,7 +152,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -416,7 +416,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -680,7 +680,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -944,7 +944,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1208,7 +1208,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1472,7 +1472,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1736,7 +1736,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2000,7 +2000,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2264,7 +2264,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2528,7 +2528,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2792,7 +2792,7 @@ jobs:
       - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/ -s subfolder
       - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/Z -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

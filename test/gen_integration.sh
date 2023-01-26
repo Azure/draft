@@ -531,7 +531,7 @@ languageVariables:
         working-directory: ./langtest/
       " >> ../.github/workflows/integration-windows.yml
 
-    # create helm workflow with subdirectories
+    # create helm workflow with subdirectories - ubuntu
     echo "
   $lang-helm-dry-run-subd:
       runs-on: ubuntu-latest
@@ -564,7 +564,7 @@ languageVariables:
         image: registry:2
         ports:
           - 5000:5000
-    needs: $lang-helm-dry-run
+    needs: $lang-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -616,7 +616,7 @@ languageVariables:
         if: steps.deploy.outcome != 'success'
         run: exit 6" >> ../.github/workflows/integration-linux.yml
 
-    # create helm workflow with subdirectories
+    # create helm workflow with subdirectories - windows latest
     echo "
   $lang-helm-create-subd:
     runs-on: windows-latest
@@ -646,7 +646,7 @@ languageVariables:
           name: $lang-helm-create
           path: ./langtest/$subf/
   $lang-helm-update-subd:
-    needs: $lang-helm-create
+    needs: $lang-helm-create-subd
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2

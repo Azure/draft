@@ -320,7 +320,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: gomodule-helm-dry-run
+    needs: gomodule-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -665,7 +665,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: python-helm-dry-run
+    needs: python-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1010,7 +1010,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: rust-helm-dry-run
+    needs: rust-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1355,7 +1355,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: javascript-helm-dry-run
+    needs: javascript-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -1700,7 +1700,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: ruby-helm-dry-run
+    needs: ruby-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2045,7 +2045,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: csharp-helm-dry-run
+    needs: csharp-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2390,7 +2390,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: java-helm-dry-run
+    needs: java-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -2735,7 +2735,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: gradle-helm-dry-run
+    needs: gradle-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -3080,7 +3080,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: swift-helm-dry-run
+    needs: swift-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -3425,7 +3425,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: erlang-helm-dry-run
+    needs: erlang-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -3770,7 +3770,7 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    needs: clojure-helm-dry-run
+    needs: clojure-helm-dry-run-subd
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

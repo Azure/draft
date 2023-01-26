@@ -44,7 +44,7 @@ func newUpdateCmd() *cobra.Command {
 	}
 	f := cmd.Flags()
 	f.StringVarP(&uc.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.StringVarP(&uc.subDir, "sub-directory", "s", "", "specify the project sub-directory")
+	f.StringVarP(&uc.subDir, "subdirectory", "s", "", "specify the project subdirectory")
 	f.StringVarP(&uc.provider, "provider", "p", "azure", "cloud provider")
 	f.StringVarP(&uc.addon, "addon", "a", "", "addon name")
 	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass a variable non-interactively (ex: --variable foo=bar)")

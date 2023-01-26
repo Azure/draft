@@ -71,7 +71,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.StringVarP(&cc.subDir, "sub-directory", "s", "", "specify the output sub-directory")
+	f.StringVarP(&cc.subDir, "subdirectory", "s", "", "specify the project subdirectory")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")

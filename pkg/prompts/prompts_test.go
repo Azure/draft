@@ -126,14 +126,14 @@ func TestRunStringPrompt(t *testing.T) {
 					t.Errorf("Error closing inWriter: %v", err)
 				}
 			}()
-			got, err := RunStringPrompt(tt.prompt, tt.defaultValue, inReader, nil)
+			got, err := RunDefaultableStringPrompt(tt.prompt, tt.defaultValue, nil, inReader, nil)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RunStringPrompt() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RunDefaultableStringPrompt() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("RunStringPrompt() = %v, want %v", got, tt.want)
+				t.Errorf("RunDefaultableStringPrompt() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -43,7 +43,7 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 		} else {
 			defaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
 
-			stringInput, err := RunStringPrompt(customPrompt, defaultValue, Stdin, Stdout)
+			stringInput, err := RunDefaultableStringPrompt(customPrompt, defaultValue, nil, Stdin, Stdout)
 			if err != nil {
 				return nil, err
 			}
@@ -92,27 +92,37 @@ func RunBoolPrompt(customPrompt config.BuilderVar, Stdin io.ReadCloser, Stdout i
 	return input, nil
 }
 
-// RunStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
-func RunStringPrompt(customPrompt config.BuilderVar, defaultValue string, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+// AllowAllStringValidator is a string validator that allows any string
+func AllowAllStringValidator(_ string) error {
+	return nil
+}
+
+// NoBlankStringValidator is a string validator that does not allow blank strings
+func NoBlankStringValidator(s string) error {
+	if len(s) <= 0 {
+		return fmt.Errorf("input must be greater than 0")
+	}
+	return nil
+}
+
+// RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
+func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue string, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+	var validatorFunc func(string) error
+	if validate == nil {
+		validatorFunc = NoBlankStringValidator
+	}
+
 	defaultString := ""
 	if defaultValue != "" {
+		validatorFunc = AllowAllStringValidator
 		defaultString = " (default: " + defaultValue + ")"
 	}
 
 	prompt := &promptui.Prompt{
-		Label: "Please enter " + customPrompt.Description + defaultString,
-		Validate: func(s string) error {
-			// Allow blank input for variables with defaults
-			if defaultString != "" {
-				return nil
-			}
-			if len(s) <= 0 {
-				return fmt.Errorf("input must be greater than 0")
-			}
-			return nil
-		},
-		Stdin:  Stdin,
-		Stdout: Stdout,
+		Label:    "Please enter " + customPrompt.Description + defaultString,
+		Validate: validatorFunc,
+		Stdin:    Stdin,
+		Stdout:   Stdout,
 	}
 
 	input, err := prompt.Run()

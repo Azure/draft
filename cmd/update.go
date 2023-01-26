@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"embed"
+	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -16,6 +18,7 @@ import (
 
 type updateCmd struct {
 	dest           string
+	subDir         string
 	provider       string
 	addon          string
 	flagVariables  []string
@@ -42,6 +45,7 @@ func newUpdateCmd() *cobra.Command {
 	}
 	f := cmd.Flags()
 	f.StringVarP(&uc.dest, "destination", "d", ".", "specify the path to the project directory")
+	f.StringVarP(&uc.subDir, "sub-directory", "s", "", "specify the project sub-directory")
 	f.StringVarP(&uc.provider, "provider", "p", "azure", "cloud provider")
 	f.StringVarP(&uc.addon, "addon", "a", "", "addon name")
 	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass a variable non-interactively (ex: --variable foo=bar)")
@@ -73,6 +77,29 @@ func (uc *updateCmd) run() error {
 	addonConfig, err := addons.GetAddonConfig(template.Addons, uc.provider, uc.addon)
 	if err != nil {
 		return err
+	}
+
+	if uc.subDir != "" {
+		var fullPath string
+		log.Debug("updating destination")
+
+		dest := uc.dest
+		subDir := uc.subDir
+
+		for dest[len(dest)-1] == '/' { // Cleaning path to avoid double backslash
+			dest = dest[:len(dest)-1]
+		}
+		for subDir[0] == '/' {
+			subDir = subDir[1:]
+		}
+
+		fullPath = dest + "/" + subDir
+
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			return errors.New(fmt.Sprintf("specified directory %v does not exist", fullPath))
+		}
+
+		uc.dest = fullPath
 	}
 
 	uc.userInputs, err = addons.PromptAddonValues(uc.dest, flagVariablesMap, addonConfig)

@@ -181,7 +181,7 @@ languageVariables:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  $lang-helm-create-ubuntu:
+  $lang-helm-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -203,6 +203,7 @@ languageVariables:
       - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/ -s $subf
       - run: ./draft -b main -v generate-workflow -d ./langtest/$subf -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -s $subf $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -287,7 +288,7 @@ languageVariables:
       - run: rm -rf ./langtest/$subf/manifests && rm -f ./langtest/$subf/Dockerfile ./langtest/$subf/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/ -s $subf
       - run: ./draft -v generate-workflow -b main -d ./langtest/$subf/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/$subf/ $ingress_test_args
+      - run: ./draft -v update -d ./langtest/Z -s $subf/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

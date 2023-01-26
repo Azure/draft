@@ -1,8 +1,8 @@
 name: draft Linux Integrations
 
 on:
-  push:
-    branches: [update-sub-d]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -36,6 +36,270 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: gambtho/go_echo
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  gomodule-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: gomodule-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  gomodule-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gomodule/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  gomodule-kustomize-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: gomodule-kustomize-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: ./langtest/base
+          kubectl-version: 'latest'
+        id: bake
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  gomodule-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: gambtho/go_echo
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  gomodule-manifests-create:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: gomodule-manifest-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - uses: actions/upload-artifact@v2
+        with:
+          name: gomodule-manifests-create
+          path: ./langtest
+  gomodule-manifests-update:
+    needs: gomodule-manifests-create
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - uses: actions/download-artifact@v2
+        with:
+          name: gomodule-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+
+  gomodule-dry-run-subd:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
         - run: mkdir -p ./langtest/subfolder
         - uses: actions/checkout@v2
           with:
@@ -49,7 +313,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gomodule-helm-create-update:
+  gomodule-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -108,7 +372,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  gomodule-kustomize-dry-run:
+  python-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/flask-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  python-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: python-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  python-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -117,42 +462,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: gambtho/go_echo
-          path: ./langtest/subfolder
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gomodule/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/python/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gomodule-kustomize-create-update:
+  python-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: gomodule-kustomize-dry-run
+    needs: python-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: gambtho/go_echo
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -160,14 +505,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -187,7 +532,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  gomodule-manifest-dry-run:
+  python-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -196,41 +541,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: gambtho/go_echo
-            path: ./langtest/subfolder
+            repository: OliverMKing/flask-hello-world
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gomodule-manifests-create:
+  python-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: gomodule-manifest-dry-run
+    needs: python-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: gambtho/go_echo
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -238,12 +583,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -251,10 +596,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: gomodule-manifests-create
-          path: ./langtest/subfolder/
-  gomodule-manifests-update:
-    needs: gomodule-manifests-create
+          name: python-manifests-create
+          path: ./langtest
+  python-manifests-update:
+    needs: python-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -269,9 +614,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: gomodule-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: python-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -279,19 +624,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  python-helm-dry-run:
+  python-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -313,7 +658,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  python-helm-create-update:
+  python-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -372,7 +717,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  python-kustomize-dry-run:
+  rust-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/tiny-http-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  rust-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: rust-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  rust-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -381,42 +807,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/flask-hello-world
-          path: ./langtest/subfolder
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/python/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/rust/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  python-kustomize-create-update:
+  rust-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: python-kustomize-dry-run
+    needs: rust-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/flask-hello-world
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -424,14 +850,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -451,7 +877,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  python-manifest-dry-run:
+  rust-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -460,41 +886,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: OliverMKing/flask-hello-world
-            path: ./langtest/subfolder
+            repository: OliverMKing/tiny-http-hello-world
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  python-manifests-create:
+  rust-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: python-manifest-dry-run
+    needs: rust-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/flask-hello-world
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -502,12 +928,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -515,10 +941,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: python-manifests-create
-          path: ./langtest/subfolder/
-  python-manifests-update:
-    needs: python-manifests-create
+          name: rust-manifests-create
+          path: ./langtest
+  rust-manifests-update:
+    needs: rust-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -533,9 +959,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: python-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: rust-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -543,19 +969,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  rust-helm-dry-run:
+  rust-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -577,7 +1003,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  rust-helm-create-update:
+  rust-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -636,7 +1062,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  rust-kustomize-dry-run:
+  javascript-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: davidgamero/express-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  javascript-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: javascript-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  javascript-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -645,42 +1152,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/tiny-http-hello-world
-          path: ./langtest/subfolder
+          repository: davidgamero/express-hello-world
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/rust/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/javascript/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  rust-kustomize-create-update:
+  javascript-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: rust-kustomize-dry-run
+    needs: javascript-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/tiny-http-hello-world
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -688,14 +1195,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -715,7 +1222,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  rust-manifest-dry-run:
+  javascript-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -724,41 +1231,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: OliverMKing/tiny-http-hello-world
-            path: ./langtest/subfolder
+            repository: davidgamero/express-hello-world
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  rust-manifests-create:
+  javascript-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: rust-manifest-dry-run
+    needs: javascript-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/tiny-http-hello-world
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: davidgamero/express-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -766,12 +1273,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -779,10 +1286,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: rust-manifests-create
-          path: ./langtest/subfolder/
-  rust-manifests-update:
-    needs: rust-manifests-create
+          name: javascript-manifests-create
+          path: ./langtest
+  javascript-manifests-update:
+    needs: javascript-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -797,9 +1304,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: rust-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: javascript-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -807,19 +1314,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  javascript-helm-dry-run:
+  javascript-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -841,7 +1348,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  javascript-helm-create-update:
+  javascript-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -900,7 +1407,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  javascript-kustomize-dry-run:
+  ruby-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/ruby-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  ruby-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: ruby-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  ruby-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -909,42 +1497,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: davidgamero/express-hello-world
-          path: ./langtest/subfolder
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/javascript/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/ruby/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  javascript-kustomize-create-update:
+  ruby-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: javascript-kustomize-dry-run
+    needs: ruby-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: davidgamero/express-hello-world
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -952,14 +1540,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -979,7 +1567,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  javascript-manifest-dry-run:
+  ruby-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -988,41 +1576,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: davidgamero/express-hello-world
-            path: ./langtest/subfolder
+            repository: OliverMKing/ruby-hello-world
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  javascript-manifests-create:
+  ruby-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: javascript-manifest-dry-run
+    needs: ruby-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: davidgamero/express-hello-world
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1030,12 +1618,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -1043,10 +1631,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: javascript-manifests-create
-          path: ./langtest/subfolder/
-  javascript-manifests-update:
-    needs: javascript-manifests-create
+          name: ruby-manifests-create
+          path: ./langtest
+  ruby-manifests-update:
+    needs: ruby-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1061,9 +1649,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: javascript-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: ruby-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1071,19 +1659,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  ruby-helm-dry-run:
+  ruby-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1105,7 +1693,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  ruby-helm-create-update:
+  ruby-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1164,7 +1752,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  ruby-kustomize-dry-run:
+  csharp-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/csharp-simple-web-app
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  csharp-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: csharp-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  csharp-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -1173,42 +1842,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/ruby-hello-world
-          path: ./langtest/subfolder
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/ruby/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/csharp/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  ruby-kustomize-create-update:
+  csharp-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: ruby-kustomize-dry-run
+    needs: csharp-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/ruby-hello-world
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1216,14 +1885,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1243,7 +1912,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  ruby-manifest-dry-run:
+  csharp-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1252,41 +1921,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: OliverMKing/ruby-hello-world
-            path: ./langtest/subfolder
+            repository: imiller31/csharp-simple-web-app
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  ruby-manifests-create:
+  csharp-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: ruby-manifest-dry-run
+    needs: csharp-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/ruby-hello-world
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1294,12 +1963,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -1307,10 +1976,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: ruby-manifests-create
-          path: ./langtest/subfolder/
-  ruby-manifests-update:
-    needs: ruby-manifests-create
+          name: csharp-manifests-create
+          path: ./langtest
+  csharp-manifests-update:
+    needs: csharp-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1325,9 +1994,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: ruby-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: csharp-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1335,19 +2004,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  csharp-helm-dry-run:
+  csharp-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1369,7 +2038,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  csharp-helm-create-update:
+  csharp-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1428,7 +2097,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  csharp-kustomize-dry-run:
+  java-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/simple-java-server
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  java-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: java-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-java-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  java-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -1437,42 +2187,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/csharp-simple-web-app
-          path: ./langtest/subfolder
+          repository: imiller31/simple-java-server
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/csharp/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/java/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  csharp-kustomize-create-update:
+  java-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: csharp-kustomize-dry-run
+    needs: java-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/csharp-simple-web-app
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: imiller31/simple-java-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1480,14 +2230,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1507,7 +2257,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  csharp-manifest-dry-run:
+  java-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1516,41 +2266,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: imiller31/csharp-simple-web-app
-            path: ./langtest/subfolder
+            repository: imiller31/simple-java-server
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  csharp-manifests-create:
+  java-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: csharp-manifest-dry-run
+    needs: java-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/csharp-simple-web-app
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: imiller31/simple-java-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1558,12 +2308,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -1571,10 +2321,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: csharp-manifests-create
-          path: ./langtest/subfolder/
-  csharp-manifests-update:
-    needs: csharp-manifests-create
+          name: java-manifests-create
+          path: ./langtest
+  java-manifests-update:
+    needs: java-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1589,9 +2339,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: csharp-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: java-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1599,19 +2349,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  java-helm-dry-run:
+  java-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1633,7 +2383,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  java-helm-create-update:
+  java-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1692,7 +2442,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  java-kustomize-dry-run:
+  gradle-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/simple-gradle-server
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  gradle-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: gradle-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-gradle-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  gradle-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -1701,42 +2532,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/simple-java-server
-          path: ./langtest/subfolder
+          repository: imiller31/simple-gradle-server
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/java/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gradle/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  java-kustomize-create-update:
+  gradle-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: java-kustomize-dry-run
+    needs: gradle-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/simple-java-server
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: imiller31/simple-gradle-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1744,14 +2575,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -1771,7 +2602,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  java-manifest-dry-run:
+  gradle-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1780,41 +2611,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: imiller31/simple-java-server
-            path: ./langtest/subfolder
+            repository: imiller31/simple-gradle-server
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  java-manifests-create:
+  gradle-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: java-manifest-dry-run
+    needs: gradle-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/simple-java-server
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: imiller31/simple-gradle-server
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1822,12 +2653,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -1835,10 +2666,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: java-manifests-create
-          path: ./langtest/subfolder/
-  java-manifests-update:
-    needs: java-manifests-create
+          name: gradle-manifests-create
+          path: ./langtest
+  gradle-manifests-update:
+    needs: gradle-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1853,9 +2684,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: java-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: gradle-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1863,19 +2694,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  gradle-helm-dry-run:
+  gradle-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -1897,7 +2728,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gradle-helm-create-update:
+  gradle-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -1956,7 +2787,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  gradle-kustomize-dry-run:
+  swift-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: OliverMKing/swift-hello-world
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  swift-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: swift-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  swift-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -1965,42 +2877,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/simple-gradle-server
-          path: ./langtest/subfolder
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gradle/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/swift/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gradle-kustomize-create-update:
+  swift-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: gradle-kustomize-dry-run
+    needs: swift-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/simple-gradle-server
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2008,14 +2920,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -2035,7 +2947,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  gradle-manifest-dry-run:
+  swift-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2044,41 +2956,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: imiller31/simple-gradle-server
-            path: ./langtest/subfolder
+            repository: OliverMKing/swift-hello-world
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gradle-manifests-create:
+  swift-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: gradle-manifest-dry-run
+    needs: swift-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: imiller31/simple-gradle-server
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2086,12 +2998,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -2099,10 +3011,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: gradle-manifests-create
-          path: ./langtest/subfolder/
-  gradle-manifests-update:
-    needs: gradle-manifests-create
+          name: swift-manifests-create
+          path: ./langtest
+  swift-manifests-update:
+    needs: swift-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2117,9 +3029,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: gradle-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: swift-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2127,19 +3039,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  swift-helm-dry-run:
+  swift-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2161,7 +3073,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  swift-helm-create-update:
+  swift-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2220,7 +3132,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  swift-kustomize-dry-run:
+  erlang-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: bfoley13/ErlangExample
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  erlang-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: erlang-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: bfoley13/ErlangExample
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  erlang-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -2229,42 +3222,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/swift-hello-world
-          path: ./langtest/subfolder
+          repository: bfoley13/ErlangExample
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/swift/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/erlang/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  swift-kustomize-create-update:
+  erlang-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: swift-kustomize-dry-run
+    needs: erlang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/swift-hello-world
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: bfoley13/ErlangExample
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2272,14 +3265,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -2299,7 +3292,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  swift-manifest-dry-run:
+  erlang-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2308,41 +3301,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: OliverMKing/swift-hello-world
-            path: ./langtest/subfolder
+            repository: bfoley13/ErlangExample
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  swift-manifests-create:
+  erlang-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: swift-manifest-dry-run
+    needs: erlang-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: OliverMKing/swift-hello-world
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: bfoley13/ErlangExample
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2350,12 +3343,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -2363,10 +3356,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: swift-manifests-create
-          path: ./langtest/subfolder/
-  swift-manifests-update:
-    needs: swift-manifests-create
+          name: erlang-manifests-create
+          path: ./langtest
+  erlang-manifests-update:
+    needs: erlang-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2381,9 +3374,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: swift-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: erlang-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2391,19 +3384,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  erlang-helm-dry-run:
+  erlang-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2425,7 +3418,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  erlang-helm-create-update:
+  erlang-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2484,7 +3477,88 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  erlang-kustomize-dry-run:
+  clojure-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/download-artifact@v2
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v2
+          with:
+            repository: imiller31/clojure-simple-http
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  clojure-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: clojure-helm-dry-run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/clojure-simple-http
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  clojure-kustomize-dry-run:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -2493,42 +3567,42 @@ jobs:
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: bfoley13/ErlangExample
-          path: ./langtest/subfolder
+          repository: imiller31/clojure-simple-http
+          path: ./langtest
       - name: Execute Dry Run
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/erlang/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/clojure/kustomize.yaml           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  erlang-kustomize-create-update:
+  clojure-kustomize-create-update:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: erlang-kustomize-dry-run
+    needs: clojure-kustomize-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: bfoley13/ErlangExample
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          repository: imiller31/clojure-simple-http
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2536,14 +3610,14 @@ jobs:
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
+          kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
         id: bake
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
@@ -2563,7 +3637,7 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
-  erlang-manifest-dry-run:
+  clojure-manifest-dry-run:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2572,41 +3646,41 @@ jobs:
           with:
             name: draft-binary
         - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
+        - run: mkdir ./langtest
         - uses: actions/checkout@v2
           with:
-            repository: bfoley13/ErlangExample
-            path: ./langtest/subfolder
+            repository: imiller31/clojure-simple-http
+            path: ./langtest
         - name: Execute Dry Run
           run: |
             mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/manifest.yaml             -d ./langtest/ --skip-file-detection
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  erlang-manifests-create:
+  clojure-manifests-create:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-    needs: erlang-manifest-dry-run
+    needs: clojure-manifest-dry-run
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
+      - run: mkdir ./langtest
       - uses: actions/checkout@v2
         with:
-          repository: bfoley13/ErlangExample
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+          repository: imiller31/clojure-simple-http
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2614,12 +3688,12 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
@@ -2627,10 +3701,10 @@ jobs:
         run: kubectl get po
       - uses: actions/upload-artifact@v2
         with:
-          name: erlang-manifests-create
-          path: ./langtest/subfolder/
-  erlang-manifests-update:
-    needs: erlang-manifests-create
+          name: clojure-manifests-create
+          path: ./langtest
+  clojure-manifests-update:
+    needs: clojure-manifests-create
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2645,9 +3719,9 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@v2
         with:
-          name: erlang-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+          name: clojure-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2655,19 +3729,19 @@ jobs:
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n verifying images:
           docker images
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
+        run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
 
-  clojure-helm-dry-run:
+  clojure-dry-run-subd:
       runs-on: ubuntu-latest
       needs: build
       steps:
@@ -2689,7 +3763,7 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  clojure-helm-create-update:
+  clojure-create-update-subd:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -2747,186 +3821,3 @@ jobs:
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
         run: exit 6
-
-  clojure-kustomize-dry-run:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
-      - uses: actions/checkout@v2
-        with:
-          repository: imiller31/clojure-simple-http
-          path: ./langtest/subfolder
-      - name: Execute Dry Run
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/clojure/kustomize.yaml           -d ./langtest/ -s subfolder --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  clojure-kustomize-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: clojure-kustomize-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
-      - uses: actions/checkout@v2
-        with:
-          repository: imiller31/clojure-simple-http
-          path: ./langtest/subfolder
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -b main -d ./langtest/subfolder/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -s subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: ./langtest/subfolder/base
-          kubectl-version: 'latest'
-        id: bake
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp:curr ./langtest/subfolder/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-          images: |
-            testapp:curr
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
-
-  clojure-manifest-dry-run:
-      runs-on: ubuntu-latest
-      needs: build
-      steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
-          with:
-            name: draft-binary
-        - run: chmod +x ./draft
-        - run: mkdir -p ./langtest/subfolder
-        - uses: actions/checkout@v2
-          with:
-            repository: imiller31/clojure-simple-http
-            path: ./langtest/subfolder
-        - name: Execute Dry Run
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/manifest.yaml             -d ./langtest/ -s subfolder --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  clojure-manifests-create:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: clojure-manifest-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir -p ./langtest/subfolder
-      - uses: actions/checkout@v2
-        with:
-          repository: imiller31/clojure-simple-http
-          path: ./langtest/subfolder/
-      - run: rm -rf ./langtest/subfolder/manifests && rm -f ./langtest/subfolder/Dockerfile ./langtest/subfolder/.dockerignore
-      - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/ -s subfolder
-      - run: ./draft -v generate-workflow -d ./langtest/subfolder/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
-        continue-on-error: true
-        id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - uses: actions/upload-artifact@v2
-        with:
-          name: clojure-manifests-create
-          path: ./langtest/subfolder/
-  clojure-manifests-update:
-    needs: clojure-manifests-create
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
-        with:
-          name: clojure-manifests-create
-          path: ./langtest/subfolder/
-      - run: ./draft -v update -d ./langtest/subfolder/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/subfolder/Dockerfile -t testapp ./langtest/subfolder/
-          echo -n verifying images:
-          docker images
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        run: kubectl apply -f ./langtest/subfolder/manifests/
-        continue-on-error: true
-        id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po

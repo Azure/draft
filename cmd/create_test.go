@@ -69,7 +69,7 @@ func TestInitConfig(t *testing.T) {
 	assert.True(t, mockCC.createConfig != nil)
 }
 
-func TestInitConfigWithSubDirectory(t *testing.T) {
+func TestInitConfigWithSubdirectory(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./..///"
@@ -82,7 +82,7 @@ func TestInitConfigWithSubDirectory(t *testing.T) {
 	assert.True(t, mockCC.dest == "./../test/alpha/beta/gamma")
 }
 
-func TestInitConfigWithFakeSubDirectory(t *testing.T) {
+func TestInitConfigWithFakeSubdirectory(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."

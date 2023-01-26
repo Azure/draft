@@ -21,7 +21,7 @@ func TestRun(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
-	mockCC.subDirectory = "/folder"
+	mockCC.subDir = "/folder"
 	mockCC.createConfig.DeployType = "helm"
 	mockCC.createConfig.LanguageVariables = []UserInputs{}
 	mockCC.createConfig.DeployVariables = []UserInputs{}
@@ -72,9 +72,9 @@ func TestInitConfig(t *testing.T) {
 func TestInitConfigWithSubDirectory(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
-	mockCC.dest = "./.."
+	mockCC.dest = "./..///"
 	mockCC.createConfigPath = "./../test/templates/config.yaml"
-	mockCC.subDirectory = "/test/alpha/beta/gamma"
+	mockCC.subDir = "/test/alpha/beta/gamma"
 
 	err := mockCC.initConfig()
 	assert.True(t, err == nil)
@@ -87,10 +87,11 @@ func TestInitConfigWithFakeSubDirectory(t *testing.T) {
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
 	mockCC.createConfigPath = "./../test/templates/config.yaml"
-	mockCC.subDirectory = "/folder"
+	mockCC.subDir = "/folder"
 
 	err := mockCC.initConfig()
 	assert.False(t, err == nil)
+	assert.True(t, err.Error() == "specified directory ./../folder does not exist")
 	assert.True(t, mockCC.createConfig != nil)
 	assert.True(t, mockCC.dest == "./..")
 }

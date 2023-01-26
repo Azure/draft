@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"embed"
-	"errors"
 	"fmt"
-	"os"
+	"github.com/Azure/draft/pkg/filematches"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -80,26 +79,12 @@ func (uc *updateCmd) run() error {
 	}
 
 	if uc.subDir != "" {
-		var fullPath string
 		log.Debug("updating destination")
-
-		dest := uc.dest
-		subDir := uc.subDir
-
-		for dest[len(dest)-1] == '/' { // Cleaning path to avoid double backslash
-			dest = dest[:len(dest)-1]
+		cleanPath, err := filematches.GetSubDirPath(uc.dest, uc.subDir)
+		if err != nil {
+			return err
 		}
-		for subDir[0] == '/' {
-			subDir = subDir[1:]
-		}
-
-		fullPath = dest + "/" + subDir
-
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			return errors.New(fmt.Sprintf("specified directory %v does not exist", fullPath))
-		}
-
-		uc.dest = fullPath
+		uc.dest = cleanPath
 	}
 
 	uc.userInputs, err = addons.PromptAddonValues(uc.dest, flagVariablesMap, addonConfig)

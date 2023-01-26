@@ -81,26 +81,12 @@ func newCreateCmd() *cobra.Command {
 
 func (cc *createCmd) initConfig() error {
 	if cc.subDir != "" {
-		var fullPath string
 		log.Debug("updating destination")
-
-		dest := cc.dest
-		subDir := cc.subDir
-
-		// Cleaning path to avoid double /
-		for dest[len(dest)-1] == '/' {
-			dest = dest[:len(dest)-1]
+		cleanPath, err := filematches.GetSubDirPath(cc.dest, cc.subDir)
+		if err != nil {
+			return err
 		}
-		for subDir[0] == '/' {
-			subDir = subDir[1:]
-		}
-		fullPath = dest + "/" + subDir
-
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			return errors.New(fmt.Sprintf("specified directory %v does not exist", fullPath))
-		}
-
-		cc.dest = fullPath
+		cc.dest = cleanPath
 	}
 
 	if cc.createConfigPath != "" {

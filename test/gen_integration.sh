@@ -93,7 +93,7 @@ do
     repo=$(echo $test | jq '.repo' -r)
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
-    subd="subdirectory"
+    subd="subdir"
     echo "Adding $lang with port $port"
 
     mkdir ./integration/$lang
@@ -530,137 +530,136 @@ languageVariables:
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
       " >> ../.github/workflows/integration-windows.yml
+    echo "
+  $lang-helm-dry-run-subd:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir -p ./langtest/$subd
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest/$subd
+      - name: Execute Dry Run
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+          create -c ./test/integration/$lang/helm.yaml \
+          -d ./langtest/$subd --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  $lang-helm-create-update-subd:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: $lang-helm-dry-run-subd
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir -p ./langtest/$subd
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest/$subd
+      - run: rm -rf ./langtest/$subd/manifests && rm -f ./langtest/$subd/Dockerfile ./langtest/$subd/.dockerignore
+      - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/$subd
+      - run: ./draft -b main -v generate-workflow -d ./langtest/$subd -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -s $subd $ingress_test_args
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval \$(minikube -p minikube docker-env)
+          docker build -f ./langtest/$subd/Dockerfile -t testapp ./langtest/$subd
+          echo -n "verifying images:"
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/$subd/charts
+          overrideFiles: ./langtest/$subd/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6" >> ../.github/workflows/integration-linux.yml
 
-      echo "
-      $lang-helm-dry-run-subd:
-            runs-on: ubuntu-latest
-            needs: build
-            steps:
-              - uses: actions/checkout@v2
-              - uses: actions/download-artifact@v2
-                with:
-                  name: draft-binary
-              - run: chmod +x ./draft
-              - run: mkdir -p ./langtest/$subd
-              - uses: actions/checkout@v2
-                with:
-                  repository: $repo
-                  path: ./langtest/$subd
-              - name: Execute Dry Run
-                run: |
-                  mkdir -p test/temp
-                  ./draft --dry-run --dry-run-file test/temp/dry-run.json \
-                  create -c ./test/integration/$lang/helm.yaml \
-                  -d ./langtest/$subd --skip-file-detection
-              - name: Validate JSON
-                run: |
-                  npm install -g ajv-cli@5.0.0
-                  ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      $lang-helm-create-update-subd:
-          runs-on: ubuntu-latest
-          services:
-            registry:
-              image: registry:2
-              ports:
-                - 5000:5000
-          needs: $lang-helm-dry-run-subd
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: chmod +x ./draft
-            - run: mkdir -p ./langtest/$subd
-            - uses: actions/checkout@v2
-              with:
-                repository: $repo
-                path: ./langtest/$subd
-            - run: rm -rf ./langtest/$subd/manifests && rm -f ./langtest/$subd/Dockerfile ./langtest/$subd/.dockerignore
-            - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/$subd
-            - run: ./draft -b main -v generate-workflow -d ./langtest/$subd -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-            - run: ./draft -v update -d ./langtest/ -s $subd $ingress_test_args
-            - name: start minikube
-              id: minikube
-              uses: medyagh/setup-minikube@master
-            - name: Build image
-              run: |
-                export SHELL=/bin/bash
-                eval \$(minikube -p minikube docker-env)
-                docker build -f ./langtest/$subd/Dockerfile -t testapp ./langtest/$subd
-                echo -n "verifying images:"
-                docker images
-            # Runs Helm to create manifest files
-            - name: Bake deployment
-              uses: azure/k8s-bake@v2.1
-              with:
-                renderEngine: 'helm'
-                helmChart: ./langtest/$subd/charts
-                overrideFiles: ./langtest/$subd/charts/values.yaml
-                overrides: |
-                  replicas:2
-                helm-version: 'latest'
-              id: bake
-            # Deploys application based on manifest files from previous step
-            - name: Deploy application
-              uses: Azure/k8s-deploy@v3.0
-              continue-on-error: true
-              id: deploy
-              with:
-                action: deploy
-                manifests: \${{ steps.bake.outputs.manifestsBundle }}
-            - name: Check default namespace
-              if: steps.deploy.outcome != 'success'
-              run: kubectl get po
-            - name: Fail if any error
-              if: steps.deploy.outcome != 'success'
-              run: exit 6" >> ../.github/workflows/integration-linux.yml
-
-      echo "
-        $lang-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/$subd
-            - uses: actions/checkout@v2
-              with:
-                repository: $repo
-                path: ./langtest/$subd/
-            - run: Remove-Item ./langtest/$subd/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/$subd/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/$subd/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/$subd
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/$subd/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/$subd/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: $lang-helm-create
-                path: ./langtest/$subd/
-        $lang-helm-update-subd:
-          needs: $lang-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: $lang-helm-create
-                path: ./langtest/$subd/
-            - run: Remove-Item ./langtest/$subd/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s $subd/ $ingress_test_args
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/$subd/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/$subd/" >> ../.github/workflows/integration-windows.yml
+  echo "
+  $lang-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/$subd
+      - uses: actions/checkout@v2
+        with:
+          repository: $repo
+          path: ./langtest/$subd/
+      - run: Remove-Item ./langtest/$subd/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subd/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/$subd/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/$subd
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/$subd/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/$subd/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: $lang-helm-create
+          path: ./langtest/$subd/
+  $lang-helm-update-subd:
+    needs: $lang-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: $lang-helm-create
+          path: ./langtest/$subd/
+      - run: Remove-Item ./langtest/$subd/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s $subd/ $ingress_test_args
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/$subd/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/$subd/" >> ../.github/workflows/integration-windows.yml
 done

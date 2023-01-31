@@ -138,53 +138,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        gomodule-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: gambtho/go_echo
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: gomodule-helm-create
-                path: ./langtest/subdirectory/
-        gomodule-helm-update-subd:
-          needs: gomodule-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: gomodule-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  gomodule-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: gambtho/go_echo
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gomodule-helm-create
+          path: ./langtest/subdir/
+  gomodule-helm-update-subd:
+    needs: gomodule-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: gomodule-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   python-helm-create:
     runs-on: windows-latest
@@ -282,53 +282,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        python-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: OliverMKing/flask-hello-world
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/python/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: python-helm-create
-                path: ./langtest/subdirectory/
-        python-helm-update-subd:
-          needs: python-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: python-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  python-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/flask-hello-world
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/python/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: python-helm-create
+          path: ./langtest/subdir/
+  python-helm-update-subd:
+    needs: python-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: python-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   rust-helm-create:
     runs-on: windows-latest
@@ -426,53 +426,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        rust-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: OliverMKing/tiny-http-hello-world
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/rust/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: rust-helm-create
-                path: ./langtest/subdirectory/
-        rust-helm-update-subd:
-          needs: rust-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: rust-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  rust-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/tiny-http-hello-world
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/rust/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rust-helm-create
+          path: ./langtest/subdir/
+  rust-helm-update-subd:
+    needs: rust-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: rust-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   javascript-helm-create:
     runs-on: windows-latest
@@ -570,53 +570,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        javascript-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: davidgamero/express-hello-world
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: javascript-helm-create
-                path: ./langtest/subdirectory/
-        javascript-helm-update-subd:
-          needs: javascript-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: javascript-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  javascript-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: davidgamero/express-hello-world
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: javascript-helm-create
+          path: ./langtest/subdir/
+  javascript-helm-update-subd:
+    needs: javascript-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: javascript-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   ruby-helm-create:
     runs-on: windows-latest
@@ -714,53 +714,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        ruby-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: OliverMKing/ruby-hello-world
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: ruby-helm-create
-                path: ./langtest/subdirectory/
-        ruby-helm-update-subd:
-          needs: ruby-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: ruby-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  ruby-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/ruby-hello-world
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ruby-helm-create
+          path: ./langtest/subdir/
+  ruby-helm-update-subd:
+    needs: ruby-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: ruby-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   csharp-helm-create:
     runs-on: windows-latest
@@ -858,53 +858,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        csharp-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: imiller31/csharp-simple-web-app
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: csharp-helm-create
-                path: ./langtest/subdirectory/
-        csharp-helm-update-subd:
-          needs: csharp-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: csharp-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  csharp-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/csharp-simple-web-app
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: csharp-helm-create
+          path: ./langtest/subdir/
+  csharp-helm-update-subd:
+    needs: csharp-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: csharp-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   java-helm-create:
     runs-on: windows-latest
@@ -1002,53 +1002,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        java-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: imiller31/simple-java-server
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/java/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: java-helm-create
-                path: ./langtest/subdirectory/
-        java-helm-update-subd:
-          needs: java-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: java-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  java-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-java-server
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/java/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: java-helm-create
+          path: ./langtest/subdir/
+  java-helm-update-subd:
+    needs: java-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: java-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   gradle-helm-create:
     runs-on: windows-latest
@@ -1146,53 +1146,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        gradle-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: imiller31/simple-gradle-server
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: gradle-helm-create
-                path: ./langtest/subdirectory/
-        gradle-helm-update-subd:
-          needs: gradle-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: gradle-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  gradle-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/simple-gradle-server
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gradle-helm-create
+          path: ./langtest/subdir/
+  gradle-helm-update-subd:
+    needs: gradle-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: gradle-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   swift-helm-create:
     runs-on: windows-latest
@@ -1290,53 +1290,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        swift-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: OliverMKing/swift-hello-world
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/swift/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: swift-helm-create
-                path: ./langtest/subdirectory/
-        swift-helm-update-subd:
-          needs: swift-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: swift-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  swift-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: OliverMKing/swift-hello-world
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/swift/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: swift-helm-create
+          path: ./langtest/subdir/
+  swift-helm-update-subd:
+    needs: swift-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: swift-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   erlang-helm-create:
     runs-on: windows-latest
@@ -1434,53 +1434,53 @@ jobs:
         working-directory: ./langtest/
       
 
-        erlang-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: bfoley13/ErlangExample
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: erlang-helm-create
-                path: ./langtest/subdirectory/
-        erlang-helm-update-subd:
-          needs: erlang-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: erlang-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  erlang-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: bfoley13/ErlangExample
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: erlang-helm-create
+          path: ./langtest/subdir/
+  erlang-helm-update-subd:
+    needs: erlang-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: erlang-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/
 
   clojure-helm-create:
     runs-on: windows-latest
@@ -1578,50 +1578,50 @@ jobs:
         working-directory: ./langtest/
       
 
-        clojure-helm-create-subd:
-          runs-on: windows-latest
-          needs: build
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - run: mkdir -p ./langtest/subdirectory
-            - uses: actions/checkout@v2
-              with:
-                repository: imiller31/clojure-simple-http
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/manifests -Recurse -Force -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/Dockerfile -ErrorAction Ignore
-            - run: Remove-Item ./langtest/subdirectory/.dockerignore -ErrorAction Ignore
-            - run: ./draft.exe -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/subdirectory
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_helm.ps1
-              working-directory: ./langtest/subdirectory/
-            - uses: actions/upload-artifact@v3
-              with:
-                name: clojure-helm-create
-                path: ./langtest/subdirectory/
-        clojure-helm-update-subd:
-          needs: clojure-helm-create-subd
-          runs-on: windows-latest
-          steps:
-            - uses: actions/checkout@v2
-            - uses: actions/download-artifact@v2
-              with:
-                name: draft-binary
-            - uses: actions/download-artifact@v3
-              with:
-                name: clojure-helm-create
-                path: ./langtest/subdirectory/
-            - run: Remove-Item ./langtest/subdirectory/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-            - run: ./draft.exe -v update -d ./langtest/ -s subdirectory/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-            - uses: actions/download-artifact@v2
-              with:
-                name: check_windows_addon_helm
-                path: ./langtest/subdirectory/
-            - run: ./check_windows_addon_helm.ps1
-              working-directory: ./langtest/subdirectory/
+  clojure-helm-create-subd:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - run: mkdir -p ./langtest/subdir
+      - uses: actions/checkout@v2
+        with:
+          repository: imiller31/clojure-simple-http
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/subdir/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/subdir
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/subdir/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: clojure-helm-create
+          path: ./langtest/subdir/
+  clojure-helm-update-subd:
+    needs: clojure-helm-create-subd
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: clojure-helm-create
+          path: ./langtest/subdir/
+      - run: Remove-Item ./langtest/subdir/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -s subdir/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v2
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/subdir/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/subdir/

@@ -21,7 +21,6 @@ func TestRun(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
-	mockCC.subDir = "/folder"
 	mockCC.createConfig.DeployType = "helm"
 	mockCC.createConfig.LanguageVariables = []UserInputs{}
 	mockCC.createConfig.DeployVariables = []UserInputs{}

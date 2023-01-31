@@ -35,7 +35,6 @@ type createCmd struct {
 	appName string
 	lang    string
 	dest    string
-	subDir  string
 
 	dockerfileOnly    bool
 	deploymentOnly    bool
@@ -85,6 +84,7 @@ func (cc *createCmd) initConfig() error {
 		if err != nil {
 			return err
 		}
+
 		var cfg CreateConfig
 		if err = yaml.Unmarshal(configBytes, &cfg); err != nil {
 			return err

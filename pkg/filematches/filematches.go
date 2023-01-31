@@ -2,11 +2,12 @@ package filematches
 
 import (
 	"errors"
-	"github.com/instrumenta/kubeval/kubeval"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/instrumenta/kubeval/kubeval"
 )
 
 type FileMatches struct {

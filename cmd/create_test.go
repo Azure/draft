@@ -70,6 +70,9 @@ func TestInitConfig(t *testing.T) {
 }
 
 func TestInitConfigWithSubdirectory(t *testing.T) {
+	testPath := "../test/alpha/beta/gamma/test"
+	os.MkdirAll(testPath, 0755)
+
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./..///"
@@ -78,8 +81,9 @@ func TestInitConfigWithSubdirectory(t *testing.T) {
 
 	err := mockCC.initConfig()
 	assert.True(t, err == nil)
-	assert.True(t, mockCC.createConfig != nil)
-	assert.True(t, mockCC.dest == "./../test/alpha/beta/gamma")
+	assert.False(t, mockCC.createConfig != nil)
+	assert.True(t, mockCC.dest == "../test/alpha/beta/gamma")
+	os.RemoveAll(testPath)
 }
 
 func TestInitConfigWithFakeSubdirectory(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -82,9 +83,9 @@ func newCreateCmd() *cobra.Command {
 func (cc *createCmd) initConfig() error {
 	if cc.subDir != "" {
 		log.Debug("updating destination")
-		cleanPath, err := filematches.GetSubDirPath(cc.dest, cc.subDir)
-		if err != nil {
-			return err
+		cleanPath := path.Join(cc.dest, cc.subDir)
+		if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
+			return errors.New(fmt.Sprintf("specified directory %v does not exist", cleanPath))
 		}
 		cc.dest = cleanPath
 	}

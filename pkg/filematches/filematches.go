@@ -2,14 +2,11 @@ package filematches
 
 import (
 	"errors"
-	"fmt"
+	"github.com/instrumenta/kubeval/kubeval"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
-
-	"github.com/instrumenta/kubeval/kubeval"
 )
 
 type FileMatches struct {
@@ -117,12 +114,4 @@ func FindDraftDeploymentFiles(dest string) (deploymentType string, err error) {
 	}
 
 	return "", errors.New("no supported deployment files found")
-}
-
-func GetSubDirPath(dest string, subDir string) (string, error) {
-	cleanPath := strings.TrimRight(dest, "/") + "/" + strings.TrimLeft(subDir, "/")
-	if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
-		return "", errors.New(fmt.Sprintf("specified directory %v does not exist", cleanPath))
-	}
-	return cleanPath, nil
 }

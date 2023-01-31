@@ -1,0 +1,17 @@
+# this file is generated using gen_integration.sh
+deployType: "kustomize"
+languageType: "python"
+deployVariables:
+  - name: "PORT"
+    value: "5000"
+  - name: "SERVICEPORT"
+    value: "80"
+  - name: "APPNAME"
+    value: "testapp"
+languageVariables:
+  - name: "VERSION"
+    value: "3"
+  - name: "BUILDERVERSION"
+    value: "null"
+  - name: "PORT"
+    value: "5000"

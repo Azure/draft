@@ -1,0 +1,17 @@
+# this file is generated using gen_integration.sh
+deployType: "manifests"
+languageType: "ruby"
+deployVariables:
+  - name: "PORT"
+    value: "8000"
+  - name: "SERVICEPORT"
+    value: "80"
+  - name: "APPNAME"
+    value: "testapp"
+languageVariables:
+  - name: "VERSION"
+    value: "3.1.2"
+  - name: "BUILDERVERSION"
+    value: "null"
+  - name: "PORT"
+    value: "8000"

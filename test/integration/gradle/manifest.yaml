@@ -1,0 +1,17 @@
+# this file is generated using gen_integration.sh
+deployType: "manifests"
+languageType: "gradle"
+deployVariables:
+  - name: "PORT"
+    value: "8080"
+  - name: "SERVICEPORT"
+    value: "80"
+  - name: "APPNAME"
+    value: "testapp"
+languageVariables:
+  - name: "VERSION"
+    value: "11-jre-slim"
+  - name: "BUILDERVERSION"
+    value: "jdk11"
+  - name: "PORT"
+    value: "8080"

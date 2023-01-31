@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -72,7 +71,6 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.StringVarP(&cc.subDir, "subdirectory", "s", "", "specify the project subdirectory")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
@@ -81,15 +79,6 @@ func newCreateCmd() *cobra.Command {
 }
 
 func (cc *createCmd) initConfig() error {
-	if cc.subDir != "" {
-		log.Debug("updating destination")
-		cleanPath := path.Join(cc.dest, cc.subDir)
-		if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
-			return errors.New(fmt.Sprintf("specified directory %v does not exist", cleanPath))
-		}
-		cc.dest = cleanPath
-	}
-
 	if cc.createConfigPath != "" {
 		log.Debug("loading config")
 		configBytes, err := os.ReadFile(cc.createConfigPath)

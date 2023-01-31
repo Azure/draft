@@ -69,37 +69,6 @@ func TestInitConfig(t *testing.T) {
 	assert.True(t, mockCC.createConfig != nil)
 }
 
-func TestInitConfigWithSubdirectory(t *testing.T) {
-	testPath := "../test/alpha/beta/gamma/test"
-	os.MkdirAll(testPath, 0755)
-
-	mockCC := &createCmd{}
-	mockCC.createConfig = &CreateConfig{}
-	mockCC.dest = "./..///"
-	mockCC.createConfigPath = "./../test/templates/config.yaml"
-	mockCC.subDir = "/test/alpha/beta/gamma"
-
-	err := mockCC.initConfig()
-	assert.True(t, err == nil)
-	assert.False(t, mockCC.createConfig != nil)
-	assert.True(t, mockCC.dest == "../test/alpha/beta/gamma")
-	os.RemoveAll(testPath)
-}
-
-func TestInitConfigWithFakeSubdirectory(t *testing.T) {
-	mockCC := &createCmd{}
-	mockCC.createConfig = &CreateConfig{}
-	mockCC.dest = "./.."
-	mockCC.createConfigPath = "./../test/templates/config.yaml"
-	mockCC.subDir = "/folder"
-
-	err := mockCC.initConfig()
-	assert.False(t, err == nil)
-	assert.True(t, err.Error() == "specified directory ./../folder does not exist")
-	assert.True(t, mockCC.createConfig != nil)
-	assert.True(t, mockCC.dest == "./..")
-}
-
 func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 	required := []config.BuilderVar{
 		{Name: "REQUIRED_PROVIDED"},

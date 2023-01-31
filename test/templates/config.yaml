@@ -1,0 +1,8 @@
+DeployType: "kustomize"
+LanguageType: "go"
+DeployVariables:
+  - Name: "PORT"
+    Value: "8080"
+LanguageVariables:
+  - Name: "PORT"
+    Value: "8080"

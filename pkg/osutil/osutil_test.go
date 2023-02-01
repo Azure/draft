@@ -109,8 +109,8 @@ func TestAllVariablesSubstituted(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.String, func(t *testing.T) {
-			actual := validateAllVariablesSubstituted(test.String)
-			didError := actual != nil
+			err := validateAllVariablesSubstituted(test.String)
+			didError := err != nil
 			assert.Equal(t, test.ExpectError, didError)
 		})
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/draft/pkg/templatewriter"
 )
 
+// A draft variable is defined as a string of non-whitespace characters wrapped in double curly braces.
 var draftVariableRegex = regexp.MustCompile("{{\\S+}}")
 
 // Exists returns whether the given file or directory exists or not.

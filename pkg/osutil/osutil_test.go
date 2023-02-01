@@ -91,3 +91,27 @@ func TestEnsureFile(t *testing.T) {
 
 	os.Remove(invalidFile)
 }
+
+func TestAllVariablesSubstituted(t *testing.T) {
+	tests := []struct {
+		String      string
+		ExpectError bool
+	}{
+		{"{{WITH SPACE}}", false},
+		{"{{ WithEndSpaces }}", false},
+		{"{{.withPeriod}}", true},
+		{"{{VARIABLE1}}", true},
+		{"{{WITH_UNDERSCORE}}", true},
+		{"{{mIxEdCase}}", true},
+		{"{{lowercase}}", true},
+		{"{{snake_case}}", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.String, func(t *testing.T) {
+			actual := validateAllVariablesSubstituted(test.String)
+			didError := actual != nil
+			assert.Equal(t, test.ExpectError, didError)
+		})
+	}
+}

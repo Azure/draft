@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"regexp"
 	"runtime"
 	"strings"
 	"syscall"
@@ -14,6 +15,8 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/templatewriter"
 )
+
+var draftVariableRegex = regexp.MustCompile("{{\\S+}}")
 
 // Exists returns whether the given file or directory exists or not.
 func Exists(path string) (bool, error) {
@@ -107,10 +110,22 @@ func CopyDir(
 				return err
 			}
 
+			if err = validateAllVariablesSubstituted(string(fileString)); err != nil {
+				return fmt.Errorf("error substituting file %s: %w", srcPath, err)
+			}
+
 			if err = templateWriter.WriteFile(destPath, fileString); err != nil {
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+func validateAllVariablesSubstituted(s string) error {
+	if unsubstitutedVars := draftVariableRegex.FindAllString(s, -1); len(unsubstitutedVars) > 0 {
+		unsubstitutedVarsString := strings.Join(unsubstitutedVars, ", ")
+		return fmt.Errorf("unsubstituted variable: %s", unsubstitutedVarsString)
 	}
 	return nil
 }

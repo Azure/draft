@@ -2930,3 +2930,17 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+
+  helm-integrations-summary:
+      runs-on: ubuntu-latest
+      needs: [ gomodule-helm-update,python-helm-update,rust-helm-update,javascript-helm-update,ruby-helm-update,csharp-helm-update,java-helm-update,gradle-helm-update,swift-helm-update,erlang-helm-update,clojure-helm-update ]
+      steps:
+        - run: echo helm integrations passed
+
+
+  kustomize-integrations-summary:
+      runs-on: ubuntu-latest
+      needs: [ gomodule-kustomize-create-update,python-kustomize-create-update,rust-kustomize-create-update,javascript-kustomize-create-update,ruby-kustomize-create-update,csharp-kustomize-create-update,java-kustomize-create-update,gradle-kustomize-create-update,swift-kustomize-create-update,erlang-kustomize-create-update,clojure-kustomize-create-update ]
+      steps:
+        - run: echo kustomize integrations passed
+

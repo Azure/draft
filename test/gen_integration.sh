@@ -6,8 +6,14 @@ rm ../.github/workflows/integration-linux.yml
 rm ../.github/workflows/integration-windows.yml
 helm_workflow_names_file=./temp/helm_workflow_names.txt
 rm $helm_workflow_names_file
+helm_win_workflow_names_file=./temp/helm_win_workflow_names.txt
+rm $helm_win_workflow_names_file
 kustomize_workflow_names_file=./temp/kustomize_workflow_names.txt
 rm $kustomize_workflow_names_file
+kustomize_win_workflow_names_file=./temp/kustomize_win_workflow_names.txt
+rm $kustomize_win_workflow_names_file
+manifest_workflow_names_file=./temp/manifest_workflow_names.txt
+rm $manifest_workflow_names_file
 
 # add build to workflow
 echo "name: draft Linux Integrations
@@ -159,6 +165,8 @@ languageVariables:
     value: \"$port\"" > ./integration/$lang/manifest.yaml
 
     # create helm workflow
+    helm_create_update_job_name=$lang-helm-create-update
+    echo $helm_create_update_job_name >> $helm_workflow_names_file
     echo "
   $lang-helm-dry-run:
       runs-on: ubuntu-latest
@@ -184,7 +192,7 @@ languageVariables:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  $lang-helm-create-update:
+  $helm_create_update_job_name:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -329,6 +337,8 @@ languageVariables:
         run: exit 6" >> ../.github/workflows/integration-linux.yml
 
   # create manifests workflow
+    manifest_update_job_name=$lang-manifest-update
+    echo $manifest_update_job_name >> $manifest_workflow_names_file
     echo "
   $lang-manifest-dry-run:
       runs-on: ubuntu-latest
@@ -398,7 +408,7 @@ languageVariables:
         with:
           name: $lang-manifests-create
           path: ./langtest
-  $lang-manifests-update:
+  $manifest_update_job_name:
     needs: $lang-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -436,8 +446,8 @@ languageVariables:
         if: steps.deploy.outcome != 'success'
         run: kubectl get po" >> ../.github/workflows/integration-linux.yml
 
-  helm_update_jobname=$lang-helm-update
-  echo $helm_update_jobname >> $helm_workflow_names_file
+  helm_update_win_jobname=$lang-helm-update
+  echo $helm_update_win_jobname >> $helm_win_workflow_names_file
     # create helm workflow
     echo "
   $lang-helm-create:
@@ -467,7 +477,7 @@ languageVariables:
         with:
           name: $lang-helm-create
           path: ./langtest
-  $helm_update_jobname:
+  $helm_update_win_jobname:
     needs: $lang-helm-create
     runs-on: windows-latest
     steps:
@@ -489,6 +499,8 @@ languageVariables:
         working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
 
     # create kustomize workflow
+    kustomize_win_workflow_name=$lang-kustomize-update
+    echo $kustomize_win_workflow_name >> $kustomize_win_workflow_names_file
     echo "
   $lang-kustomize-create:
     runs-on: windows-latest
@@ -517,7 +529,7 @@ languageVariables:
         with:
           name: $lang-kustomize-create
           path: ./langtest
-  $lang-kustomize-update:
+  $kustomize_win_workflow_name:
     needs: $lang-kustomize-create 
     runs-on: windows-latest
     steps:
@@ -540,6 +552,22 @@ languageVariables:
 done
 
 echo "
+  helm-win-integrations-summary:
+      runs-on: windows-latest
+      needs: [ $( paste -sd ',' $helm_win_workflow_names_file) ]
+      steps:
+        - run: echo "helm integrations passed"
+" >> ../.github/workflows/integration-windows.yml
+
+echo "
+  kustomize-win-integrations-summary:
+      runs-on: windows-latest
+      needs: [ $( paste -sd ',' $kustomize_win_workflow_names_file) ]
+      steps:
+        - run: echo "kustomize integrations passed"
+" >> ../.github/workflows/integration-windows.yml
+
+echo "
   helm-integrations-summary:
       runs-on: ubuntu-latest
       needs: [ $( paste -sd ',' $helm_workflow_names_file) ]
@@ -553,4 +581,12 @@ echo "
       needs: [ $( paste -sd ',' $kustomize_workflow_names_file) ]
       steps:
         - run: echo "kustomize integrations passed"
+" >> ../.github/workflows/integration-linux.yml
+
+echo "
+  manifest-integrations-summary:
+      runs-on: ubuntu-latest
+      needs: [ $( paste -sd ',' $manifest_workflow_names_file) ]
+      steps:
+        - run: echo "manifest integrations passed"
 " >> ../.github/workflows/integration-linux.yml

@@ -99,7 +99,8 @@ func TestAllVariablesSubstituted(t *testing.T) {
 	}{
 		{"{{WITH SPACE}}", false},
 		{"{{ WithEndSpaces }}", false},
-		{"{{.withPeriod}}", true},
+		{"{{.helm.values.style}}", false},
+		{"{{.Values.helm.style}}", false},
 		{"{{VARIABLE1}}", true},
 		{"{{WITH_UNDERSCORE}}", true},
 		{"{{mIxEdCase}}", true},
@@ -109,7 +110,7 @@ func TestAllVariablesSubstituted(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.String, func(t *testing.T) {
-			err := validateAllVariablesSubstituted(test.String)
+			err := checkAllVariablesSubstituted(test.String)
 			didError := err != nil
 			assert.Equal(t, test.ExpectError, didError)
 		})

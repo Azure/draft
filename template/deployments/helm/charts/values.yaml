@@ -8,7 +8,7 @@ namespace: {{NAMESPACE}}
 
 containerPort: {{PORT}}
 
-imageKey:
+image:
   repository: {{IMAGENAME}}
   pullPolicy: IfNotPresent
 

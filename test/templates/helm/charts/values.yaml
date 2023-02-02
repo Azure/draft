@@ -6,7 +6,7 @@ replicaCount: 1
 
 containerPort: 8080
 
-imageKey:
+image:
   repository: test
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.

@@ -253,7 +253,7 @@ jobs:
         with:
           name: gomodule-manifests-create
           path: ./langtest
-  gomodule-manifests-update:
+  gomodule-manifest-update:
     needs: gomodule-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -517,7 +517,7 @@ jobs:
         with:
           name: python-manifests-create
           path: ./langtest
-  python-manifests-update:
+  python-manifest-update:
     needs: python-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -781,7 +781,7 @@ jobs:
         with:
           name: rust-manifests-create
           path: ./langtest
-  rust-manifests-update:
+  rust-manifest-update:
     needs: rust-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -1045,7 +1045,7 @@ jobs:
         with:
           name: javascript-manifests-create
           path: ./langtest
-  javascript-manifests-update:
+  javascript-manifest-update:
     needs: javascript-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -1309,7 +1309,7 @@ jobs:
         with:
           name: ruby-manifests-create
           path: ./langtest
-  ruby-manifests-update:
+  ruby-manifest-update:
     needs: ruby-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -1573,7 +1573,7 @@ jobs:
         with:
           name: csharp-manifests-create
           path: ./langtest
-  csharp-manifests-update:
+  csharp-manifest-update:
     needs: csharp-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -1837,7 +1837,7 @@ jobs:
         with:
           name: java-manifests-create
           path: ./langtest
-  java-manifests-update:
+  java-manifest-update:
     needs: java-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -2101,7 +2101,7 @@ jobs:
         with:
           name: gradle-manifests-create
           path: ./langtest
-  gradle-manifests-update:
+  gradle-manifest-update:
     needs: gradle-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -2365,7 +2365,7 @@ jobs:
         with:
           name: swift-manifests-create
           path: ./langtest
-  swift-manifests-update:
+  swift-manifest-update:
     needs: swift-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -2629,7 +2629,7 @@ jobs:
         with:
           name: erlang-manifests-create
           path: ./langtest
-  erlang-manifests-update:
+  erlang-manifest-update:
     needs: erlang-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -2893,7 +2893,7 @@ jobs:
         with:
           name: clojure-manifests-create
           path: ./langtest
-  clojure-manifests-update:
+  clojure-manifest-update:
     needs: clojure-manifests-create
     runs-on: ubuntu-latest
     services:
@@ -2930,3 +2930,24 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+
+  helm-integrations-summary:
+      runs-on: ubuntu-latest
+      needs: [ gomodule-helm-create-update,python-helm-create-update,rust-helm-create-update,javascript-helm-create-update,ruby-helm-create-update,csharp-helm-create-update,java-helm-create-update,gradle-helm-create-update,swift-helm-create-update,erlang-helm-create-update,clojure-helm-create-update ]
+      steps:
+        - run: echo helm integrations passed
+
+
+  kustomize-integrations-summary:
+      runs-on: ubuntu-latest
+      needs: [ gomodule-kustomize-create-update,python-kustomize-create-update,rust-kustomize-create-update,javascript-kustomize-create-update,ruby-kustomize-create-update,csharp-kustomize-create-update,java-kustomize-create-update,gradle-kustomize-create-update,swift-kustomize-create-update,erlang-kustomize-create-update,clojure-kustomize-create-update ]
+      steps:
+        - run: echo kustomize integrations passed
+
+
+  manifest-integrations-summary:
+      runs-on: ubuntu-latest
+      needs: [ gomodule-manifest-update,python-manifest-update,rust-manifest-update,javascript-manifest-update,ruby-manifest-update,csharp-manifest-update,java-manifest-update,gradle-manifest-update,swift-manifest-update,erlang-manifest-update,clojure-manifest-update ]
+      steps:
+        - run: echo manifest integrations passed
+

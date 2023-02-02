@@ -1097,3 +1097,17 @@ jobs:
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
       
+
+  helm-win-integrations-summary:
+      runs-on: windows-latest
+      needs: [ gomodule-helm-update,python-helm-update,rust-helm-update,javascript-helm-update,ruby-helm-update,csharp-helm-update,java-helm-update,gradle-helm-update,swift-helm-update,erlang-helm-update,clojure-helm-update ]
+      steps:
+        - run: echo helm integrations passed
+
+
+  kustomize-win-integrations-summary:
+      runs-on: windows-latest
+      needs: [ gomodule-kustomize-update,python-kustomize-update,rust-kustomize-update,javascript-kustomize-update,ruby-kustomize-update,csharp-kustomize-update,java-kustomize-update,gradle-kustomize-update,swift-kustomize-update,erlang-kustomize-update,clojure-kustomize-update ]
+      steps:
+        - run: echo kustomize integrations passed
+

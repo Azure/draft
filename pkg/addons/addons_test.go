@@ -35,6 +35,9 @@ func TestGenerateHelmAddonSuccess(t *testing.T) {
 		"ingress-tls-cert-keyvault-uri": "test.uri",
 		"ingress-use-osm-mtls":          "false",
 		"ingress-host":                  "host",
+		"service-namespace":             "test-namespace",
+		"service-name":                  "test-service",
+		"service-port":                  "80",
 	}
 	dir, remove, err := setUpTempDir("helm")
 	assert.Nil(t, err)
@@ -51,6 +54,9 @@ func TestGenerateKustomizeAddonSuccess(t *testing.T) {
 		"ingress-tls-cert-keyvault-uri": "test.uri",
 		"ingress-use-osm-mtls":          "false",
 		"ingress-host":                  "host",
+		"service-namespace":             "test-namespace",
+		"service-name":                  "test-service",
+		"service-port":                  "80",
 	}
 	dir, remove, err := setUpTempDir("kustomize")
 	assert.Nil(t, err)

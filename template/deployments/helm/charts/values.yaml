@@ -10,6 +10,7 @@ containerPort: {{PORT}}
 
 image:
   repository: {{IMAGENAME}}
+  tag: "latest"
   pullPolicy: IfNotPresent
 
 

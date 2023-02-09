@@ -19,7 +19,7 @@ func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []stri
 }
 
 // RunPromptsFromConfigWithSkipsIO runs the prompts for the given config
-// skipping any variables in varsToSkip or where the BuilderVar.NoPrompt is true.
+// skipping any variables in varsToSkip or where the BuilderVar.IsPromptDisabled is true.
 // If Stdin or Stdout are nil, the default values will be used.
 func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []string, Stdin io.ReadCloser, Stdout io.WriteCloser) (map[string]string, error) {
 	skipMap := make(map[string]interface{})
@@ -36,10 +36,10 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 			continue
 		}
 		if customPrompt.IsPromptDisabled {
-			log.Debugf("Skipping prompt for %s as it has NoPrompt=true", promptVariableName)
+			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", promptVariableName)
 			noPromptDefaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
 			if noPromptDefaultValue == "" {
-				return nil, fmt.Errorf("NoPrompt is true for %s but no default value was found", promptVariableName)
+				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", promptVariableName)
 			}
 			log.Debugf("Using default value %s for %s", noPromptDefaultValue, promptVariableName)
 			inputs[promptVariableName] = noPromptDefaultValue

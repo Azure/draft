@@ -152,9 +152,9 @@ func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 			config: config.DraftConfig{
 				Variables: []config.BuilderVar{
 					{
-						Name:        "var1",
-						Description: "var1 description",
-						NoPrompt:    true,
+						Name:             "var1",
+						Description:      "var1 description",
+						IsPromptDisabled: true,
 					},
 				},
 				VariableDefaults: []config.BuilderVarDefault{
@@ -174,16 +174,16 @@ func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 			config: config.DraftConfig{
 				Variables: []config.BuilderVar{
 					{
-						Name:        "var1-no-prompt",
-						Description: "var1 has NoPrompt and should skip prompt and use default value",
-						NoPrompt:    true,
+						Name:             "var1-no-prompt",
+						Description:      "var1 has IsPromptDisabled and should skip prompt and use default value",
+						IsPromptDisabled: true,
 					}, {
 						Name:        "var2-default",
 						Description: "var2 has a default value and will receive an empty value, so it should use the default value",
 					}, {
-						Name:        "var3-no-prompt",
-						Description: "var3 has NoPrompt and should skip prompt and use default value",
-						NoPrompt:    true,
+						Name:             "var3-no-prompt",
+						Description:      "var3 has IsPromptDisabled and should skip prompt and use default value",
+						IsPromptDisabled: true,
 					}, {
 						Name:        "var4",
 						Description: "var4 has a default value, but has a value entered, so it should use the entered value",

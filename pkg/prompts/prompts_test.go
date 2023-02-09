@@ -138,3 +138,111 @@ func TestRunStringPrompt(t *testing.T) {
 		})
 	}
 }
+func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
+	tests := []struct {
+		testName     string
+		config       config.DraftConfig
+		userInputs   []string
+		defaultValue string
+		want         map[string]string
+		wantErr      bool
+	}{
+		{
+			testName: "onlyNoPrompt",
+			config: config.DraftConfig{
+				Variables: []config.BuilderVar{
+					{
+						Name:             "var1",
+						Description:      "var1 description",
+						IsPromptDisabled: true,
+					},
+				},
+				VariableDefaults: []config.BuilderVarDefault{
+					{
+						Name:  "var1",
+						Value: "defaultValue",
+					},
+				},
+			},
+			userInputs: []string{""},
+			want: map[string]string{
+				"var1": "defaultValue",
+			},
+			wantErr: false,
+		}, {
+			testName: "twoPromptTwoNoPrompt",
+			config: config.DraftConfig{
+				Variables: []config.BuilderVar{
+					{
+						Name:             "var1-no-prompt",
+						Description:      "var1 has IsPromptDisabled and should skip prompt and use default value",
+						IsPromptDisabled: true,
+					}, {
+						Name:        "var2-default",
+						Description: "var2 has a default value and will receive an empty value, so it should use the default value",
+					}, {
+						Name:             "var3-no-prompt",
+						Description:      "var3 has IsPromptDisabled and should skip prompt and use default value",
+						IsPromptDisabled: true,
+					}, {
+						Name:        "var4",
+						Description: "var4 has a default value, but has a value entered, so it should use the entered value",
+					},
+				},
+				VariableDefaults: []config.BuilderVarDefault{
+					{
+						Name:  "var1-no-prompt",
+						Value: "defaultValueNoPrompt1",
+					}, {
+						Name:  "var2-default",
+						Value: "defaultValue2",
+					}, {
+						Name:  "var3-no-prompt",
+						Value: "defaultValueNoPrompt3",
+					}, {
+						Name:  "var4",
+						Value: "defaultValue4",
+					},
+				},
+			},
+			userInputs: []string{"\n", "entered-value-for-4\n"},
+			want: map[string]string{
+				"var1-no-prompt": "defaultValueNoPrompt1",
+				"var2-default":   "defaultValue2",
+				"var3-no-prompt": "defaultValueNoPrompt3",
+				"var4":           "entered-value-for-4",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			inReader, inWriter := io.Pipe()
+
+			go func() {
+				for _, input := range tt.userInputs {
+					_, err := inWriter.Write([]byte(input))
+					if err != nil {
+						t.Errorf("Error writing to inWriter: %v", err)
+					}
+				}
+				err := inWriter.Close()
+				if err != nil {
+					t.Errorf("Error closing inWriter: %v", err)
+				}
+			}()
+			got, err := RunPromptsFromConfigWithSkipsIO(&tt.config, nil, inReader, nil)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TestRunPromptsFromConfigWithSkipsIO() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			for k, v := range got {
+				wantVal := tt.want[k]
+				if v != wantVal {
+					t.Errorf("TestRunPromptsFromConfigWithSkipsIO()  inputs [%s]=%s, want %s", k, v, wantVal)
+				}
+			}
+		})
+	}
+}

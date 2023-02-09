@@ -20,11 +20,11 @@ type FileNameOverride struct {
 }
 
 type BuilderVar struct {
-	Name          string   `yaml:"name"`
-	Description   string   `yaml:"description"`
-	VarType       string   `yaml:"type"`
-	ExampleValues []string `yaml:"exampleValues"`
-	NoPrompt      bool     `yaml:"noPrompt"`
+	Name             string   `yaml:"name"`
+	Description      string   `yaml:"description"`
+	VarType          string   `yaml:"type"`
+	ExampleValues    []string `yaml:"exampleValues"`
+	IsPromptDisabled bool     `yaml:"disablePrompt"`
 }
 
 type BuilderVarDefault struct {

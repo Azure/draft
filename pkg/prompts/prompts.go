@@ -35,7 +35,7 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 			log.Debugf("Skipping prompt for %s", promptVariableName)
 			continue
 		}
-		if customPrompt.NoPrompt {
+		if customPrompt.IsPromptDisabled {
 			log.Debugf("Skipping prompt for %s as it has NoPrompt=true", promptVariableName)
 			noPromptDefaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
 			if noPromptDefaultValue == "" {

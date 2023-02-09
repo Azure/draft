@@ -7,3 +7,5 @@ draft
 langtest
 .vscode/
 /pkg/languages/builders
+test/temp/
+bin/

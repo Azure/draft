@@ -1,10 +1,10 @@
 [
-  { 
-    "language": "gomodule", 
-    "version": "1.18", 
-    "port": "1323", 
-    "serviceport": 80, 
-    "repo": "gambtho/go_echo" 
+  {
+    "language": "gomodule",
+    "version": "1.18",
+    "port": "1323",
+    "serviceport": 80,
+    "repo": "gambtho/go_echo"
   },
   {
     "language": "python",

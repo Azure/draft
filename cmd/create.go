@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -10,10 +10,11 @@ import (
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"
+	dryrunpkg "github.com/Azure/draft/pkg/dryrun"
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
@@ -27,6 +28,9 @@ import (
 // code for linguist to classify, or if there are no packs available for the detected languages.
 var ErrNoLanguageDetected = errors.New("no supported languages were detected")
 
+const LANGUAGE_VARIABLE = "LANGUAGE"
+const TWO_SPACES = "  "
+
 type createCmd struct {
 	appName string
 	lang    string
@@ -37,12 +41,12 @@ type createCmd struct {
 	skipFileDetection bool
 
 	createConfigPath string
-	createConfig     *config.CreateConfig
+	createConfig     *CreateConfig
 
 	supportedLangs *languages.Languages
-	fileMatches    *filematches.FileMatches
 
-	templateWriter templatewriter.TemplateWriter
+	templateWriter           templatewriter.TemplateWriter
+	templateVariableRecorder config.TemplateVariableRecorder
 }
 
 func newCreateCmd() *cobra.Command {
@@ -70,7 +74,6 @@ func newCreateCmd() *cobra.Command {
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
 
-	cc.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }
 
@@ -82,35 +85,57 @@ func (cc *createCmd) initConfig() error {
 			return err
 		}
 
-		viper.SetConfigType("yaml")
-		if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
+		var cfg CreateConfig
+		if err = yaml.Unmarshal(configBytes, &cfg); err != nil {
 			return err
 		}
-		var cfg config.CreateConfig
-		if err = viper.Unmarshal(&cfg); err != nil {
-			return err
-		}
-
 		cc.createConfig = &cfg
 		return nil
 	}
 
 	//TODO: create a config for the user and save it for subsequent uses
-	cc.createConfig = &config.CreateConfig{}
+	cc.createConfig = &CreateConfig{}
 
 	return nil
 }
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
-	detectedLang, lowerLang, err := cc.detectLanguage()
+	var dryRunRecorder *dryrunpkg.DryRunRecorder
+	if dryRun {
+		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
+		cc.templateVariableRecorder = dryRunRecorder
+		cc.templateWriter = dryRunRecorder
+	} else {
+		cc.templateWriter = &writers.LocalFSWriter{}
+	}
+
+	detectedLangDraftConfig, languageName, err := cc.detectLanguage()
 	if err != nil {
 		return err
 	}
 
-	return cc.createFiles(detectedLang, lowerLang)
+	err = cc.createFiles(detectedLangDraftConfig, languageName)
+	if dryRun {
+		cc.templateVariableRecorder.Record(LANGUAGE_VARIABLE, languageName)
+		dryRunText, err := json.MarshalIndent(dryRunRecorder.DryRunInfo, "", TWO_SPACES)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(dryRunText))
+		if dryRunFile != "" {
+			log.Printf("writing dry run info to file %s", dryRunFile)
+			err = os.WriteFile(dryRunFile, dryRunText, 0644)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return err
 }
 
+// detectLanguage detects the language used in a project destination directory
+// It returns the DraftConfig for that language and the name of the language
 func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 	hasGo := false
 	hasGoMod := false
@@ -217,6 +242,12 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
+	if cc.templateVariableRecorder != nil {
+		for k, v := range inputs {
+			cc.templateVariableRecorder.Record(k, v)
+		}
+	}
+
 	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs, cc.templateWriter); err != nil {
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
@@ -257,6 +288,12 @@ func (cc *createCmd) createDeployment() error {
 		customInputs, err = prompts.RunPromptsFromConfig(deployConfig)
 		if err != nil {
 			return err
+		}
+	}
+
+	if cc.templateVariableRecorder != nil {
+		for k, v := range customInputs {
+			cc.templateVariableRecorder.Record(k, v)
 		}
 	}
 
@@ -356,14 +393,28 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required []config.BuilderVar, provided []config.UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
+func validateConfigInputsToPrompts(required []config.BuilderVar, provided []UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
 	customInputs := make(map[string]string)
-	for _, variableDefault := range defaults {
-		customInputs[variableDefault.Name] = variableDefault.Value
-	}
 
+	// set inputs to provided values
 	for _, variable := range provided {
 		customInputs[variable.Name] = variable.Value
+	}
+
+	// fill in missing vars using variable default references
+	for _, variableDefault := range defaults {
+		if customInputs[variableDefault.Name] == "" && variableDefault.ReferenceVar != "" {
+			log.Debugf("variable %s is empty, using default referenceVar value from %s", variableDefault.Name, variableDefault.ReferenceVar)
+			customInputs[variableDefault.Name] = customInputs[variableDefault.ReferenceVar]
+		}
+	}
+
+	// fill in missing vars using variable default values
+	for _, variableDefault := range defaults {
+		if customInputs[variableDefault.Name] == "" && variableDefault.Value != "" {
+			log.Debugf("setting default value for %s to %s", variableDefault.Name, variableDefault.Value)
+			customInputs[variableDefault.Name] = variableDefault.Value
+		}
 	}
 
 	for _, variable := range required {

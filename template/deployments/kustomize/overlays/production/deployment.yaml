@@ -4,6 +4,7 @@ metadata:
   name: {{APPNAME}}
   labels:
     app: {{APPNAME}}
+  namespace: {{NAMESPACE}}
 spec:
   selector:
     matchLabels:
@@ -12,4 +13,4 @@ spec:
     spec:
       containers:
         - name: {{APPNAME}}
-          image: {{APPNAME}}
+          image: {{IMAGENAME}}

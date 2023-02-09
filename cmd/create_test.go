@@ -19,13 +19,13 @@ import (
 
 func TestRun(t *testing.T) {
 	mockCC := &createCmd{}
-	mockCC.createConfig = &config.CreateConfig{}
+	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
 	mockCC.createConfig.DeployType = "helm"
-	mockCC.createConfig.LanguageVariables = []config.UserInputs{}
-	mockCC.createConfig.DeployVariables = []config.UserInputs{}
-	mockPortInput := config.UserInputs{Name: "PORT", Value: "8080"}
-	mockAppNameInput := config.UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
+	mockCC.createConfig.LanguageVariables = []UserInputs{}
+	mockCC.createConfig.DeployVariables = []UserInputs{}
+	mockPortInput := UserInputs{Name: "PORT", Value: "8080"}
+	mockAppNameInput := UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
 	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
 	mockCC.templateWriter = &writers.LocalFSWriter{}
@@ -59,7 +59,7 @@ func TestRun(t *testing.T) {
 
 func TestInitConfig(t *testing.T) {
 	mockCC := &createCmd{}
-	mockCC.createConfig = &config.CreateConfig{}
+	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
 	mockCC.createConfigPath = "./../test/templates/config.yaml"
 
@@ -73,7 +73,7 @@ func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 		{Name: "REQUIRED_PROVIDED"},
 		{Name: "REQUIRED_DEFAULTED"},
 	}
-	provided := []config.UserInputs{
+	provided := []UserInputs{
 		{Name: "REQUIRED_PROVIDED", Value: "PROVIDED_VALUE"},
 	}
 	defaults := []config.BuilderVarDefault{
@@ -90,7 +90,7 @@ func TestValidateConfigInputsToPromptsMissing(t *testing.T) {
 		{Name: "REQUIRED_PROVIDED"},
 		{Name: "REQUIRED_MISSING"},
 	}
-	provided := []config.UserInputs{
+	provided := []UserInputs{
 		{Name: "REQUIRED_PROVIDED"},
 	}
 	defaults := []config.BuilderVarDefault{}

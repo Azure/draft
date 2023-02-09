@@ -4,6 +4,7 @@ metadata:
   name: {{APPNAME}}
   labels:
     app: {{APPNAME}}
+  namespace: {{NAMESPACE}}
 spec:
   replicas: 1
   selector:
@@ -16,6 +17,6 @@ spec:
     spec:
       containers:
         - name: {{APPNAME}}
-          image: {{APPNAME}}:latest
+          image: {{IMAGENAME}}
           ports:
             - containerPort: {{PORT}}

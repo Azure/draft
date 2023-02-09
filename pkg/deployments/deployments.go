@@ -1,13 +1,14 @@
 package deployments
 
 import (
-	"bytes"
 	"embed"
 	"fmt"
 	"io/fs"
+	"path"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"golang.org/x/exp/maps"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -27,13 +28,19 @@ type Deployments struct {
 	deploymentTemplates fs.FS
 }
 
+// DeployTypes returns a slice of the supported deployment types
+func (d *Deployments) DeployTypes() []string {
+	names := maps.Keys(d.deploys)
+	return names
+}
+
 func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := d.deploys[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
 
-	srcDir := parentDirName + "/" + val.Name()
+	srcDir := path.Join(parentDirName, val.Name())
 
 	deployConfig, ok := d.configs[deployType]
 	if !ok {
@@ -53,20 +60,14 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("language %s unsupported", lang)
 	}
 
-	configPath := fmt.Sprintf("%s/%s/%s", parentDirName, val.Name(), configFileName)
+	configPath := path.Join(parentDirName, val.Name(), configFileName)
 	configBytes, err := fs.ReadFile(d.deploymentTemplates, configPath)
 	if err != nil {
 		return nil, err
 	}
 
-	viper.SetConfigType("yaml")
-	if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
-		return nil, err
-	}
-
 	var draftConfig config.DraftConfig
-
-	if err = viper.Unmarshal(&draftConfig); err != nil {
+	if err = yaml.Unmarshal(configBytes, &draftConfig); err != nil {
 		return nil, err
 	}
 

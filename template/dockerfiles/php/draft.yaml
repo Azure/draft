@@ -1,4 +1,5 @@
 language: php
+displayName: PHP
 nameOverrides:
   - path: "dockerignore"
     prefix: "."
@@ -8,8 +9,10 @@ variables:
     type: int
   - name: "BUILDERVERSION"
     description: "the version of composer installed during the build stage to be used by the application"
+    exampleValues: ["1"]
   - name: "VERSION"
     description: "the version of php used by the application"
+    exampleValues: ["7.1-apache"]
 variableDefaults:
   - name: "BUILDERVERSION"
     value: "1"

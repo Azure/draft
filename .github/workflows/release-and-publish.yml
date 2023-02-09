@@ -1,0 +1,70 @@
+name: Draft Release & Publish
+on: 
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'CHANGELOG.md'
+
+jobs:
+  Release-Artifacts:
+    name: Draft Release
+    runs-on: ubuntu-latest
+    steps:
+    # Checkout code
+    - name: Checkout
+      uses: actions/checkout@v2
+    # Read changelog and read versions etc.
+    - name: Check version is mentioned in Changelog.md
+      id: changelog_reader
+      uses: mindsers/changelog-reader-action@v2
+      with:
+        validation_depth: 10
+        path: './CHANGELOG.md'
+    # Set the DRAFT_VERSION variable
+    - name: Set the draft version value and print other values.
+      run: |
+        echo "Version: ${{ steps.changelog_reader.outputs.version }}"
+        echo "Changes: ${{ steps.changelog_reader.outputs.changes }}"
+        echo "DRAFT_VERSION=${{ steps.changelog_reader.outputs.version }}" >> $GITHUB_ENV
+    # Make Release Dir
+    - name: Make Release Dir
+      run: mkdir bin
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18.2
+    # Check if the newest tag already exists
+    - name: Check if tag exist
+      uses: mukunku/tag-exists-action@5dfe2bf779fe5259360bb10b2041676713dcc8a3 # v1.1.0
+      id: check-tag-exists
+      with: 
+        tag:  "v${{ steps.changelog_reader.outputs.version }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Build Binaries if this is a new release
+    - name: Build Draft Release Binaries
+      run: make build-all
+      if: ${{ steps.check-tag-exists.outputs.exists == 'false' }}
+    # If the tag already exists, we don't upload release artifacts
+    - name: Update Draft Release Body
+      if: ${{ steps.check-tag-exists.outputs.exists == 'true' }}
+      uses: softprops/action-gh-release@v1
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      with:
+        tag_name : "v${{ steps.changelog_reader.outputs.version }}"
+        name: "v${{ steps.changelog_reader.outputs.version }}"
+        body: ${{ steps.changelog_reader.outputs.changes }}
+    # Create Release with artifacts
+    - name: Create Draft Release
+      if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
+      uses: softprops/action-gh-release@v1
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      with:
+        tag_name : "v${{ steps.changelog_reader.outputs.version }}"
+        name: "v${{ steps.changelog_reader.outputs.version }}"
+        body: ${{ steps.changelog_reader.outputs.changes }}
+        files: |
+          ./bin/*

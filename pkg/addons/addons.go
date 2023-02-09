@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -13,7 +13,6 @@ import (
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
@@ -25,75 +24,99 @@ var (
 )
 
 func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
-	providerPath := filepath.Join(parentDirName, strings.ToLower(provider))
-	addonMap, err := embedutils.EmbedFStoMap(addons, providerPath)
-	if err != nil {
-		return err
-	}
-	if addon == "" {
-		addonNames := maps.Keys(addonMap)
-		prompt := promptui.Select{
-			Label: fmt.Sprintf("Select %s addon", provider),
-			Items: addonNames,
-		}
-		_, addon, err = prompt.Run()
-		if err != nil {
-			return err
-		}
-	}
-
-	var selectedAddon fs.DirEntry
-	var ok bool
-	if selectedAddon, ok = addonMap[addon]; !ok {
-		return errors.New("addon not found")
-	}
-
-	selectedAddonPath := filepath.Join(providerPath, selectedAddon.Name())
-
-	configBytes, err := fs.ReadFile(addons, filepath.Join(selectedAddonPath, "draft.yaml"))
+	addOnConfig, err := GetAddonConfig(addons, provider, addon)
 	if err != nil {
 		return err
 	}
 
-	var addOnConfig config.AddonConfig
-	if err = yaml.Unmarshal(configBytes, &addOnConfig); err != nil {
-		return err
-	}
-
-	log.Debugf("addOnConfig is: %s", addOnConfig)
-
-	addonVals, err := getAddonValues(dest, userInputs, addOnConfig)
+	selectedAddonPath, err := GetAddonPath(addons, provider, addon)
 	if err != nil {
 		return err
 	}
-
-	log.Debugf("addonValues are: %s", addonVals)
 
 	addonDestPath, err := addOnConfig.GetAddonDestPath(dest)
 	if err != nil {
 		return err
 	}
 
-	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, addonVals, templateWriter); err != nil {
+	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, userInputs, templateWriter); err != nil {
 		return err
 	}
 
 	return err
 }
 
-func getAddonValues(dest string, userInputs map[string]string, addOnConfig config.AddonConfig) (map[string]string, error) {
-	log.Debugf("getAddonValues: %s", userInputs)
-	var err error
-	if userInputs == nil {
-		userInputs = make(map[string]string)
+func GetAddonPath(addons embed.FS, provider, addon string) (string, error) {
+	providerPath := path.Join(parentDirName, strings.ToLower(provider))
+	addonMap, err := embedutils.EmbedFStoMap(addons, providerPath)
+	if err != nil {
+		return "", err
+	}
+	var selectedAddon fs.DirEntry
+	var ok bool
+	if selectedAddon, ok = addonMap[addon]; !ok {
+		return "", errors.New("addon not found")
 	}
 
-	if len(userInputs) == 0 {
-		userInputs, err = prompts.RunPromptsFromConfig(&addOnConfig.DraftConfig)
-		if err != nil {
-			return nil, err
-		}
-		log.Debug("got user inputs")
+	selectedAddonPath := path.Join(providerPath, selectedAddon.Name())
+
+	return selectedAddonPath, nil
+}
+
+func GetAddonConfig(addons embed.FS, provider, addon string) (AddonConfig, error) {
+	selectedAddonPath, err := GetAddonPath(addons, provider, addon)
+	if err != nil {
+		return AddonConfig{}, err
+	}
+
+	addOnConfigPath := path.Join(selectedAddonPath, "draft.yaml")
+	log.Debugf("addOnConfig is: %s", addOnConfigPath)
+
+	configBytes, err := fs.ReadFile(addons, addOnConfigPath)
+	if err != nil {
+		return AddonConfig{}, err
+	}
+	var addOnConfig AddonConfig
+	if err = yaml.Unmarshal(configBytes, &addOnConfig); err != nil {
+		return AddonConfig{}, err
+	}
+
+	return addOnConfig, nil
+}
+
+func PromptAddon(addons embed.FS, provider string) (string, error) {
+	providerPath := path.Join(parentDirName, strings.ToLower(provider))
+	addonMap, err := embedutils.EmbedFStoMap(addons, providerPath)
+	if err != nil {
+		return "", err
+	}
+
+	addonNames := maps.Keys(addonMap)
+	prompt := promptui.Select{
+		Label: fmt.Sprintf("Select %s addon", provider),
+		Items: addonNames,
+	}
+	_, addon, err := prompt.Run()
+	if err != nil {
+		return "", err
+	}
+
+	return addon, nil
+}
+
+func PromptAddonValues(dest string, userInputs map[string]string, addOnConfig AddonConfig) (map[string]string, error) {
+	log.Debugf("getAddonValues: %s", userInputs)
+	var err error
+
+	inputsToSkip := maps.Keys(userInputs)
+	log.Debugf("inputsToSkip: %s", inputsToSkip)
+	promptInputs, err := prompts.RunPromptsFromConfigWithSkips(&addOnConfig.DraftConfig, inputsToSkip)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug("got user inputs")
+	for k, v := range promptInputs {
+		userInputs[k] = v
 	}
 
 	referenceMap, err := addOnConfig.GetReferenceValueMap(dest)

@@ -13,7 +13,8 @@ func TestLanguagesCreateDockerfileFileMap(t *testing.T) {
 	templateWriter := &writers.FileMapWriter{}
 	l := CreateLanguagesFromEmbedFS(template.Dockerfiles, "/test/dest/dir")
 	err := l.CreateDockerfileForLanguage("go", map[string]string{
-		"PORT": "8080",
+		"PORT":    "8080",
+		"VERSION": "14",
 	}, templateWriter)
 
 	assert.Nil(t, err)

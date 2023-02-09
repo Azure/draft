@@ -1,13 +1,14 @@
 package languages
 
 import (
-	"bytes"
 	"embed"
 	"fmt"
 	"io/fs"
+	"path"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"golang.org/x/exp/maps"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -26,6 +27,12 @@ type Languages struct {
 	dockerfileTemplates fs.FS
 }
 
+// Names returns a slice of the names of the supported languages
+func (l *Languages) Names() []string {
+	names := maps.Keys(l.langs)
+	return names
+}
+
 func (l *Languages) ContainsLanguage(lang string) bool {
 	_, ok := l.langs[lang]
 	return ok
@@ -37,7 +44,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 		return fmt.Errorf("language %s is not supported", lang)
 	}
 
-	srcDir := parentDirName + "/" + val.Name()
+	srcDir := path.Join(parentDirName, val.Name())
 
 	draftConfig, ok := l.configs[lang]
 	if !ok {
@@ -57,20 +64,14 @@ func (l *Languages) loadConfig(lang string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("language %s unsupported", lang)
 	}
 
-	configPath := parentDirName + "/" + val.Name() + "/draft.yaml"
+	configPath := path.Join(parentDirName, val.Name(), "/draft.yaml")
 	configBytes, err := fs.ReadFile(l.dockerfileTemplates, configPath)
 	if err != nil {
 		return nil, err
 	}
 
-	viper.SetConfigType("yaml")
-	if err = viper.ReadConfig(bytes.NewBuffer(configBytes)); err != nil {
-		return nil, err
-	}
-
 	var draftConfig config.DraftConfig
-
-	if err = viper.Unmarshal(&draftConfig); err != nil {
+	if err = yaml.Unmarshal(configBytes, &draftConfig); err != nil {
 		return nil, err
 	}
 

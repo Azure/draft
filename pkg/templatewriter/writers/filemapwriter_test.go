@@ -13,7 +13,8 @@ func TestCopyDirToFileMap(t *testing.T) {
 
 	templatewriter := &FileMapWriter{}
 	err := osutil.CopyDir(template.Dockerfiles, "dockerfiles/javascript", "/test/dir", nil, map[string]string{
-		"PORT": "8080",
+		"PORT":    "8080",
+		"VERSION": "14",
 	}, templatewriter)
 	assert.Nil(t, err)
 	assert.NotNil(t, templatewriter.FileMap)

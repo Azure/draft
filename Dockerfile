@@ -1,7 +1,6 @@
 FROM golang:1.18-alpine
 
 WORKDIR /draft
-COPY . ./
 
 RUN apk add build-base
 RUN apk add py3-pip
@@ -10,6 +9,7 @@ RUN pip install --upgrade pip
 RUN pip install azure-cli
 RUN apk add github-cli
 
+COPY . ./
 RUN make go-generate
 
 RUN go mod vendor

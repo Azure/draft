@@ -150,7 +150,7 @@ func setHelmContainerImage(filePath, productionImage string) error {
 		return err
 	}
 
-	deploy.ImageKey.Repository = productionImage
+	deploy.Image.Repository = productionImage
 
 	out, err := yaml.Marshal(deploy)
 	if err != nil {

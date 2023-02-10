@@ -28,7 +28,6 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map
 	if err != nil {
 		return err
 	}
-	log.Debugf("addOnConfig is: %s", addOnConfig)
 
 	selectedAddonPath, err := GetAddonPath(addons, provider, addon)
 	if err != nil {
@@ -70,7 +69,10 @@ func GetAddonConfig(addons embed.FS, provider, addon string) (AddonConfig, error
 		return AddonConfig{}, err
 	}
 
-	configBytes, err := fs.ReadFile(addons, path.Join(selectedAddonPath, "draft.yaml"))
+	addOnConfigPath := path.Join(selectedAddonPath, "draft.yaml")
+	log.Debugf("addOnConfig is: %s", addOnConfigPath)
+
+	configBytes, err := fs.ReadFile(addons, addOnConfigPath)
 	if err != nil {
 		return AddonConfig{}, err
 	}

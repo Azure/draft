@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
         - name: {{APPNAME}}
-          image: {{IMAGENAME}}
+          image: {{IMAGENAME}}:{{IMAGETAG}}
           ports:
             - containerPort: {{PORT}}

@@ -1,4 +1,4 @@
-imageKey:
+image:
   repository: "{{APPNAME}}"
   pullPolicy: IfNotPresent
   tag: "latest"

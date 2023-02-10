@@ -4,7 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//TODO: remove Name Overrides since we don't need them anymore
+// TODO: remove Name Overrides since we don't need them anymore
 type DraftConfig struct {
 	DisplayName      string              `yaml:"displayName"`
 	NameOverrides    []FileNameOverride  `yaml:"nameOverrides"`
@@ -20,10 +20,11 @@ type FileNameOverride struct {
 }
 
 type BuilderVar struct {
-	Name          string   `yaml:"name"`
-	Description   string   `yaml:"description"`
-	VarType       string   `yaml:"type"`
-	ExampleValues []string `yaml:"exampleValues"`
+	Name             string   `yaml:"name"`
+	Description      string   `yaml:"description"`
+	VarType          string   `yaml:"type"`
+	ExampleValues    []string `yaml:"exampleValues"`
+	IsPromptDisabled bool     `yaml:"disablePrompt"`
 }
 
 type BuilderVarDefault struct {

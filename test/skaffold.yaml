@@ -12,6 +12,6 @@ deploy:
       - name: my-chart
         chartPath: charts
         artifactOverrides:
-          imageKey: my-app
+          image: my-app
         imageStrategy:
           helm: {}

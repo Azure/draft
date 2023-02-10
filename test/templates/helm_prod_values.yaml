@@ -1,4 +1,4 @@
-imageKey:
+image:
   repository: "prodImage"
   pullPolicy: IfNotPresent
   tag: "latest"

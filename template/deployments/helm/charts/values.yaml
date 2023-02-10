@@ -8,8 +8,9 @@ namespace: {{NAMESPACE}}
 
 containerPort: {{PORT}}
 
-imageKey:
+image:
   repository: {{IMAGENAME}}
+  tag: {{IMAGETAG}}
   pullPolicy: IfNotPresent
 
 

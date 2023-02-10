@@ -98,7 +98,7 @@ func TestUpdateProductionDeployments(t *testing.T) {
 
 	helmDeploy := &HelmProductionYaml{}
 	assert.Nil(t, helmDeploy.LoadFromFile(helmFileName))
-	assert.Equal(t, "testImage", helmDeploy.ImageKey.Repository)
+	assert.Equal(t, "testImage", helmDeploy.Image.Repository)
 
 	assert.Nil(t, setDeploymentContainerImage(deploymentFileName, "testImage"))
 	decode := scheme.Codecs.UniversalDeserializer().Decode

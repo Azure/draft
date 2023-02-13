@@ -1,5 +1,30 @@
 # Change Log
 
+## [0.0.28] - 2023-02-13
+
+**BREAKING** changes to `IMAGE` variable
+
+### Added
+- New, optional `disablePrompt` property on Builder Variables in draft config (#180):
+  - Default Value: `false` 
+  - Variables with `disablePrompt: true` will not be prompted for when running `draft interactive commands`
+  - Variables with `disablePrompt: true` can still be supplied via flags (`draft create --var TAG=latest`) or draft config files
+  - Example Usage:
+    ```
+      # draft.yaml
+      variables:
+      - name: "TAG"
+        description: "the tag of the image to be built"
+        disablePrompt: true #  New optional field that is used to disable the prompt for this variable
+      ...
+      ```
+- For all draft substitutions, draft will now error if unsubstituted variables are found in the final output (#175)
+
+### Changed
+- **BREAKING** the `IMAGE` variable no longer can include an image tag. The `TAG` variable should be used instead (#176)
+- **BREAKING** the `imageKey` variable on the `helm` deployment type has been renamed to `image` to be consistent with the supplied starter workflows (#176)
+  - Re-running `draft create` will update existing files to follow the new convention
+
 ## [0.0.27] - 2022-12-9
 
 ### Added

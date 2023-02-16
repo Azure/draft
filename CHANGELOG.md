@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.29] - 2023-02-16
+
+### Fixed
+- Bug fix for helm deployments where namespace was created but not respected at the deployment level
+
 ## [0.0.28] - 2023-02-13
 
 **BREAKING** changes to `IMAGE` variable

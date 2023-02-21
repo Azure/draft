@@ -16,7 +16,8 @@ manifest_workflow_names_file=./temp/manifest_workflow_names.txt
 rm $manifest_workflow_names_file
 
 # add build to workflow
-echo "name: draft Linux Integrations
+echo "# this file is generated using gen_integration.sh
+name: draft Linux Integrations
 
 on:
   pull_request:
@@ -27,19 +28,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18.2
       - name: make
         run: make
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: draft-binary
           path: ./draft
@@ -56,34 +57,34 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
       - name: make
         run: make
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: draft-binary
           path: ./draft.exe
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_helm
           path: ./test/check_windows_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_addon_helm
           path: ./test/check_windows_addon_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_kustomize
           path: ./test/check_windows_kustomize.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_addon_kustomize
           path: ./test/check_windows_addon_kustomize.ps1
@@ -172,13 +173,13 @@ languageVariables:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: $repo
             path: ./langtest
@@ -201,13 +202,13 @@ languageVariables:
           - 5000:5000
     needs: $lang-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: $repo
           path: ./langtest
@@ -259,13 +260,13 @@ languageVariables:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: $repo
           path: ./langtest
@@ -288,13 +289,13 @@ languageVariables:
           - 5000:5000
     needs: $lang-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: $repo
           path: ./langtest
@@ -344,13 +345,13 @@ languageVariables:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: $repo
             path: ./langtest
@@ -373,13 +374,13 @@ languageVariables:
           - 5000:5000
     needs: $lang-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: $repo
           path: ./langtest
@@ -404,7 +405,7 @@ languageVariables:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create
           path: ./langtest
@@ -417,12 +418,12 @@ languageVariables:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: $lang-manifests-create
           path: ./langtest/
@@ -454,12 +455,12 @@ languageVariables:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: $repo
           path: ./langtest
@@ -467,7 +468,7 @@ languageVariables:
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: check_windows_helm
           path: ./langtest/
@@ -481,8 +482,8 @@ languageVariables:
     needs: $lang-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - uses: actions/download-artifact@v3
@@ -491,7 +492,7 @@ languageVariables:
           path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: check_windows_addon_helm
           path: ./langtest/
@@ -506,12 +507,12 @@ languageVariables:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: $repo
           path: ./langtest
@@ -519,7 +520,7 @@ languageVariables:
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: check_windows_kustomize
           path: ./langtest/
@@ -533,7 +534,7 @@ languageVariables:
     needs: $lang-kustomize-create 
     runs-on: windows-latest
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - uses: actions/download-artifact@v3
@@ -542,7 +543,7 @@ languageVariables:
           path: ./langtest
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: check_windows_addon_kustomize
           path: ./langtest/

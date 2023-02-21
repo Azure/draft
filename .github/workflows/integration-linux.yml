@@ -1,3 +1,4 @@
+# this file is generated using gen_integration.sh
 name: draft Linux Integrations
 
 on:
@@ -9,19 +10,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18.2
       - name: make
         run: make
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: draft-binary
           path: ./draft
@@ -31,13 +32,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: gambtho/go_echo
             path: ./langtest
@@ -58,13 +59,13 @@ jobs:
           - 5000:5000
     needs: gomodule-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -112,13 +113,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -139,13 +140,13 @@ jobs:
           - 5000:5000
     needs: gomodule-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -191,13 +192,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: gambtho/go_echo
             path: ./langtest
@@ -218,13 +219,13 @@ jobs:
           - 5000:5000
     needs: gomodule-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -249,7 +250,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: gomodule-manifests-create
           path: ./langtest
@@ -262,12 +263,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: gomodule-manifests-create
           path: ./langtest/
@@ -295,13 +296,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
@@ -322,13 +323,13 @@ jobs:
           - 5000:5000
     needs: python-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -376,13 +377,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -403,13 +404,13 @@ jobs:
           - 5000:5000
     needs: python-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -455,13 +456,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
@@ -482,13 +483,13 @@ jobs:
           - 5000:5000
     needs: python-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -513,7 +514,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: python-manifests-create
           path: ./langtest
@@ -526,12 +527,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: python-manifests-create
           path: ./langtest/
@@ -559,13 +560,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
@@ -586,13 +587,13 @@ jobs:
           - 5000:5000
     needs: rust-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -640,13 +641,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -667,13 +668,13 @@ jobs:
           - 5000:5000
     needs: rust-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -719,13 +720,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
@@ -746,13 +747,13 @@ jobs:
           - 5000:5000
     needs: rust-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -777,7 +778,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: rust-manifests-create
           path: ./langtest
@@ -790,12 +791,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: rust-manifests-create
           path: ./langtest/
@@ -823,13 +824,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
@@ -850,13 +851,13 @@ jobs:
           - 5000:5000
     needs: javascript-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -904,13 +905,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -931,13 +932,13 @@ jobs:
           - 5000:5000
     needs: javascript-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -983,13 +984,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
@@ -1010,13 +1011,13 @@ jobs:
           - 5000:5000
     needs: javascript-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -1041,7 +1042,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: javascript-manifests-create
           path: ./langtest
@@ -1054,12 +1055,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: javascript-manifests-create
           path: ./langtest/
@@ -1087,13 +1088,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/ruby-hello-world
             path: ./langtest
@@ -1114,13 +1115,13 @@ jobs:
           - 5000:5000
     needs: ruby-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
@@ -1168,13 +1169,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
@@ -1195,13 +1196,13 @@ jobs:
           - 5000:5000
     needs: ruby-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
@@ -1247,13 +1248,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/ruby-hello-world
             path: ./langtest
@@ -1274,13 +1275,13 @@ jobs:
           - 5000:5000
     needs: ruby-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
@@ -1305,7 +1306,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ruby-manifests-create
           path: ./langtest
@@ -1318,12 +1319,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: ruby-manifests-create
           path: ./langtest/
@@ -1351,13 +1352,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
@@ -1378,13 +1379,13 @@ jobs:
           - 5000:5000
     needs: csharp-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -1432,13 +1433,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -1459,13 +1460,13 @@ jobs:
           - 5000:5000
     needs: csharp-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -1511,13 +1512,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
@@ -1538,13 +1539,13 @@ jobs:
           - 5000:5000
     needs: csharp-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -1569,7 +1570,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: csharp-manifests-create
           path: ./langtest
@@ -1582,12 +1583,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: csharp-manifests-create
           path: ./langtest/
@@ -1615,13 +1616,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
@@ -1642,13 +1643,13 @@ jobs:
           - 5000:5000
     needs: java-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -1696,13 +1697,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -1723,13 +1724,13 @@ jobs:
           - 5000:5000
     needs: java-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -1775,13 +1776,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
@@ -1802,13 +1803,13 @@ jobs:
           - 5000:5000
     needs: java-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -1833,7 +1834,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: java-manifests-create
           path: ./langtest
@@ -1846,12 +1847,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: java-manifests-create
           path: ./langtest/
@@ -1879,13 +1880,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
@@ -1906,13 +1907,13 @@ jobs:
           - 5000:5000
     needs: gradle-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -1960,13 +1961,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -1987,13 +1988,13 @@ jobs:
           - 5000:5000
     needs: gradle-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -2039,13 +2040,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
@@ -2066,13 +2067,13 @@ jobs:
           - 5000:5000
     needs: gradle-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -2097,7 +2098,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: gradle-manifests-create
           path: ./langtest
@@ -2110,12 +2111,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: gradle-manifests-create
           path: ./langtest/
@@ -2143,13 +2144,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
@@ -2170,13 +2171,13 @@ jobs:
           - 5000:5000
     needs: swift-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -2224,13 +2225,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -2251,13 +2252,13 @@ jobs:
           - 5000:5000
     needs: swift-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -2303,13 +2304,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
@@ -2330,13 +2331,13 @@ jobs:
           - 5000:5000
     needs: swift-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -2361,7 +2362,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: swift-manifests-create
           path: ./langtest
@@ -2374,12 +2375,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: swift-manifests-create
           path: ./langtest/
@@ -2407,13 +2408,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
@@ -2434,13 +2435,13 @@ jobs:
           - 5000:5000
     needs: erlang-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -2488,13 +2489,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -2515,13 +2516,13 @@ jobs:
           - 5000:5000
     needs: erlang-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -2567,13 +2568,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
@@ -2594,13 +2595,13 @@ jobs:
           - 5000:5000
     needs: erlang-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -2625,7 +2626,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: erlang-manifests-create
           path: ./langtest
@@ -2638,12 +2639,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: erlang-manifests-create
           path: ./langtest/
@@ -2671,13 +2672,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
@@ -2698,13 +2699,13 @@ jobs:
           - 5000:5000
     needs: clojure-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -2752,13 +2753,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -2779,13 +2780,13 @@ jobs:
           - 5000:5000
     needs: clojure-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -2831,13 +2832,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
@@ -2858,13 +2859,13 @@ jobs:
           - 5000:5000
     needs: clojure-manifest-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -2889,7 +2890,7 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: clojure-manifests-create
           path: ./langtest
@@ -2902,12 +2903,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: clojure-manifests-create
           path: ./langtest/

@@ -6,7 +6,7 @@ variables:
     type: int
   - name: "VERSION"
     description: "the version of openjdk that the application uses"
-    exampleValues: ["8-jdk-alpine","11-jdk-alpine"]
+    exampleValues: ["8-jdk-alpine","11-jdk-alpine","17-jdk-alpine","19-jdk-alpine"]
 variableDefaults:
   - name: "VERSION"
     value: "8-jdk-alpine"

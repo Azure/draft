@@ -3,7 +3,7 @@ FROM gradle:{{BUILDERVERSION}} as BUILD
 COPY --chown=gradle:gradle . /project
 RUN gradle -i -s -b /project/build.gradle clean build
 
-FROM openjdk:{{VERSION}}
+FROM eclipse-temurin:{{VERSION}}
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 

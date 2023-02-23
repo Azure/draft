@@ -12,11 +12,11 @@ variables:
     exampleValues: ["3-jdk-11"]
   - name: "VERSION"
     description: "the version of openjdk used by the application"
-    exampleValues: ["11-jre-slim"]
+    exampleValues: ["8-jre","11-jre","17-jre","19-jre"]
 variableDefaults:
   - name: "BUILDERVERSION"
     value: "3-jdk-11"
   - name: "VERSION"
-    value: "11-jre-slim"
+    value: "11-jre"
   - name: "PORT"
     value: "80"

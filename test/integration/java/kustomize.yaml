@@ -10,7 +10,7 @@ deployVariables:
     value: "testapp"
 languageVariables:
   - name: "VERSION"
-    value: "11-jre-slim"
+    value: "11-jre"
   - name: "BUILDERVERSION"
     value: "3-jdk-11"
   - name: "PORT"

@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.29] - 2023-02-24
+
+### Changed
+
+- OpenJDK Docker image has been deprecated and doesnt have JRE images for  Java 11+. This change moves our Java images to Eclipse-Temurin.
+
 ## [0.0.29] - 2023-02-16
 
 ### Fixed

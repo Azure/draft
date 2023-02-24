@@ -43,7 +43,7 @@
   },
   {
     "language": "java",
-    "version": "11-jre-slim",
+    "version": "11-jre",
     "builderversion": "3-jdk-11",
     "port": "8080",
     "serviceport": 80,
@@ -51,7 +51,7 @@
   },
   {
     "language": "gradle",
-    "version": "11-jre-slim",
+    "version": "11-jre",
     "builderversion": "jdk11",
     "port": "8080",
     "serviceport": 80,

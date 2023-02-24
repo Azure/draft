@@ -171,6 +171,46 @@ curl -fsSL https://raw.githubusercontent.com/Azure/draft/main/scripts/install.sh
 
 * Windows isn't currently supported (you can use WSL)
 
+
+## Draft as a Dependency
+
+If you are looking to leverage Draft's file generation capabilities and templating within another project instead of using the CLI, you have two options: importing the Draft go packages, and wrapping the binary
+
+### Importing Draft Go Packages
+This option will provide the cleanest integration, as it directly builds Draft into your project. However, it requires that your project is written in Go.
+
+Dockerfiles can be generated using the following methods:
+```go
+import (
+	"github.com/Azure/draft/pkg/languages"
+    "github.com/Azure/draft/template"
+    "github.com/Azure/draft/templatewriter"
+)
+
+// generateDockerfile generates a Dockerfile using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs. 
+func generateDockerfile(w templatewriter.TemplateWriter,dockerfileOutputPath string, dockerfileInputs map[string]string) error {
+    l := languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, dockerfileOutputPath)
+    generationLanguage := strings.ToLower(properties.GetGenerationLanguage().String())
+    err = l.CreateDockerfileForLanguage(generationLanguage, dockerfileInputs, prFileWriter)
+    if err != nil {
+    return fmt.Errorf("failed to generate dockerfile: %e", err)
+    }
+    return nil
+}
+```
+
+### Wrapping the Binary
+For projects written in languages other than Go, or for projects that prefer to not import the packages directly, you can wrap the Draft binary.
+
+We recommend pinning a specific version of Draft and only updating after reviewing new releases' changelogs, but starting with release v1.0 Draft will no longer be in prerelease, and we will use semver and not introduce breaking changes in minor or patch releases.
+
+Several features have been implemented to make consuming draft as easy as possible:
+- `draft info` prints supported language and field information in json format for easy parsing
+- `--dry-run` and `--dry-run-file` flags can be used on the `create` command to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
+- `draft update` accepts takes a repeatable `--variable` flag that can be used to set template variables
+- `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
+
+
 ## Contributing
 
 Draft is fully compatible with [Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!

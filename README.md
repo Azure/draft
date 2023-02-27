@@ -179,46 +179,9 @@ If you are looking to leverage Draft's file generation capabilities and templati
 ### Importing Draft Go Packages
 This option will provide the cleanest integration, as it directly builds Draft into your project. However, it requires that your project is written in Go.
 
-Dockerfiles can be generated using the following methods:
-```go
-import (
-    "github.com/Azure/draft/pkg/languages"
-    "github.com/Azure/draft/template"
-    "github.com/Azure/draft/templatewriter"
-)
+Dockerfiles can be generated following the example in `examples/dockerfile.go` 
 
-// WriteDockerfile generates a Dockerfile using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs. 
-func WriteDockerfile(w templatewriter.TemplateWriter,dockerfileOutputPath string, dockerfileInputs map[string]string) error {
-    l := languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, dockerfileOutputPath)
-    generationLanguage := strings.ToLower(properties.GetGenerationLanguage().String())
-	
-    err := l.CreateDockerfileForLanguage(generationLanguage, dockerfileInputs, prFileWriter)
-    if err != nil {
-        return fmt.Errorf("failed to generate dockerfile: %e", err)
-    }
-    return nil
-}
-```
-
-Deployment files can be generated using the following methods:
-```go
-import (
-    "github.com/Azure/draft/pkg/deployments"
-    "github.com/Azure/draft/template"
-)
-
-// WriteDeploymentFiles generates Deployment Files using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs.
-func WriteDeploymentFiles(properties *devHubTypes.ArtifactGenerationProperties, deploymentOutputPath string, prFileWriter *PRFiles, deploymentInputs map[string]string, deploymentType string) error {
-    d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, deploymentOutputPath)
-	
-    err = d.CopyDeploymentFiles(deploymentType, deploymentInputs, prFileWriter)
-    if err != nil {
-        return fmt.Errorf("failed to generate manifest: %e", err)
-    }
-    return nil
-}
-
-```
+Deployment files can be generated following the example in `examples/deployment.go`
 
 ### Wrapping the Binary
 For projects written in languages other than Go, or for projects that prefer to not import the packages directly, you can wrap the Draft binary.
@@ -230,7 +193,6 @@ Several features have been implemented to make consuming draft as easy as possib
 - `--dry-run` and `--dry-run-file` flags can be used on the `create` command to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
 - `draft update` accepts takes a repeatable `--variable` flag that can be used to set template variables
 - `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
-
 
 ## Contributing
 

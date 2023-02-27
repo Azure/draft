@@ -186,8 +186,6 @@ Deployment files can be generated following the example in `examples/deployment.
 ### Wrapping the Binary
 For projects written in languages other than Go, or for projects that prefer to not import the packages directly, you can wrap the Draft binary.
 
-We recommend pinning a specific version of Draft and only updating after reviewing new releases' changelogs, but starting with release v1.0 Draft will no longer be in prerelease, and we will use semver and not introduce breaking changes in minor or patch releases.
-
 Several features have been implemented to make consuming draft as easy as possible:
 - `draft info` prints supported language and field information in json format for easy parsing
 - `--dry-run` and `--dry-run-file` flags can be used on the `create` command to generate a summary of the files that would be written to disk, and the variables that would be used in the templates

@@ -182,21 +182,42 @@ This option will provide the cleanest integration, as it directly builds Draft i
 Dockerfiles can be generated using the following methods:
 ```go
 import (
-	"github.com/Azure/draft/pkg/languages"
+    "github.com/Azure/draft/pkg/languages"
     "github.com/Azure/draft/template"
     "github.com/Azure/draft/templatewriter"
 )
 
-// generateDockerfile generates a Dockerfile using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs. 
-func generateDockerfile(w templatewriter.TemplateWriter,dockerfileOutputPath string, dockerfileInputs map[string]string) error {
+// WriteDockerfile generates a Dockerfile using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs. 
+func WriteDockerfile(w templatewriter.TemplateWriter,dockerfileOutputPath string, dockerfileInputs map[string]string) error {
     l := languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, dockerfileOutputPath)
     generationLanguage := strings.ToLower(properties.GetGenerationLanguage().String())
-    err = l.CreateDockerfileForLanguage(generationLanguage, dockerfileInputs, prFileWriter)
+	
+    err := l.CreateDockerfileForLanguage(generationLanguage, dockerfileInputs, prFileWriter)
     if err != nil {
-    return fmt.Errorf("failed to generate dockerfile: %e", err)
+        return fmt.Errorf("failed to generate dockerfile: %e", err)
     }
     return nil
 }
+```
+
+Deployment files can be generated using the following methods:
+```go
+import (
+    "github.com/Azure/draft/pkg/deployments"
+    "github.com/Azure/draft/template"
+)
+
+// WriteDeploymentFiles generates Deployment Files using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs.
+func WriteDeploymentFiles(properties *devHubTypes.ArtifactGenerationProperties, deploymentOutputPath string, prFileWriter *PRFiles, deploymentInputs map[string]string, deploymentType string) error {
+    d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, deploymentOutputPath)
+	
+    err = d.CopyDeploymentFiles(deploymentType, deploymentInputs, prFileWriter)
+    if err != nil {
+        return fmt.Errorf("failed to generate manifest: %e", err)
+    }
+    return nil
+}
+
 ```
 
 ### Wrapping the Binary

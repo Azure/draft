@@ -42,7 +42,7 @@ func TestWriteDeploymentFiles(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := WriteDeploymentFiles(outputPath, &filewriter, tc.inputVariables, tc.deploymentType)
+			err := WriteDeploymentFiles(&filewriter, outputPath, tc.inputVariables, tc.deploymentType)
 			errored := err != nil
 			if err != nil {
 				fmt.Printf("WriteDeploymentFiles failed: %e\n", err)

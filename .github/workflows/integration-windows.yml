@@ -138,6 +138,102 @@ jobs:
         working-directory: ./langtest/
       
 
+  go-helm-create:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: davidgamero/go-echo-no-mod
+          path: ./langtest
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/go/helm.yaml -d ./langtest/
+      - uses: actions/download-artifact@v3
+        with:
+          name: check_windows_helm
+          path: ./langtest/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: go-helm-create
+          path: ./langtest
+  go-helm-update:
+    needs: go-helm-create
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: go-helm-create
+          path: ./langtest/
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v3
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/
+
+  go-kustomize-create:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: davidgamero/go-echo-no-mod
+          path: ./langtest
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/go/kustomize.yaml -d ./langtest/
+      - uses: actions/download-artifact@v3
+        with:
+          name: check_windows_kustomize
+          path: ./langtest/
+      - run: ./check_windows_kustomize.ps1
+        working-directory: ./langtest/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: go-kustomize-create
+          path: ./langtest
+  go-kustomize-update:
+    needs: go-kustomize-create 
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - uses: actions/download-artifact@v3
+        with:
+          name: go-kustomize-create
+          path: ./langtest
+      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@v3
+        with:
+          name: check_windows_addon_kustomize
+          path: ./langtest/
+      - run: ./check_windows_addon_kustomize.ps1
+        working-directory: ./langtest/
+      
+
   python-helm-create:
     runs-on: windows-latest
     needs: build
@@ -1100,14 +1196,14 @@ jobs:
 
   helm-win-integrations-summary:
       runs-on: windows-latest
-      needs: [ gomodule-helm-update,python-helm-update,rust-helm-update,javascript-helm-update,ruby-helm-update,csharp-helm-update,java-helm-update,gradle-helm-update,swift-helm-update,erlang-helm-update,clojure-helm-update ]
+      needs: [ gomodule-helm-update,go-helm-update,python-helm-update,rust-helm-update,javascript-helm-update,ruby-helm-update,csharp-helm-update,java-helm-update,gradle-helm-update,swift-helm-update,erlang-helm-update,clojure-helm-update ]
       steps:
         - run: echo helm integrations passed
 
 
   kustomize-win-integrations-summary:
       runs-on: windows-latest
-      needs: [ gomodule-kustomize-update,python-kustomize-update,rust-kustomize-update,javascript-kustomize-update,ruby-kustomize-update,csharp-kustomize-update,java-kustomize-update,gradle-kustomize-update,swift-kustomize-update,erlang-kustomize-update,clojure-kustomize-update ]
+      needs: [ gomodule-kustomize-update,go-kustomize-update,python-kustomize-update,rust-kustomize-update,javascript-kustomize-update,ruby-kustomize-update,csharp-kustomize-update,java-kustomize-update,gradle-kustomize-update,swift-kustomize-update,erlang-kustomize-update,clojure-kustomize-update ]
       steps:
         - run: echo kustomize integrations passed
 

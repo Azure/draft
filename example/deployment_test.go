@@ -54,3 +54,11 @@ func TestWriteDeploymentFiles(t *testing.T) {
 		})
 	}
 }
+
+func TestWriteDeploymentFilesExample(t *testing.T) {
+	err := WriteDockerfileExample()
+	if err != nil {
+		t.Errorf("WriteDockerfileExample failed: %e", err)
+		t.Fail()
+	}
+}

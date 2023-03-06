@@ -404,7 +404,7 @@ languageVariables:
         id: deploy
       - name: Wait for rollout
         run: |
-          kubectl rollout status deployment testapp --timeout=30s
+          kubectl rollout status deployment testapp --timeout=120s
       - name: Check default namespace
         run: |
           kubectl get po

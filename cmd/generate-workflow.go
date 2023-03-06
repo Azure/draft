@@ -47,7 +47,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVarP(&gwCmd.workflowConfig.ResourceGroupName, "resource-group", "g", "", "specify the Azure resource group of your AKS cluster")
 	f.StringVarP(&gwCmd.dest, "destination", "d", ".", "specify the path to the project directory")
 	f.StringVarP(&gwCmd.workflowConfig.BranchName, "branch", "b", "", "specify the Github branch to automatically deploy from")
-	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "add additional variables in-line using --variable flag")
+	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables using repeated --variable flag")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }

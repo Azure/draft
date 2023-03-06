@@ -397,6 +397,10 @@ languageVariables:
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n "verifying images:"
           docker images
+      - name: Load Image into Minikube
+        run: |
+          eval \$(minikube -p minikube docker-env)
+          docker save testapp | (eval \$(minikube -p minikube docker-env) && docker load)
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -414,9 +418,8 @@ languageVariables:
           kubectl get deploy
       - name: Curl Endpoint
         run: |
-          MINIKUBE_IP=\$(minikube ip)
-          DEPLOYED_PORT=\$(kubectl get svc testapp -o jsonpath='{.spec.ports[0].nodePort}')
-          curl http://\$MINIKUBE_IP:\$DEPLOYED_PORT
+          MINIKUBE_URL=\$(minikube service testapp --url)
+          curl http://\$MINIKUBE_URL
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create

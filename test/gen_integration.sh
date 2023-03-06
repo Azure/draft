@@ -146,7 +146,7 @@ languageVariables:
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/kustomize.yaml
 
-    # create kustomize.yaml
+    # create manifest.yaml
     echo "$note
 deployType: \"manifests\"
 languageType: \"$lang\"
@@ -402,9 +402,19 @@ languageVariables:
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment testapp --timeout=30s
       - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+        run: |
+          kubectl get po
+          kubectl get svc
+          kubectl get deploy
+      - name: Curl Endpoint
+        run: |
+          MINIKUBE_IP=\$(minikube ip)
+          DEPLOYED_PORT=\$(kubectl get svc testapp -o jsonpath='{.spec.ports[0].nodePort}')
+          curl http://\$MINIKUBE_IP:\$DEPLOYED_PORT
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create

@@ -29,6 +29,7 @@ func TestRun(t *testing.T) {
 	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
 	mockCC.templateWriter = &writers.LocalFSWriter{}
+	mockCC.flagVariables = []string{"foo=bar", "foo1=bar1"}
 
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")

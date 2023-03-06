@@ -248,8 +248,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -265,7 +267,7 @@ jobs:
           name: gomodule-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   gomodule-manifest-update:
     needs: gomodule-manifests-create
@@ -528,8 +530,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -545,7 +549,7 @@ jobs:
           name: python-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   python-manifest-update:
     needs: python-manifests-create
@@ -808,8 +812,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -825,7 +831,7 @@ jobs:
           name: rust-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   rust-manifest-update:
     needs: rust-manifests-create
@@ -1088,8 +1094,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -1105,7 +1113,7 @@ jobs:
           name: javascript-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   javascript-manifest-update:
     needs: javascript-manifests-create
@@ -1368,8 +1376,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -1385,7 +1395,7 @@ jobs:
           name: ruby-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   ruby-manifest-update:
     needs: ruby-manifests-create
@@ -1648,8 +1658,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -1665,7 +1677,7 @@ jobs:
           name: csharp-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   csharp-manifest-update:
     needs: csharp-manifests-create
@@ -1928,8 +1940,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -1945,7 +1959,7 @@ jobs:
           name: java-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   java-manifest-update:
     needs: java-manifests-create
@@ -2208,8 +2222,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -2225,7 +2241,7 @@ jobs:
           name: gradle-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   gradle-manifest-update:
     needs: gradle-manifests-create
@@ -2488,8 +2504,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -2505,7 +2523,7 @@ jobs:
           name: swift-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   swift-manifest-update:
     needs: swift-manifests-create
@@ -2768,8 +2786,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -2785,7 +2805,7 @@ jobs:
           name: erlang-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   erlang-manifest-update:
     needs: erlang-manifests-create
@@ -3048,8 +3068,10 @@ jobs:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -3065,7 +3087,7 @@ jobs:
           name: clojure-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   clojure-manifest-update:
     needs: clojure-manifests-create

@@ -403,8 +403,10 @@ languageVariables:
         continue-on-error: true
         id: deploy
       - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=5min
+          kubectl rollout status deployment/testapp --timeout=2min
       - name: Check default namespace
         run: |
           kubectl get po
@@ -420,7 +422,7 @@ languageVariables:
           name: $lang-manifests-create
           path: ./langtest
       - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
   $manifest_update_job_name:
     needs: $lang-manifests-create

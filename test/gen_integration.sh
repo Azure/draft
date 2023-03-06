@@ -410,7 +410,7 @@ languageVariables:
         continue-on-error: true
         id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=2min
+          kubectl rollout status deployment/testapp --timeout=2m
       - name: Check default namespace
         run: |
           kubectl get po
@@ -419,6 +419,7 @@ languageVariables:
       - name: Curl Endpoint
         run: |
           MINIKUBE_URL=\$(minikube service testapp --url)
+          echo "Curling \$MINIKUBE_URL"
           curl http://\$MINIKUBE_URL
       - uses: actions/upload-artifact@v3
         with:

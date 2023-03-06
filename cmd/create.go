@@ -22,6 +22,7 @@ import (
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
+	"golang.org/x/exp/maps"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -230,10 +231,20 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return errors.New("supported languages were loaded incorrectly")
 	}
 
+	flagVariablesMap := make(map[string]string)
+	for _, flagVar := range cc.flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		flagVariablesMap[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+	}
+
 	var inputs map[string]string
 	var err error
 	if cc.createConfig.LanguageVariables == nil {
-		inputs, err = prompts.RunPromptsFromConfig(langConfig)
+		inputs, err = prompts.RunPromptsFromConfigWithSkips(langConfig, maps.Keys(flagVariablesMap))
 		if err != nil {
 			return err
 		}
@@ -242,15 +253,6 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		if err != nil {
 			return err
 		}
-	}
-
-	for _, flagVar := range cc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		inputs[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
 	}
 
 	if cc.templateVariableRecorder != nil {

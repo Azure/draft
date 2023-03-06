@@ -275,6 +275,16 @@ func (cc *createCmd) createDeployment() error {
 	var deployType string
 	var customInputs map[string]string
 	var err error
+	flagVariablesMap := make(map[string]string)
+	for _, flagVar := range cc.flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		flagVariablesMap[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+	}
+
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
 		deployConfig := d.GetConfig(deployType)
@@ -298,19 +308,10 @@ func (cc *createCmd) createDeployment() error {
 		}
 
 		deployConfig := d.GetConfig(deployType)
-		customInputs, err = prompts.RunPromptsFromConfig(deployConfig)
+		customInputs, err = prompts.RunPromptsFromConfigWithSkips(deployConfig, maps.Keys(flagVariablesMap))
 		if err != nil {
 			return err
 		}
-	}
-
-	for _, flagVar := range cc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		customInputs[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
 	}
 
 	if cc.templateVariableRecorder != nil {

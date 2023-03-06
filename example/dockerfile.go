@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/draft/template"
 )
 
-// WriteDockerfile generates a Dockerfile and dockerignore using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs.
+// WriteDockerfile generates a Dockerfile and dockerignore using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file in templates/dockerfiles/[language] for the template inputs.
 func WriteDockerfile(w templatewriter.TemplateWriter, dockerfileOutputPath string, dockerfileInputs map[string]string, generationLanguage string) error {
 	l := languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, dockerfileOutputPath)
 

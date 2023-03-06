@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/draft/template"
 )
 
-// WriteDeploymentFiles generates Deployment Files using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file for the template inputs.
+// WriteDeploymentFiles generates Deployment Files using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file in templates/deployments/[deployType] for the template inputs.
 func WriteDeploymentFiles(w templatewriter.TemplateWriter, deploymentOutputPath string, deploymentInputs map[string]string, deploymentType string) error {
 	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, deploymentOutputPath)
 

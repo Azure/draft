@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -15,7 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/Azure/draft/pkg/filematches"
-	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/templatewriter"
 )
 
 //go:generate cp -r ../../starterWorkflows ./workflows
@@ -38,13 +39,13 @@ type workflowType struct {
 	workflowFileSuffix string
 }
 
-func CreateWorkflows(dest string, config *WorkflowConfig) error {
+func CreateWorkflows(dest string, config *WorkflowConfig, flagVariables []string, templateWriter templatewriter.TemplateWriter) error {
 	deployType, err := filematches.FindDraftDeploymentFiles(dest)
 	if err != nil {
 		return err
 	}
 
-	if err = updateProductionDeployments(deployType, dest, config); err != nil {
+	if err = updateProductionDeployments(deployType, dest, config, templateWriter); err != nil {
 		return err
 	}
 	workflow, ok := deployNameToWorkflow[deployType]
@@ -54,20 +55,22 @@ func CreateWorkflows(dest string, config *WorkflowConfig) error {
 
 	workflowTemplate := getWorkflowFile(workflow)
 
-	replaceWorkflowVars(deployType, config, workflowTemplate)
+	if err = replaceWorkflowVars(deployType, config, workflowTemplate, flagVariables); err != nil {
+		return err
+	}
 
 	ghWorkflowPath := dest + "/.github/workflows/"
 	ghWorkflowFileName := ghWorkflowPath + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
 	log.Debugf("writing workflow to %s", ghWorkflowPath)
 
-	return writeWorkflow(ghWorkflowPath, ghWorkflowFileName, *workflowTemplate)
+	return writeWorkflow(ghWorkflowPath, ghWorkflowFileName, *workflowTemplate, templateWriter)
 }
 
-func updateProductionDeployments(deployType, dest string, config *WorkflowConfig) error {
+func updateProductionDeployments(deployType, dest string, config *WorkflowConfig, templateWriter templatewriter.TemplateWriter) error {
 	productionImage := fmt.Sprintf("%s.azurecr.io/%s", config.AcrName, config.ContainerName)
 	switch deployType {
 	case "helm":
-		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage)
+		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
 	case "kustomize":
 		return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
 	case "manifests":
@@ -76,7 +79,7 @@ func updateProductionDeployments(deployType, dest string, config *WorkflowConfig
 	return nil
 }
 
-func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubWorkflow) {
+func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubWorkflow, flagVariables []string) error {
 	envMap := make(map[string]string)
 	envMap["AZURE_CONTAINER_REGISTRY"] = config.AcrName
 	envMap["CONTAINER_NAME"] = config.ContainerName
@@ -95,9 +98,20 @@ func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubW
 		envMap["KUSTOMIZE_PATH"] = config.KustomizePath
 	}
 
+	for _, flagVar := range flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		envMap[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+	}
+
 	ghw.Env = envMap
 
 	ghw.On.Push.Branches[0] = config.BranchName
+
+	return nil
 }
 
 func setDeploymentContainerImage(filePath, productionImage string) error {
@@ -138,7 +152,7 @@ func setDeploymentContainerImage(filePath, productionImage string) error {
 	return printer.PrintObj(deploy, out)
 }
 
-func setHelmContainerImage(filePath, productionImage string) error {
+func setHelmContainerImage(filePath, productionImage string, templateWriter templatewriter.TemplateWriter) error {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
@@ -157,7 +171,7 @@ func setHelmContainerImage(filePath, productionImage string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filePath, out, 0644)
+	return templateWriter.WriteFile(filePath, out)
 }
 
 func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
@@ -177,15 +191,15 @@ func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
 	return &ghw
 }
 
-func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw GitHubWorkflow) error {
+func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw GitHubWorkflow, templateWriter templatewriter.TemplateWriter) error {
 	workflowBytes, err := yaml.Marshal(ghw)
 	if err != nil {
 		return err
 	}
 
-	if err := osutil.EnsureDirectory(ghWorkflowPath); err != nil {
+	if err := templateWriter.EnsureDirectory(ghWorkflowPath); err != nil {
 		return err
 	}
 
-	return os.WriteFile(workflowFileName, workflowBytes, 0644)
+	return templateWriter.WriteFile(workflowFileName, workflowBytes)
 }

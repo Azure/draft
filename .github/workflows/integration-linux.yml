@@ -254,6 +254,9 @@ jobs:
         with:
           name: gomodule-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   gomodule-manifest-update:
     needs: gomodule-manifests-create
     runs-on: ubuntu-latest
@@ -291,6 +294,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   python-helm-dry-run:
       runs-on: ubuntu-latest
@@ -518,6 +524,9 @@ jobs:
         with:
           name: python-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   python-manifest-update:
     needs: python-manifests-create
     runs-on: ubuntu-latest
@@ -555,6 +564,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   rust-helm-dry-run:
       runs-on: ubuntu-latest
@@ -782,6 +794,9 @@ jobs:
         with:
           name: rust-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   rust-manifest-update:
     needs: rust-manifests-create
     runs-on: ubuntu-latest
@@ -819,6 +834,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   javascript-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1046,6 +1064,9 @@ jobs:
         with:
           name: javascript-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   javascript-manifest-update:
     needs: javascript-manifests-create
     runs-on: ubuntu-latest
@@ -1083,6 +1104,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   ruby-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1310,6 +1334,9 @@ jobs:
         with:
           name: ruby-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   ruby-manifest-update:
     needs: ruby-manifests-create
     runs-on: ubuntu-latest
@@ -1347,6 +1374,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   csharp-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1574,6 +1604,9 @@ jobs:
         with:
           name: csharp-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   csharp-manifest-update:
     needs: csharp-manifests-create
     runs-on: ubuntu-latest
@@ -1611,6 +1644,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   java-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1838,6 +1874,9 @@ jobs:
         with:
           name: java-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   java-manifest-update:
     needs: java-manifests-create
     runs-on: ubuntu-latest
@@ -1875,6 +1914,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   gradle-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2102,6 +2144,9 @@ jobs:
         with:
           name: gradle-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   gradle-manifest-update:
     needs: gradle-manifests-create
     runs-on: ubuntu-latest
@@ -2139,6 +2184,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   swift-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2366,6 +2414,9 @@ jobs:
         with:
           name: swift-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   swift-manifest-update:
     needs: swift-manifests-create
     runs-on: ubuntu-latest
@@ -2403,6 +2454,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   erlang-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2630,6 +2684,9 @@ jobs:
         with:
           name: erlang-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   erlang-manifest-update:
     needs: erlang-manifests-create
     runs-on: ubuntu-latest
@@ -2667,6 +2724,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   clojure-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2894,6 +2954,9 @@ jobs:
         with:
           name: clojure-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   clojure-manifest-update:
     needs: clojure-manifests-create
     runs-on: ubuntu-latest
@@ -2931,6 +2994,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   helm-integrations-summary:
       runs-on: ubuntu-latest

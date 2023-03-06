@@ -409,6 +409,9 @@ languageVariables:
         with:
           name: $lang-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
   $manifest_update_job_name:
     needs: $lang-manifests-create
     runs-on: ubuntu-latest
@@ -445,7 +448,10 @@ languageVariables:
         id: deploy
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
-        run: kubectl get po" >> ../.github/workflows/integration-linux.yml
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6" >> ../.github/workflows/integration-linux.yml
 
   helm_update_win_jobname=$lang-helm-update
   echo $helm_update_win_jobname >> $helm_win_workflow_names_file

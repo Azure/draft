@@ -39,6 +39,7 @@ type createCmd struct {
 	dockerfileOnly    bool
 	deploymentOnly    bool
 	skipFileDetection bool
+	flagVariables     []string
 
 	createConfigPath string
 	createConfig     *CreateConfig
@@ -73,6 +74,7 @@ func newCreateCmd() *cobra.Command {
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
+	f.StringArrayVarP(&cc.flagVariables, "variable", "", []string{}, "pass additional variables using repeated --variable flag")
 
 	return cmd
 }
@@ -242,6 +244,15 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
+	for _, flagVar := range cc.flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		inputs[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+	}
+
 	if cc.templateVariableRecorder != nil {
 		for k, v := range inputs {
 			cc.templateVariableRecorder.Record(k, v)
@@ -289,6 +300,15 @@ func (cc *createCmd) createDeployment() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	for _, flagVar := range cc.flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		customInputs[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
 	}
 
 	if cc.templateVariableRecorder != nil {

@@ -397,7 +397,7 @@ languageVariables:
         run: |
           MINIKUBE_IP=\$(minikube ip)
           echo \"minikube ip: \$MINIKUBE_IP\"
-          docker run --rm -it --network=host alpine ash -c \"apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:\$MINIKUBE_IP:5000\"
+          docker run --rm --network=host alpine ash -c \"apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:\$MINIKUBE_IP:5000\"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"

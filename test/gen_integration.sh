@@ -102,6 +102,8 @@ do
     port=$(echo $test | jq '.port' -r)
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
+
+    imagename="localhost:5000/testapp"
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     echo "Adding $lang with port $port"
@@ -158,7 +160,7 @@ deployVariables:
   - name: \"APPNAME\"
     value: \"testapp\"
   - name: \"IMAGENAME\"
-    value: \"localhost:5000/testapp\"
+    value: \"$imagename\"
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
@@ -398,10 +400,10 @@ languageVariables:
       - name: Build and Push Image
         run: |
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp $imagename
           echo -n \"verifying images:\"
           docker images
-          docker push localhost:5000/testapp
+          docker push $imagename
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

@@ -231,9 +231,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -515,9 +515,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -799,9 +799,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1083,9 +1083,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1367,9 +1367,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1651,9 +1651,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -1935,9 +1935,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2219,9 +2219,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2503,9 +2503,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2787,9 +2787,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -3071,9 +3071,9 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

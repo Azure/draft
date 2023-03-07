@@ -386,9 +386,9 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

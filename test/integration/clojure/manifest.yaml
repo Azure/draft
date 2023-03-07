@@ -9,7 +9,7 @@ deployVariables:
   - name: "APPNAME"
     value: "testapp"
   - name: "IMAGENAME"
-    value: "localhost:5000/testapp"
+    value: "docker.local:5000/testapp"
 languageVariables:
   - name: "VERSION"
     value: "8-jdk-alpine"

@@ -14,6 +14,6 @@ languageVariables:
   - name: "BUILDERVERSION"
     value: "24.2-alpine"
   - name: "IMAGENAME"
-    value: "localhost:5000/testapp"
+    value: "registry.kube-system.svc.cluster.local/testapp"
   - name: "PORT"
     value: "8080"

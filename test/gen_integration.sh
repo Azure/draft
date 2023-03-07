@@ -397,7 +397,7 @@ languageVariables:
           docker tag testapp registry.kube-system.svc.cluster.local/testapp
           echo -n \"verifying images:\"
           docker images
-          docker push localhost:5000/testapp
+          docker push registry.kube-system.svc.cluster.local/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

@@ -399,9 +399,6 @@ languageVariables:
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           echo -n "verifying images:"
           docker images
-      - name: Load Image into Minikube
-        run: |
-          minikube image load testapp:latest
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -414,9 +411,9 @@ languageVariables:
           kubectl rollout status deployment/testapp --timeout=2m
       - name: Check default namespace
         run: |
-          kubectl get po
-          kubectl get svc
-          kubectl get deploy
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
       - name: Curl Endpoint
         run: |
           MINIKUBE_URL=\$(minikube service testapp --url)

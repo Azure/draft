@@ -212,11 +212,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: gomodule-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -238,8 +233,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -498,11 +497,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: python-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -524,8 +518,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -784,11 +782,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: rust-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -810,8 +803,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -1070,11 +1067,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: javascript-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1096,8 +1088,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -1356,11 +1352,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: ruby-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1382,8 +1373,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -1642,11 +1637,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: csharp-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1668,8 +1658,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -1928,11 +1922,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: java-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1954,8 +1943,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -2214,11 +2207,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: gradle-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2240,8 +2228,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -2500,11 +2492,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: swift-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2526,8 +2513,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -2786,11 +2777,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: erlang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2812,8 +2798,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"
@@ -3072,11 +3062,6 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: clojure-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -3098,8 +3083,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "minikube ip: $MINIKUBE_IP"
+          docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp localhost:5000/testapp
           echo -n "verifying images:"

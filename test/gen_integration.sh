@@ -371,11 +371,6 @@ languageVariables:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -397,8 +392,12 @@ languageVariables:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
+          addons: 'registry'
       - name: Build and Push Image
         run: |
+          MINIKUBE_IP=\$(minikube ip)
+          echo \"minikube ip: \$MINIKUBE_IP\"
+          docker run --rm -it --network=host alpine ash -c \"apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:\$MINIKUBE_IP:5000\"
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"

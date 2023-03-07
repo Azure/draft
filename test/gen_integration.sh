@@ -163,7 +163,7 @@ languageVariables:
   - name: \"BUILDERVERSION\"
     value: \"$builderversion\"
   - name: \"IMAGENAME\"
-    value: \"localhost:5000/testapp\"
+    value: \"registry.kube-system.svc.cluster.local/testapp\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
 
@@ -391,11 +391,10 @@ languageVariables:
       - name: Enable Minikube Registry
         run: |
           minikube addons enable registry
-          docker run --rm -it --network=host alpine ash -c \"apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:\$(minikube ip):5000\"
       - name: Build and Push Image
         run: |
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp registry.kube-system.svc.cluster.local/testapp
           echo -n \"verifying images:\"
           docker images
           docker push localhost:5000/testapp

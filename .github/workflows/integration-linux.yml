@@ -231,7 +231,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -264,6 +263,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: gomodule-manifests-create
@@ -515,7 +515,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -548,6 +547,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: python-manifests-create
@@ -799,7 +799,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -832,6 +831,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: rust-manifests-create
@@ -1083,7 +1083,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -1116,6 +1115,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: javascript-manifests-create
@@ -1367,7 +1367,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -1400,6 +1399,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: ruby-manifests-create
@@ -1651,7 +1651,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -1684,6 +1683,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: csharp-manifests-create
@@ -1935,7 +1935,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -1968,6 +1967,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: java-manifests-create
@@ -2219,7 +2219,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -2252,6 +2251,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: gradle-manifests-create
@@ -2503,7 +2503,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -2536,6 +2535,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: swift-manifests-create
@@ -2787,7 +2787,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -2820,6 +2819,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: erlang-manifests-create
@@ -3071,7 +3071,6 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: start minikube
@@ -3104,6 +3103,7 @@ jobs:
           MINIKUBE_URL=$(minikube service testapp --url)
           echo Curling $MINIKUBE_URL
           curl 
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: clojure-manifests-create

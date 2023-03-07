@@ -157,13 +157,13 @@ deployVariables:
     value: \"$serviceport\"
   - name: \"APPNAME\"
     value: \"testapp\"
+  - name: \"IMAGENAME\"
+    value: \"localhost:5000/testapp\"
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
   - name: \"BUILDERVERSION\"
     value: \"$builderversion\"
-  - name: \"IMAGENAME\"
-    value: \"localhost:5000/testapp\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
 

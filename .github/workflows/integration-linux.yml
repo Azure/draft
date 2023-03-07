@@ -212,6 +212,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gomodule-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: gomodule-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -228,22 +233,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -497,6 +502,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   python-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: python-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -513,22 +523,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -782,6 +792,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   rust-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: rust-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -798,22 +813,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1067,6 +1082,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   javascript-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: javascript-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1083,22 +1103,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1352,6 +1372,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   ruby-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: ruby-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1368,22 +1393,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1637,6 +1662,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   csharp-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: csharp-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1653,22 +1683,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1922,6 +1952,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   java-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: java-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1938,22 +1973,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2207,6 +2242,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   gradle-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: gradle-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2223,22 +2263,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2492,6 +2532,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   swift-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: swift-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2508,22 +2553,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2777,6 +2822,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   erlang-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: erlang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2793,22 +2843,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -3062,6 +3112,11 @@ jobs:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   clojure-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: clojure-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -3078,22 +3133,22 @@ jobs:
       - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "docker.local 127.0.0.1" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "minikube ip: $MINIKUBE_IP"
-          docker run --rm -i --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$MINIKUBE_IP:5000 &>/dev/null"
+          minikube ssh 'sudo echo "docker.local 172.17.0.1" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp localhost:5000/testapp
+          docker tag testapp docker.local:5000/testapp
           echo -n "verifying images:"
           docker images
-          docker push localhost:5000/testapp
+          docker push docker.local:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

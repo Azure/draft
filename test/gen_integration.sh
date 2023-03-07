@@ -103,7 +103,7 @@ do
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
 
-    imagename="localhost:5000/testapp"
+    imagename="docker.local:5000/testapp"
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     echo "Adding $lang with port $port"
@@ -371,6 +371,11 @@ languageVariables:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -387,17 +392,17 @@ languageVariables:
       - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
       - name: print manifests
         run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo \"docker.local 127.0.0.1\" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
-          addons: 'registry'
       - name: Build and Push Image
         run: |
-          MINIKUBE_IP=\$(minikube ip)
-          echo \"minikube ip: \$MINIKUBE_IP\"
-          docker run --rm -i --network=host alpine ash -c \"apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:\$MINIKUBE_IP:5000 &>/dev/null\"
+          minikube ssh 'sudo echo \"docker.local 172.17.0.1\" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"

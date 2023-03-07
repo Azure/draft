@@ -369,12 +369,12 @@ languageVariables:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest
-    needs: $lang-manifest-dry-run
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
+    needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3

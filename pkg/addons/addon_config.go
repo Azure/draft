@@ -141,9 +141,7 @@ func extractRef(rNodes []*yaml.RNode, lookupPath []string) string {
 		}
 
 		refYNode := ref.YNode()
-		str2 := refYNode.Value
-		log.Debugf("found ref: %s", str2)
-		refStr, _ := ref.String()
+		refStr := refYNode.Value
 		log.Debugf("found ref: %s", refStr)
 		return refStr
 	}

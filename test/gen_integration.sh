@@ -163,7 +163,7 @@ languageVariables:
   - name: \"BUILDERVERSION\"
     value: \"$builderversion\"
   - name: \"IMAGENAME\"
-    value: \"registry.kube-system.svc.cluster.local/testapp\"
+    value: \"localhost:5000/testapp\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
 
@@ -370,6 +370,11 @@ languageVariables:
   $lang-manifests-create:
     runs-on: ubuntu-latest
     needs: $lang-manifest-dry-run
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
@@ -388,16 +393,15 @@ languageVariables:
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Enable Minikube Registry
-        run: |
-          minikube addons enable registry
+        with:
+          insecure-registry: 'localhost:5000,10.0.0.0/24'
       - name: Build and Push Image
         run: |
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp registry.kube-system.svc.cluster.local/testapp
+          docker tag testapp localhost:5000/testapp
           echo -n \"verifying images:\"
           docker images
-          docker push registry.kube-system.svc.cluster.local/testapp
+          docker push localhost:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

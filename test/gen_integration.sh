@@ -162,6 +162,8 @@ languageVariables:
     value: \"$version\"
   - name: \"BUILDERVERSION\"
     value: \"$builderversion\"
+  - name: \"IMAGENAME\"
+    value: \"localhost:5000/testapp\"
   - name: \"PORT\"
     value: \"$port\"" > ./integration/$lang/manifest.yaml
 
@@ -367,11 +369,6 @@ languageVariables:
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   $lang-manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -391,13 +388,17 @@ languageVariables:
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+      - name: Enable Minikube Registry
         run: |
-          export SHELL=/bin/bash
-          eval \$(minikube -p minikube docker-env)
+          minikube addons enable registry
+          docker run --rm -it --network=host alpine ash -c \"apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:\$(minikube ip):5000\"
+      - name: Build and Push Image
+        run: |
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n "verifying images:"
+          docker tag testapp localhost:5000/testapp
+          echo -n \"verifying images:\"
           docker images
+          docker push localhost:5000/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -408,7 +409,7 @@ languageVariables:
         id: rollout
         run: |
           kubectl rollout status deployment/testapp --timeout=2m
-      - name: Check default namespace
+      - name: Print K8s Objects
         run: |
           kubectl get po -o json
           kubectl get svc -o json

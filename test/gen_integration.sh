@@ -401,8 +401,7 @@ languageVariables:
           docker images
       - name: Load Image into Minikube
         run: |
-          eval \$(minikube -p minikube docker-env)
-          docker save testapp | (eval \$(minikube -p minikube docker-env) && docker load)
+          minikube image load testapp:latest
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

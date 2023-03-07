@@ -386,6 +386,8 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
+      - name: print manifests
+        run: cat ./langtest/manifests/*
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: start minikube
         id: minikube
@@ -420,7 +422,7 @@ languageVariables:
         run: |
           MINIKUBE_URL=\$(minikube service testapp --url)
           echo "Curling \$MINIKUBE_URL"
-          curl http://\$MINIKUBE_URL
+          curl $MINIKUBE_URL
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create

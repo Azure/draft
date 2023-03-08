@@ -440,7 +440,7 @@ languageVariables:
           minikube tunnel  > /dev/null 2>&1 & tunnelPID=\$!
           sleep 10
           kubectl get svc
-          SERVICEIP=kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'}
+          SERVICEIP=\$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
           echo \"SERVICEIP: \$SERVICEIP\"
           echo 'Curling service IP'
           curl \$SERVICEIP:$port

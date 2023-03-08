@@ -103,7 +103,7 @@ do
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
 
-    imagename="host.minikube.internal:5001/testapp"
+    imagename="172.17.0.1:5001/testapp"
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     echo "Adding $lang with port $port"
@@ -402,7 +402,7 @@ languageVariables:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          curl host.minikube.internal:5001/v2/testapp/tags/list
+          curl 172.17.0.1:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"

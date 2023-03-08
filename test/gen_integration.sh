@@ -402,7 +402,7 @@ languageVariables:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh \"nslookup host.docker.internal | awk 'NR==1 {print \$2; exit}'\"
+          dockerinternal=minikube ssh \"nslookup host.minikube.internal | awk 'NR==1 {print \$2; exit}'\"
           echo \"dockerinternal=\$dockerinternal\"
           minikube ssh 'sudo echo \"\$dockerinternal docker.local\" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/

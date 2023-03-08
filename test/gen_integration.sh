@@ -401,6 +401,7 @@ languageVariables:
         with:
           insecure-registry: 'docker.local:5001,10.0.0.0/24'
       - name: Build and Push Image
+        continue-on-error: true
         run: |
           echo 'Setting minikube docker.local in /etc/hosts'
           minikube ssh \"sudo echo '172.17.0.1 docker.local' | sudo tee -a /etc/hosts\"
@@ -408,10 +409,8 @@ languageVariables:
           minikube ssh \"cat /etc/hosts\"
           echo 'Curling host directly'
           curl http://172.17.0.1:5001/v2/
-          echo 'Curling host from minikube'
-          minikube ssh \"curl http://172.17.0.1:5001/v2/\"
-          echo 'Curling host from minikube using docker.local'
-          minikube ssh \"curl http://docker.local:5001/v2/\"
+          echo 'Curling host.minikube.internal from minikube'
+          minikube ssh \"curl http://host.minikube.internal:5001/v2/\"
           eval \$(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename

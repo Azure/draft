@@ -18,13 +18,8 @@ import (
 	"github.com/Azure/draft/pkg/osutil"
 )
 
-//go:generate cp -r ../../starterWorkflows ./workflows
-
 var (
-	//go:embed workflows
-	workflows     embed.FS
-	parentDirName = "workflows"
-
+	parentDirName        = "workflows"
 	workflowFilePrefix   = "azure-kubernetes-service"
 	deployNameToWorkflow = map[string]*workflowType{
 		"helm":      {deployPath: "/charts", workflowFileSuffix: "-helm"},
@@ -38,7 +33,7 @@ type workflowType struct {
 	workflowFileSuffix string
 }
 
-func CreateWorkflows(dest string, config *WorkflowConfig) error {
+func CreateWorkflows(dest string, config *WorkflowConfig, workflows embed.FS) error {
 	deployType, err := filematches.FindDraftDeploymentFiles(dest)
 	if err != nil {
 		return err
@@ -47,17 +42,17 @@ func CreateWorkflows(dest string, config *WorkflowConfig) error {
 	if err = updateProductionDeployments(deployType, dest, config); err != nil {
 		return err
 	}
-	workflow, ok := deployNameToWorkflow[deployType]
+	workflowType, ok := deployNameToWorkflow[deployType]
 	if !ok {
 		return errors.New("unsupported deployment type")
 	}
 
-	workflowTemplate := getWorkflowFile(workflow)
+	workflowTemplate := getWorkflowFile(workflowType, workflows)
 
 	replaceWorkflowVars(deployType, config, workflowTemplate)
 
 	ghWorkflowPath := dest + "/.github/workflows/"
-	ghWorkflowFileName := ghWorkflowPath + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
+	ghWorkflowFileName := ghWorkflowPath + workflowFilePrefix + workflowType.workflowFileSuffix + ".yml"
 	log.Debugf("writing workflow to %s", ghWorkflowPath)
 
 	return writeWorkflow(ghWorkflowPath, ghWorkflowFileName, *workflowTemplate)
@@ -160,9 +155,8 @@ func setHelmContainerImage(filePath, productionImage string) error {
 	return ioutil.WriteFile(filePath, out, 0644)
 }
 
-func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
-	embedFilePath := parentDirName + "/" + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
-
+func getWorkflowFile(workflowType *workflowType, workflows embed.FS) *GitHubWorkflow {
+	embedFilePath := parentDirName + "/" + workflowFilePrefix + workflowType.workflowFileSuffix + ".yml"
 	file, err := fs.ReadFile(workflows, embedFilePath)
 	if err != nil {
 		log.Fatal(err)

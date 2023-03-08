@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/Azure/draft/pkg/workflows"
+	"github.com/Azure/draft/template"
 	"github.com/spf13/cobra"
 
 	log "github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 
 			log.Info("--> Generating Github workflow")
 
-			if err := workflows.CreateWorkflows(dest, workflowConfig); err != nil {
+			if err := workflows.CreateWorkflows(dest, workflowConfig, template.Workflows); err != nil {
 				return err
 			}
 

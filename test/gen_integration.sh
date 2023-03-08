@@ -443,7 +443,7 @@ languageVariables:
           SERVICEIP=\$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
           echo \"SERVICEIP: \$SERVICEIP\"
           echo 'Curling service IP'
-          curl \$SERVICEIP:$port
+          curl -m 2 \$SERVICEIP:80
           kill \$tunnelPID
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3

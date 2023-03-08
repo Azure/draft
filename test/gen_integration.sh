@@ -435,11 +435,11 @@ languageVariables:
           kubectl get deploy -o json
       - name: Curl Endpoint
         run: |
-          k get svc
+          kubectl get svc
           echo 'Starting minikube tunnel'
           minikube tunnel  > /dev/null 2>&1 & tunnelPID=\$!
-          k get svc
-          SERVICEIP=k get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'}
+          kubectl get svc
+          SERVICEIP=kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'}
           echo \"SERVICEIP: \$SERVICEIP\"
           echo 'Curling service IP'
           curl \$SERVICEIP:$port

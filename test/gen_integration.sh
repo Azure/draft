@@ -394,7 +394,7 @@ languageVariables:
         run: cat ./langtest/manifests/*
       - name: Add docker.local host to /etc/hosts
         run: |
-          sudo echo \"docker.local 127.0.0.1\" | sudo tee -a /etc/hosts
+          sudo echo \"127.0.0.1 docker.local\" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -402,7 +402,7 @@ languageVariables:
           insecure-registry: 'localhost:5000,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          minikube ssh 'sudo echo \"docker.local 172.17.0.1\" | sudo tee -a /etc/hosts'
+          minikube ssh 'sudo echo \"172.17.0.1 docker.local\" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"

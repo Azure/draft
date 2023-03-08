@@ -243,14 +243,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -535,14 +533,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -827,14 +823,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1119,14 +1113,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1411,14 +1403,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1703,14 +1693,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1995,14 +1983,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2287,14 +2273,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2579,14 +2563,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2871,14 +2853,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -3163,14 +3143,12 @@ jobs:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          dockerinternal=minikube ssh "nslookup host.minikube.internal | awk 'NR==1 {print $2; exit}'"
-          echo "dockerinternal=$dockerinternal"
-          minikube ssh 'sudo echo "$dockerinternal docker.local" | sudo tee -a /etc/hosts'
+          curl host.minikube.internal:5001/v2/testapp/tags/list
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

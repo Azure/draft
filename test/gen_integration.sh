@@ -103,7 +103,7 @@ do
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
 
-    imagename="172.17.0.1:5001/testapp"
+    imagename="http://172.17.0.1:5001/testapp"
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     echo "Adding $lang with port $port"

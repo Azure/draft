@@ -245,10 +245,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -537,10 +537,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -829,10 +829,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -1121,10 +1121,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -1413,10 +1413,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -1705,10 +1705,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -1997,10 +1997,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -2289,10 +2289,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -2581,10 +2581,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -2873,10 +2873,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -3165,10 +3165,10 @@ jobs:
         run: |
           curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp 172.17.0.1:5001/testapp
+          docker tag testapp http://172.17.0.1:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push 172.17.0.1:5001/testapp
+          docker push http://172.17.0.1:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
           minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step

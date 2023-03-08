@@ -404,7 +404,6 @@ languageVariables:
         run: |
           minikube ssh \"sudo echo '172.17.0.1 docker.local' | sudo tee -a /etc/hosts\"
           curl http://172.17.0.1:5001/v2/
-          curl http://docker.local:5001/v2/
           minikube ssh \"curl http://docker.local:5001/v2/\"
           eval \$(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
@@ -413,7 +412,6 @@ languageVariables:
           docker images
           docker push $imagename
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          curl http://docker.local/v2/testapp/tags/list
           minikube ssh \"curl http://172.17.0.1:5001/v2/testapp/tags/list\"
           minikube ssh \"curl http://docker.local:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step

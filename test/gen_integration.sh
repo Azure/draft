@@ -402,12 +402,14 @@ languageVariables:
           insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          curl 172.17.0.1:5001/v2/testapp/tags/list
+          curl http://172.17.0.1:5001/v2/
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"
           docker images
           docker push $imagename
+          curl http://172.17.0.1:5001/v2/testapp/tags/list
+          minikube ssh \"curl http://172.17.0.1:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

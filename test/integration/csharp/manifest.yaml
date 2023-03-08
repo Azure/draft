@@ -9,7 +9,7 @@ deployVariables:
   - name: "APPNAME"
     value: "testapp"
   - name: "IMAGENAME"
-    value: "docker.local:5001/testapp"
+    value: "host.minikube.internal:5001/testapp"
 languageVariables:
   - name: "VERSION"
     value: "5.0"

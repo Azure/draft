@@ -254,13 +254,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -556,13 +556,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -858,13 +858,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1160,13 +1160,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1462,13 +1462,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -1764,13 +1764,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2066,13 +2066,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2368,13 +2368,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2670,13 +2670,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -2972,13 +2972,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -3274,13 +3274,13 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/"
           eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp docker.local:5001/testapp
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push docker.local:5001/testapp
+          docker push host.minikube.internal:5001/testapp
           curl http://172.17.0.1:5001/v2/testapp/tags/list
-          minikube ssh "curl http://172.17.0.1:5001/v2/testapp/tags/list"
-          minikube ssh "curl http://docker.local:5001/v2/testapp/tags/list"
+          echo 'Curling host.minikube.internal test appp images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

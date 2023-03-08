@@ -435,9 +435,15 @@ languageVariables:
           kubectl get deploy -o json
       - name: Curl Endpoint
         run: |
-          MINIKUBE_URL=\$(minikube service testapp --url)
-          echo "Curling \$MINIKUBE_URL"
-          curl $MINIKUBE_URL
+          k get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=\$!
+          k get svc
+          SERVICEIP=k get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'}
+          echo \"SERVICEIP: \$SERVICEIP\"
+          echo 'Curling service IP'
+          curl \$SERVICEIP:$port
+          kill \$tunnelPID
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:

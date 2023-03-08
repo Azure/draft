@@ -103,7 +103,7 @@ do
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
 
-    imagename="docker.local:5000/testapp"
+    imagename="docker.local:5001/testapp"
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     echo "Adding $lang with port $port"
@@ -375,7 +375,7 @@ languageVariables:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -399,10 +399,12 @@ languageVariables:
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
-          insecure-registry: 'localhost:5000,10.0.0.0/24'
+          insecure-registry: 'localhost:5001,10.0.0.0/24'
       - name: Build and Push Image
         run: |
-          minikube ssh 'sudo echo \"172.17.0.1 docker.local\" | sudo tee -a /etc/hosts'
+          dockerinternal=minikube ssh \"nslookup host.docker.internal | awk 'NR==1 {print \$2; exit}'\"
+          echo \"dockerinternal=\$dockerinternal\"
+          minikube ssh 'sudo echo \"\$dockerinternal docker.local\" | sudo tee -a /etc/hosts'
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"

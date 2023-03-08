@@ -9,7 +9,7 @@ deployVariables:
   - name: "APPNAME"
     value: "testapp"
   - name: "IMAGENAME"
-    value: "172.17.0.1:5001/testapp"
+    value: "http://172.17.0.1:5001/testapp"
 languageVariables:
   - name: "VERSION"
     value: "1.18"

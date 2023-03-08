@@ -399,12 +399,10 @@ languageVariables:
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
-          insecure-registry: 'docker.local:5001,10.0.0.0/24'
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Build and Push Image
         continue-on-error: true
         run: |
-          echo 'Setting minikube docker.local in /etc/hosts'
-          minikube ssh \"sudo echo '172.17.0.1 docker.local' | sudo tee -a /etc/hosts\"
           echo 'minikube /etc/hosts:'
           minikube ssh \"cat /etc/hosts\"
           echo 'Curling host directly'

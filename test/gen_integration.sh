@@ -290,7 +290,7 @@ languageVariables:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: $lang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -305,25 +305,29 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+          id: bake
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n "verifying images:"
+          eval \$(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp $imagename
+          echo -n \"verifying images:\"
           docker images
+          docker push $imagename
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -333,7 +337,31 @@ languageVariables:
           action: deploy
           manifests: \${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            $imagename
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=\$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=\$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo \"SERVICEIP: \$SERVICEIP\"
+          echo 'Curling service IP'
+          curl -m 3 \$SERVICEIP:$serviceport
+          kill \$tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -403,20 +431,13 @@ languageVariables:
       - name: Build and Push Image
         continue-on-error: true
         run: |
-          echo 'minikube /etc/hosts:'
-          minikube ssh \"cat /etc/hosts\"
-          echo 'Curling host directly'
-          curl http://172.17.0.1:5001/v2/
-          echo 'Curling host.minikube.internal from minikube'
-          minikube ssh \"curl http://host.minikube.internal:5001/v2/\"
           eval \$(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp $imagename
           echo -n \"verifying images:\"
           docker images
           docker push $imagename
-          curl http://172.17.0.1:5001/v2/testapp/tags/list
-          echo 'Curling host.minikube.internal test appp images from minikube'
+          echo 'Curling host.minikube.internal test app images from minikube'
           minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application

@@ -1,0 +1,17 @@
+# this file is generated using gen_integration.sh
+deployType: "kustomize"
+languageType: "go"
+deployVariables:
+  - name: "PORT"
+    value: "8080"
+  - name: "SERVICEPORT"
+    value: "8080"
+  - name: "APPNAME"
+    value: "testapp"
+languageVariables:
+  - name: "VERSION"
+    value: "1.20"
+  - name: "BUILDERVERSION"
+    value: "null"
+  - name: "PORT"
+    value: "8080"

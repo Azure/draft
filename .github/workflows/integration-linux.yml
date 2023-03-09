@@ -335,6 +335,270 @@ jobs:
         if: steps.deploy.outcome != 'success'
         run: exit 6
 
+  go-helm-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v3
+          with:
+            repository: davidgamero/go-echo-no-mod
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/go/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  go-helm-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: go-helm-dry-run
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: davidgamero/go-echo-no-mod
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/go/helm.yaml -d ./langtest/
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Runs Helm to create manifest files
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'helm'
+          helmChart: ./langtest/charts
+          overrideFiles: ./langtest/charts/values.yaml
+          overrides: |
+            replicas:2
+          helm-version: 'latest'
+        id: bake
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  go-kustomize-dry-run:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: davidgamero/go-echo-no-mod
+          path: ./langtest
+      - name: Execute Dry Run
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/go/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  go-kustomize-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: go-kustomize-dry-run
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: davidgamero/go-echo-no-mod
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/go/kustomize.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2.1
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: ./langtest/base
+          kubectl-version: 'latest'
+        id: bake
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v3.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            testapp:curr
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
+
+  go-manifest-dry-run:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
+          with:
+            name: draft-binary
+        - run: chmod +x ./draft
+        - run: mkdir ./langtest
+        - uses: actions/checkout@v3
+          with:
+            repository: davidgamero/go-echo-no-mod
+            path: ./langtest
+        - name: Execute Dry Run
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/go/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  go-manifests-create:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    needs: go-manifest-dry-run
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: davidgamero/go-echo-no-mod
+          path: ./langtest
+      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: ./draft -v create -c ./test/integration/go/manifest.yaml -d ./langtest/
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+      - uses: actions/upload-artifact@v3
+        with:
+          name: go-manifests-create
+          path: ./langtest
+  go-manifest-update:
+    needs: go-manifests-create
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - uses: actions/download-artifact@v3
+        with:
+          name: go-manifests-create
+          path: ./langtest/
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Build image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          echo -n verifying images:
+          docker images
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        run: kubectl apply -f ./langtest/manifests/
+        continue-on-error: true
+        id: deploy
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: kubectl get po
+
   python-helm-dry-run:
       runs-on: ubuntu-latest
       needs: build
@@ -3407,21 +3671,21 @@ jobs:
 
   helm-integrations-summary:
       runs-on: ubuntu-latest
-      needs: [ gomodule-helm-create-update,python-helm-create-update,rust-helm-create-update,javascript-helm-create-update,ruby-helm-create-update,csharp-helm-create-update,java-helm-create-update,gradle-helm-create-update,swift-helm-create-update,erlang-helm-create-update,clojure-helm-create-update ]
+      needs: [ gomodule-helm-create-update,go-helm-create-update,python-helm-create-update,rust-helm-create-update,javascript-helm-create-update,ruby-helm-create-update,csharp-helm-create-update,java-helm-create-update,gradle-helm-create-update,swift-helm-create-update,erlang-helm-create-update,clojure-helm-create-update ]
       steps:
         - run: echo helm integrations passed
 
 
   kustomize-integrations-summary:
       runs-on: ubuntu-latest
-      needs: [ gomodule-kustomize-create-update,python-kustomize-create-update,rust-kustomize-create-update,javascript-kustomize-create-update,ruby-kustomize-create-update,csharp-kustomize-create-update,java-kustomize-create-update,gradle-kustomize-create-update,swift-kustomize-create-update,erlang-kustomize-create-update,clojure-kustomize-create-update ]
+      needs: [ gomodule-kustomize-create-update,go-kustomize-create-update,python-kustomize-create-update,rust-kustomize-create-update,javascript-kustomize-create-update,ruby-kustomize-create-update,csharp-kustomize-create-update,java-kustomize-create-update,gradle-kustomize-create-update,swift-kustomize-create-update,erlang-kustomize-create-update,clojure-kustomize-create-update ]
       steps:
         - run: echo kustomize integrations passed
 
 
   manifest-integrations-summary:
       runs-on: ubuntu-latest
-      needs: [ gomodule-manifest-update,python-manifest-update,rust-manifest-update,javascript-manifest-update,ruby-manifest-update,csharp-manifest-update,java-manifest-update,gradle-manifest-update,swift-manifest-update,erlang-manifest-update,clojure-manifest-update ]
+      needs: [ gomodule-manifest-update,go-manifest-update,python-manifest-update,rust-manifest-update,javascript-manifest-update,ruby-manifest-update,csharp-manifest-update,java-manifest-update,gradle-manifest-update,swift-manifest-update,erlang-manifest-update,clojure-manifest-update ]
       steps:
         - run: echo manifest integrations passed
 

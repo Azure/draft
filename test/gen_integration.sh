@@ -438,7 +438,7 @@ languageVariables:
           kubectl get svc
           echo 'Starting minikube tunnel'
           minikube tunnel  > /dev/null 2>&1 & tunnelPID=\$!
-          sleep 30
+          sleep 60
           kubectl get svc
           SERVICEIP=\$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
           echo \"SERVICEIP: \$SERVICEIP\"

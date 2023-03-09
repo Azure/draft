@@ -312,11 +312,11 @@ languageVariables:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-          id: bake
       - name: Build and Push Image
         continue-on-error: true
         run: |

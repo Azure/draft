@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -18,9 +19,13 @@ import (
 	"github.com/Azure/draft/pkg/osutil"
 )
 
+const (
+	parentDirName      = "workflows"
+	workflowFilePrefix = "azure-kubernetes-service"
+	ymlExtension       = ".yml"
+)
+
 var (
-	parentDirName        = "workflows"
-	workflowFilePrefix   = "azure-kubernetes-service"
 	deployNameToWorkflow = map[string]*workflowType{
 		"helm":      {deployPath: "/charts", workflowFileSuffix: "-helm"},
 		"kustomize": {deployPath: "/base", workflowFileSuffix: "-kustomize"},
@@ -52,7 +57,7 @@ func CreateWorkflows(dest string, config *WorkflowConfig, workflows embed.FS) er
 	replaceWorkflowVars(deployType, config, workflowTemplate)
 
 	ghWorkflowPath := dest + "/.github/workflows/"
-	ghWorkflowFileName := ghWorkflowPath + workflowFilePrefix + workflowType.workflowFileSuffix + ".yml"
+	ghWorkflowFileName := ghWorkflowPath + workflowFilePrefix + workflowType.workflowFileSuffix + ymlExtension
 	log.Debugf("writing workflow to %s", ghWorkflowPath)
 
 	return writeWorkflow(ghWorkflowPath, ghWorkflowFileName, *workflowTemplate)
@@ -156,7 +161,7 @@ func setHelmContainerImage(filePath, productionImage string) error {
 }
 
 func getWorkflowFile(workflowType *workflowType, workflows embed.FS) *GitHubWorkflow {
-	embedFilePath := parentDirName + "/" + workflowFilePrefix + workflowType.workflowFileSuffix + ".yml"
+	embedFilePath := path.Join(parentDirName, workflowFilePrefix+workflowType.workflowFileSuffix+ymlExtension)
 	file, err := fs.ReadFile(workflows, embedFilePath)
 	if err != nil {
 		log.Fatal(err)

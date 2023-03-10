@@ -14,6 +14,7 @@ kustomize_win_workflow_names_file=./temp/kustomize_win_workflow_names.txt
 rm $kustomize_win_workflow_names_file
 manifest_workflow_names_file=./temp/manifest_workflow_names.txt
 rm $manifest_workflow_names_file
+mkdir -p ./temp
 
 # add build to workflow
 echo "# this file is generated using gen_integration.sh

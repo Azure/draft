@@ -1196,14 +1196,14 @@ jobs:
 
   helm-win-integrations-summary:
       runs-on: windows-latest
-      needs: [  ]
+      needs: [ gomodule-helm-update,go-helm-update,python-helm-update,rust-helm-update,javascript-helm-update,ruby-helm-update,csharp-helm-update,java-helm-update,gradle-helm-update,swift-helm-update,erlang-helm-update,clojure-helm-update ]
       steps:
         - run: echo helm integrations passed
 
 
   kustomize-win-integrations-summary:
       runs-on: windows-latest
-      needs: [  ]
+      needs: [ gomodule-kustomize-update,go-kustomize-update,python-kustomize-update,rust-kustomize-update,javascript-kustomize-update,ruby-kustomize-update,csharp-kustomize-update,java-kustomize-update,gradle-kustomize-update,swift-kustomize-update,erlang-kustomize-update,clojure-kustomize-update ]
       steps:
         - run: echo kustomize integrations passed
 

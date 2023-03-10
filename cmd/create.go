@@ -28,6 +28,7 @@ import (
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
 // code for linguist to classify, or if there are no packs available for the detected languages.
 var ErrNoLanguageDetected = errors.New("no supported languages were detected")
+var flagVariablesMap = make(map[string]string)
 
 const LANGUAGE_VARIABLE = "LANGUAGE"
 const TWO_SPACES = "  "
@@ -104,6 +105,16 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
+
+	for _, flagVar := range cc.flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		flagVariablesMap[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+	}
+
 	var dryRunRecorder *dryrunpkg.DryRunRecorder
 	if dryRun {
 		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
@@ -231,16 +242,6 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return errors.New("supported languages were loaded incorrectly")
 	}
 
-	flagVariablesMap := make(map[string]string)
-	for _, flagVar := range cc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		flagVariablesMap[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-	}
-
 	var inputs map[string]string
 	var err error
 	if cc.createConfig.LanguageVariables == nil {
@@ -275,15 +276,6 @@ func (cc *createCmd) createDeployment() error {
 	var deployType string
 	var customInputs map[string]string
 	var err error
-	flagVariablesMap := make(map[string]string)
-	for _, flagVar := range cc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		flagVariablesMap[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-	}
 
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)

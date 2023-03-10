@@ -8,6 +8,8 @@ deployVariables:
     value: "80"
   - name: "APPNAME"
     value: "testapp"
+  - name: "IMAGENAME"
+    value: "host.minikube.internal:5001/testapp"
 languageVariables:
   - name: "VERSION"
     value: "3"

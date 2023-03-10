@@ -121,6 +121,8 @@ deployVariables:
     value: \"$serviceport\"
   - name: \"APPNAME\"
     value: \"testapp\"
+  - name: \"IMAGENAME\"
+    value: \"$imagename\"
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"

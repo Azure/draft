@@ -29,7 +29,7 @@ func TestRun(t *testing.T) {
 	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
 	mockCC.templateWriter = &writers.LocalFSWriter{}
-	mockCC.flagVariables = []string{"foo=bar", "foo1=bar1"}
+	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest"}
 
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
@@ -41,6 +41,12 @@ func TestRun(t *testing.T) {
 	assert.True(t, err == nil)
 
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
+	assert.True(t, err == nil)
+
+	//when language variables are passed in --variable flag
+	mockCC.createConfig.LanguageVariables = nil
+	err = mockCC.generateDockerfile(detectedLang, lowerLang)
+	println(err)
 	assert.True(t, err == nil)
 
 	err = mockCC.createDeployment()

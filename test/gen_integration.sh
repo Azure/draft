@@ -4,6 +4,9 @@ rm -rf ./integration/*
 echo "Removing previous integration workflows"
 rm ../.github/workflows/integration-linux.yml
 rm ../.github/workflows/integration-windows.yml
+
+# create temp files for keeping track off workflow jobs to build job-dependency graph
+# this is used to populated the needs: field of the required final workflow jobs
 helm_workflow_names_file=./temp/helm_workflow_names.txt
 rm $helm_workflow_names_file
 helm_win_workflow_names_file=./temp/helm_win_workflow_names.txt

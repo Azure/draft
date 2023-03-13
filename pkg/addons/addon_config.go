@@ -140,7 +140,7 @@ func extractRef(rNodes []*yaml.RNode, lookupPath []string) string {
 			continue
 		}
 
-		refYNode := ref.YNode()
+		refYNode := ref.YNode() // Convert to go yaml.node to extract values without trailing newlines
 		refStr := refYNode.Value
 		log.Debugf("found ref: %s", refStr)
 		return refStr

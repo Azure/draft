@@ -56,8 +56,8 @@ func CreateWorkflows(dest string, config *WorkflowConfig, workflows embed.FS) er
 
 	replaceWorkflowVars(deployType, config, workflowTemplate)
 
-	ghWorkflowPath := dest + "/.github/workflows/"
-	ghWorkflowFileName := ghWorkflowPath + workflowFilePrefix + workflowType.workflowFileSuffix + ymlExtension
+	ghWorkflowPath := path.Join(dest, ".github", "workflows")
+	ghWorkflowFileName := path.Join(ghWorkflowPath, workflowFilePrefix+workflowType.workflowFileSuffix+ymlExtension)
 	log.Debugf("writing workflow to %s", ghWorkflowPath)
 
 	return writeWorkflow(ghWorkflowPath, ghWorkflowFileName, *workflowTemplate)

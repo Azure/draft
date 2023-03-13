@@ -241,6 +241,7 @@ languageVariables:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
       - name: Build and Push image
         continue-on-error: true
@@ -268,7 +269,7 @@ languageVariables:
         continue-on-error: true
         id: rollout
         run: |
-          kubectl rollout status deployment/testapp --timeout=2m
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
       - name: Print K8s Objects
         run: |
           kubectl get po -o json

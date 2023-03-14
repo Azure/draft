@@ -206,7 +206,7 @@ func (w *Workflows) createWorkflowFiles(deployType string, customInputs map[stri
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
 	srcDir := path.Join(parentDirName, val.Name())
-
+	log.Debugf("source directory for workflow template: %s", srcDir)
 	workflowConfig, ok := w.configs[deployType]
 	if !ok {
 		workflowConfig = nil

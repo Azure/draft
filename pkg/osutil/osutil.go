@@ -97,7 +97,7 @@ func CopyDir(
 
 		srcPath := path.Join(src, f.Name())
 		destPath := path.Join(dest, f.Name())
-		log.Debugf("Source path: %s", srcPath+" Dest path: %s", destPath)
+		log.Debugf("Source path: %s Dest path: %s", srcPath, destPath)
 
 		if f.IsDir() {
 			if err = templateWriter.EnsureDirectory(destPath); err != nil {

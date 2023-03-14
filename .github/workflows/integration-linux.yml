@@ -56,7 +56,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: gomodule-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -71,18 +71,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -93,7 +86,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -102,6 +108,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -137,7 +169,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: gomodule-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -152,25 +184,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -180,7 +216,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -216,7 +276,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: gomodule-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -231,29 +291,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: gomodule-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   gomodule-manifest-update:
     needs: gomodule-manifests-create
     runs-on: ubuntu-latest
@@ -291,6 +384,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   go-helm-dry-run:
       runs-on: ubuntu-latest
@@ -320,7 +416,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: go-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -335,18 +431,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/go/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -357,7 +446,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -366,6 +468,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:8080
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -401,7 +529,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: go-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -416,25 +544,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/go/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -444,7 +576,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:8080
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -480,7 +636,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: go-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -495,29 +651,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/go/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:8080
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: go-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   go-manifest-update:
     needs: go-manifests-create
     runs-on: ubuntu-latest
@@ -555,6 +744,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   python-helm-dry-run:
       runs-on: ubuntu-latest
@@ -584,7 +776,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: python-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -599,18 +791,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -621,7 +806,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -630,6 +828,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -665,7 +889,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: python-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -680,25 +904,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -708,7 +936,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -744,7 +996,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: python-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -759,29 +1011,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: python-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   python-manifest-update:
     needs: python-manifests-create
     runs-on: ubuntu-latest
@@ -819,6 +1104,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   rust-helm-dry-run:
       runs-on: ubuntu-latest
@@ -848,7 +1136,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: rust-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -863,18 +1151,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -885,7 +1166,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -894,6 +1188,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -929,7 +1249,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: rust-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -944,25 +1264,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -972,7 +1296,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1008,7 +1356,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: rust-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1023,29 +1371,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: rust-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   rust-manifest-update:
     needs: rust-manifests-create
     runs-on: ubuntu-latest
@@ -1083,6 +1464,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   javascript-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1112,7 +1496,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: javascript-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1127,18 +1511,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1149,7 +1526,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -1158,6 +1548,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1193,7 +1609,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: javascript-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1208,25 +1624,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -1236,7 +1656,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1272,7 +1716,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: javascript-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1287,29 +1731,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: javascript-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   javascript-manifest-update:
     needs: javascript-manifests-create
     runs-on: ubuntu-latest
@@ -1347,6 +1824,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   ruby-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1376,7 +1856,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: ruby-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1391,18 +1871,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1413,7 +1886,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -1422,6 +1908,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1457,7 +1969,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: ruby-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1472,25 +1984,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -1500,7 +2016,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1536,7 +2076,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: ruby-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1551,29 +2091,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: ruby-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   ruby-manifest-update:
     needs: ruby-manifests-create
     runs-on: ubuntu-latest
@@ -1611,6 +2184,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   csharp-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1640,7 +2216,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: csharp-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1655,18 +2231,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1677,7 +2246,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -1686,6 +2268,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1721,7 +2329,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: csharp-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1736,25 +2344,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -1764,7 +2376,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1800,7 +2436,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: csharp-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1815,29 +2451,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: csharp-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   csharp-manifest-update:
     needs: csharp-manifests-create
     runs-on: ubuntu-latest
@@ -1875,6 +2544,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   java-helm-dry-run:
       runs-on: ubuntu-latest
@@ -1904,7 +2576,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: java-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -1919,18 +2591,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -1941,7 +2606,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -1950,6 +2628,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -1985,7 +2689,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: java-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2000,25 +2704,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -2028,7 +2736,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2064,7 +2796,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: java-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2079,29 +2811,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: java-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   java-manifest-update:
     needs: java-manifests-create
     runs-on: ubuntu-latest
@@ -2139,6 +2904,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   gradle-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2168,7 +2936,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: gradle-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2183,18 +2951,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -2205,7 +2966,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -2214,6 +2988,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2249,7 +3049,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: gradle-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2264,25 +3064,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -2292,7 +3096,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2328,7 +3156,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: gradle-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2343,29 +3171,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: gradle-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   gradle-manifest-update:
     needs: gradle-manifests-create
     runs-on: ubuntu-latest
@@ -2403,6 +3264,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   swift-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2432,7 +3296,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: swift-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2447,18 +3311,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -2469,7 +3326,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -2478,6 +3348,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2513,7 +3409,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: swift-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2528,25 +3424,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -2556,7 +3456,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2592,7 +3516,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: swift-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2607,29 +3531,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: swift-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   swift-manifest-update:
     needs: swift-manifests-create
     runs-on: ubuntu-latest
@@ -2667,6 +3624,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   erlang-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2696,7 +3656,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: erlang-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2711,18 +3671,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -2733,7 +3686,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -2742,6 +3708,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2777,7 +3769,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: erlang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2792,25 +3784,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -2820,7 +3816,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -2856,7 +3876,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: erlang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2871,29 +3891,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: erlang-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   erlang-manifest-update:
     needs: erlang-manifests-create
     runs-on: ubuntu-latest
@@ -2931,6 +3984,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   clojure-helm-dry-run:
       runs-on: ubuntu-latest
@@ -2960,7 +4016,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: clojure-helm-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -2975,18 +4031,11 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
@@ -2997,7 +4046,20 @@ jobs:
           overrides: |
             replicas:2
           helm-version: 'latest'
+          releaseName: 'test-release'
         id: bake
+      - name: Build and Push image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -3006,6 +4068,32 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/test-release-testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -3041,7 +4129,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: clojure-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -3056,25 +4144,29 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/kustomize.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
         uses: azure/k8s-bake@v2.1
+        id: bake
         with:
           renderEngine: 'kustomize'
           kustomizationPath: ./langtest/base
           kubectl-version: 'latest'
-        id: bake
-      - name: Build image
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp:curr ./langtest/
-          echo -n verifying images:
+          eval $(minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v3.0
@@ -3084,7 +4176,31 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            testapp:curr
+            host.minikube.internal:5001/testapp
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
@@ -3120,7 +4236,7 @@ jobs:
       registry:
         image: registry:2
         ports:
-          - 5000:5000
+          - 5001:5000
     needs: clojure-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
@@ -3135,29 +4251,62 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/manifest.yaml -d ./langtest/
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - name: print manifests
+        run: cat ./langtest/manifests/*
+      - name: Add docker.local host to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 docker.local" | sudo tee -a /etc/hosts
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
-      - name: Build image
+        with:
+          insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
+      - name: Build and Push Image
+        continue-on-error: true
         run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
+          eval $(minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: $SERVICEIP"
+          echo 'Curling service IP'
+          curl -m 3 $SERVICEIP:80
+          kill $tunnelPID
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
       - uses: actions/upload-artifact@v3
         with:
           name: clojure-manifests-create
           path: ./langtest
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
+        run: exit 6
   clojure-manifest-update:
     needs: clojure-manifests-create
     runs-on: ubuntu-latest
@@ -3195,6 +4344,9 @@ jobs:
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
         run: kubectl get po
+      - name: Fail if any error
+        if: steps.deploy.outcome != 'success'
+        run: exit 6
 
   helm-integrations-summary:
       runs-on: ubuntu-latest

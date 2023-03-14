@@ -1,5 +1,15 @@
 # Change Log
 
+## [0.0.31] - 2023-03-14
+
+### Added
+
+- [#189](https://github.com/Azure/draft/pull/189) Add `example` package to show consumption patterns
+
+### Fixed
+
+- [#190](https://github.com/Azure/draft/pull/190) Add integration test and Dockerfile fix for `go` language without modules
+
 ## [0.0.30] - 2023-02-24
 
 ### Changed

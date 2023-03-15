@@ -31,6 +31,8 @@ const (
 	configFileName = "/draft.yaml"
 )
 
+var workflowTemplateDir = path.Join(parentDirName, ".github", "workflows")
+
 type Workflows struct {
 	workflows         map[string]fs.DirEntry
 	configs           map[string]*config.DraftConfig
@@ -52,7 +54,7 @@ func CreateWorkflows(dest string, deployType string, config *WorkflowConfig, fla
 	if deployType == "" {
 		selection := &promptui.Select{
 			Label: "Select k8s Deployment Type",
-			Items: []string{"helm", "kustomize", "kompose"},
+			Items: []string{"helm", "kustomize", "manifests"},
 		}
 
 		_, deployType, err = selection.Run()
@@ -86,7 +88,7 @@ func updateProductionDeployments(deployType, dest string, flagValuesMap map[stri
 		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
 	case "kustomize":
 		return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
-	case "kompose":
+	case "manifests":
 		return setDeploymentContainerImage(dest+"/manifests/deployment.yaml", productionImage)
 	}
 	return nil
@@ -158,7 +160,7 @@ func (w *Workflows) loadConfig(deployType string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("deploy type %s unsupported", deployType)
 	}
 
-	configPath := path.Join(parentDirName, val.Name(), configFileName)
+	configPath := path.Join(workflowTemplateDir, val.Name(), configFileName)
 	configBytes, err := fs.ReadFile(w.workflowTemplates, configPath)
 	if err != nil {
 		return nil, err
@@ -173,7 +175,7 @@ func (w *Workflows) loadConfig(deployType string) (*config.DraftConfig, error) {
 }
 
 func createWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workflows {
-	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, parentDirName)
+	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, workflowTemplateDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -205,7 +207,7 @@ func (w *Workflows) createWorkflowFiles(deployType string, customInputs map[stri
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
-	srcDir := path.Join(parentDirName, val.Name())
+	srcDir := path.Join(workflowTemplateDir, val.Name())
 	log.Debugf("source directory for workflow template: %s", srcDir)
 	workflowConfig, ok := w.configs[deployType]
 	if !ok {

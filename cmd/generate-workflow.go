@@ -21,6 +21,7 @@ type generateWorkflowCmd struct {
 
 var draftWorkflowConfig *config.DraftConfig
 var setFlags []string
+var flagValuesMap map[string]string
 
 func newGenerateWorkflowCmd() *cobra.Command {
 
@@ -32,7 +33,9 @@ func newGenerateWorkflowCmd() *cobra.Command {
 		Long: `This command will generate a Github workflow to build and deploy an application containerized 
 with draft on AKS. This command assumes the 'setup-gh' command has been run properly.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			flagValuesMap := gwCmd.workflowConfig.SetFlagValuesToMap()
+			if cmd.Flags().NFlag() != 0 {
+				flagValuesMap = gwCmd.workflowConfig.SetFlagValuesToMap()
+			}
 			log.Info("--> Generating Github workflow")
 			if err := workflows.CreateWorkflows(gwCmd.dest, gwCmd.deployType, &gwCmd.workflowConfig, gwCmd.flagVariables, gwCmd.templateWriter, flagValuesMap); err != nil {
 				return err

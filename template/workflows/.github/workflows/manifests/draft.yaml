@@ -10,6 +10,6 @@ variables:
   - name: "BRANCHNAME"
     description: "the Github branch to automatically deploy from"
 variableDefaults:
-  - name: "DOCKERCOMPOSEFILEPATH"
+  - name: "DEPLOYMENTMANIFESTPATH"
     value: "./manifests"
     disablePrompt: true

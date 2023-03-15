@@ -31,8 +31,6 @@ const (
 	configFileName = "/draft.yaml"
 )
 
-var workflowTemplateDir = path.Join(parentDirName, ".github", "workflows")
-
 type Workflows struct {
 	workflows         map[string]fs.DirEntry
 	configs           map[string]*config.DraftConfig
@@ -160,7 +158,7 @@ func (w *Workflows) loadConfig(deployType string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("deploy type %s unsupported", deployType)
 	}
 
-	configPath := path.Join(workflowTemplateDir, val.Name(), configFileName)
+	configPath := path.Join(parentDirName, val.Name(), configFileName)
 	configBytes, err := fs.ReadFile(w.workflowTemplates, configPath)
 	if err != nil {
 		return nil, err
@@ -175,7 +173,7 @@ func (w *Workflows) loadConfig(deployType string) (*config.DraftConfig, error) {
 }
 
 func createWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workflows {
-	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, workflowTemplateDir)
+	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, parentDirName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -207,7 +205,7 @@ func (w *Workflows) createWorkflowFiles(deployType string, customInputs map[stri
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
-	srcDir := path.Join(workflowTemplateDir, val.Name())
+	srcDir := path.Join(parentDirName, val.Name())
 	log.Debugf("source directory for workflow template: %s", srcDir)
 	workflowConfig, ok := w.configs[deployType]
 	if !ok {

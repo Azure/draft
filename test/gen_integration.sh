@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.18.2
       - name: make
@@ -233,7 +233,7 @@ languageVariables:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -257,7 +257,7 @@ languageVariables:
           minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -351,7 +351,7 @@ languageVariables:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -370,7 +370,7 @@ languageVariables:
           minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:

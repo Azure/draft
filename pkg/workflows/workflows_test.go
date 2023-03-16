@@ -6,10 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/Azure/draft/pkg/templatewriter/writers"
 )
 
 func createTempManifest(path string) (string, error) {

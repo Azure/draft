@@ -10,20 +10,20 @@ import (
 	"path"
 	"strings"
 
-	"github.com/Azure/draft/template"
 	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
+	"gopkg.in/yaml.v3"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/cli-runtime/pkg/printers"
+	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/cli-runtime/pkg/printers"
-	"k8s.io/client-go/kubernetes/scheme"
+	"github.com/Azure/draft/template"
 )
 
 const (

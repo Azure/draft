@@ -351,7 +351,7 @@ languageVariables:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'

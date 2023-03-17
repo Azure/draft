@@ -34,6 +34,57 @@ func createTempManifest(path string) (string, error) {
 	return file.Name(), nil
 }
 
+func createTempDeploymentFile(dirPath, fileName, path string) error {
+	err := os.MkdirAll(dirPath, 0755)
+	if err != nil {
+		return err
+	}
+	file, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var source *os.File
+	source, err = os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	_, err = io.Copy(file, source)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func TestCreateWorkflows(t *testing.T) {
+	dest := "."
+	deployType := "helm"
+	flagVariables := []string{}
+	templatewriter := &writers.LocalFSWriter{}
+	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch"}
+	err := createTempDeploymentFile("charts", "charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
+	assert.Nil(t, err)
+	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+	os.RemoveAll("charts")
+	os.RemoveAll(".github")
+
+	deployType = "kustomize"
+	err = createTempDeploymentFile("overlays/production", "overlays/production/deployment.yaml", "../../test/templates/kustomize/overlays/production/deployment.yaml")
+	assert.Nil(t, err)
+	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+	os.RemoveAll("overlays")
+	os.RemoveAll(".github")
+
+	deployType = "manifests"
+	err = createTempDeploymentFile("manifests", "manifests/deployment.yaml", "../../test/templates/manifests/manifests/deployment.yaml")
+	assert.Nil(t, err)
+	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+	os.RemoveAll("manifests")
+	os.RemoveAll(".github")
+
+}
 func TestUpdateProductionDeployments(t *testing.T) {
 	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testRegistry", "CONTAINERNAME": "testContainer"}
 	testTemplateWriter := &writers.LocalFSWriter{}

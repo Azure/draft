@@ -38,7 +38,7 @@ type Workflows struct {
 	workflowTemplates fs.FS
 }
 
-func CreateWorkflows(dest string, deployType string, config *WorkflowConfig, flagVariables []string, templateWriter templatewriter.TemplateWriter, flagValuesMap map[string]string) error {
+func CreateWorkflows(dest string, deployType string, flagVariables []string, templateWriter templatewriter.TemplateWriter, flagValuesMap map[string]string) error {
 	var err error
 	for _, flagVar := range flagVariables {
 		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")

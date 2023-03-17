@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"github.com/Azure/draft/pkg/config"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/pkg/workflows"
-
-	"github.com/spf13/cobra"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type generateWorkflowCmd struct {
@@ -19,8 +17,6 @@ type generateWorkflowCmd struct {
 	templateWriter templatewriter.TemplateWriter
 }
 
-var draftWorkflowConfig *config.DraftConfig
-var setFlags []string
 var flagValuesMap map[string]string
 
 func newGenerateWorkflowCmd() *cobra.Command {
@@ -37,7 +33,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 				flagValuesMap = gwCmd.workflowConfig.SetFlagValuesToMap()
 			}
 			log.Info("--> Generating Github workflow")
-			if err := workflows.CreateWorkflows(gwCmd.dest, gwCmd.deployType, &gwCmd.workflowConfig, gwCmd.flagVariables, gwCmd.templateWriter, flagValuesMap); err != nil {
+			if err := workflows.CreateWorkflows(gwCmd.dest, gwCmd.deployType, gwCmd.flagVariables, gwCmd.templateWriter, flagValuesMap); err != nil {
 				return err
 			}
 

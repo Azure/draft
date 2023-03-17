@@ -18,4 +18,4 @@ spec:
         - name: test
           image: test
           ports:
-            - containerPort: test
+            - containerPort: 8000

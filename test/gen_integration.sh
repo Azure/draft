@@ -288,6 +288,20 @@ languageVariables:
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+      # Validate generated workflow yaml
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'

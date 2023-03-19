@@ -415,6 +415,20 @@ languageVariables:
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
       - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: Check default namespace
         if: steps.deploy.outcome != 'success'
@@ -521,6 +535,20 @@ languageVariables:
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -49,8 +51,7 @@ func TestRun(t *testing.T) {
 	println(err)
 	assert.True(t, err == nil)
 
-	err = mockCC.createDeployment()
-	assert.True(t, err == nil)
+	//Write back old Dockerfile
 	err = ioutil.WriteFile("./../Dockerfile", oldDockerfile, 0644)
 	if err != nil {
 		t.Error(err)
@@ -61,7 +62,43 @@ func TestRun(t *testing.T) {
 		t.Error(err)
 	}
 
+	err = mockCC.createDeployment()
+	assert.True(t, err == nil)
+	//check if deployment files have been created
+	err, deploymentFiles := getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
+	assert.Nil(t, err)
+	for _, fileName := range deploymentFiles {
+		_, err = os.Stat(fileName)
+		assert.True(t, err == nil)
+	}
 	os.RemoveAll("./../charts")
+
+	mockCC.createConfig.DeployType = "kustomize"
+	err = mockCC.createDeployment()
+	assert.True(t, err == nil)
+	//check if deployment files have been created
+	err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
+	assert.Nil(t, err)
+	for _, fileName := range deploymentFiles {
+		_, err = os.Stat(fileName)
+		assert.True(t, err == nil)
+	}
+	os.RemoveAll("./../base")
+	os.RemoveAll("./../overlays")
+
+	mockCC.createConfig.DeployType = "manifests"
+	err = mockCC.createDeployment()
+	assert.True(t, err == nil)
+	//check if deployment files have been created
+	err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
+	assert.Nil(t, err)
+	for _, fileName := range deploymentFiles {
+		_, err = os.Stat(fileName)
+		assert.True(t, err == nil)
+	}
+
+	os.RemoveAll("./../manifests")
+
 }
 
 func TestInitConfig(t *testing.T) {
@@ -160,4 +197,20 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		log.Infof("--> Could not find a pack for %s. Trying to find the next likely language match...\n", detectedLang.Language)
 	}
 	return nil, "", ErrNoLanguageDetected
+}
+
+func getAllDeploymentFiles(src string) (error, []string) {
+	deploymentFiles := []string{}
+	err := filepath.Walk(src,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			filePath := strings.ReplaceAll(path, src, "./..")
+			if info.Name() != "draft.yaml" {
+				deploymentFiles = append(deploymentFiles, filePath)
+			}
+			return nil
+		})
+	return err, deploymentFiles
 }

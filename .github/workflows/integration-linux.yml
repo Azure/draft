@@ -42,18 +42,10 @@ jobs:
           with:
             repository: gambtho/go_echo
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -163,18 +155,10 @@ jobs:
         with:
           repository: gambtho/go_echo
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gomodule/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -278,18 +262,10 @@ jobs:
           with:
             repository: gambtho/go_echo
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -426,18 +402,10 @@ jobs:
           with:
             repository: davidgamero/go-echo-no-mod
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/go/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -547,18 +515,10 @@ jobs:
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/go/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -662,18 +622,10 @@ jobs:
           with:
             repository: davidgamero/go-echo-no-mod
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/go/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -810,18 +762,10 @@ jobs:
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -931,18 +875,10 @@ jobs:
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/python/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -1046,18 +982,10 @@ jobs:
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1194,18 +1122,10 @@ jobs:
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1315,18 +1235,10 @@ jobs:
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/rust/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -1430,18 +1342,10 @@ jobs:
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1578,18 +1482,10 @@ jobs:
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1699,18 +1595,10 @@ jobs:
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/javascript/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -1814,18 +1702,10 @@ jobs:
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1962,18 +1842,10 @@ jobs:
           with:
             repository: OliverMKing/ruby-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2083,18 +1955,10 @@ jobs:
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/ruby/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -2198,18 +2062,10 @@ jobs:
           with:
             repository: OliverMKing/ruby-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2346,18 +2202,10 @@ jobs:
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2467,18 +2315,10 @@ jobs:
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/csharp/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -2582,18 +2422,10 @@ jobs:
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2730,18 +2562,10 @@ jobs:
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2851,18 +2675,10 @@ jobs:
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/java/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -2966,18 +2782,10 @@ jobs:
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3114,18 +2922,10 @@ jobs:
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3235,18 +3035,10 @@ jobs:
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gradle/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -3350,18 +3142,10 @@ jobs:
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3498,18 +3282,10 @@ jobs:
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3619,18 +3395,10 @@ jobs:
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/swift/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -3734,18 +3502,10 @@ jobs:
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3882,18 +3642,10 @@ jobs:
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -4003,18 +3755,10 @@ jobs:
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/erlang/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -4118,18 +3862,10 @@ jobs:
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -4266,18 +4002,10 @@ jobs:
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/helm.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -4387,18 +4115,10 @@ jobs:
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
-      - name: Execute Dry Run with config file
+      - name: Execute Dry Run
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/clojure/kustomize.yaml           -d ./langtest/ --skip-file-detection
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-      - name: Execute Dry Run with variables passed through flag 
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ --skip-file-detection -deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -4502,18 +4222,10 @@ jobs:
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
-        - name: Execute Dry Run with config file
+        - name: Execute Dry Run
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/manifest.yaml             -d ./langtest/ --skip-file-detection
-        - name: Validate JSON
-          run: |
-            npm install -g ajv-cli@5.0.0
-            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
-            mkdir -p test/temp
-            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ --skip-file-detection -deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.18 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0

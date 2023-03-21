@@ -264,6 +264,8 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
+	maps.Copy(inputs, flagVariablesMap)
+
 	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs, cc.templateWriter); err != nil {
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
@@ -311,6 +313,8 @@ func (cc *createCmd) createDeployment() error {
 			return err
 		}
 	}
+
+	maps.Copy(customInputs, flagVariablesMap)
 
 	if cc.templateVariableRecorder != nil {
 		for k, v := range customInputs {

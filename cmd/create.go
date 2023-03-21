@@ -10,6 +10,7 @@ import (
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
@@ -22,7 +23,6 @@ import (
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
-	"golang.org/x/exp/maps"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -34,9 +34,10 @@ const LANGUAGE_VARIABLE = "LANGUAGE"
 const TWO_SPACES = "  "
 
 type createCmd struct {
-	appName string
-	lang    string
-	dest    string
+	appName    string
+	lang       string
+	dest       string
+	deployType string
 
 	dockerfileOnly    bool
 	deploymentOnly    bool
@@ -73,6 +74,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
+	f.StringVarP(&cc.deployType, "deploy-type", "", ".", "specify deployement type (eg. helm, kustomize, manifests)")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
@@ -289,14 +291,18 @@ func (cc *createCmd) createDeployment() error {
 		}
 
 	} else {
-		selection := &promptui.Select{
-			Label: "Select k8s Deployment Type",
-			Items: []string{"helm", "kustomize", "manifests"},
-		}
+		if cc.deployType == "" {
+			selection := &promptui.Select{
+				Label: "Select k8s Deployment Type",
+				Items: []string{"helm", "kustomize", "manifests"},
+			}
 
-		_, deployType, err = selection.Run()
-		if err != nil {
-			return err
+			_, deployType, err = selection.Run()
+			if err != nil {
+				return err
+			}
+		} else {
+			deployType = cc.deployType
 		}
 
 		deployConfig := d.GetConfig(deployType)
@@ -434,7 +440,7 @@ func validateConfigInputsToPrompts(required []config.BuilderVar, provided []User
 
 	for _, variable := range required {
 		if _, ok := customInputs[variable.Name]; !ok {
-			return nil, fmt.Errorf("config missing language variable: %s with description: %s", variable.Name, variable.Description)
+			return nil, fmt.Errorf("config missing required variable: %s with description: %s", variable.Name, variable.Description)
 		}
 	}
 

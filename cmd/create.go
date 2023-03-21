@@ -158,53 +158,57 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 	var langs []*linguist.Language
 	var err error
 	if cc.createConfig.LanguageType == "" {
-		log.Info("--- Detecting Language ---")
-		langs, err = linguist.ProcessDir(cc.dest)
-		log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", cc.dest, err)
-		if err != nil {
-			return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
-		}
-		for _, lang := range langs {
-			log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
-			// For now let's check here for weird stuff like go module support
-			if lang.Language == "Go" {
-				hasGo = true
+		if cc.lang != "" {
+			cc.createConfig.LanguageType = cc.lang
+		} else {
+			log.Info("--- Detecting Language ---")
+			langs, err = linguist.ProcessDir(cc.dest)
+			log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", cc.dest, err)
+			if err != nil {
+				return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
+			}
+			for _, lang := range langs {
+				log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
+				// For now let's check here for weird stuff like go module support
+				if lang.Language == "Go" {
+					hasGo = true
 
-				selection := &promptui.Select{
-					Label: "Linguist detected Go, do you use Go Modules?",
-					Items: []string{"yes", "no"},
+					selection := &promptui.Select{
+						Label: "Linguist detected Go, do you use Go Modules?",
+						Items: []string{"yes", "no"},
+					}
+
+					_, selectResponse, err := selection.Run()
+					if err != nil {
+						return nil, "", err
+					}
+
+					hasGoMod = strings.EqualFold(selectResponse, "yes")
 				}
 
-				_, selectResponse, err := selection.Run()
-				if err != nil {
-					return nil, "", err
-				}
+				if lang.Language == "Java" {
 
-				hasGoMod = strings.EqualFold(selectResponse, "yes")
+					selection := &promptui.Select{
+						Label: "Linguist detected Java, are you using maven or gradle?",
+						Items: []string{"gradle", "maven"},
+					}
+
+					_, selectResponse, err := selection.Run()
+					if err != nil {
+						return nil, "", err
+					}
+
+					if selectResponse == "gradle" {
+						lang.Language = "Gradle"
+					}
+				}
 			}
 
-			if lang.Language == "Java" {
+			log.Debugf("detected %d langs", len(langs))
 
-				selection := &promptui.Select{
-					Label: "Linguist detected Java, are you using maven or gradle?",
-					Items: []string{"gradle", "maven"},
-				}
-
-				_, selectResponse, err := selection.Run()
-				if err != nil {
-					return nil, "", err
-				}
-
-				if selectResponse == "gradle" {
-					lang.Language = "Gradle"
-				}
+			if len(langs) == 0 {
+				return nil, "", ErrNoLanguageDetected
 			}
-		}
-
-		log.Debugf("detected %d langs", len(langs))
-
-		if len(langs) == 0 {
-			return nil, "", ErrNoLanguageDetected
 		}
 	}
 

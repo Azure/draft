@@ -47,6 +47,11 @@ func TestRun(t *testing.T) {
 
 	//when language variables are passed in --variable flag
 	mockCC.createConfig.LanguageVariables = nil
+	mockCC.lang = "go"
+	detectedLang, lowerLang, err = mockCC.mockDetectLanguage()
+	assert.False(t, detectedLang == nil)
+	assert.False(t, lowerLang == "")
+	assert.True(t, err == nil)
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
 	println(err)
 	assert.True(t, err == nil)
@@ -149,20 +154,24 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 	var err error
 
 	if mcc.createConfig.LanguageType == "" {
-		langs, err = linguist.ProcessDir(mcc.dest)
-		log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", mcc.dest, err)
-		if err != nil {
-			return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
-		}
+		if mcc.lang != "" {
+			mcc.createConfig.LanguageType = mcc.lang
+		} else {
+			langs, err = linguist.ProcessDir(mcc.dest)
+			log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", mcc.dest, err)
+			if err != nil {
+				return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
+			}
 
-		for _, lang := range langs {
-			log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
-		}
+			for _, lang := range langs {
+				log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
+			}
 
-		log.Debugf("detected %d langs", len(langs))
+			log.Debugf("detected %d langs", len(langs))
 
-		if len(langs) == 0 {
-			return nil, "", ErrNoLanguageDetected
+			if len(langs) == 0 {
+				return nil, "", ErrNoLanguageDetected
+			}
 		}
 	}
 

@@ -23,7 +23,7 @@ func TestRun(t *testing.T) {
 	mockCC := &createCmd{}
 	mockCC.createConfig = &CreateConfig{}
 	mockCC.dest = "./.."
-	mockCC.createConfig.DeployType = "helm"
+	mockCC.createConfig.DeployType = ""
 	mockCC.createConfig.LanguageVariables = []UserInputs{}
 	mockCC.createConfig.DeployVariables = []UserInputs{}
 	mockPortInput := UserInputs{Name: "PORT", Value: "8080"}
@@ -32,7 +32,7 @@ func TestRun(t *testing.T) {
 	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
 	mockCC.templateWriter = &writers.LocalFSWriter{}
 	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest"}
-
+	deployTypes := []string{"helm", "kustomize", "manifests"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
 
@@ -62,43 +62,42 @@ func TestRun(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = mockCC.createDeployment()
-	assert.True(t, err == nil)
-	//check if deployment files have been created
-	err, deploymentFiles := getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
-	assert.Nil(t, err)
-	for _, fileName := range deploymentFiles {
-		_, err = os.Stat(fileName)
+	for _, deployType := range deployTypes {
+		//deployment variables passed through --variable flag
+		mockCC.deployType = deployType
+		err = mockCC.createDeployment()
 		assert.True(t, err == nil)
-	}
-	os.RemoveAll("./../charts")
+		//check if deployment files have been created
+		err, deploymentFiles := getAllDeploymentFiles(path.Join("../template/deployments", mockCC.deployType))
+		assert.Nil(t, err)
+		for _, fileName := range deploymentFiles {
+			_, err = os.Stat(fileName)
+			assert.True(t, err == nil)
+		}
 
-	mockCC.createConfig.DeployType = "kustomize"
-	err = mockCC.createDeployment()
-	assert.True(t, err == nil)
-	//check if deployment files have been created
-	err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
-	assert.Nil(t, err)
-	for _, fileName := range deploymentFiles {
-		_, err = os.Stat(fileName)
+		os.RemoveAll("./../charts")
+		os.RemoveAll("./../base")
+		os.RemoveAll("./../overlays")
+		os.RemoveAll("./../manifests")
+
+		//deployment variables passed through createConfig
+		mockCC.createConfig.DeployType = deployType
+		err = mockCC.createDeployment()
 		assert.True(t, err == nil)
+		//check if deployment files have been created
+		err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
+		assert.Nil(t, err)
+		for _, fileName := range deploymentFiles {
+			_, err = os.Stat(fileName)
+			assert.True(t, err == nil)
+		}
+		mockCC.createConfig.DeployType = ""
+
+		os.RemoveAll("./../charts")
+		os.RemoveAll("./../base")
+		os.RemoveAll("./../overlays")
+		os.RemoveAll("./../manifests")
 	}
-	os.RemoveAll("./../base")
-	os.RemoveAll("./../overlays")
-
-	mockCC.createConfig.DeployType = "manifests"
-	err = mockCC.createDeployment()
-	assert.True(t, err == nil)
-	//check if deployment files have been created
-	err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
-	assert.Nil(t, err)
-	for _, fileName := range deploymentFiles {
-		_, err = os.Stat(fileName)
-		assert.True(t, err == nil)
-	}
-
-	os.RemoveAll("./../manifests")
-
 }
 
 func TestInitConfig(t *testing.T) {

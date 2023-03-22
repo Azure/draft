@@ -146,7 +146,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -275,7 +274,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -422,6 +420,14 @@ jobs:
         with:
           name: gomodule-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -563,7 +569,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -692,7 +697,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -839,6 +843,14 @@ jobs:
         with:
           name: go-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -980,7 +992,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1109,7 +1120,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1256,6 +1266,14 @@ jobs:
         with:
           name: python-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1397,7 +1415,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1526,7 +1543,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1673,6 +1689,14 @@ jobs:
         with:
           name: rust-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1814,7 +1838,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1943,7 +1966,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2090,6 +2112,14 @@ jobs:
         with:
           name: javascript-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2231,7 +2261,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2360,7 +2389,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2507,6 +2535,14 @@ jobs:
         with:
           name: ruby-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2648,7 +2684,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2777,7 +2812,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2924,6 +2958,14 @@ jobs:
         with:
           name: csharp-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -3065,7 +3107,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3194,7 +3235,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3341,6 +3381,14 @@ jobs:
         with:
           name: java-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -3482,7 +3530,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3611,7 +3658,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3758,6 +3804,14 @@ jobs:
         with:
           name: gradle-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -3899,7 +3953,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4028,7 +4081,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4175,6 +4227,14 @@ jobs:
         with:
           name: swift-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -4316,7 +4376,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4445,7 +4504,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4592,6 +4650,14 @@ jobs:
         with:
           name: erlang-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -4733,7 +4799,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4862,7 +4927,6 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -5009,6 +5073,14 @@ jobs:
         with:
           name: clojure-manifests-create
           path: ./langtest/
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube

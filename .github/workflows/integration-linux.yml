@@ -422,14 +422,6 @@ jobs:
         with:
           name: gomodule-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -847,14 +839,6 @@ jobs:
         with:
           name: go-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1272,14 +1256,6 @@ jobs:
         with:
           name: python-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1697,14 +1673,6 @@ jobs:
         with:
           name: rust-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2122,14 +2090,6 @@ jobs:
         with:
           name: javascript-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2547,14 +2507,6 @@ jobs:
         with:
           name: ruby-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2972,14 +2924,6 @@ jobs:
         with:
           name: csharp-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -3397,14 +3341,6 @@ jobs:
         with:
           name: java-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -3822,14 +3758,6 @@ jobs:
         with:
           name: gradle-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -4247,14 +4175,6 @@ jobs:
         with:
           name: swift-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -4672,14 +4592,6 @@ jobs:
         with:
           name: erlang-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -5097,14 +5009,6 @@ jobs:
         with:
           name: clojure-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube

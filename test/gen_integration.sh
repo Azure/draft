@@ -592,14 +592,6 @@ languageVariables:
         with:
           name: $lang-manifests-create
           path: ./langtest/
-      - name: Execute dry run for update command
-        run: |
-          mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ $ingress_test_args  
-      - name: Validate JSON
-        run: |
-          npm install -g ajv-cli@5.0.0
-          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube

@@ -295,11 +295,8 @@ languageVariables:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
-        with:
-          tool_versions: |
-            action-validator 0.1.2
+      - name: Install action-validator 
+        run: npm install -g @action-validator/core @action-validator/cli --save-dev
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
@@ -431,11 +428,8 @@ languageVariables:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
-        with:
-          tool_versions: |
-            action-validator 0.1.2
+      - name: Install action-validator 
+        run: npm install -g @action-validator/core @action-validator/cli --save-dev
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
@@ -559,11 +553,8 @@ languageVariables:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
-        with:
-          tool_versions: |
-            action-validator 0.1.2
+      - name: Install action-validator 
+        run: npm install -g @action-validator/core @action-validator/cli --save-dev
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \

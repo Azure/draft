@@ -48,6 +48,7 @@ func TestWorkflowReplace(t *testing.T) {
 		ContainerName:     "test",
 		ResourceGroupName: "test",
 		BranchName:        "test",
+		BuildContextPath:  "./test",
 
 		ChartsOverridePath: "testOverride",
 		KustomizePath:      "testKustomize",
@@ -86,6 +87,7 @@ func TestUpdateProductionDeployments(t *testing.T) {
 		AcrName:           "test",
 		ContainerName:     "test",
 		ResourceGroupName: "test",
+		BuildContextPath:  "./test",
 	}
 	assert.Nil(t, updateProductionDeployments("", ".", config))
 

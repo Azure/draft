@@ -1,11 +1,20 @@
 package workflows
 
+import (
+	"github.com/Azure/draft/pkg/prompts"
+)
+
 type WorkflowConfig struct {
-	AcrName           string
-	ContainerName     string
-	ResourceGroupName string
-	AksClusterName    string
-	BranchName        string
+	AcrName            string
+	ContainerName      string
+	ResourceGroupName  string
+	AksClusterName     string
+	BranchName         string
+	ManifestsPath      string
+	ChartsPath         string
+	ChartsOverridePath string
+	KustomizePath      string
+	BuildContextPath   string
 }
 
 func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
@@ -30,5 +39,12 @@ func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
 		flagValuesMap["BRANCHNAME"] = config.BranchName
 	}
 
-	return flagValuesMap
+	if config.BuildContextPath == "" {
+		config.BuildContextPath = prompts.GetInputFromPrompt("path to the docker build context, usually .")
+	}
+
+	config.ChartsPath = "./charts"
+	config.ChartsOverridePath = "./charts/production.yaml"
+	config.ManifestsPath = "./manifests"
+	config.KustomizePath = "./overlays/production"
 }

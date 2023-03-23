@@ -1,8 +1,9 @@
 package workflows
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateConfig(t *testing.T) {
@@ -12,6 +13,7 @@ func TestValidateConfig(t *testing.T) {
 		ResourceGroupName: "test",
 		AksClusterName:    "test",
 		BranchName:        "test",
+		BuildContextPath:  "./test",
 	}
 	config.ValidateAndFillConfig()
 	assert.NotEmpty(t, config.KustomizePath)

@@ -41,7 +41,7 @@ func (config *WorkflowConfig) ValidateAndFillConfig() {
 	}
 
 	if config.BuildContextPath == "" {
-		config.BuildContextPath = prompts.GetInputFromPrompt("path to the docker build context, usually .")
+		config.BuildContextPath = prompts.GetInputFromPrompt("path to the docker build context, usually . ")
 	}
 
 	config.ChartsPath = "./charts"

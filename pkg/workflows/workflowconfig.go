@@ -1,8 +1,9 @@
 package workflows
 
 import (
-	"github.com/Azure/draft/pkg/prompts"
 	"strings"
+
+	"github.com/Azure/draft/pkg/prompts"
 )
 
 type WorkflowConfig struct {
@@ -15,6 +16,7 @@ type WorkflowConfig struct {
 	ChartsPath         string
 	ChartsOverridePath string
 	KustomizePath      string
+	BuildContextPath   string
 }
 
 func (config *WorkflowConfig) ValidateAndFillConfig() {
@@ -36,6 +38,10 @@ func (config *WorkflowConfig) ValidateAndFillConfig() {
 
 	if config.BranchName == "" {
 		config.BranchName = prompts.GetInputFromPrompt("name of the repository branch to deploy from, usually main")
+	}
+
+	if config.BuildContextPath == "" {
+		config.BuildContextPath = prompts.GetInputFromPrompt("path to the docker build context, usually .")
 	}
 
 	config.ChartsPath = "./charts"

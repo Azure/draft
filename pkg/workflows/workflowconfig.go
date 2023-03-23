@@ -40,7 +40,7 @@ func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
 	}
 
 	if config.BuildContextPath == "" {
-		config.BuildContextPath = prompts.GetInputFromPrompt("path to the docker build context, usually .")
+		config.BuildContextPath = prompts.GetInputFromPrompt("path to the docker build context, usually . ")
 	}
 
 	config.ChartsPath = "./charts"

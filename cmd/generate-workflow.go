@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/pkg/workflows"
 )
 
@@ -44,15 +43,14 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&gwCmd.workflowConfig.AksClusterName, "cluster-name", "c", "", "specify the AKS cluster name")
-	f.StringVarP(&gwCmd.workflowConfig.AcrName, "registry-name", "r", "", "specify the Azure container registry name")
-	f.StringVar(&gwCmd.workflowConfig.ContainerName, "container-name", "", "specify the container image name")
-	f.StringVarP(&gwCmd.workflowConfig.ResourceGroupName, "resource-group", "g", "", "Specify the Azure resource group of your AKS cluster")
-	f.StringVarP(&gwCmd.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.StringVarP(&gwCmd.workflowConfig.BranchName, "branch", "b", "", "specify the Github branch to automatically deploy from")
-	f.StringVar(&gwCmd.deployType, "deploy-type", "", "specify the type of deployment")
-	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
-	gwCmd.templateWriter = &writers.LocalFSWriter{}
+	f.StringVarP(&workflowConfig.AksClusterName, "cluster-name", "c", "", "specify the AKS cluster name")
+	f.StringVarP(&workflowConfig.AcrName, "registry-name", "r", "", "specify the Azure container registry name")
+	f.StringVar(&workflowConfig.ContainerName, "container-name", "", "specify the container image name")
+	f.StringVarP(&workflowConfig.ResourceGroupName, "resource-group", "g", "", "Specify the Azure resource group of your AKS cluster")
+	f.StringVarP(&dest, "destination", "d", ".", "specify the path to the project directory")
+	f.StringVarP(&workflowConfig.BranchName, "branch", "b", "", "specify the Github branch to automatically deploy from")
+	f.StringVarP(&workflowConfig.BuildContextPath, "build-context-path", "x", "", "specify the docker build context path")
+
 	return cmd
 }
 

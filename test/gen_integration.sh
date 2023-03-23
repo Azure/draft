@@ -287,7 +287,9 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
       # Validate generated workflow yaml
       - name: Checkout
         uses: actions/checkout@v2
@@ -305,6 +307,7 @@ languageVariables:
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ $ingress_test_args  
       - name: Validate JSON
         run: |

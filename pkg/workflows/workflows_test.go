@@ -242,26 +242,50 @@ func createTempDeploymentFile(dirPath, fileName, path string) error {
 	return nil
 }
 
-// Creates a copy of the embeded files in memory and returns a passable fs to use for testing
-func createMockWorkflowTemplatesFS() (fs.FS, error) {
-	rootPath := "workflows/"
-	embedFiles, err := embedutils.EmbedFStoMapWithFiles(template.Workflows, "workflows")
-	if err != nil {
-		return nil, fmt.Errorf("failed to readDir: %w in embeded files", err)
+func TestWorkflowReplace(t *testing.T) {
+	config := &WorkflowConfig{
+		AcrName:           "test",
+		AksClusterName:    "test",
+		ContainerName:     "test",
+		ResourceGroupName: "test",
+		BranchName:        "test",
+		BuildContextPath:  "./test",
+
+		ChartsOverridePath: "testOverride",
+		KustomizePath:      "testKustomize",
 	}
 
 	mockFS := fstest.MapFS{}
 
-	for path, file := range embedFiles {
-		if file.IsDir() {
-			mockFS[path] = &fstest.MapFile{Mode: fs.ModeDir}
-		} else {
-			bytes, err := template.Workflows.ReadFile(path)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read file: %w", err)
-			}
-			mockFS[path] = &fstest.MapFile{Data: bytes}
-		}
+	workflow, ok := deployNameToWorkflow["manifests"]
+	assert.True(t, ok)
+
+	ghw = getWorkflowFile(workflow)
+	origLen := len(ghw.Jobs["build"].Steps)
+	replaceWorkflowVars("manifests", config, ghw)
+	assert.Equal(t, origLen, len(ghw.Jobs["build"].Steps), "check step is deleted")
+
+	workflow, ok = deployNameToWorkflow["helm"]
+	assert.True(t, ok)
+
+	ghw = getWorkflowFile(workflow)
+	replaceWorkflowVars("helm", config, ghw)
+	assert.Equal(t, "testOverride", ghw.Env["CHART_OVERRIDE_PATH"], "check helm envs are replaced")
+
+	workflow, ok = deployNameToWorkflow["kustomize"]
+	assert.True(t, ok)
+
+	ghw = getWorkflowFile(workflow)
+	replaceWorkflowVars("kustomize", config, ghw)
+	assert.Equal(t, "testKustomize", ghw.Env["KUSTOMIZE_PATH"], "check kustomize envs are replaces")
+}
+
+func TestUpdateProductionDeployments(t *testing.T) {
+	config := &WorkflowConfig{
+		AcrName:           "test",
+		ContainerName:     "test",
+		ResourceGroupName: "test",
+		BuildContextPath:  "./test",
 	}
 
 	mockFS[rootPath+"emptyDir"] = &fstest.MapFile{Mode: fs.ModeDir}

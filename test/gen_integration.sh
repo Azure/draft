@@ -287,7 +287,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -build-context-path .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -408,7 +408,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -522,7 +522,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp -build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create

@@ -291,12 +291,11 @@ languageVariables:
           ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
           pwd
       # Validate generated workflow yaml
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
         with:
-          submodules: true
-      - name: Install action-validator 
-        run: npm install -g @action-validator/core @action-validator/cli --save-dev
+          tool_versions: |
+            action-validator 0.1.2
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
@@ -424,12 +423,11 @@ languageVariables:
           kill \$tunnelPID
       - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
       # Validate generated workflow yaml
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
         with:
-          submodules: true
-      - name: Install action-validator 
-        run: npm install -g @action-validator/core @action-validator/cli --save-dev
+          tool_versions: |
+            action-validator 0.1.2
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
@@ -549,12 +547,11 @@ languageVariables:
           kill \$tunnelPID
       - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
       # Validate generated workflow yaml
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
         with:
-          submodules: true
-      - name: Install action-validator 
-        run: npm install -g @action-validator/core @action-validator/cli --save-dev
+          tool_versions: |
+            action-validator 0.1.2
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \

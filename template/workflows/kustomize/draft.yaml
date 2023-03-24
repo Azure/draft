@@ -9,11 +9,7 @@ variables:
     description: "the AKS cluster name"
   - name: "BRANCHNAME"
     description: "the Github branch to automatically deploy from"
-  - name: "BUILDCONTEXTPATH"
-    description: "the path to the Docker build context"
 variableDefaults:
   - name: "KUSTOMIZEPATH"
     value: "./overlays/production"
     disablePrompt: true
-  - name: "BUILDCONTEXTPATH"
-    value: "."

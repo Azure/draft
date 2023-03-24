@@ -9,6 +9,8 @@ variables:
     description: "the AKS cluster name"
   - name: "BRANCHNAME"
     description: "the Github branch to automatically deploy from"
+  - name: "BUILDCONTEXTPATH"
+    description: "the path to the Docker build context"
 variableDefaults:
   - name: "CHARTPATH"
     value: "./charts"
@@ -16,3 +18,5 @@ variableDefaults:
   - name: "CHARTOVERRIDEPATH"
     value: "./charts/production.yaml"
     disablePrompt: true
+  - name: "BUILDCONTEXTPATH"
+    value: "."

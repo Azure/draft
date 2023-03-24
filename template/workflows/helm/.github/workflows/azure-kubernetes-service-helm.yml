@@ -11,7 +11,7 @@
 # To configure this workflow:
 #
 # 1. Set the following secrets in your repository (instructions for getting these
-#    https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux):
+#    https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux)):
 #    - AZURE_CLIENT_ID
 #    - AZURE_TENANT_ID
 #    - AZURE_SUBSCRIPTION_ID
@@ -23,27 +23,29 @@
 #    - CLUSTER_NAME (name of your AKS cluster)
 #    - IMAGE_PULL_SECRET_NAME (name of the ImagePullSecret that will be created to pull your ACR image)
 #
-# 3. Choose the appropriate render engine for the bake step https://github.com/Azure/k8s-bake. The config below assumes Kompose.
-#    Set your dockerComposeFile and kompose-version to suit your configuration.
-#    - DOCKER_COMPOSE_FILE_PATH (the path where your Kompose deployment manifest is located)
+# 3. Choose the appropriate render engine for the bake step https://github.com/Azure/k8s-bake. The config below assumes Helm.
+#    Set your helmChart, overrideFiles, overrides, and helm-version to suit your configuration.
+#    - CHART_PATH (path to your helm chart)
+#    - CHART_OVERRIDE_PATH (path to your helm chart with override values)
 #
 # For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: Build and deploy an app to AKS with Kompose
+name: Build and deploy an app to AKS with Helm
 
 on:
   push:
-    branches: [$default-branch]
+    branches: [{{BRANCHNAME}}]
   workflow_dispatch:
 
 env:
-  AZURE_CONTAINER_REGISTRY: "your-azure-container-registry"
-  CONTAINER_NAME: "your-container-name"
-  RESOURCE_GROUP: "your-resource-group"
-  CLUSTER_NAME: "your-cluster-name"
-  DOCKER_COMPOSE_FILE_PATH: "your-docker-compose-file-path"
+  AZURE_CONTAINER_REGISTRY: {{AZURECONTAINERREGISTRY}}
+  CONTAINER_NAME: {{CONTAINERNAME}}
+  RESOURCE_GROUP: {{RESOURCEGROUP}}
+  CLUSTER_NAME: {{CLUSTERNAME}}
+  CHART_PATH: {{CHARTPATH}}
+  CHART_OVERRIDE_PATH: {{CHARTOVERRIDEPATH}}
 
 jobs:
   buildImage:
@@ -102,13 +104,16 @@ jobs:
           admin: 'false'
           use-kubelogin: 'true'
 
-      # Runs Kompose to create manifest files
+      # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2
         with:
-          renderEngine: "kompose"
-          dockerComposeFile: ${{ env.DOCKER_COMPOSE_FILE_PATH }}
-          kompose-version: "latest"
+          renderEngine: "helm"
+          helmChart: ${{ env.CHART_PATH }}
+          overrideFiles: ${{ env.CHART_OVERRIDE_PATH }}
+          overrides: |
+            replicas:2
+          helm-version: "latest"
         id: bake
 
       # Deploys application based on manifest files from previous step

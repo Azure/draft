@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/Azure/draft/pkg/templatewriter/writers"
 )
 
 func createTempManifest(path string) (string, error) {
@@ -32,69 +34,68 @@ func createTempManifest(path string) (string, error) {
 	return file.Name(), nil
 }
 
-func TestWorkflowEmbed(t *testing.T) {
-	workflow := &workflowType{
-		deployPath:         "/charts",
-		workflowFileSuffix: "-helm",
+func createTempDeploymentFile(dirPath, fileName, path string) error {
+	err := os.MkdirAll(dirPath, 0755)
+	if err != nil {
+		return err
 	}
-
-	assert.NotEmptyf(t, getWorkflowFile(workflow), "workflow should be fetched from the embeded file system")
-}
-
-func TestWorkflowReplace(t *testing.T) {
-	config := &WorkflowConfig{
-		AcrName:           "test",
-		AksClusterName:    "test",
-		ContainerName:     "test",
-		ResourceGroupName: "test",
-		BranchName:        "test",
-
-		ChartsOverridePath: "testOverride",
-		KustomizePath:      "testKustomize",
+	file, err := os.Create(fileName)
+	if err != nil {
+		return err
 	}
+	defer file.Close()
 
-	ghw := &GitHubWorkflow{}
-	ghw.On.Push.Branches = []string{"branch"}
-	replaceWorkflowVars("", config, ghw)
-	assert.NotNil(t, ghw.Env, "check that replace will update a ghw's environment")
+	var source *os.File
+	source, err = os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
 
-	workflow, ok := deployNameToWorkflow["manifests"]
-	assert.True(t, ok)
-
-	ghw = getWorkflowFile(workflow)
-	origLen := len(ghw.Jobs["build"].Steps)
-	replaceWorkflowVars("manifests", config, ghw)
-	assert.Equal(t, origLen, len(ghw.Jobs["build"].Steps), "check step is deleted")
-
-	workflow, ok = deployNameToWorkflow["helm"]
-	assert.True(t, ok)
-
-	ghw = getWorkflowFile(workflow)
-	replaceWorkflowVars("helm", config, ghw)
-	assert.Equal(t, "testOverride", ghw.Env["CHART_OVERRIDE_PATH"], "check helm envs are replaced")
-
-	workflow, ok = deployNameToWorkflow["kustomize"]
-	assert.True(t, ok)
-
-	ghw = getWorkflowFile(workflow)
-	replaceWorkflowVars("kustomize", config, ghw)
-	assert.Equal(t, "testKustomize", ghw.Env["KUSTOMIZE_PATH"], "check kustomize envs are replaces")
+	_, err = io.Copy(file, source)
+	if err != nil {
+		return err
+	}
+	return nil
 }
+func TestCreateWorkflows(t *testing.T) {
+	dest := "."
+	deployType := "helm"
+	flagVariables := []string{}
+	templatewriter := &writers.LocalFSWriter{}
+	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch"}
+	err := createTempDeploymentFile("charts", "charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
+	assert.Nil(t, err)
+	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+	os.RemoveAll("charts")
+	os.RemoveAll(".github")
 
+	deployType = "kustomize"
+	err = createTempDeploymentFile("overlays/production", "overlays/production/deployment.yaml", "../../test/templates/kustomize/overlays/production/deployment.yaml")
+	assert.Nil(t, err)
+	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+	os.RemoveAll("overlays")
+	os.RemoveAll(".github")
+
+	deployType = "manifests"
+	err = createTempDeploymentFile("manifests", "manifests/deployment.yaml", "../../test/templates/manifests/manifests/deployment.yaml")
+	assert.Nil(t, err)
+	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+	os.RemoveAll("manifests")
+	os.RemoveAll(".github")
+
+}
 func TestUpdateProductionDeployments(t *testing.T) {
-	config := &WorkflowConfig{
-		AcrName:           "test",
-		ContainerName:     "test",
-		ResourceGroupName: "test",
-	}
-	assert.Nil(t, updateProductionDeployments("", ".", config))
+	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testRegistry", "CONTAINERNAME": "testContainer"}
+	testTemplateWriter := &writers.LocalFSWriter{}
+	assert.Nil(t, updateProductionDeployments("", ".", flagValuesMap, testTemplateWriter))
 
 	helmFileName, _ := createTempManifest("../../test/templates/helm_prod_values.yaml")
 	deploymentFileName, _ := createTempManifest("../../test/templates/deployment.yaml")
 	defer os.Remove(helmFileName)
 	defer os.Remove(deploymentFileName)
 
-	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage"))
+	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage", testTemplateWriter))
 
 	helmDeploy := &HelmProductionYaml{}
 	assert.Nil(t, helmDeploy.LoadFromFile(helmFileName))

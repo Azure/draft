@@ -1,0 +1,15 @@
+variables:
+  - name: "AZURECONTAINERREGISTRY"
+    description: "the Azure container registry name"
+  - name: "CONTAINERNAME"
+    description: "the container image name"
+  - name: "RESOURCEGROUP"
+    description: "the Azure resource group of your AKS cluster"
+  - name: "CLUSTERNAME"
+    description: "the AKS cluster name"
+  - name: "BRANCHNAME"
+    description: "the Github branch to automatically deploy from"
+variableDefaults:
+  - name: "DEPLOYMENTMANIFESTPATH"
+    value: "./manifests"
+    disablePrompt: true

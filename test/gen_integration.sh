@@ -287,10 +287,23 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ $ingress_test_args  
       - name: Validate JSON
         run: |
@@ -408,7 +421,17 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -522,7 +545,17 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create

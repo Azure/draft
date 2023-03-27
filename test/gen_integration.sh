@@ -110,6 +110,7 @@ do
     imagename="host.minikube.internal:5001/testapp"
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+    create_config_args="--variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest"
     echo "Adding $lang with port $port"
 
     mkdir ./integration/$lang
@@ -195,12 +196,22 @@ languageVariables:
           with:
             repository: $repo
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/helm.yaml \
             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+            create -d ./langtest/ -l $lang --skip-file-detection --deploy-type helm \
+            $create_config_args
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -335,12 +346,22 @@ languageVariables:
         with:
           repository: $repo
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json \
           create -c ./test/integration/$lang/kustomize.yaml \
           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+          create -d ./langtest/ -l $lang --skip-file-detection --deploy-type kustomize \
+          $create_config_args
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -466,12 +487,22 @@ languageVariables:
           with:
             repository: $repo
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/manifest.yaml \
             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+            create -d ./langtest/ -l $lang --skip-file-detection --deploy-type manifests \
+            $create_config_args
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0

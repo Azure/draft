@@ -1,6 +1,7 @@
 package workflows
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -84,22 +85,52 @@ func TestCreateWorkflows(t *testing.T) {
 	os.RemoveAll("manifests")
 	os.RemoveAll(".github")
 
+	//test for missing deployment file path
+	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+
+	//test for invalid deployType
+	deployType = "testInvalidDeployType"
+	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
 }
 func TestUpdateProductionDeployments(t *testing.T) {
 	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testRegistry", "CONTAINERNAME": "testContainer"}
 	testTemplateWriter := &writers.LocalFSWriter{}
+	//test for missing deploy type
 	assert.Nil(t, updateProductionDeployments("", ".", flagValuesMap, testTemplateWriter))
 
+	//test for missing helm deployment file
+	assert.NotNil(t, setHelmContainerImage("", "testImage", testTemplateWriter))
+
+	//test for invalid helm deployment file
+	tempFile, err := ioutil.TempFile("", "*.yaml")
+	assert.Nil(t, err)
+	defer os.Remove(tempFile.Name())
+	yamlData := []byte(`not a valid yaml`)
+	_, err = tempFile.Write(yamlData)
+	assert.Nil(t, err)
+	err = tempFile.Close()
+	assert.Nil(t, err)
+	assert.NotNil(t, setHelmContainerImage(tempFile.Name(), "testImage", testTemplateWriter))
+
+	//test for valid helm deployment file
 	helmFileName, _ := createTempManifest("../../test/templates/helm_prod_values.yaml")
-	deploymentFileName, _ := createTempManifest("../../test/templates/deployment.yaml")
 	defer os.Remove(helmFileName)
-	defer os.Remove(deploymentFileName)
 
 	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage", testTemplateWriter))
 
 	helmDeploy := &HelmProductionYaml{}
 	assert.Nil(t, helmDeploy.LoadFromFile(helmFileName))
 	assert.Equal(t, "testImage", helmDeploy.Image.Repository)
+
+	//test for missing deployment file
+	assert.NotNil(t, setDeploymentContainerImage("", "testImage"))
+
+	//test for invalid deployment file
+	assert.NotNil(t, setDeploymentContainerImage(tempFile.Name(), "testImage"))
+
+	//test for valid deployment file
+	deploymentFileName, _ := createTempManifest("../../test/templates/deployment.yaml")
+	defer os.Remove(deploymentFileName)
 
 	assert.Nil(t, setDeploymentContainerImage(deploymentFileName, "testImage"))
 	decode := scheme.Codecs.UniversalDeserializer().Decode
@@ -112,4 +143,13 @@ func TestUpdateProductionDeployments(t *testing.T) {
 	deploy, ok := k8sObj.(*appsv1.Deployment)
 	assert.True(t, ok)
 	assert.Equal(t, "testImage", deploy.Spec.Template.Spec.Containers[0].Image)
+
+	//test for invalid k8sObj
+	invalidDeploymentFile, _ := createTempManifest("../../test/templates/invalid_deployment.yaml")
+	assert.Equal(t, errors.New("could not decode kubernetes deployment"), setDeploymentContainerImage(invalidDeploymentFile, "testImage"))
+
+	//test for unsupported number of containers in the deployment spec
+	invalidDeploymentFile, _ = createTempManifest("../../test/templates/unsupported_no_of_containers.yaml")
+	defer os.Remove(invalidDeploymentFile)
+	assert.Equal(t, errors.New("unsupported number of containers defined in the deployment spec"), setDeploymentContainerImage(invalidDeploymentFile, "testImage"))
 }

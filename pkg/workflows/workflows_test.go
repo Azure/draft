@@ -2,22 +2,16 @@ package workflows
 
 import (
 	"errors"
-	"fmt"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"testing"
-	"testing/fstest"
 
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
 )
 
 func TestCreateWorkflows(t *testing.T) {
@@ -255,95 +249,71 @@ func TestWorkflowReplace(t *testing.T) {
 		KustomizePath:      "testKustomize",
 	}
 
-	mockFS := fstest.MapFS{}
+	//test for missing deployment file path
+	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
 
-	workflow, ok := deployNameToWorkflow["manifests"]
-	assert.True(t, ok)
-
-	ghw = getWorkflowFile(workflow)
-	origLen := len(ghw.Jobs["build"].Steps)
-	replaceWorkflowVars("manifests", config, ghw)
-	assert.Equal(t, origLen, len(ghw.Jobs["build"].Steps), "check step is deleted")
-
-	workflow, ok = deployNameToWorkflow["helm"]
-	assert.True(t, ok)
-
-	ghw = getWorkflowFile(workflow)
-	replaceWorkflowVars("helm", config, ghw)
-	assert.Equal(t, "testOverride", ghw.Env["CHART_OVERRIDE_PATH"], "check helm envs are replaced")
-
-	workflow, ok = deployNameToWorkflow["kustomize"]
-	assert.True(t, ok)
-
-	ghw = getWorkflowFile(workflow)
-	replaceWorkflowVars("kustomize", config, ghw)
-	assert.Equal(t, "testKustomize", ghw.Env["KUSTOMIZE_PATH"], "check kustomize envs are replaces")
+	//test for invalid deployType
+	deployType = "testInvalidDeployType"
+	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
 }
-
 func TestUpdateProductionDeployments(t *testing.T) {
-	config := &WorkflowConfig{
-		AcrName:           "test",
-		ContainerName:     "test",
-		ResourceGroupName: "test",
-		BuildContextPath:  "./test",
-	}
+	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testRegistry", "CONTAINERNAME": "testContainer"}
+	testTemplateWriter := &writers.LocalFSWriter{}
+	//test for missing deploy type
+	assert.Nil(t, updateProductionDeployments("", ".", flagValuesMap, testTemplateWriter))
 
-	mockFS[rootPath+"emptyDir"] = &fstest.MapFile{Mode: fs.ModeDir}
-	mockFS[rootPath+"corrupted"] = &fstest.MapFile{Mode: fs.ModeDir}
-	mockFS[rootPath+"corrupted/draft.yaml"] = &fstest.MapFile{Data: []byte("fake yaml data")}
+	//test for missing helm deployment file
+	assert.NotNil(t, setHelmContainerImage("", "testImage", testTemplateWriter))
 
-	return mockFS, nil
-}
+	//test for invalid helm deployment file
+	tempFile, err := ioutil.TempFile("", "*.yaml")
+	assert.Nil(t, err)
+	defer os.Remove(tempFile.Name())
+	yamlData := []byte(`not a valid yaml`)
+	_, err = tempFile.Write(yamlData)
+	assert.Nil(t, err)
+	err = tempFile.Close()
+	assert.Nil(t, err)
+	assert.NotNil(t, setHelmContainerImage(tempFile.Name(), "testImage", testTemplateWriter))
 
-func createMockWorkflow(dirPath string, mockWorkflowTemplates fs.FS) (*Workflows, error) {
-	dest := "."
+	//test for valid helm deployment file
+	helmFileName, _ := createTempManifest("../../test/templates/helm_prod_values.yaml")
+	defer os.Remove(helmFileName)
 
-	deployMap, err := fsToMap(mockWorkflowTemplates, dirPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed fsToMap: %w", err)
-	}
+	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage", testTemplateWriter))
 
-	w := &Workflows{
-		workflows:         deployMap,
-		dest:              dest,
-		configs:           make(map[string]*config.DraftConfig),
-		workflowTemplates: mockWorkflowTemplates,
-	}
+	helmDeploy := &HelmProductionYaml{}
+	assert.Nil(t, helmDeploy.LoadFromFile(helmFileName))
+	assert.Equal(t, "testImage", helmDeploy.Image.Repository)
 
-	return w, nil
-}
+	//test for missing deployment file
+	assert.NotNil(t, setDeploymentContainerImage("", "testImage"))
 
-func createTestWorkflowEmbed(dirPath string) (*Workflows, error) {
-	dest := "."
+	//test for invalid deployment file
+	assert.NotNil(t, setDeploymentContainerImage(tempFile.Name(), "testImage"))
 
-	deployMap, err := embedutils.EmbedFStoMap(template.Workflows, "workflows")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create deployMap: %w", err)
-	}
+	//test for valid deployment file
+	deploymentFileName, _ := createTempManifest("../../test/templates/deployment.yaml")
+	defer os.Remove(deploymentFileName)
 
-	w := &Workflows{
-		workflows:         deployMap,
-		dest:              dest,
-		configs:           make(map[string]*config.DraftConfig),
-		workflowTemplates: template.Workflows,
-	}
+	assert.Nil(t, setDeploymentContainerImage(deploymentFileName, "testImage"))
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	file, err := ioutil.ReadFile(deploymentFileName)
+	assert.Nil(t, err)
 
-	return w, nil
-}
+	k8sObj, _, err := decode(file, nil, nil)
+	assert.Nil(t, err)
 
-func fsToMap(fsFS fs.FS, path string) (map[string]fs.DirEntry, error) {
-	files, err := fs.ReadDir(fsFS, path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to ReadDir: %w", err)
-	}
+	deploy, ok := k8sObj.(*appsv1.Deployment)
+	assert.True(t, ok)
+	assert.Equal(t, "testImage", deploy.Spec.Template.Spec.Containers[0].Image)
 
-	mapping := make(map[string]fs.DirEntry)
+	//test for invalid k8sObj
+	invalidDeploymentFile, _ := createTempManifest("../../test/templates/invalid_deployment.yaml")
+	assert.Equal(t, errors.New("could not decode kubernetes deployment"), setDeploymentContainerImage(invalidDeploymentFile, "testImage"))
 
-	for _, f := range files {
-		if f.IsDir() {
-			mapping[f.Name()] = f
-		}
-	}
-
-	return mapping, nil
+	//test for unsupported number of containers in the deployment spec
+	invalidDeploymentFile, _ = createTempManifest("../../test/templates/unsupported_no_of_containers.yaml")
+	defer os.Remove(invalidDeploymentFile)
+	assert.Equal(t, errors.New("unsupported number of containers defined in the deployment spec"), setDeploymentContainerImage(invalidDeploymentFile, "testImage"))
 }

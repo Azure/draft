@@ -24,17 +24,26 @@ func EmbedFStoMap(embedFS embed.FS, path string) (map[string]fs.DirEntry, error)
 }
 
 func EmbedFStoMapWithFiles(embedFS fs.FS, path string) (map[string]fs.DirEntry, error) {
-	mapping := make(map[string]fs.DirEntry)
-	err := fs.WalkDir(embedFS, path, func(path string, f fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		mapping[path] = f
-		return nil
-	})
-
+	files, err := fs.ReadDir(embedFS, path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to walkDir: %w", err)
+		return nil, fmt.Errorf("failed to readDir: %w", err)
+	}
+
+	mapping := make(map[string]fs.DirEntry)
+
+	for _, f := range files {
+		mapping[f.Name()] = f
+		if f.IsDir() {
+			add, err := EmbedFStoMapWithFiles(embedFS, path+"/"+f.Name())
+			if err != nil {
+				return nil, err
+			}
+			for k, v := range add {
+				mapping[f.Name()+"/"+k] = v
+			}
+		} else {
+			mapping[f.Name()] = f
+		}
 	}
 
 	return mapping, nil

@@ -1,4 +1,4 @@
-WORKFLOWS_PATH=.github/workflows
+export WORKFLOWS_PATH=.github/workflows
 
 # remove previous tests
 echo "Removing previous integration configs"
@@ -311,7 +311,7 @@ languageVariables:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find $WORKFLOWS_PATH -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \) \
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
@@ -453,7 +453,7 @@ languageVariables:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find $WORKFLOWS_PATH -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \) \
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
@@ -587,7 +587,7 @@ languageVariables:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find $WORKFLOWS_PATH -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \) \
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:

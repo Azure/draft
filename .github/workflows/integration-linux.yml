@@ -151,7 +151,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -283,7 +283,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -408,7 +408,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: gomodule-manifests-create
@@ -588,7 +588,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -720,7 +720,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -845,7 +845,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: go-manifests-create
@@ -1025,7 +1025,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1157,7 +1157,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1282,7 +1282,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: python-manifests-create
@@ -1462,7 +1462,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1594,7 +1594,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1719,7 +1719,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: rust-manifests-create
@@ -1899,7 +1899,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2031,7 +2031,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2156,7 +2156,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: javascript-manifests-create
@@ -2336,7 +2336,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2468,7 +2468,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2593,7 +2593,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: ruby-manifests-create
@@ -2773,7 +2773,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2905,7 +2905,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3030,7 +3030,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: csharp-manifests-create
@@ -3210,7 +3210,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3342,7 +3342,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3467,7 +3467,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: java-manifests-create
@@ -3647,7 +3647,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3779,7 +3779,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3904,7 +3904,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: gradle-manifests-create
@@ -4084,7 +4084,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4216,7 +4216,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4341,7 +4341,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: swift-manifests-create
@@ -4521,7 +4521,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4653,7 +4653,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4778,7 +4778,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: erlang-manifests-create
@@ -4958,7 +4958,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -5090,7 +5090,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -5215,7 +5215,7 @@ jobs:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -maxdepth 1 -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: clojure-manifests-create

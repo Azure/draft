@@ -180,7 +180,7 @@ func createWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workfl
 
 	w := &Workflows{
 		workflows:         deployMap,
-		dest:              path.Join(dest, ".github", "workflows"),
+		dest:              dest,
 		configs:           make(map[string]*config.DraftConfig),
 		workflowTemplates: workflowTemplates,
 	}

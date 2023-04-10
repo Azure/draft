@@ -7,98 +7,89 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
+	"strings"
 
+	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/Azure/draft/pkg/filematches"
+	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/prompts"
+	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/Azure/draft/template"
 )
 
-//go:generate cp -r ../../starterWorkflows ./workflows
-
-var (
-	//go:embed workflows
-	workflows     embed.FS
-	parentDirName = "workflows"
-
-	workflowFilePrefix   = "azure-kubernetes-service"
-	deployNameToWorkflow = map[string]*workflowType{
-		"helm":      {deployPath: "/charts", workflowFileSuffix: "-helm"},
-		"kustomize": {deployPath: "/base", workflowFileSuffix: "-kustomize"},
-		"manifests": {deployPath: "/manifests"},
-	}
+const (
+	parentDirName  = "workflows"
+	configFileName = "/draft.yaml"
 )
 
-type workflowType struct {
-	deployPath         string
-	workflowFileSuffix string
+type Workflows struct {
+	workflows         map[string]fs.DirEntry
+	configs           map[string]*config.DraftConfig
+	dest              string
+	workflowTemplates fs.FS
 }
 
-func CreateWorkflows(dest string, config *WorkflowConfig) error {
-	deployType, err := filematches.FindDraftDeploymentFiles(dest)
+func CreateWorkflows(dest string, deployType string, flagVariables []string, templateWriter templatewriter.TemplateWriter, flagValuesMap map[string]string) error {
+	var err error
+	for _, flagVar := range flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		flagValuesMap[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+	}
+
+	if deployType == "" {
+		selection := &promptui.Select{
+			Label: "Select k8s Deployment Type",
+			Items: []string{"helm", "kustomize", "manifests"},
+		}
+
+		_, deployType, err = selection.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	workflow := createWorkflowsFromEmbedFS(template.Workflows, dest)
+	workflowConfig, ok := workflow.configs[deployType]
+	if !ok {
+		return errors.New("invalid deployment type")
+	}
+	customInputs, err := prompts.RunPromptsFromConfigWithSkips(workflowConfig, maps.Keys(flagValuesMap))
 	if err != nil {
 		return err
 	}
 
-	if err = updateProductionDeployments(deployType, dest, config); err != nil {
+	maps.Copy(customInputs, flagValuesMap)
+
+	if err = updateProductionDeployments(deployType, dest, flagValuesMap, templateWriter); err != nil {
 		return err
 	}
-	workflow, ok := deployNameToWorkflow[deployType]
-	if !ok {
-		return errors.New("unsupported deployment type")
-	}
-
-	workflowTemplate := getWorkflowFile(workflow)
-
-	replaceWorkflowVars(deployType, config, workflowTemplate)
-
-	ghWorkflowPath := dest + "/.github/workflows/"
-	ghWorkflowFileName := ghWorkflowPath + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
-	log.Debugf("writing workflow to %s", ghWorkflowPath)
-
-	return writeWorkflow(ghWorkflowPath, ghWorkflowFileName, *workflowTemplate)
+	return workflow.createWorkflowFiles(deployType, customInputs, templateWriter)
 }
 
-func updateProductionDeployments(deployType, dest string, config *WorkflowConfig) error {
-	productionImage := fmt.Sprintf("%s.azurecr.io/%s", config.AcrName, config.ContainerName)
+func updateProductionDeployments(deployType, dest string, flagValuesMap map[string]string, templateWriter templatewriter.TemplateWriter) error {
+	productionImage := fmt.Sprintf("%s.azurecr.io/%s", flagValuesMap["AZURECONTAINERREGISTRY"], flagValuesMap["CONTAINERNAME"])
 	switch deployType {
 	case "helm":
-		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage)
+		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
 	case "kustomize":
 		return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
 	case "manifests":
 		return setDeploymentContainerImage(dest+"/manifests/deployment.yaml", productionImage)
 	}
 	return nil
-}
-
-func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubWorkflow) {
-	envMap := make(map[string]string)
-	envMap["AZURE_CONTAINER_REGISTRY"] = config.AcrName
-	envMap["CONTAINER_NAME"] = config.ContainerName
-	envMap["RESOURCE_GROUP"] = config.ResourceGroupName
-	envMap["CLUSTER_NAME"] = config.AksClusterName
-	envMap["BUILD_CONTEXT_PATH"] = config.BuildContextPath
-
-	switch deployType {
-	case "helm":
-		envMap["CHART_PATH"] = config.ChartsPath
-		envMap["CHART_OVERRIDE_PATH"] = config.ChartsOverridePath
-
-	case "manifests":
-		envMap["DEPLOYMENT_MANIFEST_PATH"] = config.ManifestsPath
-
-	case "kustomize":
-		envMap["KUSTOMIZE_PATH"] = config.KustomizePath
-	}
-
-	ghw.Env = envMap
-
-	ghw.On.Push.Branches[0] = config.BranchName
 }
 
 func setDeploymentContainerImage(filePath, productionImage string) error {
@@ -139,7 +130,7 @@ func setDeploymentContainerImage(filePath, productionImage string) error {
 	return printer.PrintObj(deploy, out)
 }
 
-func setHelmContainerImage(filePath, productionImage string) error {
+func setHelmContainerImage(filePath, productionImage string, templateWriter templatewriter.TemplateWriter) error {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
@@ -158,35 +149,72 @@ func setHelmContainerImage(filePath, productionImage string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filePath, out, 0644)
+	return templateWriter.WriteFile(filePath, out)
 }
 
-func getWorkflowFile(workflow *workflowType) *GitHubWorkflow {
-	embedFilePath := parentDirName + "/" + workflowFilePrefix + workflow.workflowFileSuffix + ".yml"
+func (w *Workflows) loadConfig(deployType string) (*config.DraftConfig, error) {
+	val, ok := w.workflows[deployType]
+	if !ok {
+		return nil, fmt.Errorf("deploy type %s unsupported", deployType)
+	}
 
-	file, err := fs.ReadFile(workflows, embedFilePath)
+	configPath := path.Join(parentDirName, val.Name(), configFileName)
+	configBytes, err := fs.ReadFile(w.workflowTemplates, configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var draftConfig config.DraftConfig
+	if err = yaml.Unmarshal(configBytes, &draftConfig); err != nil {
+		return nil, err
+	}
+
+	return &draftConfig, nil
+}
+
+func createWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workflows {
+	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, parentDirName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var ghw GitHubWorkflow
-
-	err = yaml.Unmarshal(file, &ghw)
-	if err != nil {
-		log.Fatalf("error: %v", err)
+	w := &Workflows{
+		workflows:         deployMap,
+		dest:              dest,
+		configs:           make(map[string]*config.DraftConfig),
+		workflowTemplates: workflowTemplates,
 	}
-	return &ghw
+	w.populateConfigs()
+
+	return w
 }
 
-func writeWorkflow(ghWorkflowPath, workflowFileName string, ghw GitHubWorkflow) error {
-	workflowBytes, err := yaml.Marshal(ghw)
-	if err != nil {
+func (w *Workflows) populateConfigs() {
+	for deployType := range w.workflows {
+		draftConfig, err := w.loadConfig(deployType)
+		if err != nil {
+			log.Debugf("no draftConfig found for workflow of deploy type %s", deployType)
+			draftConfig = &config.DraftConfig{}
+		}
+		w.configs[deployType] = draftConfig
+	}
+}
+
+func (w *Workflows) createWorkflowFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+	val, ok := w.workflows[deployType]
+	if !ok {
+		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
+	}
+	srcDir := path.Join(parentDirName, val.Name())
+	log.Debugf("source directory for workflow template: %s", srcDir)
+	workflowConfig, ok := w.configs[deployType]
+	if !ok {
+		workflowConfig = nil
+	}
+
+	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, workflowConfig, customInputs, templateWriter); err != nil {
 		return err
 	}
 
-	if err := osutil.EnsureDirectory(ghWorkflowPath); err != nil {
-		return err
-	}
-
-	return os.WriteFile(workflowFileName, workflowBytes, 0644)
+	return nil
 }

@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.18.2
       - name: make
@@ -42,10 +42,18 @@ jobs:
           with:
             repository: gambtho/go_echo
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l gomodule --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -78,7 +86,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -102,7 +110,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -132,10 +140,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ../draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .      
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -163,10 +183,18 @@ jobs:
         with:
           repository: gambtho/go_echo
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gomodule/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l gomodule --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -198,7 +226,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -217,7 +245,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -247,7 +275,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -278,10 +315,18 @@ jobs:
           with:
             repository: gambtho/go_echo
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gomodule/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l gomodule --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -355,7 +400,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: gomodule-manifests-create
@@ -426,10 +480,18 @@ jobs:
           with:
             repository: davidgamero/go-echo-no-mod
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/go/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l go --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -462,7 +524,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -486,7 +548,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -516,10 +578,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:8080
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -547,10 +621,18 @@ jobs:
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/go/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l go --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -582,7 +664,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -601,7 +683,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -631,7 +713,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:8080
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -662,10 +753,18 @@ jobs:
           with:
             repository: davidgamero/go-echo-no-mod
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/go/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l go --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -739,7 +838,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:8080
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: go-manifests-create
@@ -810,10 +918,18 @@ jobs:
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l python --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -846,7 +962,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -870,7 +986,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -900,10 +1016,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -931,10 +1059,18 @@ jobs:
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/python/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l python --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -966,7 +1102,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -985,7 +1121,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -1015,7 +1151,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1046,10 +1191,18 @@ jobs:
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/python/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l python --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1123,7 +1276,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: python-manifests-create
@@ -1194,10 +1356,18 @@ jobs:
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l rust --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1230,7 +1400,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -1254,7 +1424,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -1284,10 +1454,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -1315,10 +1497,18 @@ jobs:
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/rust/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l rust --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -1350,7 +1540,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -1369,7 +1559,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -1399,7 +1589,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1430,10 +1629,18 @@ jobs:
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/rust/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l rust --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1507,7 +1714,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: rust-manifests-create
@@ -1578,10 +1794,18 @@ jobs:
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l javascript --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1614,7 +1838,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -1638,7 +1862,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -1668,10 +1892,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -1699,10 +1935,18 @@ jobs:
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/javascript/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l javascript --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -1734,7 +1978,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -1753,7 +1997,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -1783,7 +2027,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -1814,10 +2067,18 @@ jobs:
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/javascript/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l javascript --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1891,7 +2152,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: javascript-manifests-create
@@ -1962,10 +2232,18 @@ jobs:
           with:
             repository: OliverMKing/ruby-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l ruby --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -1998,7 +2276,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -2022,7 +2300,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -2052,10 +2330,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -2083,10 +2373,18 @@ jobs:
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/ruby/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l ruby --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -2118,7 +2416,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -2137,7 +2435,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -2167,7 +2465,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2198,10 +2505,18 @@ jobs:
           with:
             repository: OliverMKing/ruby-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/ruby/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l ruby --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2275,7 +2590,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: ruby-manifests-create
@@ -2346,10 +2670,18 @@ jobs:
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l csharp --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2382,7 +2714,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -2406,7 +2738,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -2436,10 +2768,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -2467,10 +2811,18 @@ jobs:
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/csharp/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l csharp --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -2502,7 +2854,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -2521,7 +2873,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -2551,7 +2903,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2582,10 +2943,18 @@ jobs:
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/csharp/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l csharp --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2659,7 +3028,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: csharp-manifests-create
@@ -2730,10 +3108,18 @@ jobs:
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l java --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -2766,7 +3152,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -2790,7 +3176,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -2820,10 +3206,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -2851,10 +3249,18 @@ jobs:
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/java/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l java --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -2886,7 +3292,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -2905,7 +3311,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -2935,7 +3341,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -2966,10 +3381,18 @@ jobs:
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/java/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l java --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3043,7 +3466,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: java-manifests-create
@@ -3114,10 +3546,18 @@ jobs:
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l gradle --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3150,7 +3590,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -3174,7 +3614,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -3204,10 +3644,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -3235,10 +3687,18 @@ jobs:
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/gradle/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l gradle --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -3270,7 +3730,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -3289,7 +3749,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -3319,7 +3779,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3350,10 +3819,18 @@ jobs:
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/gradle/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l gradle --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3427,7 +3904,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: gradle-manifests-create
@@ -3498,10 +3984,18 @@ jobs:
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l swift --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3534,7 +4028,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -3558,7 +4052,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -3588,10 +4082,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -3619,10 +4125,18 @@ jobs:
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/swift/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l swift --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -3654,7 +4168,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -3673,7 +4187,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -3703,7 +4217,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -3734,10 +4257,18 @@ jobs:
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/swift/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l swift --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3811,7 +4342,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: swift-manifests-create
@@ -3882,10 +4422,18 @@ jobs:
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l erlang --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -3918,7 +4466,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -3942,7 +4490,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -3972,10 +4520,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -4003,10 +4563,18 @@ jobs:
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/erlang/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l erlang --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -4038,7 +4606,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -4057,7 +4625,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -4087,7 +4655,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4118,10 +4695,18 @@ jobs:
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/erlang/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l erlang --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -4195,7 +4780,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: erlang-manifests-create
@@ -4266,10 +4860,18 @@ jobs:
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/helm.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l clojure --skip-file-detection --deploy-type helm             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -4302,7 +4904,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -4326,7 +4928,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -4356,10 +4958,22 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1  
       - name: Validate JSON
         run: |
@@ -4387,10 +5001,18 @@ jobs:
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -c ./test/integration/clojure/kustomize.yaml           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json           create -d ./langtest/ -l clojure --skip-file-detection --deploy-type kustomize           --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -4422,7 +5044,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -4441,7 +5063,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -4471,7 +5093,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -4502,10 +5133,18 @@ jobs:
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -c ./test/integration/clojure/manifest.yaml             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json             create -d ./langtest/ -l clojure --skip-file-detection --deploy-type manifests             --variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -4579,7 +5218,16 @@ jobs:
           echo 'Curling service IP'
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: clojure-manifests-create

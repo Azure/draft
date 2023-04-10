@@ -1,9 +1,11 @@
+export WORKFLOWS_PATH=.github/workflows
+
 # remove previous tests
 echo "Removing previous integration configs"
 rm -rf ./integration/*
 echo "Removing previous integration workflows"
-rm ../.github/workflows/integration-linux.yml
-rm ../.github/workflows/integration-windows.yml
+rm ../$WORKFLOWS_PATH/integration-linux.yml
+rm ../$WORKFLOWS_PATH/integration-windows.yml
 
 # create temp files for keeping track off workflow jobs to build job-dependency graph
 # this is used to populated the needs: field of the required final workflow jobs
@@ -34,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.18.2
       - name: make
@@ -48,7 +50,7 @@ jobs:
         with:
           name: draft-binary
           path: ./draft
-          if-no-files-found: error" > ../.github/workflows/integration-linux.yml
+          if-no-files-found: error" > ../$WORKFLOWS_PATH/integration-linux.yml
 
 echo "name: draft Windows Integrations
 
@@ -92,7 +94,7 @@ jobs:
         with:
           name: check_windows_addon_kustomize
           path: ./test/check_windows_addon_kustomize.ps1
-          if-no-files-found: error" > ../.github/workflows/integration-windows.yml
+          if-no-files-found: error" > ../$WORKFLOWS_PATH/integration-windows.yml
 
 
 # read config and add integration test for each language
@@ -110,6 +112,7 @@ do
     imagename="host.minikube.internal:5001/testapp"
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+    create_config_args="--variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest"
     echo "Adding $lang with port $port"
 
     mkdir ./integration/$lang
@@ -195,12 +198,22 @@ languageVariables:
           with:
             repository: $repo
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/helm.yaml \
             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+            create -d ./langtest/ -l $lang --skip-file-detection --deploy-type helm \
+            $create_config_args
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -233,7 +246,7 @@ languageVariables:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -257,7 +270,7 @@ languageVariables:
           minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -287,10 +300,23 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: |
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
+          pwd
           ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ $ingress_test_args  
       - name: Validate JSON
         run: |
@@ -302,7 +328,7 @@ languageVariables:
         run: kubectl get po
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
-        run: exit 6" >> ../.github/workflows/integration-linux.yml
+        run: exit 6" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
     # create kustomize workflow
     kustomize_create_update_job_name=$lang-kustomize-create-update
@@ -322,12 +348,22 @@ languageVariables:
         with:
           repository: $repo
           path: ./langtest
-      - name: Execute Dry Run
+      - name: Execute Dry Run with config file
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json \
           create -c ./test/integration/$lang/kustomize.yaml \
           -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag 
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+          create -d ./langtest/ -l $lang --skip-file-detection --deploy-type kustomize \
+          $create_config_args
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -359,7 +395,7 @@ languageVariables:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -378,7 +414,7 @@ languageVariables:
           minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -408,7 +444,17 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
@@ -423,7 +469,7 @@ languageVariables:
         run: kubectl get po
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
-        run: exit 6" >> ../.github/workflows/integration-linux.yml
+        run: exit 6" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
   # create manifests workflow
     manifest_update_job_name=$lang-manifest-update
@@ -443,12 +489,22 @@ languageVariables:
           with:
             repository: $repo
             path: ./langtest
-        - name: Execute Dry Run
+        - name: Execute Dry Run with config file
           run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -c ./test/integration/$lang/manifest.yaml \
             -d ./langtest/ --skip-file-detection
+        - name: Validate JSON
+          run: |
+            npm install -g ajv-cli@5.0.0
+            ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+        - name: Execute Dry Run with variables passed through flag 
+          run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+            create -d ./langtest/ -l $lang --skip-file-detection --deploy-type manifests \
+            $create_config_args
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -522,7 +578,17 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
           name: $lang-manifests-create
@@ -577,7 +643,7 @@ languageVariables:
         run: kubectl get po
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
-        run: exit 6" >> ../.github/workflows/integration-linux.yml
+        run: exit 6" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
   helm_update_win_jobname=$lang-helm-update
   echo $helm_update_win_jobname >> $helm_win_workflow_names_file
@@ -629,7 +695,7 @@ languageVariables:
           name: check_windows_addon_helm
           path: ./langtest/
       - run: ./check_windows_addon_helm.ps1
-        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
+        working-directory: ./langtest/" >> ../$WORKFLOWS_PATH/integration-windows.yml
 
     # create kustomize workflow
     kustomize_win_workflow_name=$lang-kustomize-update
@@ -681,7 +747,7 @@ languageVariables:
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
-      " >> ../.github/workflows/integration-windows.yml
+      " >> ../$WORKFLOWS_PATH/integration-windows.yml
 done
 
 echo "
@@ -690,7 +756,7 @@ echo "
       needs: [ $( paste -sd ',' $helm_win_workflow_names_file) ]
       steps:
         - run: echo "helm integrations passed"
-" >> ../.github/workflows/integration-windows.yml
+" >> ../$WORKFLOWS_PATH/integration-windows.yml
 
 echo "
   kustomize-win-integrations-summary:
@@ -698,7 +764,7 @@ echo "
       needs: [ $( paste -sd ',' $kustomize_win_workflow_names_file) ]
       steps:
         - run: echo "kustomize integrations passed"
-" >> ../.github/workflows/integration-windows.yml
+" >> ../$WORKFLOWS_PATH/integration-windows.yml
 
 echo "
   helm-integrations-summary:
@@ -706,7 +772,7 @@ echo "
       needs: [ $( paste -sd ',' $helm_workflow_names_file) ]
       steps:
         - run: echo "helm integrations passed"
-" >> ../.github/workflows/integration-linux.yml
+" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
 echo "
   kustomize-integrations-summary:
@@ -714,7 +780,7 @@ echo "
       needs: [ $( paste -sd ',' $kustomize_workflow_names_file) ]
       steps:
         - run: echo "kustomize integrations passed"
-" >> ../.github/workflows/integration-linux.yml
+" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
 echo "
   manifest-integrations-summary:
@@ -722,4 +788,4 @@ echo "
       needs: [ $( paste -sd ',' $manifest_workflow_names_file) ]
       steps:
         - run: echo "manifest integrations passed"
-" >> ../.github/workflows/integration-linux.yml
+" >> ../$WORKFLOWS_PATH/integration-linux.yml

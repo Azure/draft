@@ -1,21 +1,21 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
-  name: test
+  name: my-app
   labels:
-    app: test
+    app: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test
+      app: my-app
   template:
     metadata:
       labels:
-        app: test
+        app: my-app
     spec:
       containers:
-        - name: test
-          image: test
+        - name: my-app
+          image: my-app
           ports:
             - containerPort: 8000

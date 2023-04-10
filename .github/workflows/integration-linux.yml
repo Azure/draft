@@ -141,7 +141,7 @@ jobs:
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
       - run: |
-          ../draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --build-context-path .      
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf

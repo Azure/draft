@@ -1,5 +1,20 @@
 # Change Log
 
+## [0.0.32] - 2023-04-10
+
+### Added
+
+- [#197](https://github.com/Azure/draft/pull/197) Add dry run support to `update` command
+- [#191](https://github.com/Azure/draft/pull/191) Add variable flag to `create` command
+
+### Fixed
+
+- [#196](https://github.com/Azure/draft/pull/196) Update deprecated node12 actions
+
+### Changed 
+
+- [#194](https://github.com/Azure/draft/pull/194) Move generate workflow templates to embedded file system
+
 ## [0.0.31] - 2023-03-14
 
 ### Added

@@ -51,8 +51,8 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVarP(&gwCmd.dest, "destination", "d", ".", "specify the path to the project directory")
 	f.StringVarP(&gwCmd.workflowConfig.BranchName, "branch", "b", "", "specify the Github branch to automatically deploy from")
 	f.StringVar(&gwCmd.deployType, "deploy-type", "", "specify the type of deployment")
-	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
 	f.StringVarP(&gwCmd.workflowConfig.BuildContextPath, "build-context-path", "x", "", "specify the docker build context path")
+	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }

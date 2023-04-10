@@ -176,10 +176,11 @@ func TestCreateWorkflowFiles(t *testing.T) {
 
 	err = mockWF.createWorkflowFiles("helm", customInputs, templatewriter)
 	assert.Nil(t, err)
+	os.RemoveAll(".github")
 
 	err = mockWF.createWorkflowFiles("helm", badInputs, templatewriter)
 	assert.NotNil(t, err)
-
+	os.RemoveAll(".github")
 }
 
 type loadConfTestCase struct {
@@ -245,13 +246,13 @@ func createMockWorkflowTemplatesFS() (fs.FS, error) {
 
 	for path, file := range embedFiles {
 		if file.IsDir() {
-			mockFS[rootPath+path] = &fstest.MapFile{Mode: fs.ModeDir}
+			mockFS[path] = &fstest.MapFile{Mode: fs.ModeDir}
 		} else {
-			bytes, err := template.Workflows.ReadFile(rootPath + path)
+			bytes, err := template.Workflows.ReadFile(path)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read file: %w", err)
 			}
-			mockFS[rootPath+path] = &fstest.MapFile{Data: bytes}
+			mockFS[path] = &fstest.MapFile{Data: bytes}
 		}
 	}
 

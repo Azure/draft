@@ -31,5 +31,9 @@ func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
 		flagValuesMap["BRANCHNAME"] = config.BranchName
 	}
 
+	if config.BuildContextPath != "" {
+		flagValuesMap["BUILDCONTEXTPATH"] = config.BuildContextPath
+	}
+
 	return flagValuesMap
 }

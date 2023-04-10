@@ -47,7 +47,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVarP(&gwCmd.workflowConfig.AksClusterName, "cluster-name", "c", "", "specify the AKS cluster name")
 	f.StringVarP(&gwCmd.workflowConfig.AcrName, "registry-name", "r", "", "specify the Azure container registry name")
 	f.StringVar(&gwCmd.workflowConfig.ContainerName, "container-name", "", "specify the container image name")
-	f.StringVarP(&gwCmd.workflowConfig.ResourceGroupName, "resource-group", "g", "", "Specify the Azure resource group of your AKS cluster")
+	f.StringVarP(&gwCmd.workflowConfig.ResourceGroupName, "resource-group", "g", "", "specify the Azure resource group of your AKS cluster")
 	f.StringVarP(&gwCmd.dest, "destination", "d", ".", "specify the path to the project directory")
 	f.StringVarP(&gwCmd.workflowConfig.BranchName, "branch", "b", "", "specify the Github branch to automatically deploy from")
 	f.StringVar(&gwCmd.deployType, "deploy-type", "", "specify the type of deployment")

@@ -51,7 +51,6 @@ func TestCreateWorkflows(t *testing.T) {
 	//test for invalid deployType
 	deployType = "testInvalidDeployType"
 	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
-  
 }
 
 func TestUpdateProductionDeployments(t *testing.T) {
@@ -105,8 +104,8 @@ func TestUpdateProductionDeployments(t *testing.T) {
 	deploy, ok := k8sObj.(*appsv1.Deployment)
 	assert.True(t, ok)
 	assert.Equal(t, "testImage", deploy.Spec.Template.Spec.Containers[0].Image)
-  
-  //test for invalid k8sObj
+
+	//test for invalid k8sObj
 	invalidDeploymentFile, _ := createTempManifest("../../test/templates/invalid_deployment.yaml")
 	assert.Equal(t, errors.New("could not decode kubernetes deployment"), setDeploymentContainerImage(invalidDeploymentFile, "testImage"))
 
@@ -122,27 +121,24 @@ func TestLoadConfig(t *testing.T) {
 	w, err := createMockWorkflow("workflows", fakeFS)
 	assert.Nil(t, err)
 
-	// existing deployType test
-	_, err = w.loadConfig("helm")
-	assert.Nil(t, err)
+	cases := []loadConfTestCase{
+		{"helm", true},
+		{"kustomize", true},
+		{"manifests", true},
+		{"fake", false},
+		{"emptyDir", false},
+		{"corrupted", false},
+	}
 
-	_, err = w.loadConfig("kustomize")
-	assert.Nil(t, err)
-
-	_, err = w.loadConfig("manifests")
-	assert.Nil(t, err)
-
-	// deployType unsupported test
-	_, err = w.loadConfig("fake")
-	assert.NotNil(t, err)
-
-	// file does not exist test
-	_, err = w.loadConfig("emptyDir")
-	assert.NotNil(t, err)
-
-	// file does not exist test
-	_, err = w.loadConfig("corrupted")
-	assert.NotNil(t, err)
+	for _, c := range cases {
+		if c.isNil {
+			_, err = w.loadConfig(c.deployType)
+			assert.Nil(t, err)
+		} else {
+			_, err = w.loadConfig(c.deployType)
+			assert.NotNil(t, err)
+		}
+	}
 }
 
 func TestPopulateConfigs(t *testing.T) {
@@ -184,6 +180,11 @@ func TestCreateWorkflowFiles(t *testing.T) {
 	err = mockWF.createWorkflowFiles("helm", badInputs, templatewriter)
 	assert.NotNil(t, err)
 
+}
+
+type loadConfTestCase struct {
+	deployType string
+	isNil      bool
 }
 
 func createTempManifest(path string) (string, error) {

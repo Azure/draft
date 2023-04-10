@@ -1,9 +1,11 @@
+export WORKFLOWS_PATH=.github/workflows
+
 # remove previous tests
 echo "Removing previous integration configs"
 rm -rf ./integration/*
 echo "Removing previous integration workflows"
-rm ../.github/workflows/integration-linux.yml
-rm ../.github/workflows/integration-windows.yml
+rm ../$WORKFLOWS_PATH/integration-linux.yml
+rm ../$WORKFLOWS_PATH/integration-windows.yml
 
 # create temp files for keeping track off workflow jobs to build job-dependency graph
 # this is used to populated the needs: field of the required final workflow jobs
@@ -34,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.18.2
       - name: make
@@ -48,7 +50,7 @@ jobs:
         with:
           name: draft-binary
           path: ./draft
-          if-no-files-found: error" > ../.github/workflows/integration-linux.yml
+          if-no-files-found: error" > ../$WORKFLOWS_PATH/integration-linux.yml
 
 echo "name: draft Windows Integrations
 
@@ -92,7 +94,7 @@ jobs:
         with:
           name: check_windows_addon_kustomize
           path: ./test/check_windows_addon_kustomize.ps1
-          if-no-files-found: error" > ../.github/workflows/integration-windows.yml
+          if-no-files-found: error" > ../$WORKFLOWS_PATH/integration-windows.yml
 
 
 # read config and add integration test for each language
@@ -244,7 +246,7 @@ languageVariables:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -268,7 +270,7 @@ languageVariables:
           minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -309,7 +311,7 @@ languageVariables:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
@@ -326,7 +328,7 @@ languageVariables:
         run: kubectl get po
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
-        run: exit 6" >> ../.github/workflows/integration-linux.yml
+        run: exit 6" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
     # create kustomize workflow
     kustomize_create_update_job_name=$lang-kustomize-create-update
@@ -393,7 +395,7 @@ languageVariables:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
+        uses: azure/k8s-bake@v2.4
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -412,7 +414,7 @@ languageVariables:
           minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
+        uses: Azure/k8s-deploy@v4.0
         continue-on-error: true
         id: deploy
         with:
@@ -451,7 +453,7 @@ languageVariables:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
       - name: Execute dry run for update command
         run: |
@@ -467,7 +469,7 @@ languageVariables:
         run: kubectl get po
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
-        run: exit 6" >> ../.github/workflows/integration-linux.yml
+        run: exit 6" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
   # create manifests workflow
     manifest_update_job_name=$lang-manifest-update
@@ -585,7 +587,7 @@ languageVariables:
             action-validator 0.1.2
       - name: Lint Actions
         run: |
-          find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+          find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@v3
         with:
@@ -641,7 +643,7 @@ languageVariables:
         run: kubectl get po
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
-        run: exit 6" >> ../.github/workflows/integration-linux.yml
+        run: exit 6" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
   helm_update_win_jobname=$lang-helm-update
   echo $helm_update_win_jobname >> $helm_win_workflow_names_file
@@ -693,7 +695,7 @@ languageVariables:
           name: check_windows_addon_helm
           path: ./langtest/
       - run: ./check_windows_addon_helm.ps1
-        working-directory: ./langtest/" >> ../.github/workflows/integration-windows.yml
+        working-directory: ./langtest/" >> ../$WORKFLOWS_PATH/integration-windows.yml
 
     # create kustomize workflow
     kustomize_win_workflow_name=$lang-kustomize-update
@@ -745,7 +747,7 @@ languageVariables:
           path: ./langtest/
       - run: ./check_windows_addon_kustomize.ps1
         working-directory: ./langtest/
-      " >> ../.github/workflows/integration-windows.yml
+      " >> ../$WORKFLOWS_PATH/integration-windows.yml
 done
 
 echo "
@@ -754,7 +756,7 @@ echo "
       needs: [ $( paste -sd ',' $helm_win_workflow_names_file) ]
       steps:
         - run: echo "helm integrations passed"
-" >> ../.github/workflows/integration-windows.yml
+" >> ../$WORKFLOWS_PATH/integration-windows.yml
 
 echo "
   kustomize-win-integrations-summary:
@@ -762,7 +764,7 @@ echo "
       needs: [ $( paste -sd ',' $kustomize_win_workflow_names_file) ]
       steps:
         - run: echo "kustomize integrations passed"
-" >> ../.github/workflows/integration-windows.yml
+" >> ../$WORKFLOWS_PATH/integration-windows.yml
 
 echo "
   helm-integrations-summary:
@@ -770,7 +772,7 @@ echo "
       needs: [ $( paste -sd ',' $helm_workflow_names_file) ]
       steps:
         - run: echo "helm integrations passed"
-" >> ../.github/workflows/integration-linux.yml
+" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
 echo "
   kustomize-integrations-summary:
@@ -778,7 +780,7 @@ echo "
       needs: [ $( paste -sd ',' $kustomize_workflow_names_file) ]
       steps:
         - run: echo "kustomize integrations passed"
-" >> ../.github/workflows/integration-linux.yml
+" >> ../$WORKFLOWS_PATH/integration-linux.yml
 
 echo "
   manifest-integrations-summary:
@@ -786,4 +788,4 @@ echo "
       needs: [ $( paste -sd ',' $manifest_workflow_names_file) ]
       steps:
         - run: echo "manifest integrations passed"
-" >> ../.github/workflows/integration-linux.yml
+" >> ../$WORKFLOWS_PATH/integration-linux.yml

@@ -92,31 +92,6 @@ func updateProductionDeployments(deployType, dest string, flagValuesMap map[stri
 	return nil
 }
 
-func replaceWorkflowVars(deployType string, config *WorkflowConfig, ghw *GitHubWorkflow) {
-	envMap := make(map[string]string)
-	envMap["AZURE_CONTAINER_REGISTRY"] = config.AcrName
-	envMap["CONTAINER_NAME"] = config.ContainerName
-	envMap["RESOURCE_GROUP"] = config.ResourceGroupName
-	envMap["CLUSTER_NAME"] = config.AksClusterName
-	envMap["BUILD_CONTEXT_PATH"] = config.BuildContextPath
-
-	switch deployType {
-	case "helm":
-		envMap["CHART_PATH"] = config.ChartsPath
-		envMap["CHART_OVERRIDE_PATH"] = config.ChartsOverridePath
-
-	case "manifests":
-		envMap["DEPLOYMENT_MANIFEST_PATH"] = config.ManifestsPath
-
-	case "kustomize":
-		envMap["KUSTOMIZE_PATH"] = config.KustomizePath
-	}
-
-	ghw.Env = envMap
-
-	ghw.On.Push.Branches[0] = config.BranchName
-}
-
 func setDeploymentContainerImage(filePath, productionImage string) error {
 
 	decode := scheme.Codecs.UniversalDeserializer().Decode

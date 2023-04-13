@@ -24,12 +24,10 @@ mkdir -p ./temp
 # add build to workflow
 echo "# this file is generated using gen_integration.sh
 name: draft Linux Integrations
-
 on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -53,12 +51,10 @@ jobs:
           if-no-files-found: error" > ../$WORKFLOWS_PATH/integration-linux.yml
 
 echo "name: draft Windows Integrations
-
 on:
   pull_request_review:
     types: [submitted]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
@@ -301,7 +297,7 @@ languageVariables:
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
       - run: |
-          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm
+          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm --build-context-path .
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
@@ -444,7 +440,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize
+      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize --build-context-path .
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1
@@ -578,7 +574,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests
+      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests --build-context-path .
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1

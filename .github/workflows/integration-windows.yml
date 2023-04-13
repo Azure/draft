@@ -1,10 +1,8 @@
 name: draft Windows Integrations
-
 on:
   pull_request_review:
     types: [submitted]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest

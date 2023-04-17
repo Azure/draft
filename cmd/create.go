@@ -7,11 +7,12 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/exp/maps"
+	"gopkg.in/yaml.v3"
+
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/maps"
-	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"
@@ -74,7 +75,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.StringVarP(&cc.deployType, "deploy-type", "", ".", "specify deployement type (eg. helm, kustomize, manifests)")
+	f.StringVarP(&cc.deployType, "deploy-type", "", "", "specify deployement type (eg. helm, kustomize, manifests)")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
@@ -287,7 +288,10 @@ func (cc *createCmd) createDeployment() error {
 
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
-		deployConfig := d.GetConfig(deployType)
+		deployConfig, err := d.GetConfig(deployType)
+		if err != nil {
+			return err
+		}
 		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
@@ -311,7 +315,10 @@ func (cc *createCmd) createDeployment() error {
 			deployType = cc.deployType
 		}
 
-		deployConfig := d.GetConfig(deployType)
+		deployConfig, err := d.GetConfig(deployType)
+		if err != nil {
+			return err
+		}
 		customInputs, err = prompts.RunPromptsFromConfigWithSkips(deployConfig, maps.Keys(flagVariablesMap))
 		if err != nil {
 			return err

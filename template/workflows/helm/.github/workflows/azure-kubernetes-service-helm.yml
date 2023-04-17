@@ -36,16 +36,17 @@ name: Build and deploy an app to AKS with Helm
 
 on:
   push:
-    branches: [$default-branch]
+    branches: [{{BRANCHNAME}}]
   workflow_dispatch:
 
 env:
-  AZURE_CONTAINER_REGISTRY: "your-azure-container-registry"
-  CONTAINER_NAME: "your-container-name"
-  RESOURCE_GROUP: "your-resource-group"
-  CLUSTER_NAME: "your-cluster-name"
-  CHART_PATH: "your-chart-path"
-  CHART_OVERRIDE_PATH: "your-chart-override-path"
+  AZURE_CONTAINER_REGISTRY: {{AZURECONTAINERREGISTRY}}
+  CONTAINER_NAME: {{CONTAINERNAME}}
+  RESOURCE_GROUP: {{RESOURCEGROUP}}
+  CLUSTER_NAME: {{CLUSTERNAME}}
+  CHART_PATH: {{CHARTPATH}}
+  CHART_OVERRIDE_PATH: {{CHARTOVERRIDEPATH}}
+  BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
 
 jobs:
   buildImage:
@@ -68,8 +69,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.RESOURCE_GROUP }} .
-
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.RESOURCE_GROUP }} -x ${{ env.BUILD_CONTEXT_PATH }}
   deploy:
     permissions:
       actions: read

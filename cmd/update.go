@@ -2,27 +2,34 @@ package cmd
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/Azure/draft/pkg/addons"
+	"github.com/Azure/draft/pkg/config"
+	dryrunpkg "github.com/Azure/draft/pkg/dryrun"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
 )
 
 type updateCmd struct {
-	dest           string
-	provider       string
-	addon          string
-	flagVariables  []string
-	userInputs     map[string]string
-	templateWriter templatewriter.TemplateWriter
-	addonFS        embed.FS
+	dest                     string
+	provider                 string
+	addon                    string
+	flagVariables            []string
+	userInputs               map[string]string
+	templateWriter           templatewriter.TemplateWriter
+	addonFS                  embed.FS
+	templateVariableRecorder config.TemplateVariableRecorder
 }
+
+var dryRunRecorder *dryrunpkg.DryRunRecorder
 
 func newUpdateCmd() *cobra.Command {
 	uc := &updateCmd{}
@@ -81,7 +88,32 @@ func (uc *updateCmd) run() error {
 	}
 	log.Debugf("addonInputs is: %s", uc.userInputs)
 
-	return addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, uc.userInputs, uc.templateWriter)
+	if dryRun {
+		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
+		uc.templateVariableRecorder = dryRunRecorder
+		uc.templateWriter = dryRunRecorder
+		for k, v := range uc.userInputs {
+			uc.templateVariableRecorder.Record(k, v)
+		}
+	}
+
+	err = addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, uc.userInputs, uc.templateWriter)
+
+	if dryRun {
+		dryRunText, err := json.MarshalIndent(dryRunRecorder.DryRunInfo, "", TWO_SPACES)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(dryRunText))
+		if dryRunFile != "" {
+			log.Printf("writing dry run info to file %s", dryRunFile)
+			err = os.WriteFile(dryRunFile, dryRunText, 0644)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return err
 }
 
 func init() {

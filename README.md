@@ -171,6 +171,27 @@ curl -fsSL https://raw.githubusercontent.com/Azure/draft/main/scripts/install.sh
 
 * Windows isn't currently supported (you can use WSL)
 
+
+## Draft as a Dependency
+
+If you are looking to leverage Draft's file generation capabilities and templating within another project instead of using the CLI, you have two options: importing the Draft go packages, and wrapping the binary
+
+### Importing Draft Go Packages
+This option will provide the cleanest integration, as it directly builds Draft into your project. However, it requires that your project is written in Go.
+
+Dockerfiles can be generated following the example in `examples/dockerfile.go` 
+
+Deployment files can be generated following the example in `examples/deployment.go`
+
+### Wrapping the Binary
+For projects written in languages other than Go, or for projects that prefer to not import the packages directly, you can wrap the Draft binary.
+
+Several features have been implemented to make consuming draft as easy as possible:
+- `draft info` prints supported language and field information in json format for easy parsing
+- `--dry-run` and `--dry-run-file` flags can be used on the `create` command to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
+- `draft update` accepts takes a repeatable `--variable` flag that can be used to set template variables
+- `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
+
 ## Contributing
 
 Draft is fully compatible with [Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!

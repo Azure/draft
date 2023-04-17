@@ -1,16 +1,47 @@
 # Change Log
 
+## [0.0.32] - 2023-04-10
+
+### Added
+
+- [#197](https://github.com/Azure/draft/pull/197) Add dry run support to `update` command
+- [#191](https://github.com/Azure/draft/pull/191) Add variable flag to `create` command
+
+### Fixed
+
+- [#196](https://github.com/Azure/draft/pull/196) Update deprecated node12 actions
+
+### Changed 
+
+- [#194](https://github.com/Azure/draft/pull/194) Move generate workflow templates to embedded file system
+
+## [0.0.31] - 2023-03-14
+
+### Added
+
+- [#189](https://github.com/Azure/draft/pull/189) Add `example` package to show consumption patterns
+
+### Fixed
+
+- [#190](https://github.com/Azure/draft/pull/190) Add integration test and Dockerfile fix for `go` language without modules
+
+## [0.0.30] - 2023-02-24
+
+### Changed
+
+- [#187](https://github.com/Azure/draft/pull/187) OpenJDK Docker image has been deprecated and doesnt have JRE images for  Java 11+. This change moves our Java images to Eclipse-Temurin.
+
 ## [0.0.29] - 2023-02-16
 
 ### Fixed
-- Bug fix for helm deployments where namespace was created but not respected at the deployment level
+- [#183](https://github.com/Azure/draft/pull/183) Bug fix for helm deployments where namespace was created but not respected at the deployment level
 
 ## [0.0.28] - 2023-02-13
 
 **BREAKING** changes to `IMAGE` variable
 
 ### Added
-- New, optional `disablePrompt` property on Builder Variables in draft config (#180):
+- New, optional `disablePrompt` property on Builder Variables in draft config [#180](https://github.com/Azure/draft/pull/180):
   - Default Value: `false` 
   - Variables with `disablePrompt: true` will not be prompted for when running `draft interactive commands`
   - Variables with `disablePrompt: true` can still be supplied via flags (`draft create --var TAG=latest`) or draft config files
@@ -23,10 +54,10 @@
         disablePrompt: true #  New optional field that is used to disable the prompt for this variable
       ...
       ```
-- For all draft substitutions, draft will now error if unsubstituted variables are found in the final output (#175)
+- For all draft substitutions, draft will now error if unsubstituted variables are found in the final output [#175](https://github.com/Azure/draft/pull/175)
 
 ### Changed
-- **BREAKING** the `IMAGE` variable no longer can include an image tag. The `TAG` variable should be used instead (#176)
+- **BREAKING** the `IMAGE` variable no longer can include an image tag. The `TAG` variable should be used instead [#176](https://github.com/Azure/draft/pull/176)
 - **BREAKING** the `imageKey` variable on the `helm` deployment type has been renamed to `image` to be consistent with the supplied starter workflows (#176)
   - Re-running `draft create` will update existing files to follow the new convention
 

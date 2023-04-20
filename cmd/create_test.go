@@ -207,7 +207,7 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 	return nil, "", ErrNoLanguageDetected
 }
 func TestDefaultValues(t *testing.T) {
-	if defaultDeployType != "" {
+	if blankDefaultDeployType != "" {
 		t.Fail()
 	}
 }

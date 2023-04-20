@@ -819,7 +819,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: imiller31/simple-gradle-server
+          repository: davidgamero/simple-gradle-server
           path: ./langtest
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
@@ -867,7 +867,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: imiller31/simple-gradle-server
+          repository: davidgamero/simple-gradle-server
           path: ./langtest
       - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore

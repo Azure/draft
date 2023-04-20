@@ -14,6 +14,6 @@ languageVariables:
   - name: "VERSION"
     value: "11-jre"
   - name: "BUILDERVERSION"
-    value: "jdk11"
+    value: "7-jdk11"
   - name: "PORT"
     value: "8080"

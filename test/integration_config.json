@@ -62,7 +62,7 @@
     "builderversion": "7-jdk11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "davidgamero/simple-gradle-server"
+    "repo": "imiller31/simple-gradle-server"
   },
   {
     "language": "swift",

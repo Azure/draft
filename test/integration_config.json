@@ -59,10 +59,10 @@
   {
     "language": "gradle",
     "version": "11-jre",
-    "builderversion": "jdk11",
+    "builderversion": "7-jdk11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/simple-gradle-server"
+    "repo": "davidgamero/simple-gradle-server"
   },
   {
     "language": "swift",

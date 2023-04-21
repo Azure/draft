@@ -17,4 +17,4 @@ jobs:
         run: make
       - name: Validate Create Runs with Defaults
         run: |
-          yes 2>/dev/null | ./draft
+          yes | ./draft

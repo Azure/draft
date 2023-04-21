@@ -23,3 +23,5 @@ variableDefaults:
   - name: "IMAGETAG"
     value: "latest"
     disablePrompt: true
+  - name: "APPNAME"
+    value: "myapp"

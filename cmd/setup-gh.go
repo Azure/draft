@@ -41,10 +41,10 @@ application and service principle, and will configure that application to trust 
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&sc.AppName, "app", "a", "", "specify the Azure Active Directory application name")
-	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", "", "specify the Azure subscription ID")
-	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", "", "specify the Azure resource group name")
-	f.StringVarP(&sc.Repo, "gh-repo", "g", "", "specify the github repository link")
+	f.StringVarP(&sc.AppName, "app", "a", emptyDefaultFlagValue, "specify the Azure Active Directory application name")
+	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", emptyDefaultFlagValue, "specify the Azure subscription ID")
+	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", emptyDefaultFlagValue, "specify the Azure resource group name")
+	f.StringVarP(&sc.Repo, "gh-repo", "g", emptyDefaultFlagValue, "specify the github repository link")
 	sc.Provider = provider
 	return cmd
 }

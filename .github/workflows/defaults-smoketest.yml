@@ -17,4 +17,4 @@ jobs:
         run: make
       - name: Validate Create Runs with Defaults
         run: |
-          bash -c "yes || true" | | ./draft
+          bash -c "yes || true" | ./draft

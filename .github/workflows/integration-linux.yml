@@ -3542,7 +3542,7 @@ jobs:
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: davidgamero/simple-gradle-server
+            repository: imiller31/simple-gradle-server
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -3577,7 +3577,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: davidgamero/simple-gradle-server
+          repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
@@ -3683,7 +3683,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: davidgamero/simple-gradle-server
+          repository: imiller31/simple-gradle-server
           path: ./langtest
       - name: Execute Dry Run with config file
         run: |
@@ -3718,7 +3718,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: davidgamero/simple-gradle-server
+          repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/kustomize.yaml -d ./langtest/
@@ -3815,7 +3815,7 @@ jobs:
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: davidgamero/simple-gradle-server
+            repository: imiller31/simple-gradle-server
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -3850,7 +3850,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: davidgamero/simple-gradle-server
+          repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/manifest.yaml -d ./langtest/

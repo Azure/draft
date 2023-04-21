@@ -6,7 +6,7 @@ on:
 jobs:
 #  Validate that `create` can successfully execute with default values
   create-defaults-test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
@@ -17,4 +17,4 @@ jobs:
         run: make
       - name: Validate Create Runs with Defaults
         run: |
-          bash -c "yes || true" | ./draft
+          yes "" | ./draft

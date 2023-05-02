@@ -10,6 +10,7 @@
 ### Fixed
 
 - [#196](https://github.com/Azure/draft/pull/196) Update deprecated node12 actions
+- Default deploy variable fixed
 
 ### Changed 
 

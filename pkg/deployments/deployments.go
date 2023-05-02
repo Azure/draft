@@ -6,9 +6,10 @@ import (
 	"io/fs"
 	"path"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -74,12 +75,12 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 	return &draftConfig, nil
 }
 
-func (d *Deployments) GetConfig(deployType string) *config.DraftConfig {
+func (d *Deployments) GetConfig(deployType string) (*config.DraftConfig, error) {
 	val, ok := d.configs[deployType]
 	if !ok {
-		return nil
+		return nil, fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
-	return val
+	return val, nil
 }
 
 func (d *Deployments) PopulateConfigs() {

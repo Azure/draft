@@ -110,6 +110,7 @@
   ```
   
 ### Changed
+
 - **BREAKING** - `info` command output format includes additional information for supported languages with the following format changes:
     - keys are now camelCase
     - `supportedLanguages` is now an array of objects, enriched with `displayName` and `exampleValues`
@@ -137,6 +138,7 @@
       ]
     }
     ```
+  
 ## [0.0.26] - 2022-11-16
 
 ### Added

@@ -145,6 +145,8 @@ install() {
       OS="darwin"
   elif [[ "$OSTYPE" == "win32" ]]; then
       OS="win"
+  elif [[ "$OSTYPE" == "msys" ]]; then
+      OS="msys"
   else
       echo "Draft CLI isn't supported for your platform - $OSTYPE"
       file_issue_prompt

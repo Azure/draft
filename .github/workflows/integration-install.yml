@@ -11,9 +11,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Run Install Script 
+      - name: Run Install Script
+        shell: bash
         run: ./scripts/install.sh
       - name: Validate Command is Installed
+        shell: bash
         run: |
           if ! command -v draft &> /dev/null
           then
@@ -21,4 +23,5 @@ jobs:
               exit 1
           fi
       - name: Validate Draft Command Runs
+        shell: bash
         run: draft -h

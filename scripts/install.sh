@@ -143,10 +143,8 @@ install() {
       OS="linux"
   elif [[ "$OSTYPE" == "darwin"* ]]; then
       OS="darwin"
-  elif [[ "$OSTYPE" == "win32" ]]; then
+  elif [[ "$OSTYPE" == "win32" ] || [ "$OSTYPE" == "msys" ]]; then
       OS="win"
-  elif [[ "$OSTYPE" == "msys" ]]; then
-      OS="msys"
   else
       echo "Draft CLI isn't supported for your platform - $OSTYPE"
       file_issue_prompt

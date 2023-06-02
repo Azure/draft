@@ -127,7 +127,7 @@ file_issue_prompt() {
 }
 
 copy_draft_files() {
-  if [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+  if [[ ":$PATH:" == *":$HOME/.local/bin:"* || "$OS" == "windows" ]]; then
       if [ ! -d "$HOME/.local/bin" ]; then
         mkdir -p "$HOME/.local/bin"
       fi

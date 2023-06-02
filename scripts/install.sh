@@ -106,7 +106,11 @@ check_jq_processor_present(){
 
 # Download draft cli stable version.
 download_draft_cli_stable_version(){
-  FILENAME="draft-$OS-$ARCH"
+  if [OS == "windows"]; then
+    FILENAME="draft-$OS-$ARCH".exe
+  else 
+    FILENAME="draft-$OS-$ARCH"
+  fi
   log INFO "Starting Draft CLI Download for $FILENAME"
   DRAFTCLIVERSION=$(curl -L -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
   log INFO "Starting Draft CLI Version $DRAFTCLIVERSION"

@@ -27,7 +27,7 @@ jobs:
           then
             echo "install_dir=/c/Users/runneradmin/.local/bin/draft" >> $GITHUB_ENV
           else 
-            echo "B2k CLI is not found"
+            echo "draft could not be found"
             exit 1
           fi
       - name: Validate Draft Command Runs

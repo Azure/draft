@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -59,6 +60,7 @@ type createCmd struct {
 }
 
 func newCreateCmd() *cobra.Command {
+	log.SetLevel(log.TraceLevel)
 	cc := &createCmd{}
 
 	cmd := &cobra.Command{
@@ -194,8 +196,8 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 				if lang.Language == "Java" {
 
 					selection := &promptui.Select{
-						Label: "Linguist detected Java, are you using maven or gradle?",
-						Items: []string{"gradle", "maven"},
+						Label: "Linguist detected Java, are you using maven or gradle or gradle wrapper?",
+						Items: []string{"gradle", "maven", "gradlew"},
 					}
 
 					_, selectResponse, err := selection.Run()
@@ -205,6 +207,8 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 
 					if selectResponse == "gradle" {
 						lang.Language = "Gradle"
+					} else if selectResponse == "gradlew" {
+						lang.Language = "Gradlew"
 					}
 				}
 			}
@@ -349,6 +353,8 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
 
+	cc.detectDefaults(detectedLang, lowerLang)
+
 	if cc.skipFileDetection {
 		if !cc.deploymentOnly {
 			err := cc.generateDockerfile(detectedLang, lowerLang)
@@ -427,6 +433,34 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	log.Info("Use 'draft setup-gh' to set up Github OIDC.")
 
 	return nil
+}
+
+func (cc *createCmd) detectDefaults(detectedLang *config.DraftConfig, lowerLang string) {
+	if lowerLang == "gradlew" || lowerLang == "gradle" {
+		// read from build.gradle and detect version
+		f, err := os.Open("build.gradle")
+		if err != nil {
+			log.Warn("Unable to read build.gradle, skipping detection")
+			return
+		}
+		defer f.Close()
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.Contains(line, "sourceCompatibility") {
+				detectedVersion := strings.Split(line, " = ")[1] // sourceCompatibility = '1.8'
+				detectedVersion = strings.Trim(detectedVersion, "'")
+				detectedVersion = "jdk" + detectedVersion
+				detectedDefaults := []config.BuilderVarDefault{
+					{Name: "VERSION", Value: detectedVersion},
+				}
+				log.Info("detected version %s", detectedVersion)
+				log.Info("Detected %s from build.gradle for %s project", detectedVersion, lowerLang)
+				detectedLang.DetectedDefaults = detectedDefaults
+				return
+			}
+		}
+	}
 }
 
 func init() {

@@ -106,7 +106,7 @@ check_jq_processor_present(){
 
 # Download draft cli stable version.
 download_draft_cli_stable_version(){
-  if ["$OS" == "windows"]; then
+  if [ "$OS" == "windows" ]; then
     FILENAME="draft-$OS-$ARCH".exe
   else 
     FILENAME="draft-$OS-$ARCH"

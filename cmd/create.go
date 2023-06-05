@@ -444,21 +444,34 @@ func (cc *createCmd) detectDefaults(detectedLang *config.DraftConfig, lowerLang 
 			return
 		}
 		defer f.Close()
+		detectedDefaults := make([]config.BuilderVarDefault, 0)
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			line := scanner.Text()
 			if strings.Contains(line, "sourceCompatibility") {
 				detectedVersion := strings.Split(line, " = ")[1] // sourceCompatibility = '1.8'
 				detectedVersion = strings.Trim(detectedVersion, "'")
-				detectedVersion = "jdk" + detectedVersion
-				detectedDefaults := []config.BuilderVarDefault{
-					{Name: "VERSION", Value: detectedVersion},
+				detectedVersion = detectedVersion + "-jre"
+				builderVarDefault := config.BuilderVarDefault{
+					Name:  "VERSION",
+					Value: detectedVersion,
 				}
-				log.Info("detected version %s", detectedVersion)
-				log.Info("Detected %s from build.gradle for %s project", detectedVersion, lowerLang)
-				detectedLang.DetectedDefaults = detectedDefaults
-				return
+				detectedDefaults = append(detectedDefaults, builderVarDefault)
+				log.Info("Detected VERSION is %s from build.gradle for %s project", detectedVersion, lowerLang)
 			}
+
+			if strings.Contains(line, "targetCompatibility") {
+				detectedBuilderVersion := strings.Split(line, " = ")[1] // targetCompatibility = '1.8'
+				detectedBuilderVersion = strings.Trim(detectedBuilderVersion, "'")
+				detectedBuilderVersion = "jdk" + detectedBuilderVersion
+				detectedBuilderVar := config.BuilderVarDefault{
+					Name:  "BUILDERVERSION",
+					Value: detectedBuilderVersion,
+				}
+				detectedDefaults = append(detectedDefaults, detectedBuilderVar)
+				log.Info("Detected BUILDER VERSION is %s from build.gradle for %s project", detectedBuilderVersion, lowerLang)
+			}
+			detectedLang.DetectedDefaults = detectedDefaults
 		}
 	}
 }

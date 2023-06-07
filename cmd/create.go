@@ -470,7 +470,7 @@ func (cc *createCmd) detectDefaults(detectedLang *config.DraftConfig, lowerLang 
 					Value: detectedVersion,
 				}
 				detectedDefaults = append(detectedDefaults, builderVarDefault)
-				log.Info("Detected VERSION is %s from build.gradle for %s project", detectedVersion, lowerLang)
+				//log.Info("Detected VERSION is %q from build.gradle for %s project", detectedVersion, lowerLang)
 			}
 
 			if strings.Contains(line, "targetCompatibility") {
@@ -482,7 +482,7 @@ func (cc *createCmd) detectDefaults(detectedLang *config.DraftConfig, lowerLang 
 					Value: detectedBuilderVersion,
 				}
 				detectedDefaults = append(detectedDefaults, detectedBuilderVar)
-				log.Info("Detected BUILDER VERSION is %s from build.gradle for %s project", detectedBuilderVersion, lowerLang)
+				//log.Info("Detected BUILDER VERSION is %s from build.gradle for %s project", detectedBuilderVersion[0], lowerLang)
 			}
 			detectedLang.DetectedDefaults = detectedDefaults
 		}

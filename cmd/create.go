@@ -10,6 +10,8 @@ import (
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
+	"github.com/Azure/draft/pkg/reporeader"
+	"github.com/Azure/draft/pkg/reporeader/readers"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -56,6 +58,7 @@ type createCmd struct {
 
 	templateWriter           templatewriter.TemplateWriter
 	templateVariableRecorder config.TemplateVariableRecorder
+	repoReader               reporeader.RepoReader
 }
 
 func newCreateCmd() *cobra.Command {
@@ -130,6 +133,8 @@ func (cc *createCmd) run() error {
 	} else {
 		cc.templateWriter = &writers.LocalFSWriter{}
 	}
+
+	cc.repoReader = &readers.LocalFSReader{}
 
 	detectedLangDraftConfig, languageName, err := cc.detectLanguage()
 	if err != nil {
@@ -253,8 +258,16 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return errors.New("supported languages were loaded incorrectly")
 	}
 
+	// Extract language-specific defaults from repo
+	extractedDefaults, err := cc.supportedLangs.ExtractDefaults(lowerLang, cc.repoReader)
+	if err != nil {
+		return err
+	}
+	for _, d := range extractedDefaults {
+		langConfig.VariableDefaults = append(langConfig.VariableDefaults, d)
+	}
+
 	var inputs map[string]string
-	var err error
 	if cc.createConfig.LanguageVariables == nil {
 		inputs, err = prompts.RunPromptsFromConfigWithSkips(langConfig, maps.Keys(flagVariablesMap))
 		if err != nil {

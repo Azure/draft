@@ -269,3 +269,16 @@ func TestDetectDefaultsNoTargetComptability(t *testing.T) {
 	assert.Equal(t, "11-jre", mockDraftConfig.DetectedDefaults[0].Value)
 	os.Remove("build.gradle")
 }
+
+func TestDetectDefaultsWithoutSpacesInDoubleQuotes(t *testing.T) {
+	ioutil.WriteFile("build.gradle", []byte("sourceCompatibility=\"17\"\ntargetCompatibility = '12'"), 0644)
+	mockCC := &createCmd{}
+	mockDraftConfig := &config.DraftConfig{}
+	mockCC.detectDefaults(mockDraftConfig, "gradle")
+	assert.Equal(t, 2, len(mockDraftConfig.DetectedDefaults))
+	assert.Equal(t, "VERSION", mockDraftConfig.DetectedDefaults[0].Name)
+	assert.Equal(t, "17-jre", mockDraftConfig.DetectedDefaults[0].Value)
+	assert.Equal(t, "BUILDERVERSION", mockDraftConfig.DetectedDefaults[1].Name)
+	assert.Equal(t, "jdk12", mockDraftConfig.DetectedDefaults[1].Value)
+	os.Remove("build.gradle")
+}

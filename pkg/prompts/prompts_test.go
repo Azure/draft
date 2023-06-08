@@ -78,6 +78,60 @@ func TestGetVariableDefaultValue(t *testing.T) {
 	}
 }
 
+func TestGetDetectedDefaultValue(t *testing.T) {
+	tests := []struct {
+		testName         string
+		variableName     string
+		detectedDefaults []config.BuilderVarDefault
+		inputs           map[string]string
+		want             string
+	}{
+		{
+			testName:     "basicTest",
+			variableName: "VERSION",
+			detectedDefaults: []config.BuilderVarDefault{
+				{
+					Name:  "VERSION",
+					Value: "jre11",
+				},
+				{
+					Name:  "BUILDERVERSION",
+					Value: "jdk8",
+				},
+			},
+			inputs: map[string]string{},
+			want:   "jre11",
+		},
+		{
+			testName:         "testWithoutDetectedDefaults",
+			variableName:     "VERSION",
+			detectedDefaults: []config.BuilderVarDefault{},
+			inputs:           map[string]string{},
+			want:             "",
+		},
+		{
+			testName:     "testWithBuilderVersion",
+			variableName: "BUILDERVERSION",
+			detectedDefaults: []config.BuilderVarDefault{
+				{
+					Name:         "BUILDERVERSION",
+					Value:        "jdk8",
+					ReferenceVar: "",
+				},
+			},
+			inputs: map[string]string{},
+			want:   "jdk8",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			if got := GetDetectedDefaultValue(tt.variableName, tt.detectedDefaults, tt.inputs); got != tt.want {
+				t.Errorf("GetDetectedDefaultValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRunStringPrompt(t *testing.T) {
 	tests := []struct {
 		testName     string

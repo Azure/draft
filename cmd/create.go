@@ -60,7 +60,6 @@ type createCmd struct {
 }
 
 func newCreateCmd() *cobra.Command {
-	log.SetLevel(log.TraceLevel)
 	cc := &createCmd{}
 
 	cmd := &cobra.Command{

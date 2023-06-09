@@ -445,12 +445,15 @@ func (cc *createCmd) detectDefaults(detectedLang *config.DraftConfig, lowerLang 
 		defer f.Close()
 		detectedDefaults := make([]config.BuilderVarDefault, 0)
 		scanner := bufio.NewScanner(f)
+		// this separator is used to split the line from build.gradle ex: sourceCompatibility = '1.8'
+		// output will be ['sourceCompatibility', '1.8'] or ["sourceCompatibility", "1.8"]
 		separator := func(c rune) bool { return c == ' ' || c == '=' }
+		// this func takes care of removing the single or double quotes from split array output
 		cutset := func(c rune) bool { return c == '\'' || c == '"' }
 		for scanner.Scan() {
 			line := scanner.Text()
 			if strings.Contains(line, "sourceCompatibility") {
-				detectedVersion := strings.FieldsFunc(line, separator)[1] // sourceCompatibility = '1.8'
+				detectedVersion := strings.FieldsFunc(line, separator)[1] // example array after split ["sourceCompatibility", "1.8"]
 				detectedVersion = strings.TrimFunc(detectedVersion, cutset)
 				detectedVersion = detectedVersion + "-jre"
 				builderVarDefault := config.BuilderVarDefault{
@@ -461,7 +464,7 @@ func (cc *createCmd) detectDefaults(detectedLang *config.DraftConfig, lowerLang 
 			}
 
 			if strings.Contains(line, "targetCompatibility") {
-				detectedBuilderVersion := strings.FieldsFunc(line, separator)[1] // targetCompatibility = '1.8'
+				detectedBuilderVersion := strings.FieldsFunc(line, separator)[1] // example array after split ["targetCompatibility", "1.8"]
 				detectedBuilderVersion = strings.TrimFunc(detectedBuilderVersion, cutset)
 				detectedBuilderVersion = "jdk" + detectedBuilderVersion
 				detectedBuilderVar := config.BuilderVarDefault{

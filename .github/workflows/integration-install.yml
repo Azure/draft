@@ -5,17 +5,31 @@ on:
 
 jobs:
   install:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Run Install Script 
+      - name: Run Install Script
+        shell: bash
         run: ./scripts/install.sh
       - name: Validate Command is Installed
+        shell: bash
         run: |
-          if ! command -v draft &> /dev/null
+          if command -v /home/runner/.local/bin/draft &> /dev/null
           then
-              echo "draft could not be found"
-              exit 1
+              echo "install_dir=/home/runner/.local/bin/draft" >> $GITHUB_ENV
+          elif command -v /usr/local/bin/draft &> /dev/null 
+          then
+            echo "install_dir=/usr/local/bin/draft" >> $GITHUB_ENV
+          elif command -v /c/Users/runneradmin/.local/bin/draft &> /dev/null
+          then
+            echo "install_dir=/c/Users/runneradmin/.local/bin/draft" >> $GITHUB_ENV
+          else 
+            echo "draft could not be found"
+            exit 1
           fi
       - name: Validate Draft Command Runs
-        run: draft -h
+        shell: bash
+        run: ${{ env.install_dir }} -h

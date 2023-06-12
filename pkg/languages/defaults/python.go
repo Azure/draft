@@ -12,7 +12,7 @@ type PythonExtractor struct {
 // ReadDefaults reads the default values for the language from the repo files
 func (p PythonExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string, error) {
 	extractedValues := make(map[string]string)
-	files, err := r.FindFiles(".", []string{"*.py"}, 2)
+	files, err := r.FindFiles(".", []string{"*.py"}, 0)
 	if err != nil {
 		return nil, fmt.Errorf("error finding python files: %v", err)
 	}

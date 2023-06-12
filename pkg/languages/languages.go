@@ -133,6 +133,7 @@ func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (
 					log.Debugf("duplicate default %s for language %s with extractor %s", k, lowerLang, extractor.GetName())
 				}
 				extractedValues[k] = v
+				log.Debugf("extracted default %s=%s with extractor:%s", k, v, extractor.GetName())
 			}
 		}
 	}

@@ -3,12 +3,10 @@ package defaults
 import (
 	"fmt"
 
-	"github.com/Azure/draft/cmd"
 	"github.com/Azure/draft/pkg/reporeader"
 )
 
 type PythonExtractor struct {
-	cmd.CreateConfig
 }
 
 // ReadDefaults reads the default values for the language from the repo files

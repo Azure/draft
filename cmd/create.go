@@ -109,7 +109,6 @@ func (cc *createCmd) initConfig() error {
 
 	//TODO: create a config for the user and save it for subsequent uses
 	cc.createConfig = &CreateConfig{}
-	cc.repoReader = &readers.LocalFSReader{}
 
 	return nil
 }
@@ -134,6 +133,7 @@ func (cc *createCmd) run() error {
 	} else {
 		cc.templateWriter = &writers.LocalFSWriter{}
 	}
+	cc.repoReader = &readers.LocalFSReader{}
 
 	detectedLangDraftConfig, languageName, err := cc.detectLanguage()
 	if err != nil {

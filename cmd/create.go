@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -93,6 +92,7 @@ func newCreateCmd() *cobra.Command {
 }
 
 func (cc *createCmd) initConfig() error {
+	log.SetLevel(log.DebugLevel)
 	if cc.createConfigPath != "" {
 		log.Debug("loading config")
 		configBytes, err := os.ReadFile(cc.createConfigPath)
@@ -268,6 +268,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 	for _, d := range extractedDefaults {
 		langConfig.VariableDefaults = append(langConfig.VariableDefaults, d)
+		log.Debugf("adding default %s=%s", d.Name, d.Value)
 	}
 
 	var inputs map[string]string
@@ -365,7 +366,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
 
-	cc.detectDefaults(detectedLang, lowerLang)
+	// cc.detectDefaults(detectedLang, lowerLang)
 
 	if cc.skipFileDetection {
 		if !cc.deploymentOnly {
@@ -445,50 +446,6 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	log.Info("Use 'draft setup-gh' to set up Github OIDC.")
 
 	return nil
-}
-
-func (cc *createCmd) detectDefaults(detectedLang *config.DraftConfig, lowerLang string) {
-	if lowerLang == "gradlew" || lowerLang == "gradle" {
-		// read from build.gradle and detect version
-		f, err := os.Open("build.gradle")
-		if err != nil {
-			log.Warn("Unable to read build.gradle, skipping detection")
-			return
-		}
-		defer f.Close()
-		detectedDefaults := make([]config.BuilderVarDefault, 0)
-		scanner := bufio.NewScanner(f)
-		// this separator is used to split the line from build.gradle ex: sourceCompatibility = '1.8'
-		// output will be ['sourceCompatibility', '1.8'] or ["sourceCompatibility", "1.8"]
-		separator := func(c rune) bool { return c == ' ' || c == '=' }
-		// this func takes care of removing the single or double quotes from split array output
-		cutset := func(c rune) bool { return c == '\'' || c == '"' }
-		for scanner.Scan() {
-			line := scanner.Text()
-			if strings.Contains(line, "sourceCompatibility") {
-				detectedVersion := strings.FieldsFunc(line, separator)[1] // example array after split ["sourceCompatibility", "1.8"]
-				detectedVersion = strings.TrimFunc(detectedVersion, cutset)
-				detectedVersion = detectedVersion + "-jre"
-				builderVarDefault := config.BuilderVarDefault{
-					Name:  "VERSION",
-					Value: detectedVersion,
-				}
-				detectedDefaults = append(detectedDefaults, builderVarDefault)
-			}
-
-			if strings.Contains(line, "targetCompatibility") {
-				detectedBuilderVersion := strings.FieldsFunc(line, separator)[1] // example array after split ["targetCompatibility", "1.8"]
-				detectedBuilderVersion = strings.TrimFunc(detectedBuilderVersion, cutset)
-				detectedBuilderVersion = "jdk" + detectedBuilderVersion
-				detectedBuilderVar := config.BuilderVarDefault{
-					Name:  "BUILDERVERSION",
-					Value: detectedBuilderVersion,
-				}
-				detectedDefaults = append(detectedDefaults, detectedBuilderVar)
-			}
-			detectedLang.DetectedDefaults = detectedDefaults
-		}
-	}
 }
 
 func init() {

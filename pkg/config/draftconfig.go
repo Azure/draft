@@ -10,7 +10,6 @@ type DraftConfig struct {
 	NameOverrides    []FileNameOverride  `yaml:"nameOverrides"`
 	Variables        []BuilderVar        `yaml:"variables"`
 	VariableDefaults []BuilderVarDefault `yaml:"variableDefaults"`
-	DetectedDefaults []BuilderVarDefault `yaml:"detectedDefaults"`
 
 	nameOverrideMap map[string]string
 }

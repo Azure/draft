@@ -54,13 +54,7 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 			}
 			inputs[promptVariableName] = input
 		} else {
-			defaultValue := ""
-			detectedDefaultValue := GetDetectedDefaultValue(promptVariableName, config.DetectedDefaults, inputs)
-			if detectedDefaultValue != "" {
-				defaultValue = detectedDefaultValue
-			} else {
-				defaultValue = GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
-			}
+			defaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
 
 			stringInput, err := RunDefaultableStringPrompt(customPrompt, defaultValue, nil, Stdin, Stdout)
 			if err != nil {
@@ -78,21 +72,6 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 	}
 
 	return inputs, nil
-}
-
-func GetDetectedDefaultValue(variableName string, detectedDefaults []config.BuilderVarDefault, inputs map[string]string) string {
-	defaultValue := ""
-	for _, detectedDefault := range detectedDefaults {
-		if detectedDefault.Name == variableName {
-			defaultValue = detectedDefault.Value
-			log.Debugf("setting default value for %s to %s from detected default rule", variableName, defaultValue)
-			if detectedDefault.ReferenceVar != "" && inputs[detectedDefault.ReferenceVar] != "" {
-				defaultValue = inputs[detectedDefault.ReferenceVar]
-				log.Debugf("setting default value for %s to %s from referenceVar %s", variableName, defaultValue, detectedDefault.ReferenceVar)
-			}
-		}
-	}
-	return defaultValue
 }
 
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.

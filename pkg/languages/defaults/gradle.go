@@ -40,17 +40,17 @@ func (*GradleExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string
 		separator := func(c rune) bool { return c == ' ' || c == '=' || c == '\n' || c == '\r' || c == '\t' }
 		// this func takes care of removing the single or double quotes from split array output
 		cutset := func(c rune) bool { return c == '\'' || c == '"' }
-		if strings.Contains(content, "sourceCompatibility") {
+		if strings.Contains(content, "sourceCompatibility") || strings.Contains(content, "targetCompatibility") {
 			stringAfterSplit := strings.FieldsFunc(content, separator) // example array after split ["sourceCompatibility", "1.8"]
 			for i := 0; i < len(stringAfterSplit); i++ {
 				if stringAfterSplit[i] == "sourceCompatibility" {
-					detectedVersionAfter := strings.TrimFunc(stringAfterSplit[i+1], cutset)
-					detectedVersionAfter = detectedVersionAfter + "-jre"
-					extractedValues["VERSION"] = detectedVersionAfter
+					detectedVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
+					detectedVersion = detectedVersion + "-jre"
+					extractedValues["VERSION"] = detectedVersion
 				} else if stringAfterSplit[i] == "targetCompatibility" {
 					detectedBuilderVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					detectedBuilderVersion = "jdk" + detectedBuilderVersion
-					extractedValues["BUILDER_VERSION"] = detectedBuilderVersion
+					extractedValues["BUILDERVERSION"] = detectedBuilderVersion
 				}
 			}
 		}

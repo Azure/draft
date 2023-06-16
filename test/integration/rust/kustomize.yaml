@@ -12,7 +12,7 @@ deployVariables:
     value: "host.minikube.internal:5001/testapp"
 languageVariables:
   - name: "VERSION"
-    value: "1.70.0"
+    value: "1.59.0"
   - name: "BUILDERVERSION"
     value: "null"
   - name: "PORT"

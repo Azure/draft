@@ -123,6 +123,11 @@ func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (
 		&defaults.GradleExtractor{},
 	}
 	extractedValues := make(map[string]string)
+	var extractedDefaults []config.BuilderVarDefault
+	if r == nil {
+		log.Debugf("no repo reader provided, returning empty list of defaults")
+		return extractedDefaults, nil
+	}
 	for _, extractor := range extractors {
 		if extractor.MatchesLanguage(lowerLang) {
 			newDefaults, err := extractor.ReadDefaults(r)
@@ -139,7 +144,6 @@ func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (
 		}
 	}
 
-	var extractedDefaults []config.BuilderVarDefault
 	for k, v := range extractedValues {
 		extractedDefaults = append(extractedDefaults, config.BuilderVarDefault{
 			Name:  k,

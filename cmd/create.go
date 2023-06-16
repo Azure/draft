@@ -134,7 +134,6 @@ func (cc *createCmd) run() error {
 	} else {
 		cc.templateWriter = &writers.LocalFSWriter{}
 	}
-
 	cc.repoReader = &readers.LocalFSReader{}
 
 	detectedLangDraftConfig, languageName, err := cc.detectLanguage()

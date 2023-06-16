@@ -1,10 +1,15 @@
 package reporeader
 
-import "path/filepath"
+import (
+	"path/filepath"
+	"strings"
+)
 
 type RepoReader interface {
 	Exists(path string) bool
 	ReadFile(path string) ([]byte, error)
+	// FindFiles returns a list of files that match the given patterns searching up to
+	// maxDepth nested sub-directories. maxDepth of 0 limits files to the root dir.
 	FindFiles(path string, patterns []string, maxDepth int) ([]string, error)
 }
 
@@ -15,6 +20,7 @@ type VariableExtractor interface {
 	GetName() string
 }
 
+// TestRepoReader is a RepoReader that can be used for testing, and takes a list of relative file paths with their contents
 type TestRepoReader struct {
 	Files map[string][]byte
 }
@@ -44,8 +50,9 @@ func (r TestRepoReader) FindFiles(path string, patterns []string, maxDepth int) 
 			if matched, err := filepath.Match(pattern, filepath.Base(k)); err != nil {
 				return nil, err
 			} else if matched {
-				fileDepth := len(filepath.SplitList(k))
-				if fileDepth < maxDepth {
+				splitPath := strings.Split(k, string(filepath.Separator))
+				fileDepth := len(splitPath) - 1
+				if fileDepth <= maxDepth {
 					files = append(files, k)
 				}
 			}

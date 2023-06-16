@@ -366,8 +366,6 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 		return errors.New("can only pass in one of --dockerfile-only and --deployment-only")
 	}
 
-	// cc.detectDefaults(detectedLang, lowerLang)
-
 	if cc.skipFileDetection {
 		if !cc.deploymentOnly {
 			err := cc.generateDockerfile(detectedLang, lowerLang)

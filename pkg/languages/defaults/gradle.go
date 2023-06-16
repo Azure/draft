@@ -37,11 +37,13 @@ func (*GradleExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string
 		content := string(f)
 		// this separator is used to split the line from build.gradle ex: sourceCompatibility = '1.8'
 		// output will be ['sourceCompatibility', '1.8'] or ["sourceCompatibility", "1.8"]
-		separator := func(c rune) bool { return c == ' ' || c == '=' || c == '\n' || c == '\r' || c == '\t' }
+		separator := func(c rune) bool {
+			return c == ' ' || c == '=' || c == '\n' || c == '\r' || c == '\t' || c == '{' || c == '}' || c == '[' || c == ']' || c == '-'
+		}
 		// this func takes care of removing the single or double quotes from split array output
 		cutset := func(c rune) bool { return c == '\'' || c == '"' }
-		if strings.Contains(content, "sourceCompatibility") || strings.Contains(content, "targetCompatibility") {
-			stringAfterSplit := strings.FieldsFunc(content, separator) // example array after split ["sourceCompatibility", "1.8"]
+		if strings.Contains(content, "sourceCompatibility") || strings.Contains(content, "targetCompatibility") || strings.Contains(content, "server.port") {
+			stringAfterSplit := strings.FieldsFunc(content, separator)
 			for i := 0; i < len(stringAfterSplit); i++ {
 				if stringAfterSplit[i] == "sourceCompatibility" {
 					detectedVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
@@ -51,6 +53,9 @@ func (*GradleExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string
 					detectedBuilderVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					detectedBuilderVersion = "jdk" + detectedBuilderVersion
 					extractedValues["BUILDERVERSION"] = detectedBuilderVersion
+				} else if stringAfterSplit[i] == "server.port" {
+					detectedPort := strings.TrimFunc(stringAfterSplit[i+1], cutset)
+					extractedValues["PORT"] = detectedPort
 				}
 			}
 		}

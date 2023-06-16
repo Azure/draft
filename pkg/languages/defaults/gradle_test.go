@@ -94,6 +94,7 @@ func TestGradleExtractor_ReadDefaults(t *testing.T) {
 			want: map[string]string{
 				"VERSION":        "11-jre",
 				"BUILDERVERSION": "jdk11",
+				"PORT":           "8081",
 			},
 			wantErr: false,
 		},

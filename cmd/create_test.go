@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
+	"github.com/Azure/draft/pkg/reporeader"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
 )
@@ -53,7 +54,6 @@ func TestRun(t *testing.T) {
 	assert.False(t, lowerLang == "")
 	assert.True(t, err == nil)
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
-	println(err)
 	assert.True(t, err == nil)
 
 	//Write back old Dockerfile
@@ -102,6 +102,43 @@ func TestRun(t *testing.T) {
 		os.RemoveAll("./../base")
 		os.RemoveAll("./../overlays")
 		os.RemoveAll("./../manifests")
+	}
+}
+
+func TestRunCreateDockerfileWithRepoReader(t *testing.T) {
+	mockCC := &createCmd{}
+	mockCC.repoReader = &reporeader.TestRepoReader{Files: map[string][]byte{
+		"foo.py":  []byte("print('Hello World')"),
+		"main.py": []byte("print('Hello World')"),
+	}}
+	mockCC.createConfig = &CreateConfig{}
+	mockCC.createConfig.LanguageType = "python"
+	mockCC.createConfig.LanguageVariables = []UserInputs{}
+	mockPortInput := UserInputs{Name: "PORT", Value: "8080"}
+	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
+	mockCC.templateWriter = &writers.LocalFSWriter{}
+
+	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
+	assert.False(t, detectedLang == nil)
+	assert.True(t, lowerLang == "python")
+	assert.Nil(t, err)
+
+	err = mockCC.generateDockerfile(detectedLang, lowerLang)
+	assert.True(t, err == nil)
+
+	dockerFileContent, err := ioutil.ReadFile("Dockerfile")
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Contains(t, string(dockerFileContent), "CMD [\"main.py\"]")
+
+	err = os.Remove("Dockerfile")
+	if err != nil {
+		t.Error(err)
+	}
+	os.RemoveAll(".dockerignore")
+	if err != nil {
+		t.Error(err)
 	}
 }
 

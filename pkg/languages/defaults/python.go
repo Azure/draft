@@ -2,6 +2,7 @@ package defaults
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Azure/draft/pkg/reporeader"
 )
@@ -16,8 +17,22 @@ func (p PythonExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]strin
 	if err != nil {
 		return nil, fmt.Errorf("error finding python files: %v", err)
 	}
-	if len(files) > 0 {
-		extractedValues["ENTRYPOINT"] = files[0]
+	for index, file := range files {
+		fileContent, err := r.ReadFile(file)
+		if err != nil {
+			return nil, fmt.Errorf(("error reading python files"))
+		}
+		fileContentInString := string(fileContent)
+		if strings.Contains(fileContentInString, `if __name__ == '__main__'`) || file == "main.py" || file == "app.py" {
+			extractedValues["ENTRYPOINT"] = files[index]
+			break
+		}
+	}
+
+	if _, ok := extractedValues["ENTRYPOINT"]; !ok {
+		if len(files) > 0 {
+			extractedValues["ENTRYPOINT"] = files[0]
+		}
 	}
 
 	return extractedValues, nil

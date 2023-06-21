@@ -258,7 +258,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	// Extract language-specific defaults from repo
-	extractedDefaults, err := cc.supportedLangs.ExtractDefaults(lowerLang, cc.repoReader)
+	extractedDefaults, err := cc.supportedLangs.ExtractDefaults(lowerLang, cc.repoReader, cc.dest)
 	if err != nil {
 		return err
 	}

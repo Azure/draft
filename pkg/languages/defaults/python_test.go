@@ -135,7 +135,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := PythonExtractor{}
-			got, err := p.ReadDefaults(tt.args.r)
+			got, err := p.ReadDefaults(tt.args.r, "./testDir")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadDefaults() error = %v, wantErr %v", err, tt.wantErr)
 				return

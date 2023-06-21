@@ -15,7 +15,7 @@ type RepoReader interface {
 
 // VariableExtractor is an interface that can be implemented for extracting variables from a repo's files
 type VariableExtractor interface {
-	ReadDefaults(r RepoReader) (map[string]string, error)
+	ReadDefaults(r RepoReader, dest string) (map[string]string, error)
 	MatchesLanguage(lowerlang string) bool
 	GetName() string
 }

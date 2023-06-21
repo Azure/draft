@@ -2,7 +2,7 @@ package defaults
 
 import (
 	"fmt"
-	"regexp"
+	"strings"
 
 	"github.com/Azure/draft/pkg/reporeader"
 )
@@ -11,26 +11,19 @@ type PythonExtractor struct {
 }
 
 // ReadDefaults reads the default values for the language from the repo files
-func (p PythonExtractor) ReadDefaults(r reporeader.RepoReader, dest string) (map[string]string, error) {
+func (p PythonExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string, error) {
 	extractedValues := make(map[string]string)
-	files, err := r.FindFiles(dest, []string{"*.py"}, 0)
+	files, err := r.FindFiles(".", []string{"*.py"}, 0)
 	if err != nil {
 		return nil, fmt.Errorf("error finding python files: %v", err)
 	}
-
-	entryPointPattern := `if\s*__name__\s*==\s*["']__main__["']`
-	compiledPattern, err := regexp.Compile(entryPointPattern)
-	if err != nil {
-		return nil, fmt.Errorf("error compiling regex pattern: %v", err)
-	}
-	for index, fileName := range files {
-		fileContent, err := r.ReadFile(fileName)
+	for index, file := range files {
+		fileContent, err := r.ReadFile(file)
 		if err != nil {
 			return nil, fmt.Errorf(("error reading python files"))
 		}
 		fileContentInString := string(fileContent)
-
-		if compiledPattern.MatchString(fileContentInString) || fileName == "main.py" || fileName == "app.py" {
+		if strings.Contains(fileContentInString, `if __name__ == '__main__'`) || file == "main.py" || file == "app.py" {
 			extractedValues["ENTRYPOINT"] = files[index]
 			break
 		}

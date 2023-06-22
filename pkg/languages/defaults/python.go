@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/Azure/draft/pkg/reporeader"
-	log "github.com/sirupsen/logrus"
 )
 
 type PythonExtractor struct {

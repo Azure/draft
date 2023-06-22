@@ -2,9 +2,11 @@ package defaults
 
 import (
 	"fmt"
-	"strings"
+	"path/filepath"
+	"regexp"
 
 	"github.com/Azure/draft/pkg/reporeader"
+	log "github.com/sirupsen/logrus"
 )
 
 type PythonExtractor struct {
@@ -17,14 +19,24 @@ func (p PythonExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]strin
 	if err != nil {
 		return nil, fmt.Errorf("error finding python files: %v", err)
 	}
-	for index, file := range files {
-		fileContent, err := r.ReadFile(file)
+
+	entryPointPattern := `if\s*__name__\s*==\s*["']__main__["']`
+	compiledPattern, err := regexp.Compile(entryPointPattern)
+	if err != nil {
+		return nil, fmt.Errorf("error compiling regex pattern: %v", err)
+	}
+
+	for index, filePath := range files {
+		fileContent, err := r.ReadFile(filePath)
+		baseFile := filepath.Base(filePath)
+
 		if err != nil {
 			return nil, fmt.Errorf(("error reading python files"))
 		}
 		fileContentInString := string(fileContent)
-		if strings.Contains(fileContentInString, `if __name__ == '__main__'`) || file == "main.py" || file == "app.py" {
-			extractedValues["ENTRYPOINT"] = files[index]
+
+		if compiledPattern.MatchString(fileContentInString) || baseFile == "main.py" || baseFile == "app.py" {
+			extractedValues["ENTRYPOINT"] = filepath.Base(files[index])
 			break
 		}
 	}

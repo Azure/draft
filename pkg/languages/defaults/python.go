@@ -25,7 +25,7 @@ func (p PythonExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]strin
 		return nil, fmt.Errorf("error compiling regex pattern: %v", err)
 	}
 
-	for index, filePath := range files {
+	for _, filePath := range files {
 		fileContent, err := r.ReadFile(filePath)
 		baseFile := filepath.Base(filePath)
 
@@ -35,7 +35,7 @@ func (p PythonExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]strin
 		fileContentInString := string(fileContent)
 
 		if compiledPattern.MatchString(fileContentInString) || baseFile == "main.py" || baseFile == "app.py" {
-			extractedValues["ENTRYPOINT"] = filepath.Base(files[index])
+			extractedValues["ENTRYPOINT"] = baseFile
 			break
 		}
 	}

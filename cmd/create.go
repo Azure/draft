@@ -92,7 +92,6 @@ func newCreateCmd() *cobra.Command {
 }
 
 func (cc *createCmd) initConfig() error {
-	log.SetLevel(log.DebugLevel)
 	if cc.createConfigPath != "" {
 		log.Debug("loading config")
 		configBytes, err := os.ReadFile(cc.createConfigPath)

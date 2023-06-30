@@ -8,6 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const SOURCE_COMPATIBILITY = "sourceCompatibility"
+const TARGET_COMPATIBILITY = "targetCompatibility"
+const SERVER_PORT = "server.port"
+const GRADLE_FILE_FORMAT = "*.gradle"
+
 type GradleExtractor struct {
 }
 
@@ -26,7 +31,7 @@ func (*GradleExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string
 	separatorsSet := createSeparatorsSet()
 	cutSet := createCutSet()
 	extractedValues := make(map[string]string)
-	files, err := r.FindFiles(".", []string{"*.gradle"}, 2)
+	files, err := r.FindFiles(".", []string{GRADLE_FILE_FORMAT}, 2)
 	if err != nil {
 		return nil, fmt.Errorf("error finding gradle files: %v", err)
 	}
@@ -44,18 +49,19 @@ func (*GradleExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string
 		}
 		// this func takes care of removing the single or double quotes from split array output
 		cutset := func(c rune) bool { return cutSet.Contains(c) }
-		if strings.Contains(content, "sourceCompatibility") || strings.Contains(content, "targetCompatibility") || strings.Contains(content, "server.port") {
+		if strings.Contains(content, SOURCE_COMPATIBILITY) || strings.Contains(content, TARGET_COMPATIBILITY) 
+		|| strings.Contains(content, SERVER_PORT) {
 			stringAfterSplit := strings.FieldsFunc(content, separatorFunc)
 			for i, s := range stringAfterSplit {
-				if s == "sourceCompatibility" && i+1 < len(stringAfterSplit) {
+				if s == SOURCE_COMPATIBILITY && i+1 < len(stringAfterSplit) {
 					detectedVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					detectedVersion = detectedVersion + "-jre"
 					extractedValues["VERSION"] = detectedVersion
-				} else if s == "targetCompatibility" && i+1 < len(stringAfterSplit) {
+				} else if s == TARGET_COMPATIBILITY && i+1 < len(stringAfterSplit) {
 					detectedBuilderVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					detectedBuilderVersion = "jdk" + detectedBuilderVersion
 					extractedValues["BUILDERVERSION"] = detectedBuilderVersion
-				} else if s == "server.port" && i+1 < len(stringAfterSplit) {
+				} else if s == SERVER_PORT && i+1 < len(stringAfterSplit) {
 					detectedPort := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					extractedValues["PORT"] = detectedPort
 				}

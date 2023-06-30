@@ -52,15 +52,18 @@ func (*GradleExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string
 		if strings.Contains(content, SOURCE_COMPATIBILITY) || strings.Contains(content, TARGET_COMPATIBILITY) || strings.Contains(content, SERVER_PORT) {
 			stringAfterSplit := strings.FieldsFunc(content, separatorFunc)
 			for i, s := range stringAfterSplit {
-				if s == SOURCE_COMPATIBILITY && i+1 < len(stringAfterSplit) {
+				if i+1 >= len(stringAfterSplit) {
+					break
+				}
+				if s == SOURCE_COMPATIBILITY {
 					detectedVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					detectedVersion = detectedVersion + "-jre"
 					extractedValues["VERSION"] = detectedVersion
-				} else if s == TARGET_COMPATIBILITY && i+1 < len(stringAfterSplit) {
+				} else if s == TARGET_COMPATIBILITY {
 					detectedBuilderVersion := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					detectedBuilderVersion = "jdk" + detectedBuilderVersion
 					extractedValues["BUILDERVERSION"] = detectedBuilderVersion
-				} else if s == SERVER_PORT && i+1 < len(stringAfterSplit) {
+				} else if s == SERVER_PORT {
 					detectedPort := strings.TrimFunc(stringAfterSplit[i+1], cutset)
 					extractedValues["PORT"] = detectedPort
 				}

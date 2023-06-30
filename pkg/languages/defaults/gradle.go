@@ -49,8 +49,7 @@ func (*GradleExtractor) ReadDefaults(r reporeader.RepoReader) (map[string]string
 		}
 		// this func takes care of removing the single or double quotes from split array output
 		cutset := func(c rune) bool { return cutSet.Contains(c) }
-		if strings.Contains(content, SOURCE_COMPATIBILITY) || strings.Contains(content, TARGET_COMPATIBILITY) 
-		|| strings.Contains(content, SERVER_PORT) {
+		if strings.Contains(content, SOURCE_COMPATIBILITY) || strings.Contains(content, TARGET_COMPATIBILITY) || strings.Contains(content, SERVER_PORT) {
 			stringAfterSplit := strings.FieldsFunc(content, separatorFunc)
 			for i, s := range stringAfterSplit {
 				if s == SOURCE_COMPATIBILITY && i+1 < len(stringAfterSplit) {

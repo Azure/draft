@@ -188,7 +188,7 @@ For projects written in languages other than Go, or for projects that prefer to 
 Several features have been implemented to make consuming draft as easy as possible:
 - `draft info` prints supported language and field information in json format for easy parsing
 - `--dry-run` and `--dry-run-file` flags can be used on the `create` and `update` commands to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
-- `draft update` and `draft create` accept take a repeatable `--variable` flag that can be used to set template variables
+- `draft update` and `draft create` accept a repeatable `--variable` flag that can be used to set template variables
 - `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
 
 ## Contributing

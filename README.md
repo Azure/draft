@@ -107,7 +107,6 @@ The following flags can be used for enabling dry running, which is currently sup
     "NAMESPACE": "default",
     "PORT": "1323",
     "SERVICEPORT": "80",
-    "VERSION": "1.18"
   },
   "filesToWrite": [
     "langtest/.dockerignore",
@@ -125,7 +124,7 @@ The following flags can be used for enabling dry running, which is currently sup
 ```
 ## Prerequisites
 
-Draft requires Go version 1.18.x.
+Draft requires Go version 1.18.x. or above as it uses go generics
 
 Check your go version.
 
@@ -179,17 +178,17 @@ If you are looking to leverage Draft's file generation capabilities and templati
 ### Importing Draft Go Packages
 This option will provide the cleanest integration, as it directly builds Draft into your project. However, it requires that your project is written in Go.
 
-Dockerfiles can be generated following the example in `examples/dockerfile.go` 
+Dockerfiles can be generated following the example in [examples/dockerfile.go](https://github.com/Azure/draft/blob/main/example/dockerfile.go) 
 
-Deployment files can be generated following the example in `examples/deployment.go`
+Deployment files can be generated following the example in [examples/deployment.go](https://github.com/Azure/draft/blob/main/example/deployment.go)
 
 ### Wrapping the Binary
 For projects written in languages other than Go, or for projects that prefer to not import the packages directly, you can wrap the Draft binary.
 
 Several features have been implemented to make consuming draft as easy as possible:
 - `draft info` prints supported language and field information in json format for easy parsing
-- `--dry-run` and `--dry-run-file` flags can be used on the `create` command to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
-- `draft update` accepts takes a repeatable `--variable` flag that can be used to set template variables
+- `--dry-run` and `--dry-run-file` flags can be used on the `create` and `update` commands to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
+- `draft update` and `draft create` accept take a repeatable `--variable` flag that can be used to set template variables
 - `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
 
 ## Contributing

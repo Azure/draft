@@ -11,6 +11,7 @@ type RepoReader interface {
 	// FindFiles returns a list of files that match the given patterns searching up to
 	// maxDepth nested sub-directories. maxDepth of 0 limits files to the root dir.
 	FindFiles(path string, patterns []string, maxDepth int) ([]string, error)
+	GetRepoName() (string,error)
 }
 
 // VariableExtractor is an interface that can be implemented for extracting variables from a repo's files
@@ -23,6 +24,15 @@ type VariableExtractor interface {
 // TestRepoReader is a RepoReader that can be used for testing, and takes a list of relative file paths with their contents
 type TestRepoReader struct {
 	Files map[string][]byte
+}
+
+// GetRepoName implements RepoReader.
+func (TestRepoReader) GetRepoName() (string,error) {
+	return "test-repo",nil
+}
+
+var _ RepoReader = TestRepoReader{
+	Files: map[string][]byte{},
 }
 
 func (r TestRepoReader) Exists(path string) bool {

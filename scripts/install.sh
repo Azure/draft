@@ -112,30 +112,15 @@ download_draft_cli_stable_version(){
     FILENAME="draft-$OS-$ARCH"
   fi
   log INFO "Starting Draft CLI Download for $FILENAME"
-  get_draft_cli_version
-  DRAFTCLIURL="https://github.com/Azure/draft/releases/download/$DRAFTCLIVERSION/$FILENAME"
+  # For Github actions integration-install tests DRAFT_CLI_VERSION will be set an env variable i.e., check integration-install.yml, but when the user runs the script locally, it will be empty.
+  if [ -z "${DRAFT_CLI_VERSION}" ]; then
+    DRAFT_CLI_VERSION=$(curl -L -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
+  fi
+  log INFO "Draft CLI Version $DRAFT_CLI_VERSION"
+  DRAFTCLIURL="https://github.com/Azure/draft/releases/download/$DRAFT_CLI_VERSION/$FILENAME"
   curl -o /tmp/draftcli -fLO $DRAFTCLIURL
   chmod +x /tmp/draftcli
   log INFO "Finished Draft CLI download complete."
-}
-
-get_draft_cli_version() {
-  retry=0
-  log INFO "Getting Draft CLI version"
-  while [ -z "${DRAFTCLIVERSION}" ];
-  do 
-    DRAFTCLIVERSION=$(curl -L -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
-    if [ -z "${DRAFTCLIVERSION}" ]; then
-      log INFO "Unable to get Draft CLI version"
-      retry=$((retry++))
-      if [ $retry -eq 5 ]; then
-        log ERROR "Unable to get Draft CLI version"
-        exit 1
-      fi
-      sleep 5
-    fi
-  done
-  log INFO "Draft CLI Version $DRAFTCLIVERSION"
 }
 
 file_issue_prompt() {

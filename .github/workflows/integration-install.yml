@@ -11,9 +11,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      - name: Get Draft Cli version
+        uses: actions/github-script@v6
+        id: get_draft_version
+        with:
+          result-encoding: string
+          retries : 3
+          script: |
+            const tag_url = context.payload.repository.releases_url.replace('{/id}', '/latest');
+            const response = await github.request(tag_url);
+            return response.data.tag_name;
       - name: Run Install Script
         shell: bash
         run: ./scripts/install.sh
+        env:
+          DRAFT_CLI_VERSION: ${{ steps.get_draft_version.outputs.result }}
       - name: Validate Command is Installed
         shell: bash
         run: |

@@ -67,12 +67,27 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "extract python file containing the string \"__name__=='__main__'\" as the entrypoint",
+			name: "extract python file containing the string \"if __name__ == '__main__'\" as the entrypoint",
 			args: args{
 				r: reporeader.TestRepoReader{
 					Files: map[string][]byte{
 						"foo.py": []byte("print('hello world')"),
-						"bar.py": []byte("if __name__ == '__main__': print('hello world')"),
+						"bar.py": []byte("if __name__ == '__main__' : print('hello world')"),
+					},
+				},
+			},
+			want: map[string]string{
+				"ENTRYPOINT": "bar.py",
+			},
+			wantErr: false,
+		},
+		{
+			name: "extract python file containing the string \"if __name__==\"__main__\"\" as the entrypoint",
+			args: args{
+				r: reporeader.TestRepoReader{
+					Files: map[string][]byte{
+						"foo.py": []byte("print('hello world')"),
+						"bar.py": []byte("if __name__==\"__main__\": print('hello world')"),
 					},
 				},
 			},

@@ -117,15 +117,14 @@ func CreateLanguagesFromEmbedFS(dockerfileTemplates embed.FS, dest string) *Lang
 	return l
 }
 
-func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) ([]config.BuilderVarDefault, error) {
+func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (map[string]string, error) {
 	extractors := []reporeader.VariableExtractor{
 		&defaults.PythonExtractor{},
 	}
 	extractedValues := make(map[string]string)
-	var extractedDefaults []config.BuilderVarDefault
 	if r == nil {
 		log.Debugf("no repo reader provided, returning empty list of defaults")
-		return extractedDefaults, nil
+		return extractedValues, nil
 	}
 	for _, extractor := range extractors {
 		if extractor.MatchesLanguage(lowerLang) {
@@ -143,12 +142,5 @@ func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (
 		}
 	}
 
-	for k, v := range extractedValues {
-		extractedDefaults = append(extractedDefaults, config.BuilderVarDefault{
-			Name:  k,
-			Value: v,
-		})
-	}
-
-	return extractedDefaults, nil
+	return extractedValues, nil
 }

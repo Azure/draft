@@ -21,18 +21,9 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	mockCC := &createCmd{}
-	mockCC.createConfig = &CreateConfig{}
-	mockCC.dest = "./.."
-	mockCC.createConfig.DeployType = ""
-	mockCC.createConfig.LanguageVariables = []UserInputs{}
-	mockCC.createConfig.DeployVariables = []UserInputs{}
-	mockPortInput := UserInputs{Name: "PORT", Value: "8080"}
-	mockAppNameInput := UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
-	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
-	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
-	mockCC.templateWriter = &writers.LocalFSWriter{}
+	testCreateConfig := CreateConfig{LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}, DeployVariables: []UserInputs{{Name: "PORT", Value: "8080"}, {Name: "APPNAME", Value: "testingCreateCommand"}}}
 	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest"}
+	mockCC := createCmd{dest: "./..", createConfig: &testCreateConfig, templateWriter: &writers.LocalFSWriter{}}
 	deployTypes := []string{"helm", "kustomize", "manifests"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
@@ -106,17 +97,14 @@ func TestRun(t *testing.T) {
 }
 
 func TestRunCreateDockerfileWithRepoReader(t *testing.T) {
-	mockCC := &createCmd{}
-	mockCC.repoReader = &reporeader.TestRepoReader{Files: map[string][]byte{
+
+	testRepoReader := &reporeader.TestRepoReader{Files: map[string][]byte{
 		"foo.py":  []byte("print('Hello World')"),
 		"main.py": []byte("print('Hello World')"),
 	}}
-	mockCC.createConfig = &CreateConfig{}
-	mockCC.createConfig.LanguageType = "python"
-	mockCC.createConfig.LanguageVariables = []UserInputs{}
-	mockPortInput := UserInputs{Name: "PORT", Value: "8080"}
-	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
-	mockCC.templateWriter = &writers.LocalFSWriter{}
+
+	testCreateConfig := CreateConfig{LanguageType: "python", LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}}
+	mockCC := createCmd{createConfig: &testCreateConfig, repoReader: testRepoReader, templateWriter: &writers.LocalFSWriter{}}
 
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
 	assert.False(t, detectedLang == nil)
@@ -136,7 +124,7 @@ func TestRunCreateDockerfileWithRepoReader(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	os.RemoveAll(".dockerignore")
+	err = os.RemoveAll(".dockerignore")
 	if err != nil {
 		t.Error(err)
 	}

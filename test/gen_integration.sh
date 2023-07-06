@@ -109,6 +109,7 @@ do
     # addon integration testing vars
     ingress_test_args="-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     create_config_args="--variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest"
+    python_create_config_args="--variable PORT=8080 --variable APPNAME=testingCreateCommand --variable VERSION=1.11 --variable BUILDERVERSION=1.11 --variable SERVICEPORT=8080 --variable NAMESPACE=testNamespace --variable IMAGENAME=testImage --variable IMAGETAG=latest --variable ENTRYPOINT=testapp.py"
     echo "Adding $lang with port $port"
 
     mkdir ./integration/$lang
@@ -204,12 +205,19 @@ languageVariables:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
+        - name: Execute Dry Run with variables passed through flag
+          $(if [ "$lang" = "python" ] 
+          then echo "run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -d ./langtest/ -l $lang --skip-file-detection --deploy-type helm \
-            $create_config_args
+            $python_create_config_args"
+          else echo "run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+            create -d ./langtest/ -l $lang --skip-file-detection --deploy-type helm \
+            $create_config_args"
+            fi)
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0
@@ -355,11 +363,18 @@ languageVariables:
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
       - name: Execute Dry Run with variables passed through flag 
-        run: |
+        $(if [ "$lang" = "python" ]; 
+        then echo "run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json \
           create -d ./langtest/ -l $lang --skip-file-detection --deploy-type kustomize \
-          $create_config_args
+          $python_create_config_args";
+        else echo "run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+          create -d ./langtest/ -l $lang --skip-file-detection --deploy-type kustomize \
+          $create_config_args";
+        fi)
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0
@@ -495,12 +510,19 @@ languageVariables:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-        - name: Execute Dry Run with variables passed through flag 
-          run: |
+        - name: Execute Dry Run with variables passed through flag
+          $(if [ "$lang" = "python" ]; 
+          then echo "run: |
             mkdir -p test/temp
             ./draft --dry-run --dry-run-file test/temp/dry-run.json \
             create -d ./langtest/ -l $lang --skip-file-detection --deploy-type manifests \
-            $create_config_args
+            $python_create_config_args";
+          else echo "run: |
+            mkdir -p test/temp
+            ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+            create -d ./langtest/ -l $lang --skip-file-detection --deploy-type manifests \
+            $create_config_args";
+          fi) 
         - name: Validate JSON
           run: |
             npm install -g ajv-cli@5.0.0

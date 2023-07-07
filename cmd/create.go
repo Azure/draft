@@ -199,7 +199,7 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 
 					selection := &promptui.Select{
 						Label: "Linguist detected Java, are you using maven or gradle?",
-						Items: []string{"gradle", "maven"},
+						Items: []string{"gradle", "maven", "gradlew"},
 					}
 
 					_, selectResponse, err := selection.Run()
@@ -209,6 +209,8 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 
 					if selectResponse == "gradle" {
 						lang.Language = "Gradle"
+					} else if selectResponse == "gradlew" {
+						lang.Language = "Gradlew"
 					}
 				}
 			}

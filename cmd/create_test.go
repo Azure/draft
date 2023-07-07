@@ -15,23 +15,15 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
+	"github.com/Azure/draft/pkg/reporeader"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
 )
 
 func TestRun(t *testing.T) {
-	mockCC := &createCmd{}
-	mockCC.createConfig = &CreateConfig{}
-	mockCC.dest = "./.."
-	mockCC.createConfig.DeployType = ""
-	mockCC.createConfig.LanguageVariables = []UserInputs{}
-	mockCC.createConfig.DeployVariables = []UserInputs{}
-	mockPortInput := UserInputs{Name: "PORT", Value: "8080"}
-	mockAppNameInput := UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
-	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
-	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
-	mockCC.templateWriter = &writers.LocalFSWriter{}
+	testCreateConfig := CreateConfig{LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}, DeployVariables: []UserInputs{{Name: "PORT", Value: "8080"}, {Name: "APPNAME", Value: "testingCreateCommand"}}}
 	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest"}
+	mockCC := createCmd{dest: "./..", createConfig: &testCreateConfig, templateWriter: &writers.LocalFSWriter{}}
 	deployTypes := []string{"helm", "kustomize", "manifests"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
@@ -53,7 +45,6 @@ func TestRun(t *testing.T) {
 	assert.False(t, lowerLang == "")
 	assert.True(t, err == nil)
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
-	println(err)
 	assert.True(t, err == nil)
 
 	//Write back old Dockerfile
@@ -102,6 +93,40 @@ func TestRun(t *testing.T) {
 		os.RemoveAll("./../base")
 		os.RemoveAll("./../overlays")
 		os.RemoveAll("./../manifests")
+	}
+}
+
+func TestRunCreateDockerfileWithRepoReader(t *testing.T) {
+
+	testRepoReader := &reporeader.TestRepoReader{Files: map[string][]byte{
+		"foo.py":  []byte("print('Hello World')"),
+		"main.py": []byte("print('Hello World')"),
+	}}
+
+	testCreateConfig := CreateConfig{LanguageType: "python", LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}}
+	mockCC := createCmd{createConfig: &testCreateConfig, repoReader: testRepoReader, templateWriter: &writers.LocalFSWriter{}}
+
+	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
+	assert.False(t, detectedLang == nil)
+	assert.True(t, lowerLang == "python")
+	assert.Nil(t, err)
+
+	err = mockCC.generateDockerfile(detectedLang, lowerLang)
+	assert.True(t, err == nil)
+
+	dockerFileContent, err := ioutil.ReadFile("Dockerfile")
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Contains(t, string(dockerFileContent), "CMD [\"main.py\"]")
+
+	err = os.Remove("Dockerfile")
+	if err != nil {
+		t.Error(err)
+	}
+	err = os.RemoveAll(".dockerignore")
+	if err != nil {
+		t.Error(err)
 	}
 }
 

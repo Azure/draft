@@ -65,7 +65,53 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 				"ENTRYPOINT": "foo.py",
 			},
 			wantErr: false,
-		}, {
+		},
+		{
+			name: "extract python file containing the string \"if __name__ == '__main__'\" as the entrypoint",
+			args: args{
+				r: reporeader.TestRepoReader{
+					Files: map[string][]byte{
+						"foo.py": []byte("print('hello world')"),
+						"bar.py": []byte("if __name__ == '__main__' : print('hello world')"),
+					},
+				},
+			},
+			want: map[string]string{
+				"ENTRYPOINT": "bar.py",
+			},
+			wantErr: false,
+		},
+		{
+			name: "extract python file containing the string \"if __name__==\"__main__\"\" as the entrypoint",
+			args: args{
+				r: reporeader.TestRepoReader{
+					Files: map[string][]byte{
+						"foo.py": []byte("print('hello world')"),
+						"bar.py": []byte("if __name__==\"__main__\": print('hello world')"),
+					},
+				},
+			},
+			want: map[string]string{
+				"ENTRYPOINT": "bar.py",
+			},
+			wantErr: false,
+		},
+		{
+			name: "extract python file named app.py as the entrypoint",
+			args: args{
+				r: reporeader.TestRepoReader{
+					Files: map[string][]byte{
+						"foo.py": []byte("print('Hello World')"),
+						"app.py": []byte("print('Hello World')"),
+					},
+				},
+			},
+			want: map[string]string{
+				"ENTRYPOINT": "app.py",
+			},
+			wantErr: false,
+		},
+		{
 			name: "no extraction if no python files",
 			args: args{
 				r: reporeader.TestRepoReader{

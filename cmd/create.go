@@ -260,12 +260,27 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	// Extract language-specific defaults from repo
-	extractedDefaults, err := cc.supportedLangs.ExtractDefaults(lowerLang, cc.repoReader)
+	extractedValues, err := cc.supportedLangs.ExtractDefaults(lowerLang, cc.repoReader)
 	if err != nil {
 		return err
 	}
-	for _, d := range extractedDefaults {
-		langConfig.VariableDefaults = append(langConfig.VariableDefaults, d)
+
+	// Check for existing duplicate defualts
+	for k, v := range extractedValues {
+		variableExists := false
+		for i, varD := range langConfig.VariableDefaults {
+			if k == varD.Name {
+				variableExists = true
+				langConfig.VariableDefaults[i].Value = v
+				break
+			}
+		}
+		if !variableExists {
+			langConfig.VariableDefaults = append(langConfig.VariableDefaults, config.BuilderVarDefault{
+				Name:  k,
+				Value: v,
+			})
+		}
 	}
 
 	var inputs map[string]string

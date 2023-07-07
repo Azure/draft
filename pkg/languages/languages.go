@@ -120,6 +120,7 @@ func CreateLanguagesFromEmbedFS(dockerfileTemplates embed.FS, dest string) *Lang
 func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (map[string]string, error) {
 	extractors := []reporeader.VariableExtractor{
 		&defaults.PythonExtractor{},
+		&defaults.GradleExtractor{},
 	}
 	extractedValues := make(map[string]string)
 	if r == nil {

@@ -11,7 +11,7 @@ type RepoReader interface {
 	// FindFiles returns a list of files that match the given patterns searching up to
 	// maxDepth nested sub-directories. maxDepth of 0 limits files to the root dir.
 	FindFiles(path string, patterns []string, maxDepth int) ([]string, error)
-	GetRepoName() (string,error)
+	GetRepoName() (string, error)
 }
 
 // VariableExtractor is an interface that can be implemented for extracting variables from a repo's files
@@ -21,21 +21,21 @@ type VariableExtractor interface {
 	GetName() string
 }
 
-// TestRepoReader is a RepoReader that can be used for testing, and takes a list of relative file paths with their contents
-type TestRepoReader struct {
+// FakeRepoReader is a RepoReader that can be used for testing, and takes a list of relative file paths with their contents
+type FakeRepoReader struct {
 	Files map[string][]byte
 }
 
-// GetRepoName implements RepoReader.
-func (TestRepoReader) GetRepoName() (string,error) {
-	return "test-repo",nil
+// GetRepoName returns the name of the repo
+func (FakeRepoReader) GetRepoName() (string, error) {
+	return "test-repo", nil
 }
 
-var _ RepoReader = TestRepoReader{
+var _ RepoReader = FakeRepoReader{
 	Files: map[string][]byte{},
 }
 
-func (r TestRepoReader) Exists(path string) bool {
+func (r FakeRepoReader) Exists(path string) bool {
 	if r.Files != nil {
 		_, ok := r.Files[path]
 		return ok
@@ -43,14 +43,14 @@ func (r TestRepoReader) Exists(path string) bool {
 	return false
 }
 
-func (r TestRepoReader) ReadFile(path string) ([]byte, error) {
+func (r FakeRepoReader) ReadFile(path string) ([]byte, error) {
 	if r.Files != nil {
 		return r.Files[path], nil
 	}
 	return nil, nil
 }
 
-func (r TestRepoReader) FindFiles(path string, patterns []string, maxDepth int) ([]string, error) {
+func (r FakeRepoReader) FindFiles(path string, patterns []string, maxDepth int) ([]string, error) {
 	var files []string
 	if r.Files == nil {
 		return files, nil

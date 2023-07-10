@@ -98,7 +98,7 @@ func TestRun(t *testing.T) {
 
 func TestRunCreateDockerfileWithRepoReader(t *testing.T) {
 
-	testRepoReader := &reporeader.TestRepoReader{Files: map[string][]byte{
+	testRepoReader := &reporeader.FakeRepoReader{Files: map[string][]byte{
 		"foo.py":  []byte("print('Hello World')"),
 		"main.py": []byte("print('Hello World')"),
 	}}

@@ -13,14 +13,14 @@ import (
 type LocalFSReader struct {
 }
 
-// GetRepoName implements reporeader.RepoReader.
-func (*LocalFSReader) GetRepoName() (string,error) {
+// GetRepoName returns the name of the current directory, which is an approximation of the repo name
+func (*LocalFSReader) GetRepoName() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
-		return "",fmt.Errorf("unable to get working directory: %v", err)
+		return "", fmt.Errorf("unable to get working directory: %v", err)
 	}
 	dirName := filepath.Base(wd)
-	return dirName,nil
+	return dirName, nil
 }
 
 type LocalFileFinder struct {

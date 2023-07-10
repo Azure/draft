@@ -25,7 +25,7 @@ func TestGradleExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract gradle jre version with spaces",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"build.gradle": []byte("group = 'com.example' version = '0.0.1-SNAPSHOT' sourceCompatibility=\"11\" targetCompatibility='11'"),
 					},
@@ -40,7 +40,7 @@ func TestGradleExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract gradle jre version with new lines",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"build.gradle": []byte("group = 'com.example'\nversion = '0.0.1-SNAPSHOT'\nsourceCompatibility=\"11\"\ntargetCompatibility='11'"),
 					},
@@ -55,7 +55,7 @@ func TestGradleExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract gradle jre version with tabs",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"build.gradle": []byte("group = 'com.example'\tversion = '0.0.1-SNAPSHOT'\tsourceCompatibility= \"12\" \ntargetCompatibility='11'"),
 					},
@@ -70,7 +70,7 @@ func TestGradleExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract gradle jre version with double spaces",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"build.gradle": []byte("group = 'com.example'  version = '0.0.1-SNAPSHOT'  sourceCompatibility=\"12\"\ntargetCompatibility='11'"),
 					},
@@ -85,7 +85,7 @@ func TestGradleExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract gradle jre version reading from a file",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"build.gradle": content,
 					},

@@ -7741,7 +7741,7 @@ xBase:
 - (^|/)extjs/docs/
 - (^|/)extjs/builds/
 - (^|/)extjs/cmd/
-- (^|/)extjs/examples/
+- (^|/)extjs/example/
 - (^|/)extjs/locale/
 - (^|/)extjs/packages/
 - (^|/)extjs/plugins/

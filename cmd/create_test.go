@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -13,23 +15,16 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
+	"github.com/Azure/draft/pkg/reporeader"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
 )
 
 func TestRun(t *testing.T) {
-	mockCC := &createCmd{}
-	mockCC.createConfig = &CreateConfig{}
-	mockCC.dest = "./.."
-	mockCC.createConfig.DeployType = "helm"
-	mockCC.createConfig.LanguageVariables = []UserInputs{}
-	mockCC.createConfig.DeployVariables = []UserInputs{}
-	mockPortInput := UserInputs{Name: "PORT", Value: "8080"}
-	mockAppNameInput := UserInputs{Name: "APPNAME", Value: "testingCreateCommand"}
-	mockCC.createConfig.DeployVariables = append(mockCC.createConfig.DeployVariables, mockPortInput, mockAppNameInput)
-	mockCC.createConfig.LanguageVariables = append(mockCC.createConfig.LanguageVariables, mockPortInput)
-	mockCC.templateWriter = &writers.LocalFSWriter{}
-
+	testCreateConfig := CreateConfig{LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}, DeployVariables: []UserInputs{{Name: "PORT", Value: "8080"}, {Name: "APPNAME", Value: "testingCreateCommand"}}}
+	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest"}
+	mockCC := createCmd{dest: "./..", createConfig: &testCreateConfig, templateWriter: &writers.LocalFSWriter{}}
+	deployTypes := []string{"helm", "kustomize", "manifests"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
 
@@ -42,8 +37,17 @@ func TestRun(t *testing.T) {
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
 	assert.True(t, err == nil)
 
-	err = mockCC.createDeployment()
+	//when language variables are passed in --variable flag
+	mockCC.createConfig.LanguageVariables = nil
+	mockCC.lang = "go"
+	detectedLang, lowerLang, err = mockCC.mockDetectLanguage()
+	assert.False(t, detectedLang == nil)
+	assert.False(t, lowerLang == "")
 	assert.True(t, err == nil)
+	err = mockCC.generateDockerfile(detectedLang, lowerLang)
+	assert.True(t, err == nil)
+
+	//Write back old Dockerfile
 	err = ioutil.WriteFile("./../Dockerfile", oldDockerfile, 0644)
 	if err != nil {
 		t.Error(err)
@@ -54,7 +58,76 @@ func TestRun(t *testing.T) {
 		t.Error(err)
 	}
 
-	os.RemoveAll("./../charts")
+	for _, deployType := range deployTypes {
+		//deployment variables passed through --variable flag
+		mockCC.deployType = deployType
+		err = mockCC.createDeployment()
+		assert.True(t, err == nil)
+		//check if deployment files have been created
+		err, deploymentFiles := getAllDeploymentFiles(path.Join("../template/deployments", mockCC.deployType))
+		assert.Nil(t, err)
+		for _, fileName := range deploymentFiles {
+			_, err = os.Stat(fileName)
+			assert.True(t, err == nil)
+		}
+
+		os.RemoveAll("./../charts")
+		os.RemoveAll("./../base")
+		os.RemoveAll("./../overlays")
+		os.RemoveAll("./../manifests")
+
+		//deployment variables passed through createConfig
+		mockCC.createConfig.DeployType = deployType
+		err = mockCC.createDeployment()
+		assert.True(t, err == nil)
+		//check if deployment files have been created
+		err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
+		assert.Nil(t, err)
+		for _, fileName := range deploymentFiles {
+			_, err = os.Stat(fileName)
+			assert.True(t, err == nil)
+		}
+		mockCC.createConfig.DeployType = ""
+
+		os.RemoveAll("./../charts")
+		os.RemoveAll("./../base")
+		os.RemoveAll("./../overlays")
+		os.RemoveAll("./../manifests")
+	}
+}
+
+func TestRunCreateDockerfileWithRepoReader(t *testing.T) {
+
+	testRepoReader := &reporeader.TestRepoReader{Files: map[string][]byte{
+		"foo.py":  []byte("print('Hello World')"),
+		"main.py": []byte("print('Hello World')"),
+	}}
+
+	testCreateConfig := CreateConfig{LanguageType: "python", LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}}
+	mockCC := createCmd{createConfig: &testCreateConfig, repoReader: testRepoReader, templateWriter: &writers.LocalFSWriter{}}
+
+	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
+	assert.False(t, detectedLang == nil)
+	assert.True(t, lowerLang == "python")
+	assert.Nil(t, err)
+
+	err = mockCC.generateDockerfile(detectedLang, lowerLang)
+	assert.True(t, err == nil)
+
+	dockerFileContent, err := ioutil.ReadFile("Dockerfile")
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Contains(t, string(dockerFileContent), "CMD [\"main.py\"]")
+
+	err = os.Remove("Dockerfile")
+	if err != nil {
+		t.Error(err)
+	}
+	err = os.RemoveAll(".dockerignore")
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestInitConfig(t *testing.T) {
@@ -106,20 +179,24 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 	var err error
 
 	if mcc.createConfig.LanguageType == "" {
-		langs, err = linguist.ProcessDir(mcc.dest)
-		log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", mcc.dest, err)
-		if err != nil {
-			return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
-		}
+		if mcc.lang != "" {
+			mcc.createConfig.LanguageType = mcc.lang
+		} else {
+			langs, err = linguist.ProcessDir(mcc.dest)
+			log.Debugf("linguist.ProcessDir(%v) result:\n\nError: %v", mcc.dest, err)
+			if err != nil {
+				return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
+			}
 
-		for _, lang := range langs {
-			log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
-		}
+			for _, lang := range langs {
+				log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
+			}
 
-		log.Debugf("detected %d langs", len(langs))
+			log.Debugf("detected %d langs", len(langs))
 
-		if len(langs) == 0 {
-			return nil, "", ErrNoLanguageDetected
+			if len(langs) == 0 {
+				return nil, "", ErrNoLanguageDetected
+			}
 		}
 	}
 
@@ -153,4 +230,25 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		log.Infof("--> Could not find a pack for %s. Trying to find the next likely language match...\n", detectedLang.Language)
 	}
 	return nil, "", ErrNoLanguageDetected
+}
+
+func TestDefaultValues(t *testing.T) {
+	assert.Equal(t, emptyDefaultFlagValue, "")
+	assert.Equal(t, currentDirDefaultFlagValue, ".")
+}
+
+func getAllDeploymentFiles(src string) (error, []string) {
+	deploymentFiles := []string{}
+	err := filepath.Walk(src,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			filePath := strings.ReplaceAll(path, src, "./..")
+			if info.Name() != "draft.yaml" {
+				deploymentFiles = append(deploymentFiles, filePath)
+			}
+			return nil
+		})
+	return err, deploymentFiles
 }

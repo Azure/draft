@@ -13,7 +13,7 @@ jobs:
     steps:
     # Checkout code
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     # Read changelog and read versions etc.
     - name: Check version is mentioned in Changelog.md
       id: changelog_reader
@@ -31,7 +31,7 @@ jobs:
     - name: Make Release Dir
       run: mkdir bin
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v4
       with:
         go-version: 1.18.2
     # Check if the newest tag already exists

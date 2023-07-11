@@ -8,9 +8,11 @@ deployVariables:
     value: "80"
   - name: "APPNAME"
     value: "testapp"
+  - name: "IMAGENAME"
+    value: "host.minikube.internal:5001/testapp"
 languageVariables:
   - name: "VERSION"
-    value: "11-jre-slim"
+    value: "11-jre"
   - name: "BUILDERVERSION"
     value: "3-jdk-11"
   - name: "PORT"

@@ -12,6 +12,9 @@ go-generate:
 	GO111MODULE=on go generate ./pkg/workflows/...; \
 	GO111MODULE=on go generate ./pkg/addons/...;
 
+.PHONY: test
+test: run-unit-tests run-e2e-tests-local
+
 .PHONY: run-unit-tests
 run-unit-tests:
 	docker build . -t gotest && docker run -t --rm --name draft-test gotest test ./... -buildvcs=false

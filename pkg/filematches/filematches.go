@@ -2,7 +2,6 @@ package filematches
 
 import (
 	"errors"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -44,7 +43,7 @@ func (f *FileMatches) walkFunc(path string, info os.FileInfo, err error) error {
 
 // TODO: maybe generalize this function in the future
 func isValidK8sFile(filePath string) bool {
-	fileContents, err := ioutil.ReadFile(filePath)
+	fileContents, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -20,8 +20,8 @@ type ServiceManifest interface {
 }
 
 type HelmProductionYaml struct {
-	ImageKey imageKey `yaml:"imageKey"`
-	Service  service  `yaml:"service"`
+	Image   image   `yaml:"image"`
+	Service service `yaml:"service"`
 }
 
 type service struct {
@@ -30,7 +30,7 @@ type service struct {
 	Port        string            `yaml:"port"`
 }
 
-type imageKey struct {
+type image struct {
 	Repository string `yaml:"repository"`
 	PullPolicy string `yaml:"pullPolicy"`
 	Tag        string `yaml:"tag"`

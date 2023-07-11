@@ -106,11 +106,18 @@ check_jq_processor_present(){
 
 # Download draft cli stable version.
 download_draft_cli_stable_version(){
-  FILENAME="draft-$OS-$ARCH"
+  if [ "$OS" == "windows" ]; then
+    FILENAME="draft-$OS-$ARCH".exe
+  else 
+    FILENAME="draft-$OS-$ARCH"
+  fi
   log INFO "Starting Draft CLI Download for $FILENAME"
-  DRAFTCLIVERSION=$(curl -L -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
-  log INFO "Starting Draft CLI Version $DRAFTCLIVERSION"
-  DRAFTCLIURL="https://github.com/Azure/draft/releases/download/$DRAFTCLIVERSION/$FILENAME"
+  # For Github actions integration-install tests DRAFT_CLI_VERSION will be set an env variable i.e., check integration-install.yml, but when the user runs the script locally, it will be empty.
+  if [ -z "${DRAFT_CLI_VERSION}" ]; then
+    DRAFT_CLI_VERSION=$(curl -L -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
+  fi
+  log INFO "Draft CLI Version $DRAFT_CLI_VERSION"
+  DRAFTCLIURL="https://github.com/Azure/draft/releases/download/$DRAFT_CLI_VERSION/$FILENAME"
   curl -o /tmp/draftcli -fLO $DRAFTCLIURL
   chmod +x /tmp/draftcli
   log INFO "Finished Draft CLI download complete."
@@ -123,7 +130,7 @@ file_issue_prompt() {
 }
 
 copy_draft_files() {
-  if [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+  if [[ ":$PATH:" == *":$HOME/.local/bin:"* || "$OS" == "windows" ]]; then
       if [ ! -d "$HOME/.local/bin" ]; then
         mkdir -p "$HOME/.local/bin"
       fi
@@ -143,8 +150,8 @@ install() {
       OS="linux"
   elif [[ "$OSTYPE" == "darwin"* ]]; then
       OS="darwin"
-  elif [[ "$OSTYPE" == "win32" ]]; then
-      OS="win"
+  elif [[ "$OSTYPE" == "win32" || "$OSTYPE" == "msys" ]]; then
+      OS="windows"
   else
       echo "Draft CLI isn't supported for your platform - $OSTYPE"
       file_issue_prompt

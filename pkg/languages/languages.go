@@ -6,9 +6,12 @@ import (
 	"io/fs"
 	"path"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
+
+	"github.com/Azure/draft/pkg/languages/defaults"
+	"github.com/Azure/draft/pkg/reporeader"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -112,4 +115,33 @@ func CreateLanguagesFromEmbedFS(dockerfileTemplates embed.FS, dest string) *Lang
 	l.PopulateConfigs()
 
 	return l
+}
+
+func (l *Languages) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (map[string]string, error) {
+	extractors := []reporeader.VariableExtractor{
+		&defaults.PythonExtractor{},
+		&defaults.GradleExtractor{},
+	}
+	extractedValues := make(map[string]string)
+	if r == nil {
+		log.Debugf("no repo reader provided, returning empty list of defaults")
+		return extractedValues, nil
+	}
+	for _, extractor := range extractors {
+		if extractor.MatchesLanguage(lowerLang) {
+			newDefaults, err := extractor.ReadDefaults(r)
+			if err != nil {
+				return nil, fmt.Errorf("error reading defaults for language %s: %v", lowerLang, err)
+			}
+			for k, v := range newDefaults {
+				if _, ok := extractedValues[k]; ok {
+					log.Debugf("duplicate default %s for language %s with extractor %s", k, lowerLang, extractor.GetName())
+				}
+				extractedValues[k] = v
+				log.Debugf("extracted default %s=%s with extractor:%s", k, v, extractor.GetName())
+			}
+		}
+	}
+
+	return extractedValues, nil
 }

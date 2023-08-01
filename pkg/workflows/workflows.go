@@ -10,13 +10,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/manifoldco/promptui"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -39,6 +40,9 @@ type Workflows struct {
 }
 
 func CreateWorkflows(dest string, deployType string, flagVariables []string, templateWriter templatewriter.TemplateWriter, flagValuesMap map[string]string) error {
+	if flagValuesMap == nil {
+		return fmt.Errorf("flagValuesMap is nil")
+	}
 	var err error
 	for _, flagVar := range flagVariables {
 		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
@@ -71,7 +75,7 @@ func CreateWorkflows(dest string, deployType string, flagVariables []string, tem
 		return err
 	}
 
-	maps.Copy(customInputs, flagValuesMap)
+	maps.Copy(flagValuesMap, customInputs)
 
 	if err = updateProductionDeployments(deployType, dest, flagValuesMap, templateWriter); err != nil {
 		return err

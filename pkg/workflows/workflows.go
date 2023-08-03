@@ -75,9 +75,9 @@ func CreateWorkflows(dest string, deployType string, flagVariables []string, tem
 		return err
 	}
 
-	maps.Copy(flagValuesMap, customInputs)
+	maps.Copy(customInputs, flagValuesMap)
 
-	if err = updateProductionDeployments(deployType, dest, flagValuesMap, templateWriter); err != nil {
+	if err = updateProductionDeployments(deployType, dest, customInputs, templateWriter); err != nil {
 		return err
 	}
 	return workflow.createWorkflowFiles(deployType, customInputs, templateWriter)

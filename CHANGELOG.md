@@ -1,5 +1,16 @@
 # Change Log
 
+## [0.0.33] - 2023-04-10
+
+### Added
+
+- [#218](https://github.com/Azure/draft/pull/218) Add gradle wrapper detection
+- [#217](https://github.com/Azure/draft/pull/217) Add python entrypoint detection
+
+### Fixed
+
+- [#225](https://github.com/Azure/draft/pull/225) Fix variable substitution in `generate-workflow`
+
 ## [0.0.32] - 2023-04-10
 
 ### Added

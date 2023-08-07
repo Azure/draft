@@ -23,10 +23,6 @@
 - [#196](https://github.com/Azure/draft/pull/196) Update deprecated node12 actions
 - [#207](https://github.com/Azure/draft/pull/207) Default deploy variable fixed
 
-### Changed 
-
-- [#194](https://github.com/Azure/draft/pull/194) Move generate workflow templates to embedded file system
-
 ## [0.0.31] - 2023-03-14
 
 ### Added

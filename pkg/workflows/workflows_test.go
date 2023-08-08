@@ -10,9 +10,10 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -28,34 +29,96 @@ func TestCreateWorkflows(t *testing.T) {
 	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "."}
 	flagValuesMapNoRoot := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "test"}
 
-	err := createTempDeploymentFile("charts", "charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
-	assert.Nil(t, err)
-	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
-	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMapNoRoot))
-	os.RemoveAll("charts")
-	os.RemoveAll(".github")
+	tests := []struct {
+		name         string
+		deployType   string
+		flagValues   map[string]string
+		shouldError  bool
+		tempDirPath  string
+		tempFileName string
+		tempPath     string
+		cleanUp      func()
+	}{
+		{
+			name:         "helm",
+			deployType:   "helm",
+			flagValues:   flagValuesMap,
+			shouldError:  false,
+			tempDirPath:  "charts",
+			tempFileName: "charts/production.yaml",
+			tempPath:     "../../test/templates/helm/charts/production.yaml",
+			cleanUp: func() {
+				os.Remove(".charts")
+				os.Remove(".github")
+			},
+		},
+		{
+			name:         "kustomize",
+			deployType:   "kustomize",
+			flagValues:   flagValuesMap,
+			shouldError:  false,
+			tempDirPath:  "overlays/production",
+			tempFileName: "overlays/production/deployment.yaml",
+			tempPath:     "../../test/templates/kustomize/overlays/production/deployment.yaml",
+			cleanUp: func() {
+				os.Remove(".overlays")
+				os.Remove(".github")
+			},
+		}, {
+			name:         "manifests",
+			deployType:   "manifests",
+			flagValues:   flagValuesMap,
+			shouldError:  false,
+			tempDirPath:  "manifests",
+			tempFileName: "manifests/deployment.yaml",
+			tempPath:     "../../test/templates/manifests/manifests/deployment.yaml",
+			cleanUp: func() {
+				os.Remove(".manifests")
+				os.Remove(".github")
+			},
+		},
+		{
+			name:         "missing manifest",
+			deployType:   "manifests",
+			flagValues:   flagValuesMap,
+			shouldError:  true,
+			tempDirPath:  "manifests",
+			tempFileName: "manifests/deployment.yaml",
+			tempPath:     "../../test/templates/manifests/manifests/deployment.yaml",
+			cleanUp: func() {
+				os.Remove(".manifests")
+				os.Remove(".github")
+			},
+		},
+		{
+			name:         "invalid deploy type",
+			deployType:   "invalid",
+			flagValues:   flagValuesMap,
+			shouldError:  true,
+			tempDirPath:  "manifests",
+			tempFileName: "manifests/deployment.yaml",
+			tempPath:     "../../test/templates/manifests/manifests/deployment.yaml",
+			cleanUp: func() {
+			},
+		},
+	}
 
-	deployType = "kustomize"
-	err = createTempDeploymentFile("overlays/production", "overlays/production/deployment.yaml", "../../test/templates/kustomize/overlays/production/deployment.yaml")
-	assert.Nil(t, err)
-	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
-	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMapNoRoot))
-	os.RemoveAll("overlays")
-	os.RemoveAll(".github")
+	for _, tt := range tests {
 
-	deployType = "manifests"
-	err = createTempDeploymentFile("manifests", "manifests/deployment.yaml", "../../test/templates/manifests/manifests/deployment.yaml")
-	assert.Nil(t, err)
-	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
-	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMapNoRoot))
-	os.RemoveAll("manifests")
-	os.RemoveAll(".github")
-	//test for missing deployment file path
-	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+		err := createTempDeploymentFile("charts", "charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
+		assert.Nil(t, err)
 
-	//test for invalid deployType
-	deployType = "testInvalidDeployType"
-	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+		err = CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap)
+		if err != nil {
+			t.Errorf("Default Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
+		}
+		err = CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMapNoRoot)
+		if err != nil {
+			t.Errorf("Custom Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
+		}
+
+		tt.cleanUp()
+	}
 }
 
 func TestUpdateProductionDeploymentsValid(t *testing.T) {

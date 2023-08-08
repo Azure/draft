@@ -9,10 +9,12 @@
 - [#218](https://github.com/Azure/draft/pull/218) Add gradle wrapper detection
 - [#217](https://github.com/Azure/draft/pull/217) Add python entrypoint detection
 - [#215](https://github.com/Azure/draft/pull/215) Add reporeader interface and an example extractor for python
+- [#213](https://github.com/Azure/draft/pull/213) Integration test for multiple OS
 
 ### Fixed
 
 - [#225](https://github.com/Azure/draft/pull/225) Fix variable substitution in `generate-workflow`
+- [#216](https://github.com/Azure/draft/pull/216) bump rust version to fix e2e
 
 ## [0.0.32] - 2023-04-10
 

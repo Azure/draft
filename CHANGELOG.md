@@ -4,8 +4,11 @@
 
 ### Added
 
+- [#220](https://github.com/Azure/draft/pull/220) Update readme for supported flags
+- [#219](https://github.com/Azure/draft/pull/219) Retry releases to get tag name
 - [#218](https://github.com/Azure/draft/pull/218) Add gradle wrapper detection
 - [#217](https://github.com/Azure/draft/pull/217) Add python entrypoint detection
+- [#215](https://github.com/Azure/draft/pull/215) Add reporeader interface and an example extractor for python
 
 ### Fixed
 

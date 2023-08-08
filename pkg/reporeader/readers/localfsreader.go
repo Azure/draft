@@ -13,6 +13,16 @@ import (
 type LocalFSReader struct {
 }
 
+// GetRepoName returns the name of the current directory, which is an approximation of the repo name
+func (*LocalFSReader) GetRepoName() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("unable to get working directory: %v", err)
+	}
+	dirName := filepath.Base(wd)
+	return dirName, nil
+}
+
 type LocalFileFinder struct {
 	Patterns   []string
 	FoundFiles []string

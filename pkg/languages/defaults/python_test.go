@@ -54,7 +54,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract first python file as entrypoint",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"foo.py": []byte("print('hello world')"),
 						"bar.py": []byte("print('hello world')"),
@@ -69,7 +69,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract python file containing the string \"if __name__ == '__main__'\" as the entrypoint",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"foo.py": []byte("print('hello world')"),
 						"bar.py": []byte("if __name__ == '__main__' : print('hello world')"),
@@ -84,7 +84,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract python file containing the string \"if __name__==\"__main__\"\" as the entrypoint",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"foo.py": []byte("print('hello world')"),
 						"bar.py": []byte("if __name__==\"__main__\": print('hello world')"),
@@ -99,7 +99,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract python file named app.py as the entrypoint",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"foo.py": []byte("print('Hello World')"),
 						"app.py": []byte("print('Hello World')"),
@@ -114,7 +114,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "no extraction if no python files",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"foo.notpy": []byte("print('hello world')"),
 						"bar":       []byte("print('hello world')"),
@@ -127,7 +127,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "empty extraction with no files",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{},
 				},
 			},
@@ -137,7 +137,7 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "ignore files below depth root depth",
 			args: args{
-				r: reporeader.TestRepoReader{
+				r: reporeader.FakeRepoReader{
 					Files: map[string][]byte{
 						"dir/foo.py": []byte("print('hello world')"),
 					},

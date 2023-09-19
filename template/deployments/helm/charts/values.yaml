@@ -11,7 +11,7 @@ containerPort: {{PORT}}
 image:
   repository: {{IMAGENAME}}
   tag: {{IMAGETAG}}
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 
 imagePullSecrets: []

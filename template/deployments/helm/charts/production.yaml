@@ -1,6 +1,6 @@
 image:
   repository: "{{APPNAME}}"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   tag: "latest"
 service:
   annotations: {}

@@ -3,8 +3,8 @@ ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.tx[t] ./
+RUN [ -f requirements.txt ] && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 

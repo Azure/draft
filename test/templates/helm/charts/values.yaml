@@ -8,7 +8,7 @@ containerPort: 8080
 
 image:
   repository: test
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 

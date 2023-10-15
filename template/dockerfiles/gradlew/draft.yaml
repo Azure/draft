@@ -9,14 +9,14 @@ variables:
     type: int
   - name: "BUILDERVERSION"
     description: "the version of gradle used during the builder stage to generate the executable"
-    exampleValues: ["jdk8","jdk11","jdk17","jdk19"]
+    exampleValues: ["jdk8","jdk11","jdk17","jdk19","jdk21"]
   - name: "VERSION"
-    description: "the version of openjdk used by the application"
-    exampleValues: ["8-jre","11-jre","17-jre","19-jre"]
+    description: "the jdk version used by the application"
+    exampleValues: ["11-jre","17-jre","19-jre","21-jre"]
 variableDefaults:
   - name: "BUILDERVERSION"
-    value: "jdk11"
+    value: "jdk21"
   - name: "VERSION"
-    value: "11-jre"
+    value: "21-jre"
   - name: "PORT"
     value: "80"

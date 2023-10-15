@@ -9,7 +9,7 @@ variables:
     type: int
   - name: "BUILDERVERSION"
     description: "the version of maven used during the builder stage to generate the executable"
-    exampleValues: ["3-eclipse-temurin-17", "3-eclipse-temurin-17", "3-eclipse-temurin-21", "3 (jdk-21)"]
+    exampleValues: ["3-eclipse-temurin-11", "3-eclipse-temurin-17", "3-eclipse-temurin-21", "3 (jdk-21)"]
   - name: "VERSION"
     description: "the jdk version used by the application"
     exampleValues: ["11-jre","17-jre","19-jre","21-jre"]

@@ -134,7 +134,7 @@ func validateGuardrailsConstraint(ctx context.Context) {
 
 	// evaluate each rego policy against the deployment file
 	for _, policy := range *constraintFiles {
-		queryString := "x = " + policy.Metadata.Name
+		queryString := "x = data." + policy.Metadata.Name + ".violation" // thbarnes: need a better way to qualify the rego func
 		r := rego.New(
 			rego.Query(queryString),
 			rego.Module("main.rego", policy))

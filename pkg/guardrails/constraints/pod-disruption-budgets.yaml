@@ -1,0 +1,70 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sazurev1uniqueserviceselector
+  annotations:
+    metadata.gatekeeper.sh/title: "Unique Service Selectors"
+    metadata.gatekeeper.sh/version: 1.0.0
+    metadata.gatekeeper.sh/requires-sync-data: |
+      "[
+        [
+          {
+            "groups": [""],
+            "versions": ["v1"],
+            "kinds": ["Service"]
+          }
+        ]
+      ]"
+    description: >-
+      Requires Services to have unique selectors within a namespace.
+            Selectors are considered the same if they have identical keys and values.
+            Selectors may share a key/value pair so long as there is at least one
+            distinct key/value pair between them.
+
+            https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAzureV1UniqueServiceSelector
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sazurev1uniqueserviceselector
+
+        make_apiversion(kind) = apiVersion {
+          g := kind.group
+          v := kind.version
+          g != ""
+          apiVersion = sprintf("%s/%s", [g, v])
+        }
+
+        make_apiversion(kind) = apiVersion {
+          kind.group == ""
+          apiVersion = kind.version
+        }
+
+        identical(obj, review) {
+          obj.metadata.namespace == review.object.metadata.namespace
+          obj.metadata.name == review.object.metadata.name
+          obj.kind == review.kind.kind
+          obj.apiVersion == make_apiversion(review.kind)
+        }
+
+        flatten_selector(obj) = flattened {
+          selectors := [s | s = concat(":", [key, val]); val = obj.spec.selector[key]]
+          flattened := concat(",", sort(selectors))
+        }
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Service"
+          input.review.kind.version == "v1"
+          input.review.kind.group == ""
+          input_namespace := input.review.object.metadata.namespace
+          input_selector := flatten_selector(input.review.object)
+          other := data.inventory.namespace[input_namespace]["v1"].Service[_]
+          not identical(other, input.review)
+          other_selector := flatten_selector(other)
+          input_selector == other_selector
+          msg := sprintf("same selector as service <%s> in namespace <%s>", [other.metadata.name, input_namespace])
+        }

@@ -4,29 +4,34 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/open-policy-agent/opa/rego"
 	"gopkg.in/yaml.v3"
 )
 
 // Constants
-const ConstraintsDirectory = "./constraints"
-const DeploymentFileDirectory = "./deployment/deployment.yaml"
+const ConstraintsDirectory = "./pkg/guardrails/constraints"
+const DeploymentFileDirectory = "./pkg/guardrails/deployment/deployment.yaml"
 
 // ConstraintFetcher is the interface used to fetch each guardrails constraint
 type ConstraintFetcher interface {
-	Fetch() (*[]ConstraintFile, error)
+	Fetch() ([]ConstraintFile, error)
 }
 
 // ConstraintFile is our struct implementation of the guardrails constraint YAML
 type ConstraintFile struct {
 	Metadata Metadata `yaml:"metadata"`
-	Targets  Targets  `yaml:"targets"`
+	Spec     Spec     `yaml:"spec"`
 }
-type Targets struct {
-	Rego struct {
-		Content string
-	} `yaml:"rego"`
+type Spec struct {
+	Targets []Target `yaml:"targets"`
+}
+type Target struct {
+	Target string   `yaml:"target"`
+	Rego   string   `yaml:"rego"`
+	Libs   []string `yaml:"libs"`
 }
 type Metadata struct {
 	Name string `yaml:"name"`
@@ -55,8 +60,6 @@ func fetchDemoDeploymentFile() map[string]interface{} {
 
 // buildInput creates our input JSON when given a deployment file
 func buildInput(df map[string]interface{}) map[string]interface{} {
-	// Define input data (your Deployment YAML).
-
 	// thbarnes: this needs to be refined and automated
 	input := map[string]interface{}{
 		"review": map[string]interface{}{
@@ -90,66 +93,101 @@ func buildInput(df map[string]interface{}) map[string]interface{} {
 }
 
 // Option A's method of fetching constraints
-func (cba ConstraintsBuilderA) Fetch() (*[]ConstraintFile, error) {
-	var c *[]ConstraintFile
+func (cba ConstraintsBuilderA) Fetch() ([]ConstraintFile, error) {
+	var c []ConstraintFile
 
 	constraints, err := os.ReadDir(ConstraintsDirectory)
 	if err != nil {
-		return nil, fmt.Errorf("reading guardrails constraints directory")
+		return c, fmt.Errorf("reading guardrails constraints directory")
 	}
 
 	for _, con := range constraints {
-		fullConstraintDir := ConstraintsDirectory + con.Name()
+		fullConstraintDir := path.Join(ConstraintsDirectory, con.Name())
 		b, err := os.ReadFile(fullConstraintDir)
 		if err != nil {
-			return nil, fmt.Errorf("reading constraint file:" + con.Name())
+			return c, fmt.Errorf("reading constraint file: %s", con.Name())
 		}
 
 		var constraintFile ConstraintFile
 		if err := yaml.Unmarshal(b, &constraintFile); err != nil {
-			fmt.Errorf("unmarshaling constraint:", err.Error())
+			return c, fmt.Errorf("unmarshaling constraint: %w", err)
 		}
 
-		*c = append(*c, constraintFile)
+		c = append(c, constraintFile)
 	}
 
 	return c, nil
 }
 
+// sanitizeRegoPolicy removes problematic lines from our rego code for consumption as our rego policy in the evalution step
+func sanitizeRegoPolicy(rp string) string {
+	lines := strings.Split(rp, "\n")
+	var newLines []string
+	for _, line := range lines {
+		if !strings.Contains(line, "import data.lib.") && !strings.Contains(line, "package lib.") {
+			newLines = append(newLines, line)
+		}
+	}
+	return strings.Join(newLines, "\n")
+}
+
+// appendLibs appends every lib item from the constraint YAML, separated by newlines
+func appendLibs(libs []string) string {
+	l := ""
+	if len(libs) > 0 {
+		for _, lib := range libs {
+			l += lib + "\n"
+		}
+	}
+
+	return l
+}
+
 // validateGuardrailsConstraints is what will be called by `draft validate` to validate the user's deployment manifest
 // against each guardrails constraint
-func validateGuardrailsConstraint(ctx context.Context) {
+func ValidateGuardrailsConstraint() error {
 	// thbarnes: ConstraintsBuilderB will eventually take over
+	ctx := context.TODO()
+
 	var cf ConstraintFetcher
 	cb := ConstraintsBuilderA{}
 	cf = cb
 
 	constraintFiles, err := cf.Fetch()
 	if err != nil {
-		fmt.Errorf("fetching constraints")
+		return fmt.Errorf("fetching constraints: %w", err)
 	}
 
 	// our input state
 	input := buildInput(fetchDemoDeploymentFile())
 
 	// evaluate each rego policy against the deployment file
-	for _, policy := range *constraintFiles {
-		queryString := "x = data." + policy.Metadata.Name + ".violation" // thbarnes: need a better way to qualify the rego func
+	//thbarnes:
+	// david suggested worker pattern to break out into goroutines to parallelize and aggregate the errors
+	for _, file := range constraintFiles {
+		queryString := "x = data." + file.Metadata.Name + ".violation" // thbarnes: need a better way to qualify the rego func
+		// thbarnes: throw in a check for if length is 0 or >1 and error if so
+		l := appendLibs(file.Spec.Targets[0].Libs)
+		regoString := file.Spec.Targets[0].Rego
+
+		regoPolicy := sanitizeRegoPolicy(regoString + l)
+
 		r := rego.New(
 			rego.Query(queryString),
-			rego.Module("main.rego", policy))
+			rego.Module("main.rego", regoPolicy))
 
 		query, err := r.PrepareForEval(ctx)
 		if err != nil {
-			fmt.Errorf("creating rego query:", err.Error())
+			return fmt.Errorf("creating rego query: %w", err)
 		}
 
 		rs, err := query.Eval(ctx, rego.EvalInput(input))
 		if err != nil {
-			// handle error
-			fmt.Errorf("evaluating query:", err.Error())
+			return fmt.Errorf("evaluating query: %w", err)
 		}
 
 		fmt.Println("Result:", rs[0].Bindings["x"])
 	}
+
+	return nil
 }

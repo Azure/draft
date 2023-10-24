@@ -12,8 +12,8 @@ import (
 )
 
 // Constants
-const ConstraintsDirectory = "./pkg/guardrails/constraints"
-const DeploymentFileDirectory = "./pkg/guardrails/deployment/deployment.yaml"
+const ConstraintsDirectory = "./constraints/"
+const DeploymentFilePrefix = "./deployment/"
 
 // ConstraintFetcher is the interface used to fetch each guardrails constraint
 type ConstraintFetcher interface {
@@ -41,29 +41,29 @@ type Metadata struct {
 type ConstraintsBuilderA struct {
 }
 
-// fetchDemoDeploymentFile pulls in our example deployment YAML
-func fetchDemoDeploymentFile() map[string]interface{} {
-	bs, err := os.ReadFile(DeploymentFileDirectory) // thbarnes: need to refine where we get this, for now hard-code
+// fetchTestDeploymentFile pulls in our example deployment YAML
+func fetchTestDeploymentFile(df string) (map[string]interface{}, error) {
+	bs, err := os.ReadFile(DeploymentFilePrefix + df) // thbarnes: need to refine where we get this, for now hard-code
 	if err != nil {
 		// handle error
-		fmt.Errorf("reading deployment:", err.Error())
+		return nil, fmt.Errorf("reading deployment: %w", err)
 	}
 
 	var deploymentFile map[string]interface{}
 	if err := yaml.Unmarshal(bs, &deploymentFile); err != nil {
 		// handle error
-		fmt.Errorf("unmarshaling input:", err.Error())
+		return nil, fmt.Errorf("unmarshaling input: %w", err)
 	}
 
-	return deploymentFile
+	return deploymentFile, nil
 }
 
 // buildInput creates our input JSON when given a deployment file
-func buildInput(df map[string]interface{}) map[string]interface{} {
+func buildInput(dfMap map[string]interface{}) map[string]interface{} {
 	// thbarnes: this needs to be refined and automated
 	input := map[string]interface{}{
 		"review": map[string]interface{}{
-			"object": df,
+			"object": dfMap,
 			"userInfo": map[string]interface{}{
 				"username": "system:serviceaccount:kube-system:replicaset-controller",
 				"uid":      "439dea65-3e4e-4fa8-b5f8-8fdc4bc7cf53",
@@ -93,10 +93,14 @@ func buildInput(df map[string]interface{}) map[string]interface{} {
 }
 
 // Option A's method of fetching constraints
+// thbarnes: figure out why consts aren't being read into debug instance
+// refine the path code
 func (cba ConstraintsBuilderA) Fetch() ([]ConstraintFile, error) {
 	var c []ConstraintFile
-
-	constraints, err := os.ReadDir(ConstraintsDirectory)
+	cwd, _ := os.Getwd()
+	dirs := []string{cwd, ConstraintsDirectory}
+	fullPath := path.Join(dirs[0], dirs[1]) + "/"
+	constraints, err := os.ReadDir(fullPath)
 	if err != nil {
 		return c, fmt.Errorf("reading guardrails constraints directory")
 	}
@@ -145,7 +149,7 @@ func appendLibs(libs []string) string {
 
 // validateGuardrailsConstraints is what will be called by `draft validate` to validate the user's deployment manifest
 // against each guardrails constraint
-func ValidateGuardrailsConstraint() error {
+func ValidateGuardrailsConstraint(df string) error {
 	// thbarnes: ConstraintsBuilderB will eventually take over
 	ctx := context.TODO()
 
@@ -158,8 +162,13 @@ func ValidateGuardrailsConstraint() error {
 		return fmt.Errorf("fetching constraints: %w", err)
 	}
 
+	dfMap, err := fetchTestDeploymentFile(df)
+	if err != nil {
+		return fmt.Errorf("fetching test deployment: %w", err)
+	}
+
 	// our input state
-	input := buildInput(fetchDemoDeploymentFile())
+	input := buildInput(dfMap)
 
 	// evaluate each rego policy against the deployment file
 	//thbarnes:

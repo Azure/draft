@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/exec"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/hashicorp/go-version"
 	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetAzCliVersion() string {
@@ -93,7 +93,7 @@ func HasGhCli() bool {
 	ghCmd := exec.Command("gh")
 	_, err := ghCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal("Error: The github cli is required to complete this process. Find installation instructions at this link: https://cli.github.com/manual/installation")
+		log.Fatal("Error: The github cli is required to complete this process. Find installation instructions at this link: https://github.com/cli/cli#installation")
 		return false
 	}
 

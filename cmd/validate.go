@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"github.com/Azure/draft/pkg/guardrails"
+	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 type validateCmd struct {
-	guardrailsOnly bool
+	safeguardsOnly bool
+	manifestPath   string
 }
 
 func newValidateCmd() *cobra.Command {
@@ -24,7 +25,9 @@ func newValidateCmd() *cobra.Command {
 		},
 	}
 	f := cmd.Flags()
-	f.BoolVarP(&vc.guardrailsOnly, "guardrails-only", "g", false, "guardrails-only asserts whether or not validate will only run against guardrails constraints")
+	// thbarnes: add validation to the path
+	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the deployment manifest")
+	f.BoolVarP(&vc.safeguardsOnly, "safeguards-only", "sg", false, "'safeguards-only' asserts whether or not validate will only run against safeguards constraints")
 
 	return cmd
 }
@@ -32,9 +35,9 @@ func newValidateCmd() *cobra.Command {
 func (vc *validateCmd) run() error {
 	log.Debugf("validating deployment manifest")
 
-	err := guardrails.ValidateGuardrailsConstraint()
+	err := safeguards.ValidateDeployment(vc.manifestPath, "")
 	if err != nil {
-		log.Errorf("validating guardrails: %s", err)
+		log.Errorf("validating safeguards: %s", err)
 	}
 
 	return nil

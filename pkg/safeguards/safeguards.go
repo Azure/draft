@@ -172,7 +172,7 @@ func removeYAMLExtension(s string) string {
 
 // Option A's method of fetching constraints
 // thbarnes: refine the path code
-func (fcf FilesystemConstraintFetcher) Fetch() ([]ConstraintFile, map[string]appsv1.Deployment, error) {
+func (fcf FilesystemConstraintFetcher) Fetch(deploymentPath string) ([]ConstraintFile, map[string]appsv1.Deployment, error) {
 	var c []ConstraintFile
 	var dfMap map[string]appsv1.Deployment
 	cwd, _ := os.Getwd()
@@ -183,7 +183,6 @@ func (fcf FilesystemConstraintFetcher) Fetch() ([]ConstraintFile, map[string]app
 		return c, dfMap, fmt.Errorf("reading safeguards constraints directory for full list of dirs")
 	}
 
-	var constraints []os.DirEntry
 	for _, dir := range constraintDirs {
 		fullConstraintDir := path.Join(fullPath, dir.Name())
 		d, err := os.ReadDir(fullConstraintDir)
@@ -224,8 +223,6 @@ func (fcf FilesystemConstraintFetcher) Fetch() ([]ConstraintFile, map[string]app
 
 			}
 		}
-
-		constraints = append(constraints, d...)
 	}
 
 	for _, s := range supportedSafeguards {
@@ -323,13 +320,13 @@ func evaluateQuery(ctx context.Context, file ConstraintFile, dfMap map[string]ap
 
 // ValidateDeployment is what will be called by `draft validate` to validate the user's deployment manifest
 // against each safeguards constraint
-func ValidateDeployment(df, constraint string) error {
+func ValidateDeployment(deploymentPath, constraint string) error {
 	// thbarnes: ConstraintsBuilderB will eventually take over
 	ctx := context.TODO()
 
 	var fcf FilesystemConstraintFetcher
 
-	constraintFiles, dfMap, err := fcf.Fetch()
+	constraintFiles, dfMap, err := fcf.Fetch(deploymentPath)
 	if err != nil {
 		return fmt.Errorf("fetching constraints: %w", err)
 	}

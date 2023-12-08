@@ -50,7 +50,7 @@ func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
 			err := ValidateDeployment(df, c)
 			assert.NotNil(t, err)
 		} else { // success
-			err := ValidateDeployment(df, "")
+			err := ValidateDeployment(df, "container-allowed-images")
 			assert.Nil(t, err)
 		}
 	}

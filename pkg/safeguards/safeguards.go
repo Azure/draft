@@ -12,8 +12,7 @@ import (
 )
 
 // Constants
-const ConstraintsDirectory = "./constraints/"
-const DeploymentFilePrefix = "./deployment/"
+const constraintsDirectory = "./constraints/"
 
 // ConstraintFetcher is the interface used to fetch each safeguards constraint
 type ConstraintFetcher interface {
@@ -137,7 +136,7 @@ func (cba ConstraintsBuilderA) Fetch() ([]ConstraintFile, map[string]map[string]
 	var c []ConstraintFile
 	var dfMap map[string]map[string]interface{}
 	cwd, _ := os.Getwd()
-	dirs := []string{cwd, ConstraintsDirectory}
+	dirs := []string{cwd, constraintsDirectory}
 	fullPath := path.Join(dirs[0], dirs[1]) + "/"
 	constraintDirs, err := os.ReadDir(fullPath)
 	if err != nil {
@@ -289,7 +288,7 @@ func ValidateDeployment(df, constraint string) error {
 	if constraint != "" {
 		var f ConstraintFile
 		for _, file := range constraintFiles {
-			if constraint == file.Name {
+			if constraint+".yml" == file.Name {
 				f = file
 			}
 		}

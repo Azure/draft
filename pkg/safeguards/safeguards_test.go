@@ -1,15 +1,12 @@
 package safeguards
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
-	"strconv"
-	"strings"
 	"testing"
 )
 
 const (
-	Default_Manifest = "Default_Manifest.yaml"
-
 	Constraint_CAI = "container-allowed-images"
 	Constraint_CEP = "container-enforce-probes"
 	Constraint_CRL = "container-resource-limits"
@@ -74,30 +71,17 @@ var testDeployment_USS = testDeployment{
 	ErrorPath:      "pkg/safeguards/constraints/UniqueServiceSelectors/testcases/USS_Error_Manifest.yaml",
 }
 
-func generateTestCases(constraintName string) []string {
-	words := strings.Split(constraintName, "-")
-
-	w1 := strings.ToUpper(strconv.Itoa(int(words[0][0])))
-	w2 := strings.ToUpper(strconv.Itoa(int(words[1][0])))
-	w3 := strings.ToUpper(strconv.Itoa(int(words[2][0])))
-
-	abbreviation := w1 + w2 + w3
-
-	testNameError := abbreviation + "_Error_Manifest"
-	testNameSuccess := abbreviation + "_Success_Manifest"
-
-	return []string{testNameError, testNameSuccess}
-}
-
-func TestValidateSafeguardsConstraint_Default(t *testing.T) {
-	df := Default_Manifest
-	err := ValidateDeployment(df, "")
-	assert.Nil(t, err)
-}
-
 // thbarnes: working on error case(s); investigate if default can just be used for all success
 func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
-	err := ValidateDeployment(testDeployment_CAI.ErrorPath, testDeployment_CAI.ConstraintName)
+	ctx := context.Background()
+	var fcf FilesystemConstraintFetcher
+	constraintFile, err := fcf.FetchOne(testDeployment_CAI.ConstraintName)
+	assert.Nil(t, err)
+
+	deployment, err := fetchDeploymentFile(testDeployment_CAI.ErrorPath)
+	assert.Nil(t, err)
+
+	err = evaluateQuery(ctx, constraintFile, deployment)
 	assert.NotNil(t, err)
 
 	err = ValidateDeployment(testDeployment_CAI.SuccessPath, testDeployment_CAI.ConstraintName)

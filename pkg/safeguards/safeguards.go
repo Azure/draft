@@ -5,7 +5,6 @@ import (
 	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/open-policy-agent/opa/rego"
@@ -22,35 +21,35 @@ type Safeguard struct {
 
 var supportedSafeguards = []Safeguard{
 	{
-		name:     "ContainerAllowedImages",
+		name:     "container-allowed-images",
 		filepath: "pkg/safeguards/constraints/ContainerAllowedImages/container-allowed-images.yaml",
 	},
 	{
-		name:     "ContainerEnforceProbes",
+		name:     "container-enforce-probes",
 		filepath: "pkg/safeguards/constraints/ContainerEnforceProbes/container-allowed-images.yaml",
 	},
 	{
-		name:     "ContainerResourceLimits",
+		name:     "container-resource-limits",
 		filepath: "pkg/safeguards/constraints/ContainerResourceLimits/container-resource-limits.yaml",
 	},
 	{
-		name:     "NoUnauthenticatedPulls",
+		name:     "no-unauthenticated-pulls",
 		filepath: "pkg/safeguards/constraints/NoUnauthenticatedPulls/no-unauthenticated-pulls.yaml",
 	},
 	{
-		name:     "PodDisruptionBudgets",
+		name:     "pod-disruption-budgets",
 		filepath: "pkg/safeguards/constraints/PodDisruptionBudgets/pod-disruption-budgets.yaml",
 	},
 	{
-		name:     "PodEnforceAntiaffinity",
+		name:     "pod-enforce-antiaffinity",
 		filepath: "pkg/safeguards/constraints/PodEnforceAntiaffinity/pod-enforce-antiaffinity.yaml",
 	},
 	{
-		name:     "RestrictedTaints",
+		name:     "restricted-taints",
 		filepath: "pkg/safeguards/constraints/RestrictedTaints/restricted-taints.yaml",
 	},
 	{
-		name:     "UniqueServiceSelectors",
+		name:     "unique-service-selectors",
 		filepath: "pkg/safeguards/constraints/UniqueServiceSelectors/unique-service-selectors.yaml",
 	},
 }
@@ -166,95 +165,55 @@ func buildInput(deployment appsv1.Deployment) map[string]interface{} {
 	return input
 }
 
-func removeYAMLExtension(s string) string {
-	return strings.Split(s, ".yaml")[0]
-}
+//
+//func removeYAMLExtension(s string) string {
+//	return strings.Split(s, ".yaml")[0]
+//}
 
 // Option A's method of fetching constraints
 // thbarnes: refine the path code
-func (fcf FilesystemConstraintFetcher) Fetch(deploymentPath string) ([]ConstraintFile, map[string]appsv1.Deployment, error) {
+func (fcf FilesystemConstraintFetcher) Fetch() ([]ConstraintFile, error) {
+	// list of constraint files to be read in and queried
 	var c []ConstraintFile
-	var dfMap map[string]appsv1.Deployment
-	cwd, _ := os.Getwd()
-	dirs := []string{cwd, constraintsDirectory}
-	fullPath := path.Join(dirs[0], dirs[1]) + "/"
-	constraintDirs, err := os.ReadDir(fullPath)
-	if err != nil {
-		return c, dfMap, fmt.Errorf("reading safeguards constraints directory for full list of dirs")
-	}
-
-	for _, dir := range constraintDirs {
-		fullConstraintDir := path.Join(fullPath, dir.Name())
-		d, err := os.ReadDir(fullConstraintDir)
-		if err != nil {
-			return c, dfMap, fmt.Errorf("reading constraint file dir: %s", dir.Name())
-		}
-
-		for _, con := range d {
-			innerPath := path.Join(fullConstraintDir, con.Name())
-			// constraint retrieval
-			if !con.IsDir() {
-				b, err := os.ReadFile(innerPath)
-				if err != nil {
-					return c, dfMap, fmt.Errorf("reading constraint file: %s", con.Name())
-				}
-
-				var constraintFile ConstraintFile
-				if err := yaml.Unmarshal(b, &constraintFile); err != nil {
-					return c, dfMap, fmt.Errorf("unmarshaling constraint: %w", err)
-				}
-
-				constraintFile.Name = removeYAMLExtension(con.Name())
-				c = append(c, constraintFile)
-				// test deployment retrieval
-			} else {
-				dfDir, err := os.ReadDir(innerPath)
-				if err != nil {
-					return c, dfMap, fmt.Errorf("reading test deployment dir: %w", err)
-				}
-
-				for _, dFile := range dfDir {
-					df, err := fetchDeploymentFile(path.Join(innerPath, dFile.Name()))
-					if err != nil {
-						return c, dfMap, fmt.Errorf("fetching test deployment: %w", err)
-					}
-					dfMap[removeYAMLExtension(dFile.Name())] = df
-				}
-
-			}
-		}
-	}
 
 	for _, s := range supportedSafeguards {
 		b, err := os.ReadFile(s.filepath)
 		if err != nil {
-			return c, dfMap, fmt.Errorf("reading constraint file: %s", s.name)
+			return c, fmt.Errorf("reading constraint file: %s", s.name)
 		}
 
 		var constraintFile ConstraintFile
 		if err := yaml.Unmarshal(b, &constraintFile); err != nil {
-			return c, dfMap, fmt.Errorf("unmarshaling constraint: %w", err)
+			return c, fmt.Errorf("unmarshaling constraint: %w", err)
 		}
 
 		c = append(c, constraintFile)
 	}
 
-	//for _, con := range constraints {
-	//	fullConstraintDir := path.Join(fullPath, con.Name())
-	//	b, err := os.ReadFile(fullConstraintDir)
-	//	if err != nil {
-	//		return c, dfMap, fmt.Errorf("reading constraint file: %s", con.Name())
-	//	}
-	//
-	//	var constraintFile ConstraintFile
-	//	if err := yaml.Unmarshal(b, &constraintFile); err != nil {
-	//		return c, dfMap, fmt.Errorf("unmarshaling constraint: %w", err)
-	//	}
-	//
-	//	c = append(c, constraintFile)
-	//}
+	return c, nil
+}
 
-	return c, dfMap, nil
+func (fcf FilesystemConstraintFetcher) FetchOne(name string) (ConstraintFile, error) {
+	// list of constraint files to be read in and queried
+	var c ConstraintFile
+
+	for _, s := range supportedSafeguards {
+		if s.name == name {
+			b, err := os.ReadFile(s.filepath)
+			if err != nil {
+				return c, fmt.Errorf("reading constraint file: %s", s.name)
+			}
+
+			var constraintFile ConstraintFile
+			if err := yaml.Unmarshal(b, &constraintFile); err != nil {
+				return c, fmt.Errorf("unmarshaling constraint: %w", err)
+			}
+
+			c = constraintFile
+		}
+	}
+
+	return c, nil
 }
 
 // sanitizeRegoPolicy removes problematic lines from our rego code for consumption as our rego policy in the evalution step
@@ -285,7 +244,7 @@ func buildQueryString(name string) string {
 	return "x = data." + name + ".violation"
 }
 
-func evaluateQuery(ctx context.Context, file ConstraintFile, dfMap map[string]appsv1.Deployment) error {
+func evaluateQuery(ctx context.Context, file ConstraintFile, deployment appsv1.Deployment) error {
 	queryString := buildQueryString(file.Metadata.Name)
 
 	// thbarnes: throw in a check for if length is 0 or >1 and error if so
@@ -305,7 +264,7 @@ func evaluateQuery(ctx context.Context, file ConstraintFile, dfMap map[string]ap
 	// our input state
 	// build inputs PER CONSTRAINT
 
-	input := buildInput(dfMap[file.Name])
+	input := buildInput(deployment)
 
 	// thbarnes: investigate if you can make your own `input` struct and pass it into here
 	rs, err := query.Eval(ctx, rego.EvalInput(input))
@@ -326,32 +285,33 @@ func ValidateDeployment(deploymentPath, constraint string) error {
 
 	var fcf FilesystemConstraintFetcher
 
-	constraintFiles, dfMap, err := fcf.Fetch(deploymentPath)
+	constraintFiles, err := fcf.Fetch()
 	if err != nil {
 		return fmt.Errorf("fetching constraints: %w", err)
 	}
 
+	deployment, err := fetchDeploymentFile(deploymentPath)
+
 	// evaluate each rego policy against the deployment file
-
 	// only run the specified constraint
-	//if constraint != "" {
-	//	var f ConstraintFile
-	//	for _, file := range constraintFiles {
-	//		if constraint+".yml" == file.Name {
-	//			f = file
-	//		}
-	//	}
-	//	err = evaluateQuery(ctx, f, dfMap)
-	//	if err != nil {
-	//		return fmt.Errorf("evaluating query: %w", err)
-	//	}
-	//	// will run against all constraints with no specified constraint
-	//} else {
-
-	for _, file := range constraintFiles {
-		err = evaluateQuery(ctx, file, dfMap)
+	if constraint != "" {
+		var f ConstraintFile
+		for _, file := range constraintFiles {
+			if constraint+".yml" == file.Name {
+				f = file
+			}
+		}
+		err = evaluateQuery(ctx, f, deployment)
 		if err != nil {
 			return fmt.Errorf("evaluating query: %w", err)
+		}
+		// will run against all constraints with no specified constraint
+	} else {
+		for _, file := range constraintFiles {
+			err = evaluateQuery(ctx, file, deployment)
+			if err != nil {
+				return fmt.Errorf("evaluating query: %w", err)
+			}
 		}
 	}
 

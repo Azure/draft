@@ -17,5 +17,5 @@ spec:
         app: my-app
     spec:
       containers:
-        - name: my-container
+        - name: my-container-CAI-error
           image: nginx:latest

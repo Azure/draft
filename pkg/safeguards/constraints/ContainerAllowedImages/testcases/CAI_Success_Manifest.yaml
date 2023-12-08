@@ -17,5 +17,5 @@ spec:
         app: my-app
     spec:
       containers:
-        - name: my-container
+        - name: my-container-CAI-success
           image: nginx:latest

@@ -167,16 +167,19 @@ func IsSubscriptionIdValid(subscriptionId string) error {
 	return nil
 }
 
-func isValidResourceGroup(resourceGroup string) error {
+func isValidResourceGroup(
+	subscriptionId string,
+	resourceGroup string,
+) error {
 	if resourceGroup == "" {
 		return errors.New("resource group cannot be empty")
 	}
 
 	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
-	getResourceGroupCmd := exec.Command("az", "group", "list", "--query", query)
+	getResourceGroupCmd := exec.Command("az", "group", "list", "--subscription", subscriptionId, "--query", query)
 	out, err := getResourceGroupCmd.CombinedOutput()
 	if err != nil {
-		log.Errorf("failed to validate resourcegroup: %s", err)
+		log.Errorf("failed to validate resource group %q from subscription %q: %s", resourceGroup, subscriptionId, err)
 		return err
 	}
 
@@ -186,7 +189,7 @@ func isValidResourceGroup(resourceGroup string) error {
 	}
 
 	if len(rg) == 0 {
-		return errors.New("resource group not found")
+		return fmt.Errorf("resource group %q not found from subscription %q", resourceGroup, subscriptionId)
 	}
 
 	return nil

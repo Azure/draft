@@ -203,7 +203,7 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 		return err
 	}
 
-	if err := isValidResourceGroup(sc.ResourceGroupName); err != nil {
+	if err := isValidResourceGroup(sc.SubscriptionID, sc.ResourceGroupName); err != nil {
 		return err
 	}
 

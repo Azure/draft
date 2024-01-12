@@ -193,9 +193,9 @@ Several features have been implemented to make consuming draft as easy as possib
 
 ## Introduction Videos
 
-![](https://www.youtube.com/watch?v=K1VYLSm32wg&list=PLlrxD0HtieHg8On6t1l5_kj--7PMmyfGi)
+[![Day Zero Draft](./ghAssets/videoasset1.png)](https://www.youtube.com/watch?v=K1VYLSm32wg&list=PLlrxD0HtieHg8On6t1l5_kj--7PMmyfGi)
 
-![](https://www.youtube.com/watch?v=f98NDqKQRbs)
+[![Get your app & APIs on Kubernetes fast with Draft](./ghAssets/videoasset2.png)](https://www.youtube.com/watch?v=f98NDqKQRbs)
 
 ## Contributing
 

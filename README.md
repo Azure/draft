@@ -191,6 +191,12 @@ Several features have been implemented to make consuming draft as easy as possib
 - `draft update` and `draft create` accept a repeatable `--variable` flag that can be used to set template variables
 - `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
 
+## Introduction Videos
+
+[![Day Zero Draft](./ghAssets/videoasset1.png)](https://www.youtube.com/watch?v=K1VYLSm32wg&list=PLlrxD0HtieHg8On6t1l5_kj--7PMmyfGi)
+
+[![Get your app & APIs on Kubernetes fast with Draft](./ghAssets/videoasset2.png)](https://www.youtube.com/watch?v=f98NDqKQRbs)
+
 ## Contributing
 
 Draft is fully compatible with [Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/draft). We strongly encourage contributions to make Draft available to other cloud providers 😊!

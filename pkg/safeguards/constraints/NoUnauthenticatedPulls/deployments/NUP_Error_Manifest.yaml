@@ -16,6 +16,9 @@ spec:
       labels:
         app: my-app
     spec:
+      initContainers:
+        - name: my-container-CAI-error
+          image: nginx:latest
       containers:
-        - name: my-container
+        - name: my-container-CAI-error
           image: nginx:latest

@@ -17,5 +17,5 @@ spec:
         app: my-app
     spec:
       containers:
-        - name: my-container-CAI-error
-          image: nginx:latest
+        - name: my-container-excluded
+          image: badimage

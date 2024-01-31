@@ -1,0 +1,13 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV2ContainerEnforceProbes
+metadata:
+  name: v2-container-enforce-probes
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    enforceProbes : []
+    excludedContainers: []
+    excludedImages: []

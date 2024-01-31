@@ -64,18 +64,19 @@ var testDeployment_USS = testDeployment{
 func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
 	ctx := context.Background()
 	var fcf FilesystemConstraintFetcher
+
 	constraintFile, err := fcf.FetchOne(testDeployment_CAI.ConstraintName)
 	assert.Nil(t, err)
 
-	deployment, err := fetchDeploymentFile(testDeployment_CAI.ErrorPath)
+	errDeployment, err := fetchDeploymentFile(testDeployment_CAI.ErrorPath)
 	assert.Nil(t, err)
 
-	err = evaluateQuery(ctx, constraintFile, deployment)
+	err = evaluateQuery(ctx, constraintFile, errDeployment)
 	assert.NotNil(t, err)
 
-	deployment, err = fetchDeploymentFile(testDeployment_CAI.SuccessPath)
+	successDeployment, err := fetchDeploymentFile(testDeployment_CAI.SuccessPath)
 	assert.Nil(t, err)
 
-	err = evaluateQuery(ctx, constraintFile, deployment)
+	err = evaluateQuery(ctx, constraintFile, successDeployment)
 	assert.Nil(t, err)
 }

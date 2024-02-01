@@ -11,6 +11,10 @@ const (
 	Constraint_USS = "unique-service-selectors"
 )
 
+type FileCrawler struct {
+	Safeguards []Safeguard
+}
+
 type Safeguard struct {
 	name           string
 	templatePath   string

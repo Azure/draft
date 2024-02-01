@@ -10,10 +10,16 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
-	ctx := context.Background()
-	var fc FileCrawler
+var ctx = context.Background()
+var fc FileCrawler
 
+func init() {
+	fc = FileCrawler{
+		Safeguards: safeguards,
+	}
+}
+
+func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
 	assert.Nil(t, err)
@@ -43,10 +49,10 @@ func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+// TODO: investigate whether or not to include more than one success/error case
+//
+//	for deployments being tested
 func TestValidateSafeguardsConstraint_CEP(t *testing.T) {
-	ctx := context.Background()
-	var fc FileCrawler
-
 	// instantiate constraint client
 	c, err := getConstraintClient()
 	assert.Nil(t, err)

@@ -19,3 +19,12 @@ spec:
       containers:
         - name: my-container
           image: nginx:latest
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              httpHeaders:
+                - name: my-probe
+                  value: awesome
+            initialDelaySeconds: 3
+            periodSeconds: 3

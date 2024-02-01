@@ -12,6 +12,12 @@ env:
 jobs:
   poll:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      deployments: read
+      pull-requests: write
+      packages: none
     steps:
       - uses: actions/checkout@v3
 

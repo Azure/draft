@@ -3,16 +3,20 @@ package safeguards
 import (
 	"context"
 	"fmt"
-	appsv1 "k8s.io/api/apps/v1"
 	"os"
-	"path"
-	"strings"
 
-	"github.com/open-policy-agent/opa/rego"
-	"gopkg.in/yaml.v3"
+	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
+	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
+	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
+	api "github.com/open-policy-agent/gatekeeper/v3/apis"
+	"github.com/open-policy-agent/gatekeeper/v3/pkg/gator/reader"
+	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
-// Constants
 const (
 	Constraint_CAI = "container-allowed-images"
 	Constraint_CEP = "container-enforce-probes"
@@ -25,362 +29,240 @@ const (
 )
 
 type Safeguard struct {
-	name     string
-	filepath string
+	name           string
+	templatePath   string
+	constraintPath string
 }
 
-var supportedSafeguards = []Safeguard{
+type FileCrawler struct{}
+
+var s = runtime.NewScheme()
+var wd, _ = os.Getwd()
+var f = os.DirFS(wd)
+
+var safeguards = []Safeguard{
 	{
-		name:     Constraint_CAI,
-		filepath: "constraints/ContainerAllowedImages/container-allowed-images.yaml",
+		name:           Constraint_CAI,
+		templatePath:   "constraints/ContainerAllowedImages/template/container-allowed-images.yaml",
+		constraintPath: "constraints/ContainerAllowedImages/constraint/constraint.yaml",
 	},
 	{
-		name:     Constraint_CEP,
-		filepath: "constraints/ContainerEnforceProbes/container-allowed-images.yaml",
+		name:           Constraint_CEP,
+		templatePath:   "constraints/ContainerEnforceProbes/template/container-enforce-probes.yaml",
+		constraintPath: "constraints/ContainerEnforceProbes/constraint/constraint.yaml",
 	},
 	{
-		name:     Constraint_CRL,
-		filepath: "constraints/ContainerResourceLimits/container-resource-limits.yaml",
+		name:           Constraint_CRL,
+		templatePath:   "constraints/ContainerResourceLimits/template/container-resource-limits.yaml",
+		constraintPath: "constraints/ContainerResourceLimits/constraint/constraint.yaml",
 	},
 	{
-		name:     Constraint_NUP,
-		filepath: "constraints/NoUnauthenticatedPulls/no-unauthenticated-pulls.yaml",
+		name:           Constraint_NUP,
+		templatePath:   "constraints/NoUnauthenticatedPulls/template/no-unauthenticated-pulls.yaml",
+		constraintPath: "constraints/NoUnauthenticatedPulls/constraint/constraint.yaml",
 	},
 	{
-		name:     Constraint_PDB,
-		filepath: "constraints/PodDisruptionBudgets/pod-disruption-budgets.yaml",
+		name:           Constraint_PDB,
+		templatePath:   "constraints/PodDisruptionBudgets/template/pod-disruption-budgets.yaml",
+		constraintPath: "constraints/PodDisruptionBudgets/constraint/constraint.yaml",
 	},
 	{
-		name:     Constraint_PEA,
-		filepath: "constraints/PodEnforceAntiaffinity/pod-enforce-antiaffinity.yaml",
+		name:           Constraint_PEA,
+		templatePath:   "constraints/PodEnforceAntiaffinity/template/pod-enforce-antiaffinity.yaml",
+		constraintPath: "constraints/PodEnforceAntiaffinity/constraint/constraint.yaml",
 	},
 	{
-		name:     Constraint_RT,
-		filepath: "constraints/RestrictedTaints/restricted-taints.yaml",
+		name:           Constraint_RT,
+		templatePath:   "constraints/RestrictedTaints/template/restricted-taints.yaml",
+		constraintPath: "constraints/RestrictedTaints/constraint/constraint.yaml",
 	},
 	{
-		name:     Constraint_USS,
-		filepath: "constraints/UniqueServiceSelectors/unique-service-selectors.yaml",
+		name:           Constraint_USS,
+		templatePath:   "constraints/UniqueServiceSelectors/template/unique-service-selectors.yaml",
+		constraintPath: "constraints/UniqueServiceSelectors/constraint/constraint.yaml",
 	},
 }
 
-// ConstraintFetcher is the interface used to fetch each safeguards constraint
-type ConstraintFetcher interface {
-	Fetch() ([]ConstraintFile, map[string]appsv1.Deployment, error)
-}
-
-type DeploymentFile struct {
-	Metadata DeploymentMetadata `yaml:"metadata"`
-	Spec     DeploymentSpec     `yaml:"spec"`
-}
-type DeploymentMetadata struct {
-	Name string `yaml:"name"`
-	Labels
-}
-type MetadataLabels struct{}
-type DeploymentSpec struct {
-	Replicas string   `yaml:"replicas"`
-	Selector Selector `yaml:"selector"`
-	Template Template `yaml:"template"`
-}
-type Selector struct {
-	MatchLabels MatchLabels `yaml:"matchLabels"`
-}
-type MatchLabels struct {
-	App string `yaml:"app"`
-}
-type Template struct {
-	Metadata TemplateMetadata `yaml:"metadata"`
-	Spec     TemplateSpec     `yaml:"spec"`
-}
-type TemplateMetadata struct {
-	Labels Labels `yaml:"labels"`
-}
-type Labels struct {
-	App string `yaml:"app"`
-}
-type TemplateSpec struct {
-	InitContainers []InitContainers `yaml:"initContainers"`
-	Containers     []Containers     `yaml:"containers"`
-}
-type InitContainers struct {
-	Name  string `yaml:"name"`
-	Image string `yaml:"image"`
-}
-type Containers struct {
-	Name  string `yaml:"name"`
-	Image string `yaml:"image"`
-}
-
-// ConstraintFile is our struct implementation of the safeguards constraint YAML
-// create a getParameters() method
-type ConstraintFile struct {
-	Metadata Metadata `yaml:"metadata"`
-	Spec     Spec     `yaml:"spec"`
-	Name     string
-}
-type Spec struct {
-	Targets []Target `yaml:"targets"`
-}
-type Target struct {
-	Target string   `yaml:"target"`
-	Rego   string   `yaml:"rego"`
-	Libs   []string `yaml:"libs"`
-}
-type Metadata struct {
-	Name string `yaml:"name"`
-}
-
-// ConstraintsBuilderA is the implementation of ConstraintFetcher that reads in constraints from the local fs
-type FilesystemConstraintFetcher struct {
-}
-
-// fetchTestDeploymentFile pulls in our test deployment YAML
-func fetchDeploymentFile(deploymentPath string) (map[string]interface{}, error) {
-	wd, _ := os.Getwd()
-	completePath := path.Join(wd, deploymentPath)
-	bs, err := os.ReadFile(completePath)
+func getConstraintClient() (*constraintclient.Client, error) {
+	driver, err := rego.New()
 	if err != nil {
-		// handle error
-		return nil, fmt.Errorf("reading deployment: %w", err)
+		return nil, fmt.Errorf("could not create rego driver: %w", err.Error())
 	}
 
-	var deploymentFile map[string]interface{}
-	if err := yaml.Unmarshal(bs, &deploymentFile); err != nil {
-		// handle error
-		return nil, fmt.Errorf("unmarshaling input: %w", err)
+	c, err := constraintclient.NewClient(constraintclient.Targets(&target.K8sValidationTarget{}), constraintclient.Driver(driver))
+	if err != nil {
+		return nil, fmt.Errorf("could not create constraint client: %w", err)
 	}
 
-	return deploymentFile, nil
+	return c, nil
 }
 
-type Params map[string]interface{}
-
-func buildParams(constraint string) Params {
-
-	//var excludedContainers []string
-
-	// thbarnes: this is where we manipulate params to properly test rego validation
-	if constraint == Constraint_CAI {
-		//excludedContainers = []string{"my-container-CAI-error"}
-	} else if constraint == Constraint_CEP {
-
-	} else if constraint == Constraint_CRL {
-
-	} else if constraint == Constraint_NUP {
-
-	} else if constraint == Constraint_PDB {
-
-	} else if constraint == Constraint_PEA {
-
-	} else if constraint == Constraint_RT {
-
-	} else if constraint == Constraint_USS {
-
-	}
-
-	p := Params{
-		"allowedUsers": []string{
-			"nodeclient",
-			"system:serviceaccount:kube-system:aci-connector-linux",
-			"system:serviceaccount:kube-system:node-controller",
-			"acsService",
-			"aksService",
-			"system:serviceaccount:kube-system:cloud-node-manager",
-		},
-		"allowedGroups": []string{
-			"system:node",
-		},
-		"cpuLimit":           "200m",
-		"memoryLimit":        "1Gi",
-		"excludedContainers": []string{"my-container-CAI-error"},
-		"excludedImages":     []string{},
-		"labels": []string{
-			"kubernetes.azure.com",
-		},
-		"allowedContainerImagesRegex": ".*",
-		"reservedTaints": []string{
-			"CriticalAddonsOnly",
-		},
-		"requiredProbes": []string{
-			"readinessProbe",
-			"livenessProbe",
-		},
-		"imageRegex": "<something>",
-	}
-
-	return p
+// primes the scheme to be able to interpret beta templates
+func init() {
+	_ = clientgoscheme.AddToScheme(s)
+	_ = api.AddToScheme(s)
 }
 
-// thbarnes: placeholder for now
-func buildUserInfo() map[string]interface{} {
-	u := map[string]interface{}{
-		"username": "system:serviceaccount:kube-system:replicaset-controller",
-		"uid":      "439dea65-3e4e-4fa8-b5f8-8fdc4bc7cf53",
-		"groups": []string{
-			"system:serviceaccounts",
-			"system:serviceaccounts:kube-system",
-			"system:authenticated",
-		},
+func (fc FileCrawler) ReadDeployment(path string) (*unstructured.Unstructured, error) {
+	deployment, err := reader.ReadObject(f, path)
+	if err != nil {
+		return nil, fmt.Errorf("could not read deployment: %w", err.Error())
 	}
 
-	return u
+	return deployment, nil
 }
 
-// buildInput creates our input JSON when given a deployment file
-func buildInput(deployment map[string]interface{}, constraint string) map[string]interface{} {
-	// thbarnes: buildInput this needs to be refined and automated
-	// generated by kuberenetes api server -> not necessary for testing
-	// would be good to make the input a struct
+func (fc FileCrawler) ReadConstraintTemplates() ([]*templates.ConstraintTemplate, error) {
+	var constraintTemplates []*templates.ConstraintTemplate
 
-	input := map[string]interface{}{
-		"review": map[string]interface{}{
-			"object":   deployment,
-			"userInfo": buildUserInfo(),
-		},
-		"parameters": buildParams(constraint),
-	}
-	return input
-}
-
-// Option A's method of fetching constraints
-// thbarnes: refine the path code
-func (fcf FilesystemConstraintFetcher) Fetch() ([]ConstraintFile, error) {
-	// list of constraint files to be read in and queried
-	var c []ConstraintFile
-
-	wd, _ := os.Getwd()
-	for _, s := range supportedSafeguards {
-		completePath := path.Join(wd, s.filepath)
-		b, err := os.ReadFile(completePath)
+	for _, sg := range safeguards {
+		ct, err := reader.ReadTemplate(s, f, sg.templatePath)
 		if err != nil {
-			return c, fmt.Errorf("reading constraint file: %s", s.name)
+			return nil, fmt.Errorf("could not read template: %w", err.Error())
 		}
-
-		var constraintFile ConstraintFile
-		if err := yaml.Unmarshal(b, &constraintFile); err != nil {
-			return c, fmt.Errorf("unmarshaling constraint: %w", err)
-		}
-
-		c = append(c, constraintFile)
+		constraintTemplates = append(constraintTemplates, ct)
 	}
 
-	return c, nil
+	return constraintTemplates, nil
 }
 
-func getConstraintFileName(path string) string {
-	splitPath := strings.Split(path, "/")
-	return strings.Split(splitPath[len(splitPath)], ".yaml")[0]
-}
+func (fc FileCrawler) ReadConstraintTemplate(name string) (*templates.ConstraintTemplate, error) {
+	var constraintTemplate *templates.ConstraintTemplate
 
-func (fcf FilesystemConstraintFetcher) FetchOne(name string) (ConstraintFile, error) {
-	// list of constraint files to be read in and queried
-	var c ConstraintFile
-
-	for _, s := range supportedSafeguards {
-		if s.name == name {
-			wd, _ := os.Getwd()
-			completePath := path.Join(wd, s.filepath)
-			b, err := os.ReadFile(completePath)
+	for _, sg := range safeguards {
+		if sg.name == name {
+			ct, err := reader.ReadTemplate(s, f, sg.templatePath)
 			if err != nil {
-				return c, fmt.Errorf("reading constraint file: %s", s.name)
+				return nil, fmt.Errorf("could not read template: %w", err.Error())
+			}
+			constraintTemplate = ct
+		}
+	}
+	if constraintTemplate == nil {
+		return nil, fmt.Errorf("no constraint template exists with name: %s", name)
+	}
+
+	return constraintTemplate, nil
+}
+
+func (fc FileCrawler) ReadConstraints() ([]*unstructured.Unstructured, error) {
+	var constraints []*unstructured.Unstructured
+
+	for _, sg := range safeguards {
+		u, err := reader.ReadConstraint(f, sg.constraintPath)
+		if err != nil {
+			return nil, fmt.Errorf("could not add constraint: %w", err.Error())
+		}
+
+		constraints = append(constraints, u)
+	}
+
+	return constraints, nil
+}
+
+func (fc FileCrawler) ReadConstraint(name string) (*unstructured.Unstructured, error) {
+	var constraint *unstructured.Unstructured
+
+	for _, sg := range safeguards {
+		if sg.name == name {
+			c, err := reader.ReadConstraint(f, sg.constraintPath)
+			if err != nil {
+				return nil, fmt.Errorf("could not add constraint: %w", err.Error())
 			}
 
-			var constraintFile ConstraintFile
-			if err := yaml.Unmarshal(b, &constraintFile); err != nil {
-				return c, fmt.Errorf("unmarshaling constraint: %w", err)
+			constraint = c
+		}
+	}
+	if constraint == nil {
+		return nil, fmt.Errorf("no constraint exists with name: %s", name)
+	}
+
+	return constraint, nil
+}
+
+func loadConstraintTemplates(ctx context.Context, c *constraintclient.Client, constraintTemplates []*templates.ConstraintTemplate) error {
+	// AddTemplate adds the template source code to OPA and registers the CRD with the client for
+	// schema validation on calls to AddConstraint. On error, the responses return value
+	// will still be populated so that partial results can be analyzed.
+	for _, ct := range constraintTemplates {
+		_, err := c.AddTemplate(ctx, ct)
+		if err != nil {
+			return fmt.Errorf("could not add template: %w", err.Error())
+		}
+	}
+
+	return nil
+}
+
+func loadConstraints(ctx context.Context, c *constraintclient.Client, constraints []*unstructured.Unstructured) error {
+	// AddConstraint validates the constraint and, if valid, inserts it into OPA.
+	// On error, the responses return value will still be populated so that
+	// partial results can be analyzed.
+	for _, con := range constraints {
+		_, err := c.AddConstraint(ctx, con)
+		if err != nil {
+			return fmt.Errorf("could not add constraint: %w", err.Error())
+		}
+	}
+
+	return nil
+}
+
+func validateDeployment(ctx context.Context, c *constraintclient.Client, deployment *unstructured.Unstructured) error {
+	// Review makes sure the provided object satisfies all stored constraints.
+	// On error, the responses return value will still be populated so that
+	// partial results can be analyzed.
+	res, err := c.Review(ctx, deployment)
+	if err != nil {
+		return fmt.Errorf("could not review deployment: %w", err.Error())
+	}
+
+	for _, v := range res.ByTarget {
+		for _, result := range v.Results {
+			if result.Msg != "" {
+				return fmt.Errorf("deployment error: %s", result.Msg)
 			}
-
-			constraintFile.Name = getConstraintFileName(completePath)
-			c = constraintFile
 		}
 	}
-
-	return c, nil
-}
-
-// sanitizeRegoPolicy removes problematic lines from our rego code for consumption as our rego policy in the evalution step
-func sanitizeRegoPolicy(rp string) string {
-	lines := strings.Split(rp, "\n")
-	var newLines []string
-	for _, line := range lines {
-		if !strings.Contains(line, "import data.lib.") && !strings.Contains(line, "package lib.") {
-			newLines = append(newLines, line)
-		}
-	}
-	return strings.Join(newLines, "\n")
-}
-
-// appendLibs appends every lib item from the constraint YAML, separated by newlines
-func appendLibs(libs []string) string {
-	l := ""
-	if len(libs) > 0 {
-		for _, lib := range libs {
-			l += lib + "\n"
-		}
-	}
-
-	return l
-}
-
-func buildQueryString(name string) string {
-	return "x = data." + name + ".violation"
-}
-
-func evaluateQuery(ctx context.Context, file ConstraintFile, deployment map[string]interface{}) error {
-	queryString := buildQueryString(file.Metadata.Name)
-
-	// thbarnes: throw in a check for if length is 0 or >1 and error if so
-	l := appendLibs(file.Spec.Targets[0].Libs)
-	regoString := file.Spec.Targets[0].Rego
-	regoPolicy := sanitizeRegoPolicy(regoString + l)
-
-	r := rego.New(
-		rego.Query(queryString),
-		rego.Module("main.rego", regoPolicy))
-
-	query, err := r.PrepareForEval(ctx)
-	if err != nil {
-		return fmt.Errorf("creating rego query: %w", err)
-	}
-
-	// our input state
-	// build inputs PER CONSTRAINT
-
-	input := buildInput(deployment, file.Name)
-
-	// thbarnes: investigate if you can make your own `input` struct and pass it into here
-	rs, err := query.Eval(ctx, rego.EvalInput(input))
-	if err != nil {
-		return fmt.Errorf("evaluating query: %w", err)
-	}
-
-	fmt.Println("Result:", rs[0].Bindings["x"])
 
 	return nil
 }
 
 // ValidateDeployment is what will be called by `draft validate` to validate the user's deployment manifest
 // against each safeguards constraint
-func ValidateDeployment(deploymentPath, constraint string) error {
-	// thbarnes: ConstraintsBuilderB will eventually take over
-	ctx := context.Background()
+func ValidateDeployment(ctx context.Context, deploymentPath string) error {
+	var fc FileCrawler
 
-	var fcf FilesystemConstraintFetcher
-
-	constraintFiles, err := fcf.Fetch()
+	// constraint client instantiation
+	c, err := getConstraintClient()
 	if err != nil {
-		return fmt.Errorf("fetching constraints: %w", err)
+		return err
 	}
 
-	deployment, err := fetchDeploymentFile(deploymentPath)
-
-	for _, file := range constraintFiles {
-		err = evaluateQuery(ctx, file, deployment)
-		if err != nil {
-			return fmt.Errorf("evaluating query: %w", err)
-		}
+	// retrieval of templates, constraints, and deployment
+	constraintTemplates, err := fc.ReadConstraintTemplates()
+	if err != nil {
+		return err
+	}
+	constraints, err := fc.ReadConstraints()
+	if err != nil {
+		return err
+	}
+	deployment, err := fc.ReadDeployment(deploymentPath)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	// loading of templates, constraints into constraint client
+	err = loadConstraintTemplates(ctx, c, constraintTemplates)
+	if err != nil {
+		return err
+	}
+	err = loadConstraints(ctx, c, constraints)
+	if err != nil {
+		return err
+	}
+
+	// validation of deployment manifest with constraints, templates loaded
+	return validateDeployment(ctx, c, deployment)
 }

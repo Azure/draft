@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -11,8 +13,13 @@ type validateCmd struct {
 	manifestPath   string
 }
 
+func init() {
+	rootCmd.AddCommand(newValidateCmd())
+}
+
 func newValidateCmd() *cobra.Command {
 	vc := &validateCmd{}
+
 	var cmd = &cobra.Command{
 		Use:   "validate",
 		Short: "Validates deployment manifests against AKS best practices",
@@ -24,8 +31,10 @@ func newValidateCmd() *cobra.Command {
 			return nil
 		},
 	}
+
 	f := cmd.Flags()
-	// thbarnes: add validation to the path
+
+	// TODO: add validation to the path
 	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the deployment manifest")
 	f.BoolVarP(&vc.safeguardsOnly, "safeguards-only", "sg", false, "'safeguards-only' asserts whether or not validate will only run against safeguards constraints")
 
@@ -33,16 +42,13 @@ func newValidateCmd() *cobra.Command {
 }
 
 func (vc *validateCmd) run() error {
-	log.Debugf("validating deployment manifest")
+	ctx := context.Background()
 
-	err := safeguards.ValidateDeployment(vc.manifestPath, "")
+	log.Debugf("validating deployment manifest")
+	err := safeguards.ValidateDeployment(ctx, vc.manifestPath)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err)
 	}
 
 	return nil
-}
-
-func init() {
-	rootCmd.AddCommand(newValidateCmd())
 }

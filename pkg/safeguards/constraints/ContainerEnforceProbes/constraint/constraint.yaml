@@ -5,8 +5,8 @@ metadata:
 spec:
   match:
     kinds:
-      - apiGroups: [""]
-        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
   parameters:
     enforceProbes : []
     excludedContainers: []

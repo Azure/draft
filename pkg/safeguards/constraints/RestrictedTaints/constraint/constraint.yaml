@@ -5,7 +5,7 @@ metadata:
 spec:
   match:
     kinds:
-      - apiGroups: [""]
-        kinds: ["Node"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
   parameters:
     reservedTaints: ["CriticalAddonsOnly"]

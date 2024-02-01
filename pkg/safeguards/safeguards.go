@@ -86,7 +86,7 @@ var safeguards = []Safeguard{
 func getConstraintClient() (*constraintclient.Client, error) {
 	driver, err := rego.New()
 	if err != nil {
-		return nil, fmt.Errorf("could not create rego driver: %w", err.Error())
+		return nil, fmt.Errorf("could not create rego driver: %w", err)
 	}
 
 	c, err := constraintclient.NewClient(constraintclient.Targets(&target.K8sValidationTarget{}), constraintclient.Driver(driver))
@@ -106,7 +106,7 @@ func init() {
 func (fc FileCrawler) ReadDeployment(path string) (*unstructured.Unstructured, error) {
 	deployment, err := reader.ReadObject(f, path)
 	if err != nil {
-		return nil, fmt.Errorf("could not read deployment: %w", err.Error())
+		return nil, fmt.Errorf("could not read deployment: %w", err)
 	}
 
 	return deployment, nil
@@ -118,7 +118,7 @@ func (fc FileCrawler) ReadConstraintTemplates() ([]*templates.ConstraintTemplate
 	for _, sg := range safeguards {
 		ct, err := reader.ReadTemplate(s, f, sg.templatePath)
 		if err != nil {
-			return nil, fmt.Errorf("could not read template: %w", err.Error())
+			return nil, fmt.Errorf("could not read template: %w", err)
 		}
 		constraintTemplates = append(constraintTemplates, ct)
 	}
@@ -133,7 +133,7 @@ func (fc FileCrawler) ReadConstraintTemplate(name string) (*templates.Constraint
 		if sg.name == name {
 			ct, err := reader.ReadTemplate(s, f, sg.templatePath)
 			if err != nil {
-				return nil, fmt.Errorf("could not read template: %w", err.Error())
+				return nil, fmt.Errorf("could not read template: %w", err)
 			}
 			constraintTemplate = ct
 		}
@@ -151,7 +151,7 @@ func (fc FileCrawler) ReadConstraints() ([]*unstructured.Unstructured, error) {
 	for _, sg := range safeguards {
 		u, err := reader.ReadConstraint(f, sg.constraintPath)
 		if err != nil {
-			return nil, fmt.Errorf("could not add constraint: %w", err.Error())
+			return nil, fmt.Errorf("could not add constraint: %w", err)
 		}
 
 		constraints = append(constraints, u)
@@ -167,7 +167,7 @@ func (fc FileCrawler) ReadConstraint(name string) (*unstructured.Unstructured, e
 		if sg.name == name {
 			c, err := reader.ReadConstraint(f, sg.constraintPath)
 			if err != nil {
-				return nil, fmt.Errorf("could not add constraint: %w", err.Error())
+				return nil, fmt.Errorf("could not add constraint: %w", err)
 			}
 
 			constraint = c
@@ -187,7 +187,7 @@ func loadConstraintTemplates(ctx context.Context, c *constraintclient.Client, co
 	for _, ct := range constraintTemplates {
 		_, err := c.AddTemplate(ctx, ct)
 		if err != nil {
-			return fmt.Errorf("could not add template: %w", err.Error())
+			return fmt.Errorf("could not add template: %w", err)
 		}
 	}
 
@@ -201,7 +201,7 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 	for _, con := range constraints {
 		_, err := c.AddConstraint(ctx, con)
 		if err != nil {
-			return fmt.Errorf("could not add constraint: %w", err.Error())
+			return fmt.Errorf("could not add constraint: %w", err)
 		}
 	}
 
@@ -214,7 +214,7 @@ func validateDeployment(ctx context.Context, c *constraintclient.Client, deploym
 	// partial results can be analyzed.
 	res, err := c.Review(ctx, deployment)
 	if err != nil {
-		return fmt.Errorf("could not review deployment: %w", err.Error())
+		return fmt.Errorf("could not review deployment: %w", err)
 	}
 
 	for _, v := range res.ByTarget {

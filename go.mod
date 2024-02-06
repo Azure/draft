@@ -1,6 +1,6 @@
 module github.com/Azure/draft
 
-go 1.18
+go 1.21
 
 require (
 	github.com/briandowns/spinner v1.18.1
@@ -150,5 +150,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-replace cloud.google.com/go => cloud.google.com/go v0.100.2

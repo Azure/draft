@@ -11,10 +11,10 @@ import (
 )
 
 var ctx = context.Background()
-var fc FileCrawler
+var testFc FileCrawler
 
 func init() {
-	fc = FileCrawler{
+	testFc = FileCrawler{
 		Safeguards: safeguards,
 	}
 }
@@ -25,13 +25,13 @@ func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := fc.ReadConstraintTemplate(testDeployment_CAI.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(testDeployment_CAI.Name)
 	assert.Nil(t, err)
-	constraint, err := fc.ReadConstraint(testDeployment_CAI.Name)
+	constraint, err := testFc.ReadConstraint(testDeployment_CAI.Name)
 	assert.Nil(t, err)
-	errDeployment, err := fc.ReadDeployment(testDeployment_CAI.ErrorPath)
+	errDeployment, err := testFc.ReadDeployment(testDeployment_CAI.ErrorPath)
 	assert.Nil(t, err)
-	successDeployment, err := fc.ReadDeployment(testDeployment_CAI.SuccessPath)
+	successDeployment, err := testFc.ReadDeployment(testDeployment_CAI.SuccessPath)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -58,13 +58,13 @@ func TestValidateSafeguardsConstraint_CEP(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := fc.ReadConstraintTemplate(testDeployment_CEP.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(testDeployment_CEP.Name)
 	assert.Nil(t, err)
-	constraint, err := fc.ReadConstraint(testDeployment_CEP.Name)
+	constraint, err := testFc.ReadConstraint(testDeployment_CEP.Name)
 	assert.Nil(t, err)
-	errDeployment, err := fc.ReadDeployment(testDeployment_CEP.ErrorPath)
+	errDeployment, err := testFc.ReadDeployment(testDeployment_CEP.ErrorPath)
 	assert.Nil(t, err)
-	successDeployment, err := fc.ReadDeployment(testDeployment_CEP.SuccessPath)
+	successDeployment, err := testFc.ReadDeployment(testDeployment_CEP.SuccessPath)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client

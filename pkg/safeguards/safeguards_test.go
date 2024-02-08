@@ -81,7 +81,8 @@ func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestValidateSafeguardsConstraint_NUP(t *testing.T) {
+// TODO: rich description here
+func TestValidateDeployment_NoUnauthenticatedPulls(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
 	assert.Nil(t, err)

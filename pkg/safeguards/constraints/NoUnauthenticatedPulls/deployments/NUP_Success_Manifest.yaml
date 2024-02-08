@@ -1,11 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-deployment
+  name: nup-success-manifest
   labels:
     app: my-app
-    environment: production
-    testLabel3: randomlabel
 spec:
   replicas: 3
   selector:
@@ -17,5 +15,5 @@ spec:
         app: my-app
     spec:
       containers:
-        - name: my-container-CAI-success
-          image: nginx:latest
+      - name: my-container
+        image: nginx:latest

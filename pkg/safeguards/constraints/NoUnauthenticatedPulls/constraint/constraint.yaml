@@ -8,4 +8,4 @@ spec:
       - apiGroups: ["apps"]
         kinds: ["Deployment"]
   parameters:
-    excludedImages: []
+    excludedImages: ["nginx:latest"]

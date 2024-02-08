@@ -1,11 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-deployment
+  name: nup-error-manifest
   labels:
     app: my-app
-    environment: production
-    testLabel3: randomlabel
 spec:
   replicas: 3
   selector:
@@ -16,9 +14,8 @@ spec:
       labels:
         app: my-app
     spec:
-      initContainers:
-        - name: my-container-CAI-error
-          image: nginx:latest
       containers:
-        - name: my-container-CAI-error
-          image: nginx:latest
+      - name: badcontainer
+        image: badimage
+      imagePullSecrets:
+      - name: my-secret

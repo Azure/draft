@@ -36,7 +36,7 @@ func newValidateCmd() *cobra.Command {
 
 	// TODO: add validation to the path
 	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the deployment manifest")
-	f.BoolVarP(&vc.safeguardsOnly, "safeguards-only", "sg", false, "'safeguards-only' asserts whether or not validate will only run against safeguards constraints")
+	f.BoolVarP(&vc.safeguardsOnly, "safeguards-only", "s", false, "'safeguards-only' asserts whether or not validate will only run against safeguards constraints")
 
 	return cmd
 }

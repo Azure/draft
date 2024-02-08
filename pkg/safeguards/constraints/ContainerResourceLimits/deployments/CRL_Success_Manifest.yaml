@@ -1,11 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-deployment
-  labels:
-    app: my-app
-    environment: production
-    testLabel3: randomlabel
+  name: crl-success-manifest
 spec:
   replicas: 3
   selector:
@@ -19,3 +15,7 @@ spec:
       containers:
         - name: my-container
           image: nginx:latest
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 200m

@@ -19,7 +19,8 @@ func init() {
 	}
 }
 
-func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
+// TODO: rich description here
+func TestValidateDeployment_ContainerAllowedImages(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
 	assert.Nil(t, err)
@@ -49,10 +50,8 @@ func TestValidateSafeguardsConstraint_CAI(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// TODO: investigate whether or not to include more than one success/error case
-//
-//	for deployments being tested
-func TestValidateSafeguardsConstraint_CEP(t *testing.T) {
+// TODO: rich description here
+func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
 	assert.Nil(t, err)

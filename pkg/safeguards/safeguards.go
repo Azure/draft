@@ -14,24 +14,21 @@ import (
 var s = runtime.NewScheme()
 var wd, _ = os.Getwd()
 var f = os.DirFS(wd)
-
-type FileCrawler struct {
-	Safeguards []Safeguard
-}
+var fc FileCrawler
 
 // primes the scheme to be able to interpret beta templates
 func init() {
 	_ = clientgoscheme.AddToScheme(s)
 	_ = api.AddToScheme(s)
+
+	fc = FileCrawler{
+		Safeguards: safeguards,
+	}
 }
 
 // ValidateDeployment is what will be called by `draft validate` to validate the user's deployment manifest
 // against each safeguards constraint
 func ValidateDeployment(ctx context.Context, deploymentPath string) error {
-	fc := FileCrawler{
-		Safeguards: safeguards,
-	}
-
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {

@@ -5,8 +5,8 @@ metadata:
 spec:
   match:
     kinds:
-      - apiGroups: [""]
-        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
   parameters:
     cpuLimit : "200m"
     memoryLimit: "1Gi"

@@ -17,5 +17,5 @@ spec:
         app: my-app
     spec:
       containers:
-        - name: my-container-excluded
+        - name: badcontainer
           image: badimage

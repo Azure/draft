@@ -1,0 +1,9 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV1AntiAffinityRules
+metadata:
+  name: v1-multiple-replicas-need-anti-affinity
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment","StatefulSet","ReplicationController","ReplicaSet"]

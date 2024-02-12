@@ -1,0 +1,12 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV1RestrictedNodeEdits
+metadata:
+  name: v1-cannot-edit-individual-nodes
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Node"]
+  parameters:
+    allowedUsers: {{ .Values.allowedUsers }}
+    allowedGroups: {{ .Values.allowedGroups }}

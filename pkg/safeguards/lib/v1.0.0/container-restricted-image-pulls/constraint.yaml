@@ -1,0 +1,11 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV1ContainerRestrictedImagePulls
+metadata:
+  name: v1-container-restricted-image-pulls
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    excludedImages: {{ .Values.excludedImages }}

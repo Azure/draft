@@ -1,14 +1,16 @@
 package safeguards
 
+import "fmt"
+
 const (
-	Constraint_CAI = "container-allowed-images"
-	Constraint_CEP = "container-enforce-probes"
-	Constraint_CRL = "container-resource-limits"
-	Constraint_NUP = "no-unauthenticated-pulls"
-	Constraint_PDB = "pod-disruption-budgets"
-	Constraint_PEA = "pod-enforce-antiaffinity"
-	Constraint_RT  = "restricted-taints"
-	Constraint_USS = "unique-service-selectors"
+	Constraint_CAI   = "container-allowed-images"
+	Constraint_CEP   = "container-enforce-probes"
+	Constraint_CL    = "container-limits"
+	Constraint_CRIP  = "container-restricted-image-pulls"
+	Constraint_DBPDB = "disallowed-bad-pod-disruption-budgets"
+	Constraint_PEA   = "pod-enforce-antiaffinity"
+	Constraint_RT    = "restricted-taints"
+	Constraint_USS   = "unique-service-selectors"
 )
 
 type FileCrawler struct {
@@ -21,45 +23,54 @@ type Safeguard struct {
 	constraintPath string
 }
 
+var selectedVersion = "v1.0.0"
+
+// TODO: consider getting this from a text file we can bump
+var supportedVersions = []string{selectedVersion}
+
+const safeguardDirectory = "lib"
+const templateFileName = "template.yaml"
+const constraintFileName = "constraint.yaml"
+
 var safeguards = []Safeguard{
 	{
 		name:           Constraint_CAI,
-		templatePath:   "constraints/ContainerAllowedImages/template/container-allowed-images.yaml",
-		constraintPath: "constraints/ContainerAllowedImages/constraint/constraint.yaml",
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CAI, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CAI, constraintFileName),
 	},
 	{
 		name:           Constraint_CEP,
-		templatePath:   "constraints/ContainerEnforceProbes/template/container-enforce-probes.yaml",
-		constraintPath: "constraints/ContainerEnforceProbes/constraint/constraint.yaml",
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CEP, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CEP, constraintFileName),
 	},
 	{
-		name:           Constraint_CRL,
-		templatePath:   "constraints/ContainerResourceLimits/template/container-resource-limits.yaml",
-		constraintPath: "constraints/ContainerResourceLimits/constraint/constraint.yaml",
+		name:           Constraint_CL,
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CL, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CL, constraintFileName),
 	},
 	{
-		name:           Constraint_NUP,
-		templatePath:   "constraints/NoUnauthenticatedPulls/template/no-unauthenticated-pulls.yaml",
-		constraintPath: "constraints/NoUnauthenticatedPulls/constraint/constraint.yaml",
+		name:           Constraint_CRIP,
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CRIP, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_CRIP, constraintFileName),
 	},
 	{
-		name:           Constraint_PDB,
-		templatePath:   "constraints/PodDisruptionBudgets/template/pod-disruption-budgets.yaml",
-		constraintPath: "constraints/PodDisruptionBudgets/constraint/constraint.yaml",
+		name:           Constraint_DBPDB,
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_DBPDB, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_DBPDB, constraintFileName),
 	},
 	{
 		name:           Constraint_PEA,
-		templatePath:   "constraints/PodEnforceAntiaffinity/template/pod-enforce-antiaffinity.yaml",
-		constraintPath: "constraints/PodEnforceAntiaffinity/constraint/constraint.yaml",
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_PEA, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_PEA, constraintFileName),
 	},
 	{
 		name:           Constraint_RT,
-		templatePath:   "constraints/RestrictedTaints/template/restricted-taints.yaml",
-		constraintPath: "constraints/RestrictedTaints/constraint/constraint.yaml",
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_RT, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_RT, constraintFileName),
 	},
 	{
 		name:           Constraint_USS,
-		templatePath:   "constraints/UniqueServiceSelectors/template/unique-service-selectors.yaml",
-		constraintPath: "constraints/UniqueServiceSelectors/constraint/constraint.yaml",
+		templatePath:   fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_USS, templateFileName),
+		constraintPath: fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, Constraint_USS, constraintFileName),
 	},
 }

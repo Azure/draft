@@ -1,55 +1,112 @@
 package safeguards
 
-type testDeployment struct {
-	Name        string
-	SuccessPath string
-	ErrorPath   string
+import "fmt"
+
+type TestManifest struct {
+	Name         string
+	SuccessPaths []string
+	ErrorPaths   []string
 }
 
-var testDeployment_CAI = testDeployment{
-	Name:        Constraint_CAI,
-	SuccessPath: "constraints/ContainerAllowedImages/deployments/CAI_Success_Manifest.yaml",
-	ErrorPath:   "constraints/ContainerAllowedImages/deployments/CAI_Error_Manifest.yaml",
+const testManifestDirectory = "tests"
+
+var testDeployments = []TestManifest{
+	testManifest_CAI,
+	testManifest_CEP,
+	testManifest_CL,
+	testManifest_CRIP,
+	testManifest_DBPDB,
+	testManifest_PEA,
+	testManifest_RT,
+	testManifest_USS,
+	testManifest_all,
 }
 
-var testDeployment_CEP = testDeployment{
-	Name:        Constraint_CEP,
-	SuccessPath: "constraints/ContainerEnforceProbes/deployments/CEP_Success_Manifest.yaml",
-	ErrorPath:   "constraints/ContainerEnforceProbes/deployments/CEP_Error_Manifest.yaml",
+var testError_CAI_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CAI, "CAI-error-manifest.yaml")
+
+var testSuccess_CAI_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CAI, "CAI-success-manifest.yaml")
+
+var testManifest_CAI = TestManifest{
+	Name:         Constraint_CAI,
+	SuccessPaths: []string{testSuccess_CAI_Standard},
+	ErrorPaths:   []string{testError_CAI_Standard},
 }
 
-var testDeployment_CRL = testDeployment{
-	Name:        Constraint_CRL,
-	SuccessPath: "constraints/ContainerResourceLimits/deployments/CRL_Success_Manifest.yaml",
-	ErrorPath:   "constraints/ContainerResourceLimits/deployments/CRL_Error_Manifest.yaml",
+var testError_CEP_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CEP, "CEP-error-manifest.yaml")
+
+var testSuccess_CEP_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CEP, "CEP-success-manifest.yaml")
+
+var testManifest_CEP = TestManifest{
+	Name:         Constraint_CEP,
+	SuccessPaths: []string{testSuccess_CEP_Standard},
+	ErrorPaths:   []string{testError_CEP_Standard},
 }
 
-var testDeployment_NUP = testDeployment{
-	Name:        Constraint_NUP,
-	SuccessPath: "constraints/NoUnauthenticatedPulls/deployments/NUP_Success_Manifest.yaml",
-	ErrorPath:   "constraints/NoUnauthenticatedPulls/deployments/NUP_Error_Manifest.yaml",
+var testError_CL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CL, "CL-error-manifest.yaml")
+
+var testSuccess_CL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CL, "CL-success-manifest.yaml")
+
+var testManifest_CL = TestManifest{
+	Name:         Constraint_CL,
+	SuccessPaths: []string{testSuccess_CL_Standard},
+	ErrorPaths:   []string{testError_CL_Standard},
 }
 
-var testDeployment_PDB = testDeployment{
-	Name:        Constraint_PDB,
-	SuccessPath: "constraints/PodDisruptionBudgets/deployments/PDB_Success_Manifest.yaml",
-	ErrorPath:   "constraints/PodDisruptionBudgets/deployments/PDB_Error_Manifest.yaml",
+var testError_CRIP_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRIP, "CRIP-error-manifest.yaml")
+
+var testSuccess_CRIP_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRIP, "CRIP-success-manifest.yaml")
+
+var testManifest_CRIP = TestManifest{
+	Name:         Constraint_CRIP,
+	SuccessPaths: []string{testSuccess_CRIP_Standard},
+	ErrorPaths:   []string{testError_CRIP_Standard},
 }
 
-var testDeployment_PEA = testDeployment{
-	Name:        Constraint_PEA,
-	SuccessPath: "constraints/PodEnforceAntiaffinity/deployments/PEA_Success_Manifest.yaml",
-	ErrorPath:   "constraints/PodEnforceAntiaffinity/deployments/PEA_Error_Manifest.yaml",
+var testError_DBPDB_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_DBPDB, "DBPDB-error-manifest.yaml")
+
+var testSuccess_DBPDB_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_DBPDB, "DBPDB-success-manifest.yaml")
+
+var testManifest_DBPDB = TestManifest{
+	Name:         Constraint_DBPDB,
+	SuccessPaths: []string{testSuccess_DBPDB_Standard},
+	ErrorPaths:   []string{testError_DBPDB_Standard},
 }
 
-var testDeployment_RT = testDeployment{
-	Name:        Constraint_RT,
-	SuccessPath: "constraints/RestrictedTaints/deployments/RT_Success_Manifest.yaml",
-	ErrorPath:   "constraints/RestrictedTaints/deployments/RT_Error_Manifest.yaml",
+var testError_PEA_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_PEA, "PEA-error-manifest.yaml")
+
+var testSuccess_PEA_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_PEA, "PEA-success-manifest.yaml")
+
+var testManifest_PEA = TestManifest{
+	Name:         Constraint_PEA,
+	SuccessPaths: []string{testSuccess_PEA_Standard},
+	ErrorPaths:   []string{testError_PEA_Standard},
 }
 
-var testDeployment_USS = testDeployment{
-	Name:        Constraint_USS,
-	SuccessPath: "constraints/UniqueServiceSelectors/deployments/USS_Success_Manifest.yaml",
-	ErrorPath:   "constraints/UniqueServiceSelectors/deployments/USS_Error_Manifest.yaml",
+var testError_RT_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_RT, "RT-error-manifest.yaml")
+
+var testSuccess_RT_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_RT, "RT-success-manifest.yaml")
+
+var testManifest_RT = TestManifest{
+	Name:         Constraint_RT,
+	SuccessPaths: []string{testSuccess_RT_Standard},
+	ErrorPaths:   []string{testError_RT_Standard},
+}
+
+var testError_USS_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_USS, "USS-error-manifest.yaml")
+
+var testSuccess_USS_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_USS, "USS-success-manifest.yaml")
+
+var testManifest_USS = TestManifest{
+	Name:         Constraint_USS,
+	SuccessPaths: []string{testSuccess_USS_Standard},
+	ErrorPaths:   []string{testError_USS_Standard},
+}
+
+var testError_all_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_USS, "all-error-manifest.yaml")
+var testSuccess_all_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_USS, "all-error-manifest.yaml")
+
+var testManifest_all = TestManifest{
+	Name:         "all",
+	SuccessPaths: []string{testSuccess_all_Standard},
+	ErrorPaths:   []string{testError_all_Standard},
 }

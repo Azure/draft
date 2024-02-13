@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "parameters",
-    srcs = ["map.go"],
-    importpath = "go.goms.io/aks/rp/guardrails/server/lib/v1.0.0/parameters",
-    visibility = ["//visibility:public"],
-    deps = ["@com_github_azure_azure_sdk_for_go_sdk_resourcemanager_resources_armpolicy//:armpolicy"],
-)

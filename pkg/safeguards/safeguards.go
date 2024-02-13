@@ -21,14 +21,17 @@ func init() {
 	_ = clientgoscheme.AddToScheme(s)
 	_ = api.AddToScheme(s)
 
+	selectedVersion = getLatestSafeguardsVersion()
+	safeguards = updateSafeguardPaths()
+
 	fc = FileCrawler{
 		Safeguards: safeguards,
 	}
 }
 
-// ValidateDeployment is what will be called by `draft validate` to validate the user's deployment manifest
+// ValidatemManifest is what will be called by `draft validate` to validate the user's manifest
 // against each safeguards constraint
-func ValidateDeployment(ctx context.Context, deploymentPath string) error {
+func ValidateManifest(ctx context.Context, manifestPath string) error {
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
@@ -44,7 +47,7 @@ func ValidateDeployment(ctx context.Context, deploymentPath string) error {
 	if err != nil {
 		return err
 	}
-	deployment, err := fc.ReadDeployment(deploymentPath)
+	manifest, err := fc.ReadManifest(manifestPath)
 	if err != nil {
 		return err
 	}
@@ -60,5 +63,5 @@ func ValidateDeployment(ctx context.Context, deploymentPath string) error {
 	}
 
 	// validation of deployment manifest with constraints, templates loaded
-	return validateDeployment(ctx, c, deployment)
+	return validateManifest(ctx, c, manifest)
 }

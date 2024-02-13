@@ -10,6 +10,7 @@ import (
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/gator/reader"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
 
+	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -28,11 +29,28 @@ func getConstraintClient() (*constraintclient.Client, error) {
 	return c, nil
 }
 
-// methods for retrieval of deployment manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadDeployment(path string) (*unstructured.Unstructured, error) {
+// sorts the list of supported safeguards versions and returns the last item in the list
+func getLatestSafeguardsVersion() string {
+	semver.Sort(supportedVersions)
+	return supportedVersions[len(supportedVersions)-1]
+}
+
+func updateSafeguardPaths() []Safeguard {
+	var newSafeguards []Safeguard
+
+	for _, sg := range safeguards {
+		sg.templatePath = fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, sg.name, templateFileName)
+		sg.constraintPath = fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, sg.name, constraintFileName)
+	}
+
+	return newSafeguards
+}
+
+// methods for retrieval of manifest, constraint templates, and constraints
+func (fc FileCrawler) ReadManifest(path string) (*unstructured.Unstructured, error) {
 	deployment, err := reader.ReadObject(f, path)
 	if err != nil {
-		return nil, fmt.Errorf("could not read deployment: %w", err)
+		return nil, fmt.Errorf("could not read manifest: %w", err)
 	}
 
 	return deployment, nil
@@ -135,20 +153,20 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 	return nil
 }
 
-// does validation on deployment based on loaded constraint templates, constraints
-func validateDeployment(ctx context.Context, c *constraintclient.Client, deployment *unstructured.Unstructured) error {
+// does validation on manifest based on loaded constraint templates, constraints
+func validateManifest(ctx context.Context, c *constraintclient.Client, manifest *unstructured.Unstructured) error {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
-	res, err := c.Review(ctx, deployment)
+	res, err := c.Review(ctx, manifest)
 	if err != nil {
-		return fmt.Errorf("could not review deployment: %w", err)
+		return fmt.Errorf("could not review manifest: %w", err)
 	}
 
 	for _, v := range res.ByTarget {
 		for _, result := range v.Results {
 			if result.Msg != "" {
-				return fmt.Errorf("deployment error: %s", result.Msg)
+				return fmt.Errorf("manifest error: %s", result.Msg)
 			}
 		}
 	}

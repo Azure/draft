@@ -15,7 +15,7 @@ var testFc FileCrawler
 
 func init() {
 	selectedVersion = getLatestSafeguardsVersion()
-	safeguards = updateSafeguardPaths()
+	updateSafeguardPaths()
 
 	testFc = FileCrawler{
 		Safeguards: safeguards,

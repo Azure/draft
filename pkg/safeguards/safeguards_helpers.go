@@ -35,15 +35,11 @@ func getLatestSafeguardsVersion() string {
 	return supportedVersions[len(supportedVersions)-1]
 }
 
-func updateSafeguardPaths() []Safeguard {
-	var newSafeguards []Safeguard
-
+func updateSafeguardPaths() {
 	for _, sg := range safeguards {
 		sg.templatePath = fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, sg.name, templateFileName)
 		sg.constraintPath = fmt.Sprintf("%s/%s/%s/%s", safeguardDirectory, selectedVersion, sg.name, constraintFileName)
 	}
-
-	return newSafeguards
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints

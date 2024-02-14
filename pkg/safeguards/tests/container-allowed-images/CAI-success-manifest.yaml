@@ -1,21 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: crl-error-manifest
+  name: cai-success-manifest
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: my-app
   template:
-    metadata:
-      labels:
-        app: my-app
     spec:
       containers:
-        - name: badcontainer
-          image: badimage
-          resources:
-            limits:
-              memory: 1Gi
-              cpu: 200m
+        - name: my-container
+          image: nginx:latest

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: crl-success-manifest
+  name: crl-error-manifest
 spec:
   replicas: 3
   selector:
@@ -13,9 +13,9 @@ spec:
         app: my-app
     spec:
       containers:
-        - name: my-container
-          image: nginx:latest
+        - name: badcontainer
+          image: badimage
           resources:
             limits:
-              memory: 1Gi
-              cpu: 200m
+              memory: 1Mi
+              cpu: 50m

@@ -1,19 +1,10 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
   name: nup-success-manifest
-  labels:
-    app: my-app
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-      - name: my-container
-        image: nginx:latest
+  containers:
+  - name: my-container
+    image: nginx:latest
+  imagePullSecrets:
+  - name: my-secret

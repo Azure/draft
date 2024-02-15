@@ -5,10 +5,10 @@ metadata:
 spec:
   match:
     kinds:
-      - apiGroups: ["apps"]
-        kinds: ["Deployment"]
+      - apiGroups: [""]
+        kinds: ["Pod"]
   parameters:
     cpuLimit : "200m"
     memoryLimit: "1Gi"
-    excludedContainers: []
-    excludedImages: []
+    excludedContainers: ["my-container"]
+    excludedImages: ["nginx:latest"]

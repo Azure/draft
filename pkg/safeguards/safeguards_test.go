@@ -69,39 +69,15 @@ func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 }
 
 // // TODO: rich description here
-//
-//	func TestValidateDeployment_ContainerLimits(t *testing.T) {
-//		// instantiate constraint client
-//		c, err := getConstraintClient()
-//		assert.Nil(t, err)
-//
-//		// retrieving template, constraint, and deployments
-//		constraintTemplate, err := testFc.ReadConstraintTemplate(testManifest_CL.Name)
-//		assert.Nil(t, err)
-//		constraint, err := testFc.ReadConstraint(testManifest_CL.Name)
-//		assert.Nil(t, err)
-//
-//		// load template, constraint into constraint client
-//		err = loadConstraintTemplates(ctx, c, []*templates.ConstraintTemplate{constraintTemplate})
-//		assert.Nil(t, err)
-//		err = loadConstraints(ctx, c, []*unstructured.Unstructured{constraint})
-//		assert.Nil(t, err)
-//
-//		// validating deployment manifests
-//		validateTestManifests_Error(ctx, t, c, testFc, testManifest_CL.ErrorPaths)
-//		validateTestManifests_Success(ctx, t, c, testFc, testManifest_CL.SuccessPaths)
-//	}
-//
-// TODO: rich description here
-func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
+func TestValidateDeployment_ContainerLimits(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(testManifest_CRIP.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(testManifest_CL.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(testManifest_CRIP.Name)
+	constraint, err := testFc.ReadConstraint(testManifest_CL.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -111,10 +87,33 @@ func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifests_Error(ctx, t, c, testFc, testManifest_CRIP.ErrorPaths)
-	validateTestManifests_Success(ctx, t, c, testFc, testManifest_CRIP.SuccessPaths)
+	validateTestManifests_Error(ctx, t, c, testFc, testManifest_CL.ErrorPaths)
+	validateTestManifests_Success(ctx, t, c, testFc, testManifest_CL.SuccessPaths)
 }
 
+//// TODO: rich description here
+//func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
+//	// instantiate constraint client
+//	c, err := getConstraintClient()
+//	assert.Nil(t, err)
+//
+//	// retrieving template, constraint, and deployments
+//	constraintTemplate, err := testFc.ReadConstraintTemplate(testManifest_CRIP.Name)
+//	assert.Nil(t, err)
+//	constraint, err := testFc.ReadConstraint(testManifest_CRIP.Name)
+//	assert.Nil(t, err)
+//
+//	// load template, constraint into constraint client
+//	err = loadConstraintTemplates(ctx, c, []*templates.ConstraintTemplate{constraintTemplate})
+//	assert.Nil(t, err)
+//	err = loadConstraints(ctx, c, []*unstructured.Unstructured{constraint})
+//	assert.Nil(t, err)
+//
+//	// validating deployment manifests
+//	validateTestManifests_Error(ctx, t, c, testFc, testManifest_CRIP.ErrorPaths)
+//	validateTestManifests_Success(ctx, t, c, testFc, testManifest_CRIP.SuccessPaths)
+//}
+//
 //// TODO: rich description here
 //func TestValidateDeployment_DisallowedBadPodDisruptionBudget(t *testing.T) {
 //	// instantiate constraint client

@@ -22,7 +22,7 @@ spec:
 
         has_key(object, key) {
           _ = object[key]
-        }
+        }        
 
         violation[{"msg": msg}] {
           container := input_containers[_]
@@ -56,9 +56,9 @@ spec:
             not endswith(exclusion, "*")
             exclusion == img
         }
-
+        
         matches_exclusion(img, exclusion) {
             endswith(exclusion, "*")
             prefix := trim_suffix(exclusion, "*")
             startswith(img, prefix)
-        }
+        }        

@@ -1,24 +1,15 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
-  name: my-deployment
+  name: violation-example
+  namespace: default
   labels:
-    app: my-app
-    environment: production
-    testLabel3: randomlabel
+    app: scenario-container-allowed-images-violation
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      initContainers:
-        - name: my-container-CAI-error
-          image: nginx:latest
-      containers:
-        - name: my-container-CAI-error
-          image: nginx:latest
+  nodeSelector:
+    kubernetes.io/os: linux
+  containers:
+    - name: container1
+      image: mcr.microsoft.com/oss/nginx/nginx:1.17.3-alpine
+      ports:
+        - containerPort: 8080

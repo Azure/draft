@@ -1,21 +1,17 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
-  name: my-deployment
+  name: pass-example
+  namespace: default
   labels:
-    app: my-app
-    environment: production
-    testLabel3: randomlabel
+    app: scenario-container-allowed-images
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-        - name: my-container-CAI-success
-          image: nginx:latest
+  nodeSelector:
+    kubernetes.io/os: linux
+  containers:
+    - name: container1
+      image: mcr.microsoft.com/aks/policy/allowed:v1.0.0 # detects this field
+      ports:
+        - containerPort: 8080
+  imagePullSecrets:
+    - name: my-secret

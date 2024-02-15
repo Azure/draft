@@ -8,4 +8,4 @@ spec:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    excludedImages: {{ .Values.excludedImages }}
+    excludedImages: ["my-container"]

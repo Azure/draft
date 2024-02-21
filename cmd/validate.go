@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"regexp"
 )
 
 type validateCmd struct {
@@ -34,19 +35,35 @@ func newValidateCmd() *cobra.Command {
 
 	f := cmd.Flags()
 
-	// TODO: add validation to the path
 	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the manifest")
 
 	return cmd
 }
 
+func validatePath(path string) error {
+	isValidPath, _ := regexp.MatchString("^(.+)/([^/]+)$", path)
+	if !isValidPath {
+		return fmt.Errorf("'%s' is not a valid path", path)
+	}
+
+	return nil
+}
+
 func (vc *validateCmd) run() error {
 	ctx := context.Background()
 
+	log.Debugf("validating given path")
+	err := validatePath(vc.manifestPath)
+	if err != nil {
+		log.Errorf("validating path: %s", err)
+		return err
+	}
+
 	log.Debugf("validating manifest")
-	err := safeguards.ValidateManifest(ctx, vc.manifestPath)
+	err = safeguards.ValidateManifest(ctx, vc.manifestPath)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err)
+		return err
 	}
 
 	return nil

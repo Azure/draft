@@ -1,5 +1,5 @@
+![Draft logo](./ghAssets/Draft-Gradient@3x.png)
 <div id="top"></div>
-
 <br />
 <div align="center">
   <h1 align="center">Draft</h1>

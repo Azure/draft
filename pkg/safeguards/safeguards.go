@@ -2,6 +2,7 @@ package safeguards
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
@@ -13,6 +14,9 @@ import (
 // Globals
 var s = runtime.NewScheme()
 var wd, _ = os.Getwd()
+
+// TODO: for each constraint/constraint template -> make a new embedded FS with directive
+// could get away
 var f = os.DirFS(wd)
 var fc FileCrawler
 
@@ -29,7 +33,7 @@ func init() {
 	}
 }
 
-// ValidatemManifest is what will be called by `draft validate` to validate the user's manifest
+// ValidateManifest is what will be called by `draft validate` to validate the user's manifest
 // against each safeguards constraint
 func ValidateManifest(ctx context.Context, manifestPath string) error {
 	// constraint client instantiation
@@ -47,6 +51,8 @@ func ValidateManifest(ctx context.Context, manifestPath string) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: for loop
 	manifest, err := fc.ReadManifest(manifestPath)
 	if err != nil {
 		return err
@@ -63,5 +69,18 @@ func ValidateManifest(ctx context.Context, manifestPath string) error {
 	}
 
 	// validation of deployment manifest with constraints, templates loaded
-	return validateManifest(ctx, c, manifest)
+	// TODO: for loop here
+	violations := []string{}
+	for m, _ := range manifestPath {
+		err := validateManifest(ctx, c, m)
+		if err != nil {
+			violations = append(err.Error(), violations)
+		}
+	}
+
+	if len(violations) > 0 {
+		return fmt.Errorf("")
+	}
+
+	return nil
 }

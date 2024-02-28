@@ -35,7 +35,7 @@ func init() {
 
 // ValidateManifest is what will be called by `draft validate` to validate the user's manifest
 // against each safeguards constraint
-func ValidateManifest(ctx context.Context, manifestPath string) error {
+func ValidateManifest(ctx context.Context, manifestPathOrFile []string) error {
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
@@ -52,12 +52,6 @@ func ValidateManifest(ctx context.Context, manifestPath string) error {
 		return err
 	}
 
-	// TODO: for loop
-	manifest, err := fc.ReadManifest(manifestPath)
-	if err != nil {
-		return err
-	}
-
 	// loading of templates, constraints into constraint client
 	err = loadConstraintTemplates(ctx, c, constraintTemplates)
 	if err != nil {
@@ -68,18 +62,24 @@ func ValidateManifest(ctx context.Context, manifestPath string) error {
 		return err
 	}
 
-	// validation of deployment manifest with constraints, templates loaded
-	// TODO: for loop here
-	violations := []string{}
-	for m, _ := range manifestPath {
-		err := validateManifest(ctx, c, m)
+	// TODO: for loop
+	for _, m := range manifestPathOrFile {
+		manifest, err := fc.ReadManifest(m)
 		if err != nil {
-			violations = append(err.Error(), violations)
+			return err
 		}
-	}
 
-	if len(violations) > 0 {
-		return fmt.Errorf("")
+		// validation of deployment manifest with constraints, templates loaded
+		// TODO: for loop here
+		var violations []string
+		err = validateManifest(ctx, c, manifest)
+		if err != nil {
+			violations = append(violations, err.Error())
+		}
+
+		if len(violations) > 0 {
+			return fmt.Errorf("violations have occurred: %s", violations)
+		}
 	}
 
 	return nil

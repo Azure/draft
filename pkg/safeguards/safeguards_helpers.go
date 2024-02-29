@@ -44,7 +44,7 @@ func updateSafeguardPaths() {
 
 // methods for retrieval of manifest, constraint templates, and constraints
 func (fc FileCrawler) ReadManifest(path string) (*unstructured.Unstructured, error) {
-	deployment, err := reader.ReadObject(f, path)
+	deployment, err := reader.ReadObject(embedFS, path)
 	if err != nil {
 		return nil, fmt.Errorf("could not read manifest: %w", err)
 	}
@@ -56,7 +56,7 @@ func (fc FileCrawler) ReadConstraintTemplates() ([]*templates.ConstraintTemplate
 	var constraintTemplates []*templates.ConstraintTemplate
 
 	for _, sg := range fc.Safeguards {
-		ct, err := reader.ReadTemplate(s, f, sg.templatePath)
+		ct, err := reader.ReadTemplate(s, embedFS, sg.templatePath)
 		if err != nil {
 			return nil, fmt.Errorf("could not read template: %w", err)
 		}
@@ -71,7 +71,7 @@ func (fc FileCrawler) ReadConstraintTemplate(name string) (*templates.Constraint
 
 	for _, sg := range fc.Safeguards {
 		if sg.name == name {
-			ct, err := reader.ReadTemplate(s, f, sg.templatePath)
+			ct, err := reader.ReadTemplate(s, embedFS, sg.templatePath)
 			if err != nil {
 				return nil, fmt.Errorf("could not read template: %w", err)
 			}
@@ -89,7 +89,7 @@ func (fc FileCrawler) ReadConstraints() ([]*unstructured.Unstructured, error) {
 	var constraints []*unstructured.Unstructured
 
 	for _, sg := range fc.Safeguards {
-		u, err := reader.ReadConstraint(f, sg.constraintPath)
+		u, err := reader.ReadConstraint(embedFS, sg.constraintPath)
 		if err != nil {
 			return nil, fmt.Errorf("could not add constraint: %w", err)
 		}
@@ -105,7 +105,7 @@ func (fc FileCrawler) ReadConstraint(name string) (*unstructured.Unstructured, e
 
 	for _, sg := range fc.Safeguards {
 		if sg.name == name {
-			c, err := reader.ReadConstraint(f, sg.constraintPath)
+			c, err := reader.ReadConstraint(embedFS, sg.constraintPath)
 			if err != nil {
 				return nil, fmt.Errorf("could not add constraint: %w", err)
 			}

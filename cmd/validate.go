@@ -43,17 +43,6 @@ func newValidateCmd() *cobra.Command {
 	return cmd
 }
 
-// return file pointer
-// use os.stat to validate path instead of regexp
-//func validatePath(path string) (bool, error) {
-//	isValidPath, _ := regexp.MatchString("^(.+)/([^/]+)$", path)
-//	if !isValidPath {
-//		return false, fmt.Errorf("'%s' is not a valid path", path)
-//	}
-//
-//	return true, nil
-//}
-
 // isDirectory determines if a file represented by path is a directory or not
 func isDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
@@ -73,9 +62,7 @@ func (vc *validateCmd) run() error {
 	}
 
 	var manifests []string
-	// use fs.WalkDir
 	if isDir {
-		// -> append to manifests
 		err = filepath.Walk(vc.manifestPath, func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
 				return fmt.Errorf("error walking path %s with error: %w", path, err)
@@ -95,12 +82,10 @@ func (vc *validateCmd) run() error {
 		}
 	} else {
 		manifests = append(manifests, vc.manifestPath)
-		// -> append one file to manifests
 	}
 
-	// use manifests here instead, update name
-	log.Debugf("validating manifest")
-	err = safeguards.ValidateManifest(ctx, vc.manifestPath)
+	log.Debugf("validating manifests")
+	err = safeguards.ValidateManifests(ctx, manifests)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err)
 		return err

@@ -4,8 +4,9 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	"os"
+
+	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -15,13 +16,9 @@ import (
 var s = runtime.NewScheme()
 var wd, _ = os.Getwd()
 
-// TODO: for each constraint/constraint template -> make a new embedded FS with directive
-// could get away
-// use embed.FS
-
 //go:embed lib
 var embedFS embed.FS
-var f = os.DirFS(wd)
+
 var fc FileCrawler
 
 // primes the scheme to be able to interpret beta templates

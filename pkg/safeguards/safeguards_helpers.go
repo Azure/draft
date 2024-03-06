@@ -37,8 +37,8 @@ func getLatestSafeguardsVersion() string {
 
 func updateSafeguardPaths() {
 	for _, sg := range safeguards {
-		sg.templatePath = fmt.Sprintf("%s/%s/%s/%s/%s", wd, safeguardDirectory, selectedVersion, sg.name, templateFileName)
-		sg.constraintPath = fmt.Sprintf("%s/%s/%s/%s/%s", wd, safeguardDirectory, selectedVersion, sg.name, constraintFileName)
+		sg.templatePath = fmt.Sprintf("%s/%s/%s", selectedVersion, sg.name, templateFileName)
+		sg.constraintPath = fmt.Sprintf("%s/%s/%s", selectedVersion, sg.name, constraintFileName)
 	}
 }
 

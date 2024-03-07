@@ -18,7 +18,8 @@ func init() {
 	updateSafeguardPaths()
 
 	testFc = FileCrawler{
-		Safeguards: safeguards,
+		Safeguards:   safeguards,
+		constraintFS: embedFS,
 	}
 }
 

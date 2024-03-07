@@ -2,9 +2,10 @@ package safeguards
 
 import (
 	"context"
-	"os"
-
+	"embed"
+	"fmt"
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
+	"io/fs"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -12,8 +13,10 @@ import (
 
 // Globals
 var s = runtime.NewScheme()
-var wd, _ = os.Getwd()
-var f = os.DirFS(wd)
+
+//go:embed lib
+var embedFS embed.FS
+
 var fc FileCrawler
 
 // primes the scheme to be able to interpret beta templates
@@ -25,13 +28,14 @@ func init() {
 	updateSafeguardPaths()
 
 	fc = FileCrawler{
-		Safeguards: safeguards,
+		Safeguards:   safeguards,
+		constraintFS: embedFS,
 	}
 }
 
-// ValidatemManifest is what will be called by `draft validate` to validate the user's manifest
+// ValidateManifests is what will be called by `draft validate` to validate the user's manifests
 // against each safeguards constraint
-func ValidateManifest(ctx context.Context, manifestPath string) error {
+func ValidateManifests(ctx context.Context, manifestFS fs.FS, manifests []string) error {
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
@@ -47,10 +51,6 @@ func ValidateManifest(ctx context.Context, manifestPath string) error {
 	if err != nil {
 		return err
 	}
-	manifest, err := fc.ReadManifest(manifestPath)
-	if err != nil {
-		return err
-	}
 
 	// loading of templates, constraints into constraint client
 	err = loadConstraintTemplates(ctx, c, constraintTemplates)
@@ -62,6 +62,24 @@ func ValidateManifest(ctx context.Context, manifestPath string) error {
 		return err
 	}
 
-	// validation of deployment manifest with constraints, templates loaded
-	return validateManifest(ctx, c, manifest)
+	var violations []string
+	for _, m := range manifests {
+		manifest, err := fc.ReadManifest(m, manifestFS)
+		if err != nil {
+			return err
+		}
+
+		// validation of deployment manifest with constraints, templates loaded
+		err = validateManifest(ctx, c, manifest)
+		if err != nil {
+			violations = append(violations, err.Error())
+		}
+	}
+
+	// returning the full list of violations after each manifest is checked
+	if len(violations) > 0 {
+		return fmt.Errorf("violations have occurred: %s", violations)
+	}
+
+	return nil
 }

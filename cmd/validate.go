@@ -3,13 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io/fs"
-	"os"
-	"path"
-
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"io/fs"
+	"os"
 )
 
 type validateCmd struct {
@@ -83,18 +81,17 @@ func (vc *validateCmd) run() error {
 	if vc.manifestPath == "" {
 		return fmt.Errorf("path to the manifests cannot be empty")
 	}
-	ctx := context.Background()
-	var wd, _ = os.Getwd()
-	var testFS = os.DirFS(path.Join(wd, "../pkg/safeguards/tests"))
 
+	ctx := context.Background()
 	isDir, err := isDirectory(vc.manifestPath)
 	if err != nil {
 		return fmt.Errorf("could not determine if given path is a directory: %w", err)
 	}
 
 	var manifests []string
+	var manifestFS = os.DirFS(vc.manifestPath)
 	if isDir {
-		manifests, err = getManifests(testFS, vc.manifestPath)
+		manifests, err = getManifests(manifestFS, vc.manifestPath)
 		if err != nil {
 			return err
 		}
@@ -102,7 +99,6 @@ func (vc *validateCmd) run() error {
 		manifests = append(manifests, vc.manifestPath)
 	}
 
-	var manifestFS = os.DirFS(vc.manifestPath)
 	if err != nil {
 		return fmt.Errorf("reading directory: %w", err)
 	}

@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/fs"
+	"os"
+	"path"
+
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/fs"
-	"os"
-	"path/filepath"
 )
 
 type validateCmd struct {
@@ -46,24 +47,22 @@ func newValidateCmd() *cobra.Command {
 func isDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
-
 		return false, err
 	}
 
 	return fileInfo.IsDir(), nil
 }
 
-// getManifests uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
-func getManifests(path string) ([]string, error) {
+// getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
+func getManifests(f fs.FS, path string) ([]string, error) {
 	var manifests []string
 
-	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+	err := fs.WalkDir(f, path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-
 			return fmt.Errorf("error walking path %s with error: %w", path, err)
 		}
 
-		if !info.IsDir() {
+		if !d.IsDir() {
 			log.Debugf("%s is not a directory, appending to manifests", path)
 			manifests = append(manifests, path)
 		} else {
@@ -85,6 +84,8 @@ func (vc *validateCmd) run() error {
 		return fmt.Errorf("path to the manifests cannot be empty")
 	}
 	ctx := context.Background()
+	var wd, _ = os.Getwd()
+	var testFS = os.DirFS(path.Join(wd, "../pkg/safeguards/tests"))
 
 	isDir, err := isDirectory(vc.manifestPath)
 	if err != nil {
@@ -93,7 +94,7 @@ func (vc *validateCmd) run() error {
 
 	var manifests []string
 	if isDir {
-		manifests, err = getManifests(vc.manifestPath)
+		manifests, err = getManifests(testFS, vc.manifestPath)
 		if err != nil {
 			return err
 		}
@@ -101,10 +102,15 @@ func (vc *validateCmd) run() error {
 		manifests = append(manifests, vc.manifestPath)
 	}
 
-	log.Debugf("validating manifests")
-	err = safeguards.ValidateManifests(ctx, manifests)
+	var manifestFS = os.DirFS(vc.manifestPath)
 	if err != nil {
-		log.Errorf("validating safeguards: %s", err)
+		return fmt.Errorf("reading directory: %w", err)
+	}
+
+	log.Debugf("validating manifests")
+	err = safeguards.ValidateManifests(ctx, manifestFS, manifests)
+	if err != nil {
+		log.Errorf("validating safeguards: %s", err.Error())
 		return err
 	}
 

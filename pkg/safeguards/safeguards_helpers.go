@@ -3,6 +3,7 @@ package safeguards
 import (
 	"context"
 	"fmt"
+	"io/fs"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
@@ -43,8 +44,9 @@ func updateSafeguardPaths() {
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadManifest(path string) (*unstructured.Unstructured, error) {
-	deployment, err := reader.ReadObject(embedFS, path)
+func (fc FileCrawler) ReadManifest(path string, manifestFS fs.FS) (*unstructured.Unstructured, error) {
+	// if david prefers not having this in binary, we can change the fs object later
+	deployment, err := reader.ReadObject(manifestFS, path)
 	if err != nil {
 		return nil, fmt.Errorf("could not read manifest: %w", err)
 	}
@@ -56,7 +58,7 @@ func (fc FileCrawler) ReadConstraintTemplates() ([]*templates.ConstraintTemplate
 	var constraintTemplates []*templates.ConstraintTemplate
 
 	for _, sg := range fc.Safeguards {
-		ct, err := reader.ReadTemplate(s, embedFS, sg.templatePath)
+		ct, err := reader.ReadTemplate(s, fc.constraintFS, sg.templatePath)
 		if err != nil {
 			return nil, fmt.Errorf("could not read template: %w", err)
 		}
@@ -71,7 +73,7 @@ func (fc FileCrawler) ReadConstraintTemplate(name string) (*templates.Constraint
 
 	for _, sg := range fc.Safeguards {
 		if sg.name == name {
-			ct, err := reader.ReadTemplate(s, embedFS, sg.templatePath)
+			ct, err := reader.ReadTemplate(s, fc.constraintFS, sg.templatePath)
 			if err != nil {
 				return nil, fmt.Errorf("could not read template: %w", err)
 			}
@@ -89,7 +91,7 @@ func (fc FileCrawler) ReadConstraints() ([]*unstructured.Unstructured, error) {
 	var constraints []*unstructured.Unstructured
 
 	for _, sg := range fc.Safeguards {
-		u, err := reader.ReadConstraint(embedFS, sg.constraintPath)
+		u, err := reader.ReadConstraint(fc.constraintFS, sg.constraintPath)
 		if err != nil {
 			return nil, fmt.Errorf("could not add constraint: %w", err)
 		}
@@ -105,7 +107,7 @@ func (fc FileCrawler) ReadConstraint(name string) (*unstructured.Unstructured, e
 
 	for _, sg := range fc.Safeguards {
 		if sg.name == name {
-			c, err := reader.ReadConstraint(embedFS, sg.constraintPath)
+			c, err := reader.ReadConstraint(fc.constraintFS, sg.constraintPath)
 			if err != nil {
 				return nil, fmt.Errorf("could not add constraint: %w", err)
 			}

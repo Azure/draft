@@ -4,9 +4,8 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"os"
-
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
+	"io/fs"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -14,7 +13,6 @@ import (
 
 // Globals
 var s = runtime.NewScheme()
-var wd, _ = os.Getwd()
 
 //go:embed lib
 var embedFS embed.FS
@@ -30,13 +28,14 @@ func init() {
 	updateSafeguardPaths()
 
 	fc = FileCrawler{
-		Safeguards: safeguards,
+		Safeguards:   safeguards,
+		constraintFS: embedFS,
 	}
 }
 
 // ValidateManifests is what will be called by `draft validate` to validate the user's manifests
 // against each safeguards constraint
-func ValidateManifests(ctx context.Context, manifests []string) error {
+func ValidateManifests(ctx context.Context, manifestFS fs.FS, manifests []string) error {
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
@@ -65,7 +64,7 @@ func ValidateManifests(ctx context.Context, manifests []string) error {
 
 	var violations []string
 	for _, m := range manifests {
-		manifest, err := fc.ReadManifest(m)
+		manifest, err := fc.ReadManifest(m, manifestFS)
 		if err != nil {
 			return err
 		}

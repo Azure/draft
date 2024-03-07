@@ -8,4 +8,4 @@ spec:
       - apiGroups: [""]
         kinds: ["Node"]
   parameters:
-    reservedTaints: {{ .Values.reservedTaints }}
+    reservedTaints: ["CriticalAddonsOnly"]

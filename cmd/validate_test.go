@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/Azure/draft/pkg/safeguards"
@@ -38,10 +39,10 @@ func TestRunValidate(t *testing.T) {
 	ctx := context.TODO()
 	manifestPathEmpty := ""
 	//emptyFS := os.DirFS("")
-	manifestPathDirectorySuccess := "./all/success"
-	manifestPathDirectoryError := "./all/error"
-	manifestPathFileSuccess := "./all/success/all-success-manifest.yaml"
-	manifestPathFileError := "./all/error/all-error-manifest.yaml"
+	manifestPathDirectorySuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
+	manifestPathDirectoryError, _ := filepath.Abs("../pkg/safeguards/tests/all/error")
+	manifestPathFileSuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest.yaml")
+	manifestPathFileError, _ := filepath.Abs("../pkg/safeguards/tests/all/error/all-error-manifest.yaml")
 	var manifestFiles []string
 
 	// Scenario 1: empty manifest path should error

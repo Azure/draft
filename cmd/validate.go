@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
@@ -55,19 +56,18 @@ func isDirectory(path string) (bool, error) {
 // getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
 func getManifestFiles(p string) ([]string, error) {
 	var manifestFiles []string
-	var f = os.DirFS(p)
 
-	err := fs.WalkDir(f, p, func(filepath string, d fs.DirEntry, err error) error {
+	err := filepath.Walk(p, func(filepath string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("error walking path %s with error: %w", filepath, err)
 		}
 
-		if !d.IsDir() && d.Name() != "" {
-			log.Debugf("%s is not a directory, appending to manifestFiles", d.Name())
+		if !info.IsDir() && info.Name() != "" {
+			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
 
 			manifestFiles = append(manifestFiles, filepath)
 		} else {
-			log.Debugf("%s is a directory, skipping...", d.Name())
+			log.Debugf("%s is a directory, skipping...", info.Name())
 		}
 
 		return nil

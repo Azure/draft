@@ -3,11 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/fs"
-	"os"
 )
 
 type validateCmd struct {
@@ -52,19 +54,20 @@ func isDirectory(path string) (bool, error) {
 }
 
 // getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
-func getManifests(f fs.FS, path string) ([]string, error) {
-	var manifests []string
+func getManifestFiles(p string) ([]string, error) {
+	var manifestFiles []string
 
-	err := fs.WalkDir(f, path, func(path string, d fs.DirEntry, err error) error {
+	err := filepath.Walk(p, func(filepath string, info fs.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("error walking path %s with error: %w", path, err)
+			return fmt.Errorf("error walking path %s with error: %w", filepath, err)
 		}
 
-		if !d.IsDir() {
-			log.Debugf("%s is not a directory, appending to manifests", path)
-			manifests = append(manifests, path)
+		if !info.IsDir() && info.Name() != "" {
+			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
+
+			manifestFiles = append(manifestFiles, filepath)
 		} else {
-			log.Debugf("%s is a directory, skipping...", path)
+			log.Debugf("%s is a directory, skipping...", info.Name())
 		}
 
 		return nil
@@ -73,7 +76,7 @@ func getManifests(f fs.FS, path string) ([]string, error) {
 		return nil, fmt.Errorf("could not walk directory: %w", err)
 	}
 
-	return manifests, nil
+	return manifestFiles, nil
 }
 
 // run is our entry point to ValidateManifests
@@ -85,18 +88,17 @@ func (vc *validateCmd) run() error {
 	ctx := context.Background()
 	isDir, err := isDirectory(vc.manifestPath)
 	if err != nil {
-		return fmt.Errorf("could not determine if given path is a directory: %w", err)
+		return fmt.Errorf("not a valid file or directory: %w", err)
 	}
 
-	var manifests []string
-	var manifestFS = os.DirFS(vc.manifestPath)
+	var manifestFiles []string
 	if isDir {
-		manifests, err = getManifests(manifestFS, vc.manifestPath)
+		manifestFiles, err = getManifestFiles(vc.manifestPath)
 		if err != nil {
 			return err
 		}
 	} else {
-		manifests = append(manifests, vc.manifestPath)
+		manifestFiles = append(manifestFiles, vc.manifestPath)
 	}
 
 	if err != nil {
@@ -104,7 +106,7 @@ func (vc *validateCmd) run() error {
 	}
 
 	log.Debugf("validating manifests")
-	err = safeguards.ValidateManifests(ctx, manifestFS, manifests)
+	err = safeguards.ValidateManifests(ctx, manifestFiles)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err.Error())
 		return err

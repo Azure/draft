@@ -11,9 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var wd, _ = os.Getwd()
-var testFS = os.DirFS(path.Join(wd, "../pkg/safeguards/tests"))
-
 // TestIsDirectory tests the isDirectory function for proper returns
 func TestIsDirectory(t *testing.T) {
 	testWd, _ := os.Getwd()
@@ -38,7 +35,6 @@ func TestIsDirectory(t *testing.T) {
 func TestRunValidate(t *testing.T) {
 	ctx := context.TODO()
 	manifestPathEmpty := ""
-	//emptyFS := os.DirFS("")
 	manifestPathDirectorySuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
 	manifestPathDirectoryError, _ := filepath.Abs("../pkg/safeguards/tests/all/error")
 	manifestPathFileSuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest.yaml")

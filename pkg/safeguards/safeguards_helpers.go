@@ -1,9 +1,10 @@
 package safeguards
 
 import (
+	"bufio"
 	"context"
 	"fmt"
-	"io/fs"
+	"os"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
@@ -44,14 +45,19 @@ func updateSafeguardPaths() {
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadManifest(path string, manifestFS fs.FS) (*unstructured.Unstructured, error) {
-	// if david prefers not having this in binary, we can change the fs object later
-	deployment, err := reader.ReadObject(manifestFS, path)
+func (fc FileCrawler) ReadManifests(path string) ([]*unstructured.Unstructured, error) {
+	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("could not read manifest: %w", err)
+		return nil, fmt.Errorf("opening file %q: %w", path, err)
+	}
+	defer file.Close()
+
+	manifests, err := reader.ReadK8sResources(bufio.NewReader(file))
+	if err != nil {
+		return nil, fmt.Errorf("reading file %q: %w", path, err)
 	}
 
-	return deployment, nil
+	return manifests, nil
 }
 
 func (fc FileCrawler) ReadConstraintTemplates() ([]*templates.ConstraintTemplate, error) {
@@ -60,7 +66,7 @@ func (fc FileCrawler) ReadConstraintTemplates() ([]*templates.ConstraintTemplate
 	for _, sg := range fc.Safeguards {
 		ct, err := reader.ReadTemplate(s, fc.constraintFS, sg.templatePath)
 		if err != nil {
-			return nil, fmt.Errorf("could not read template: %w", err)
+			return nil, fmt.Errorf("could not read template: %w\n", err)
 		}
 		constraintTemplates = append(constraintTemplates, ct)
 	}
@@ -152,13 +158,13 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 }
 
 // does validation on manifest based on loaded constraint templates, constraints
-func validateManifest(ctx context.Context, c *constraintclient.Client, manifest *unstructured.Unstructured) error {
+func validateManifest(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) error {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
-	res, err := c.Review(ctx, manifest)
+	res, err := c.Review(ctx, manifests)
 	if err != nil {
-		return fmt.Errorf("could not review manifest: %w", err)
+		return fmt.Errorf("could not review manifests: %w", err)
 	}
 
 	for _, v := range res.ByTarget {

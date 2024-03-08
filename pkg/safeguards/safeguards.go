@@ -4,9 +4,9 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"io/fs"
 
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
+	log "github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -36,7 +36,7 @@ func init() {
 
 // ValidateManifests is what will be called by `draft validate` to validate the user's manifests
 // against each safeguards constraint
-func ValidateManifests(ctx context.Context, manifestFS fs.FS, manifests []string) error {
+func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
@@ -64,14 +64,14 @@ func ValidateManifests(ctx context.Context, manifestFS fs.FS, manifests []string
 	}
 
 	var violations []string
-	for _, m := range manifests {
-		manifest, err := fc.ReadManifest(m, manifestFS)
+	for _, m := range manifestFiles {
+		manifests, err := fc.ReadManifests(m)
 		if err != nil {
 			return err
 		}
 
 		// validation of deployment manifest with constraints, templates loaded
-		err = validateManifest(ctx, c, manifest)
+		err = validateManifest(ctx, c, manifests)
 		if err != nil {
 			violations = append(violations, err.Error())
 		}
@@ -82,5 +82,6 @@ func ValidateManifests(ctx context.Context, manifestFS fs.FS, manifests []string
 		return fmt.Errorf("violations have occurred: %s", violations)
 	}
 
+	log.Printf("No violations found.")
 	return nil
 }

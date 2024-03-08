@@ -3,12 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io/fs"
-	"os"
-
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"io/fs"
+	"os"
 )
 
 type validateCmd struct {
@@ -53,17 +52,18 @@ func isDirectory(path string) (bool, error) {
 }
 
 // getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
-func getManifestFiles(f fs.FS, path string) ([]string, error) {
+func getManifestFiles(f fs.FS, p string) ([]string, error) {
 	var manifestFiles []string
 
-	err := fs.WalkDir(f, path, func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(f, p, func(filepath string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return fmt.Errorf("error walking path %s with error: %w", path, err)
+			return fmt.Errorf("error walking path %s with error: %w", filepath, err)
 		}
 
 		if !d.IsDir() && d.Name() != "" {
 			log.Debugf("%s is not a directory, appending to manifestFiles", d.Name())
-			manifestFiles = append(manifestFiles, d.Name())
+
+			manifestFiles = append(manifestFiles, filepath)
 		} else {
 			log.Debugf("%s is a directory, skipping...", d.Name())
 		}
@@ -105,7 +105,7 @@ func (vc *validateCmd) run() error {
 	}
 
 	log.Debugf("validating manifests")
-	err = safeguards.ValidateManifests(ctx, manifestFiles)
+	err = safeguards.ValidateManifests(ctx, manifestFS, manifestFiles)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err.Error())
 		return err

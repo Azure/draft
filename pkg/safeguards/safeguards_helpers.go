@@ -4,14 +4,13 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"os"
-
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/gator/reader"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
+	log "github.com/sirupsen/logrus"
+	"io/fs"
 
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -46,8 +45,8 @@ func updateSafeguardPaths() {
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadManifests(path string) ([]*unstructured.Unstructured, error) {
-	file, err := os.Open(path)
+func (fc FileCrawler) ReadManifests(f fs.FS, path string) ([]*unstructured.Unstructured, error) {
+	file, err := f.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("opening file %q: %w", path, err)
 	}

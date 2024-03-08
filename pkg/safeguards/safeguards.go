@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"io/fs"
 
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	log "github.com/sirupsen/logrus"
@@ -36,7 +37,7 @@ func init() {
 
 // ValidateManifests is what will be called by `draft validate` to validate the user's manifests
 // against each safeguards constraint
-func ValidateManifests(ctx context.Context, manifestFiles []string) error {
+func ValidateManifests(ctx context.Context, f fs.FS, manifestFiles []string) error {
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
@@ -65,7 +66,7 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 
 	var violations []string
 	for _, m := range manifestFiles {
-		manifests, err := fc.ReadManifests(m)
+		manifests, err := fc.ReadManifests(f, m)
 		if err != nil {
 			return err
 		}

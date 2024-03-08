@@ -4,8 +4,9 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	"io/fs"
+
+	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"

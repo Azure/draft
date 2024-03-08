@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io/fs"
+
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/gator/reader"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
 	log "github.com/sirupsen/logrus"
-	"io/fs"
 
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

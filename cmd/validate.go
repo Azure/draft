@@ -53,8 +53,9 @@ func isDirectory(path string) (bool, error) {
 }
 
 // getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
-func getManifestFiles(f fs.FS, p string) ([]string, error) {
+func getManifestFiles(p string) ([]string, error) {
 	var manifestFiles []string
+	var f = os.DirFS(p)
 
 	err := fs.WalkDir(f, p, func(filepath string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -91,9 +92,8 @@ func (vc *validateCmd) run() error {
 	}
 
 	var manifestFiles []string
-	var manifestFS = os.DirFS(vc.manifestPath)
 	if isDir {
-		manifestFiles, err = getManifestFiles(manifestFS, vc.manifestPath)
+		manifestFiles, err = getManifestFiles(vc.manifestPath)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func (vc *validateCmd) run() error {
 	}
 
 	log.Debugf("validating manifests")
-	err = safeguards.ValidateManifests(ctx, manifestFS, manifestFiles)
+	err = safeguards.ValidateManifests(ctx, manifestFiles)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err.Error())
 		return err

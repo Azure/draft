@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"io/fs"
+	"os"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
@@ -46,8 +46,8 @@ func updateSafeguardPaths() {
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadManifests(f fs.FS, path string) ([]*unstructured.Unstructured, error) {
-	file, err := f.Open(path)
+func (fc FileCrawler) ReadManifests(path string) ([]*unstructured.Unstructured, error) {
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("opening file %q: %w", path, err)
 	}

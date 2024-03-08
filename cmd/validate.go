@@ -61,9 +61,9 @@ func getManifestFiles(f fs.FS, path string) ([]string, error) {
 			return fmt.Errorf("error walking path %s with error: %w", path, err)
 		}
 
-		if !d.IsDir() {
+		if !d.IsDir() && d.Name() != "" {
 			log.Debugf("%s is not a directory, appending to manifestFiles", d.Name())
-			manifestFiles = append(manifestFiles, path)
+			manifestFiles = append(manifestFiles, d.Name())
 		} else {
 			log.Debugf("%s is a directory, skipping...", d.Name())
 		}

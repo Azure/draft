@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
@@ -158,19 +159,22 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 }
 
 // does validation on manifest based on loaded constraint templates, constraints
-func validateManifest(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) error {
+func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) error {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
-	res, err := c.Review(ctx, manifests)
-	if err != nil {
-		return fmt.Errorf("could not review manifests: %w", err)
-	}
+	for _, manifest := range manifests {
+		log.Printf("Reviewing %s...", manifest.GetName())
+		res, err := c.Review(ctx, manifest)
+		if err != nil {
+			return fmt.Errorf("could not review manifests: %w", err)
+		}
 
-	for _, v := range res.ByTarget {
-		for _, result := range v.Results {
-			if result.Msg != "" {
-				return fmt.Errorf("manifest error: %s", result.Msg)
+		for _, v := range res.ByTarget {
+			for _, result := range v.Results {
+				if result.Msg != "" {
+					return fmt.Errorf("manifest error: %s", result.Msg)
+				}
 			}
 		}
 	}

@@ -10,22 +10,22 @@ import (
 
 func validateTestManifests_Error(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
-		errManifest, err := testFc.ReadManifests(path)
+		errManifests, err := testFc.ReadManifests(path)
 		assert.Nil(t, err)
 
 		// error case - should throw error
-		err = validateManifest(ctx, c, errManifest)
+		err = validateManifests(ctx, c, errManifests)
 		assert.NotNil(t, err)
 	}
 }
 
 func validateTestManifests_Success(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
-		successManifest, err := testFc.ReadManifests(path)
+		successManifests, err := testFc.ReadManifests(path)
 		assert.Nil(t, err)
 
 		// success case - should not throw error
-		err = validateManifest(ctx, c, successManifest)
+		err = validateManifests(ctx, c, successManifests)
 		assert.Nil(t, err)
 	}
 }

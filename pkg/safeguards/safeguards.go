@@ -71,7 +71,7 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 		}
 
 		// validation of deployment manifest with constraints, templates loaded
-		err = validateManifest(ctx, c, manifests)
+		err = validateManifests(ctx, c, manifests)
 		if err != nil {
 			violations = append(violations, err.Error())
 		}
@@ -79,6 +79,7 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 
 	// returning the full list of violations after each manifest is checked
 	if len(violations) > 0 {
+
 		return fmt.Errorf("violations have occurred: %s", violations)
 	}
 

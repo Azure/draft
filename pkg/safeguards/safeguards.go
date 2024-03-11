@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	log "github.com/sirupsen/logrus"
 
@@ -69,16 +70,17 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 			return err
 		}
 
+		fmt.Println("Validating manifest: ", m)
 		// validation of deployment manifest with constraints, templates loaded
 		err = validateManifests(ctx, c, manifests)
 		if err != nil {
+			fmt.Println("Found err:", err)
 			violations = append(violations, err.Error())
 		}
 	}
 
 	// returning the full list of violations after each manifest is checked
 	if len(violations) > 0 {
-
 		return fmt.Errorf("violations have occurred: %s", violations)
 	}
 

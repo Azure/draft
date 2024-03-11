@@ -7,5 +7,7 @@ spec:
     kinds:
       - apiGroups: [""]
         kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
   parameters:
     excludedImages: ["my-container"]

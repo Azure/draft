@@ -32,8 +32,10 @@ var selectedVersion = "v1.0.0"
 // TODO: consider getting this from a text file we can bump
 var supportedVersions = []string{selectedVersion}
 
-const templateFileName = "template.yaml"
-const constraintFileName = "constraint.yaml"
+const (
+	templateFileName   = "template.yaml"
+	constraintFileName = "constraint.yaml"
+)
 
 var safeguards = []Safeguard{
 	{
@@ -51,29 +53,29 @@ var safeguards = []Safeguard{
 		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CL, templateFileName),
 		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CL, constraintFileName),
 	},
-	//{
-	//	name:           Constraint_CRIP,
-	//	templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, templateFileName),
-	//	constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, constraintFileName),
-	//},
-	//{
-	//	name:           Constraint_DBPDB,
-	//	templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_DBPDB, templateFileName),
-	//	constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_DBPDB, constraintFileName),
-	//},
-	//{
-	//	name:           Constraint_PEA,
-	//	templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_PEA, templateFileName),
-	//	constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_PEA, constraintFileName),
-	//},
-	//{
-	//	name:           Constraint_RT,
-	//	templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_RT, templateFileName),
-	//	constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_RT, constraintFileName),
-	//},
-	//{
-	//	name:           Constraint_USS,
-	//	templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_USS, templateFileName),
-	//	constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_USS, constraintFileName),
-	//},
+	{
+		name:           Constraint_CRIP,
+		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, templateFileName),
+		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, constraintFileName),
+	},
+	{
+		name:           Constraint_DBPDB,
+		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_DBPDB, templateFileName),
+		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_DBPDB, constraintFileName),
+	},
+	{
+		name:           Constraint_PEA,
+		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_PEA, templateFileName),
+		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_PEA, constraintFileName),
+	},
+	{
+		name:           Constraint_RT,
+		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_RT, templateFileName),
+		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_RT, constraintFileName),
+	},
+	{
+		name:           Constraint_USS,
+		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_USS, templateFileName),
+		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_USS, constraintFileName),
+	},
 }

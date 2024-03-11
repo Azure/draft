@@ -159,7 +159,7 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 }
 
 // does validation on manifest based on loaded constraint templates, constraints
-func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) error {
+func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) ([]string, error) {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
@@ -167,7 +167,7 @@ func validateManifests(ctx context.Context, c *constraintclient.Client, manifest
 		log.Printf("Reviewing %s...", manifest.GetName())
 		res, err := c.Review(ctx, manifest)
 		if err != nil {
-			return fmt.Errorf("could not review manifests: %w", err)
+			return []string{}, fmt.Errorf("could not review manifests: %w", err)
 		}
 
 		for _, v := range res.ByTarget {
@@ -180,5 +180,5 @@ func validateManifests(ctx context.Context, c *constraintclient.Client, manifest
 		}
 	}
 
-	return nil
+	return errMsgs, nil
 }

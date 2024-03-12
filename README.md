@@ -11,12 +11,12 @@
     ·
     <a href="https://github.com/Azure/draft/issues">Request Feature</a>
   
-  [![Draft Unit Tests](https://github.com/Azure/draft/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/unit-tests.yml?query=branch=main)
+  [![Draft Unit Tests](https://github.com/Azure/draft/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/unit-tests.yml?query=branch:main)
   [![GoDoc](https://godoc.org/github.com/Azure/draft?status.svg)](https://godoc.org/github.com/Azure/draft)
   [![Go Report Card](https://goreportcard.com/badge/github.com/Azure/draft?branch=main)](https://goreportcard.com/report/github.com/Azure/draft)
-  [![CodeQL](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml/badge.svg?branch=main?branch=main)](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml)
-  [![Draft Linux Integrations](https://github.com/Azure/draft/actions/workflows/integration-linux.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/integration-linux.yml)
-  [![Draft Release & Publish](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml)
+  [![CodeQL](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml/badge.svg?branch=main?branch=main)](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml?query=branch:main)
+  [![Draft Linux Integrations](https://github.com/Azure/draft/actions/workflows/integration-linux.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/integration-linux.yml?query=branch:main)
+  [![Draft Release & Publish](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml?query=branch:main)
   </p>
 </div>
 

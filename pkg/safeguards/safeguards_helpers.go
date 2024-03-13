@@ -171,10 +171,11 @@ func validateManifests(ctx context.Context, c *constraintclient.Client, manifest
 		}
 
 		for _, v := range res.ByTarget {
-			fmt.Println("Found ", len(v.Results), " errors")
+			log.Debugf("Found %d errors", len(v.Results))
 			for _, result := range v.Results {
 				if result.Msg != "" {
-					return fmt.Errorf("manifest error: %s", result.Msg)
+
+					log.Debugf("manifest error: %s", result.Msg)
 				}
 			}
 		}

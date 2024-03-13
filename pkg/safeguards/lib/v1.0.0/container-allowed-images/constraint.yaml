@@ -9,4 +9,4 @@ spec:
         kinds: ["Deployment"]
   parameters:
     imageRegex: "nginx:latest"
-    excludedContainers: ["my-container"]
+    excludedContainers: []

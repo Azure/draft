@@ -10,4 +10,4 @@ spec:
       - apiGroups: ["apps"]
         kinds: ["Deployment"]
   parameters:
-    excludedImages: ["my-container"]
+    excludedImages: []

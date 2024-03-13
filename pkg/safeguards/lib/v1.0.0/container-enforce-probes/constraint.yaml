@@ -10,6 +10,6 @@ spec:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    enforceProbes : ["my-probe"]
-    excludedContainers: ["my-container"]
+    enforceProbes : ["livenessProbe", "readinessProbe"]
+    excludedContainers: []
     excludedImages: ["nginx:latest"]

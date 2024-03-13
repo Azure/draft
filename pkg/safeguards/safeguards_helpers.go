@@ -180,7 +180,7 @@ func validateManifests(ctx context.Context, c *constraintclient.Client, manifest
 				}
 			}
 		}
-		log.Printf("\n")
+		fmt.Println("\n")
 	}
 
 	return violations, nil

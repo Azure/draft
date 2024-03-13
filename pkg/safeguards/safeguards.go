@@ -63,6 +63,7 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 
 	var violations []string
 	for _, m := range manifestFiles {
+		var tempViolations []string
 		manifests, err := fc.ReadManifests(m)
 		if err != nil {
 			log.Errorf("reading manifests %s", err.Error())
@@ -70,17 +71,16 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 		}
 
 		// validation of deployment manifest with constraints, templates loaded
-		violations, err = validateManifests(ctx, c, manifests)
+		tempViolations, err = validateManifests(ctx, c, manifests)
 		if err != nil {
 			log.Errorf("validating manifests: %s", err.Error())
 			return err
 		}
+		violations = append(violations, tempViolations...)
 	}
 
 	// returning the full list of violations after each manifest is checked
-	if len(violations) > 0 {
-		log.Printf("violations have occurred: %s", violations)
-	} else {
+	if len(violations) == 0 {
 		log.Printf("No violations found.")
 	}
 

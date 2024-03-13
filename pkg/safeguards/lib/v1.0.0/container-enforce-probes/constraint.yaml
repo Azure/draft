@@ -12,4 +12,4 @@ spec:
   parameters:
     enforceProbes : ["livenessProbe", "readinessProbe"]
     excludedContainers: []
-    excludedImages: ["nginx:latest"]
+    excludedImages: []

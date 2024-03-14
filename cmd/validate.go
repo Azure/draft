@@ -29,7 +29,7 @@ func newValidateCmd() *cobra.Command {
 		Short: "Validates manifests against AKS best practices",
 		Long:  `This command validates manifests against several AKS best practices.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := vc.run(); err != nil {
+			if err := vc.run(cmd); err != nil {
 				return err
 			}
 			return nil
@@ -80,7 +80,7 @@ func getManifestFiles(p string) ([]string, error) {
 }
 
 // run is our entry point to ValidateManifests
-func (vc *validateCmd) run() error {
+func (vc *validateCmd) run(c *cobra.Command) error {
 	if vc.manifestPath == "" {
 		return fmt.Errorf("path to the manifests cannot be empty")
 	}
@@ -106,10 +106,34 @@ func (vc *validateCmd) run() error {
 	}
 
 	log.Debugf("validating manifests")
-	err = safeguards.ValidateManifests(ctx, manifestFiles)
+	var manifestFileViolations map[string]map[string][]string
+	manifestFileViolations, err = safeguards.ValidateManifests(ctx, manifestFiles)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err.Error())
 		return err
+	}
+
+	anyViolationFound := false
+	for manifestSource, fileViolations := range manifestFileViolations {
+		log.Printf("Analyzing %s for violations", manifestSource)
+		manifestViolationsFound := false
+		// returning the full list of violations after each manifest is checked
+		for file, violations := range fileViolations {
+			log.Printf("  %s:", file)
+			for _, violation := range violations {
+				log.Printf("    %s", violation)
+				anyViolationFound = true
+				manifestViolationsFound = true
+			}
+		}
+		if !manifestViolationsFound {
+			log.Printf("    no violations found.")
+		}
+	}
+
+	if anyViolationFound {
+		c.SilenceUsage = true
+		return fmt.Errorf("violations found in manifests")
 	}
 
 	return nil

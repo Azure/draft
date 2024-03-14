@@ -158,30 +158,32 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 	return nil
 }
 
-// does validation on manifest based on loaded constraint templates, constraints
-func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) ([]string, error) {
+// validateManifests executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of violations
+func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) (map[string][]string, error) {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
-	var violations []string
+
+	var manifestViolations = make(map[string][]string) // map of manifest name to list of violations
+
 	for _, manifest := range manifests {
-		log.Printf("Reviewing %s...", manifest.GetName())
+		thisManifestViolations := []string{}
+		log.Debugf("Reviewing %s...", manifest.GetName())
 		res, err := c.Review(ctx, manifest)
 		if err != nil {
-			return violations, fmt.Errorf("could not review manifests: %w", err)
+			return manifestViolations, fmt.Errorf("could not review manifests: %w", err)
 		}
 
 		for _, v := range res.ByTarget {
-			log.Printf("Found %d errors", len(v.Results))
 			for _, result := range v.Results {
 				if result.Msg != "" {
-					log.Printf("violation: %s", result.Msg)
-					violations = append(violations, result.Msg)
+					thisManifestViolations = append(thisManifestViolations, result.Msg)
 				}
 			}
 		}
-		fmt.Println("")
+
+		manifestViolations[manifest.GetName()] = thisManifestViolations
 	}
 
-	return violations, nil
+	return manifestViolations, nil
 }

@@ -30,13 +30,13 @@ spec:
         }
 
         input_containers[c] {
-            c := input.review.object.spec.template.spec.containers[_]
+            c := input.review.object.spec.containers[_]
         }
         input_containers[c] {
-            c := input.review.object.spec.template.spec.initContainers[_]
+            c := input.review.object.spec.initContainers[_]
         }
         input_containers[c] {
-          c := input.review.object.spec.template.spec.ephemeralContainers[_]
+          c := input.review.object.spec.ephemeralContainers[_]
         }
         input_container_excluded(field) {
             field == input.parameters.excludedContainers[_]

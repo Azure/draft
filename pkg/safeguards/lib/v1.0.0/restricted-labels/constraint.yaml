@@ -1,0 +1,15 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV1RestrictedLabels
+metadata:
+  name: v1-no-aks-specific-labels
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod","Node", "Service"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "Replicaset"]
+  parameters:
+    labels: ["kubernetes.azure.com"]
+    allowedUsers: ["nodeclient","system:serviceaccount:kube-system:aci-connector-linux","system:serviceaccount:kube-system:node-controller","acsService","aksService","system:serviceaccount:kube-system:cloud-node-manager"]
+    allowedGroups: ["system:node"]

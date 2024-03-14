@@ -6,4 +6,6 @@ spec:
   match:
     kinds:
       - apiGroups: ["apps"]
-        kinds: ["Deployment","StatefulSet","ReplicationController","ReplicaSet"]
+        kinds: ["Deployment","StatefulSet","ReplicaSet"]
+      - apiGroups: [""]
+        kinds: ["ReplicationController"]

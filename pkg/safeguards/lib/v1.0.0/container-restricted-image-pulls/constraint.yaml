@@ -6,8 +6,8 @@ spec:
   match:
     kinds:
       - apiGroups: [""]
-        kinds: ["Pod"]
+        kinds: ["Pod","ReplicationController"]
       - apiGroups: ["apps"]
-        kinds: ["Deployment"]
+        kinds: ["Deployment","StatefulSet","ReplicaSet"]
   parameters:
     excludedImages: []

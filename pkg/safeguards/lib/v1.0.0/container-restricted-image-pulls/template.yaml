@@ -22,7 +22,7 @@ spec:
 
         has_key(object, key) {
           _ = object[key]
-        }        
+        }
 
         violation[{"msg": msg}] {
           container := input_containers[_]
@@ -49,14 +49,6 @@ spec:
           c := input.review.object.spec.template.spec.containers[_]
         }
 
-        input_containers[c] {
-          c := input.review.object.spec.template.spec.initContainers[_]
-        }
-
-        input_containers[c] {
-          c := input.review.object.spec.template.spec.ephemeralContainers[_]
-        }
-
         is_excluded(container) {
             exclude_images := object.get(object.get(input, "parameters", {}), "excludedImages", [])
             img := container.image
@@ -68,9 +60,9 @@ spec:
             not endswith(exclusion, "*")
             exclusion == img
         }
-        
+
         matches_exclusion(img, exclusion) {
             endswith(exclusion, "*")
             prefix := trim_suffix(exclusion, "*")
             startswith(img, prefix)
-        }        
+        }

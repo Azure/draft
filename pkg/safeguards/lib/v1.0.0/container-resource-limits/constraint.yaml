@@ -1,13 +1,14 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
-kind: K8sAzureV2ContainerEnforceProbes
+kind: K8sAzureV3ContainerLimits
 metadata:
-  name: v2-container-enforce-probes
+  name: v3-container-limits
 spec:
   match:
     kinds:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    enforceProbes : ["readinessProbe","livenessProbe"]
+    cpuLimit : "200m"
+    memoryLimit: "1Gi"
     excludedContainers: []
     excludedImages: []

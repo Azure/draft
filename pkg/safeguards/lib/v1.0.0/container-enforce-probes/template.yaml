@@ -61,17 +61,12 @@ spec:
           count(diff_fields) == count(probe_type_set)
         }
         get_violation_message(container, review, probe) = msg {
-          msg := sprintf("Container <%v> in your Deployment <%v> has no <%v>. Required probes: %v", [container.name, review.object.metadata.name, probe, input.parameters.enforceProbes])
+          msg := sprintf("Container <%v> in your Pod <%v> has no <%v>. Required probes: %v", [container.name, review.object.metadata.name, probe, input.parameters.enforceProbes])
         }
 
-        input_containers[c] {
-          c := input.review.object.spec.template.spec.containers[_]
-        }
-        
         input_containers[c] {
           c := input.review.object.spec.containers[_]
         }
-
         input_container_excluded(field) {
           field == input.parameters.excludedContainers[_]
         }

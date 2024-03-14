@@ -33,7 +33,7 @@ func init() {
 	}
 }
 
-// ValidateManifests takes in a list of manifest files and returns a map of manifestFiles/dirs to map of filenames to violation strings
+// ValidateManifests takes in a list of manifest files and returns a map of manifestFiles/dirs to map of manifestNames to violation strings
 func ValidateManifests(ctx context.Context, manifestFiles []string) (map[string]map[string][]string, error) {
 	var manifestFileViolations = make(map[string]map[string][]string)
 
@@ -64,20 +64,20 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) (map[string]
 	}
 
 	for _, m := range manifestFiles {
-		var tempViolations map[string][]string
-		manifests, err := fc.ReadManifests(m)
+		var fileViolations map[string][]string
+		manifests, err := fc.ReadManifests(m) // read all the manifests stored in a single file
 		if err != nil {
 			log.Errorf("reading manifests %s", err.Error())
 			return manifestFileViolations, err
 		}
 
 		// validation of deployment manifest with constraints, templates loaded
-		tempViolations, err = validateManifests(ctx, c, manifests)
+		fileViolations, err = validateManifests(ctx, c, manifests)
 		if err != nil {
 			log.Errorf("validating manifests: %s", err.Error())
 			return manifestFileViolations, err
 		}
-		manifestFileViolations[m] = tempViolations
+		manifestFileViolations[m] = fileViolations
 	}
 
 	return manifestFileViolations, nil

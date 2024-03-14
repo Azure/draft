@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"os"
+
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/gator/reader"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
 	log "github.com/sirupsen/logrus"
-	"os"
 
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -158,25 +159,29 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 }
 
 // does validation on manifest based on loaded constraint templates, constraints
-func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) error {
+func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) ([]string, error) {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
+	var violations []string
 	for _, manifest := range manifests {
 		log.Printf("Reviewing %s...", manifest.GetName())
 		res, err := c.Review(ctx, manifest)
 		if err != nil {
-			return fmt.Errorf("could not review manifests: %w", err)
+			return violations, fmt.Errorf("could not review manifests: %w", err)
 		}
 
 		for _, v := range res.ByTarget {
+			log.Printf("Found %d errors", len(v.Results))
 			for _, result := range v.Results {
 				if result.Msg != "" {
-					return fmt.Errorf("manifest error: %s", result.Msg)
+					log.Printf("violation: %s", result.Msg)
+					violations = append(violations, result.Msg)
 				}
 			}
 		}
+		fmt.Println("")
 	}
 
-	return nil
+	return violations, nil
 }

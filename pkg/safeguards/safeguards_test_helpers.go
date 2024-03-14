@@ -14,8 +14,9 @@ func validateTestManifests_Error(ctx context.Context, t *testing.T, c *constrain
 		assert.Nil(t, err)
 
 		// error case - should throw error
-		err = validateManifests(ctx, c, errManifests)
+		violations, err := validateManifests(ctx, c, errManifests)
 		assert.NotNil(t, err)
+		assert.NotNil(t, violations)
 	}
 }
 
@@ -25,7 +26,8 @@ func validateTestManifests_Success(ctx context.Context, t *testing.T, c *constra
 		assert.Nil(t, err)
 
 		// success case - should not throw error
-		err = validateManifests(ctx, c, successManifests)
+		violations, err := validateManifests(ctx, c, successManifests)
 		assert.Nil(t, err)
+		assert.Nil(t, violations)
 	}
 }

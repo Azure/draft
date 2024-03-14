@@ -3,7 +3,6 @@ package safeguards
 import (
 	"context"
 	"embed"
-	"fmt"
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	log "github.com/sirupsen/logrus"
 
@@ -64,24 +63,26 @@ func ValidateManifests(ctx context.Context, manifestFiles []string) error {
 
 	var violations []string
 	for _, m := range manifestFiles {
+		var tempViolations []string
 		manifests, err := fc.ReadManifests(m)
 		if err != nil {
+			log.Errorf("reading manifests %s", err.Error())
 			return err
 		}
 
 		// validation of deployment manifest with constraints, templates loaded
-		err = validateManifests(ctx, c, manifests)
+		tempViolations, err = validateManifests(ctx, c, manifests)
 		if err != nil {
-			violations = append(violations, err.Error())
+			log.Errorf("validating manifests: %s", err.Error())
+			return err
 		}
+		violations = append(violations, tempViolations...)
 	}
 
 	// returning the full list of violations after each manifest is checked
-	if len(violations) > 0 {
-
-		return fmt.Errorf("violations have occurred: %s", violations)
+	if len(violations) == 0 {
+		log.Printf("No violations found.")
 	}
 
-	log.Printf("No violations found.")
 	return nil
 }

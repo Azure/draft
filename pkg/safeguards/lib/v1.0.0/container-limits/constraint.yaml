@@ -10,5 +10,5 @@ spec:
   parameters:
     cpuLimit : "200m"
     memoryLimit: "1Gi"
-    excludedContainers: ["my-container"]
-    excludedImages: ["nginx:latest"]
+    excludedContainers: []
+    excludedImages: []

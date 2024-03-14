@@ -7,7 +7,9 @@ spec:
     kinds:
       - apiGroups: ["apps"]
         kinds: ["Deployment"]
+      - apiGroups: [""]
+        kinds: ["Pod"]
   parameters:
-    enforceProbes : ["my-probe"]
-    excludedContainers: ["my-container"]
-    excludedImages: ["nginx:latest"]
+    enforceProbes : ["livenessProbe", "readinessProbe"]
+    excludedContainers: []
+    excludedImages: []

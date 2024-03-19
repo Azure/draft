@@ -112,7 +112,6 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		return err
 	}
 
-	anyViolationFound := false
 	for _, v := range manifestViolations {
 		log.Printf("Analyzing %s for violations", v.Name)
 		manifestViolationsFound := false
@@ -121,7 +120,6 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 			log.Printf("  %s:", file)
 			for _, violation := range violations {
 				log.Printf("    %s", violation)
-				anyViolationFound = true
 				manifestViolationsFound = true
 			}
 		}
@@ -130,7 +128,7 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		}
 	}
 
-	if anyViolationFound {
+	if len(manifestViolations) > 0 {
 		c.SilenceUsage = true
 		return fmt.Errorf("violations found in manifests")
 	}

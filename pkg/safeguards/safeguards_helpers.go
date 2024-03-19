@@ -158,32 +158,34 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 	return nil
 }
 
-// validateManifests executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of violations
-func validateManifests(ctx context.Context, c *constraintclient.Client, manifests []*unstructured.Unstructured) (map[string][]string, error) {
+// getObjectViolations executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of objectViolations
+func getObjectViolations(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) (map[string][]string, error) {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
 
-	var manifestViolations = make(map[string][]string) // map of manifest name to list of violations
+	var violations = make(map[string][]string) // map of object name to slice of objectViolations
 
-	for _, manifest := range manifests {
-		thisManifestViolations := []string{}
-		log.Debugf("Reviewing %s...", manifest.GetName())
-		res, err := c.Review(ctx, manifest)
+	for _, o := range objects {
+		objectViolations := []string{}
+		log.Debugf("Reviewing %s...", o.GetName())
+		res, err := c.Review(ctx, o)
 		if err != nil {
-			return manifestViolations, fmt.Errorf("could not review manifests: %w", err)
+			return violations, fmt.Errorf("could not review objects: %w", err)
 		}
 
 		for _, v := range res.ByTarget {
 			for _, result := range v.Results {
 				if result.Msg != "" {
-					thisManifestViolations = append(thisManifestViolations, result.Msg)
+					objectViolations = append(objectViolations, result.Msg)
 				}
 			}
 		}
 
-		manifestViolations[manifest.GetName()] = thisManifestViolations
+		if len(objectViolations) > 0 {
+			violations[o.GetName()] = objectViolations
+		}
 	}
 
-	return manifestViolations, nil
+	return violations, nil
 }

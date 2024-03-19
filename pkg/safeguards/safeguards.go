@@ -33,52 +33,62 @@ func init() {
 	}
 }
 
-// ValidateManifests takes in a list of manifest files and returns a map of manifestFiles/dirs to map of manifestNames to violation strings
-func ValidateManifests(ctx context.Context, manifestFiles []string) (map[string]map[string][]string, error) {
-	var manifestFileViolations = make(map[string]map[string][]string)
+type ManifestViolation struct {
+	Name             string              // the name of the manifest
+	ObjectViolations map[string][]string // a map of string object names to slice of string objectViolations
+}
+
+// GetManifestViolations takes in a list of manifest files and returns a slice of ManifestViolation structs
+func GetManifestViolations(ctx context.Context, manifestFiles []string) ([]ManifestViolation, error) {
+	var manifestViolations = make([]ManifestViolation, 0)
 
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
-		return manifestFileViolations, err
+		return manifestViolations, err
 	}
 
 	// retrieval of templates, constraints, and deployment
 	constraintTemplates, err := fc.ReadConstraintTemplates()
 	if err != nil {
-		return manifestFileViolations, err
+		return manifestViolations, err
 	}
 	constraints, err := fc.ReadConstraints()
 	if err != nil {
-		return manifestFileViolations, err
+		return manifestViolations, err
 	}
 
 	// loading of templates, constraints into constraint client
 	err = loadConstraintTemplates(ctx, c, constraintTemplates)
 	if err != nil {
-		return manifestFileViolations, err
+		return manifestViolations, err
 	}
 	err = loadConstraints(ctx, c, constraints)
 	if err != nil {
-		return manifestFileViolations, err
+		return manifestViolations, err
 	}
 
 	for _, m := range manifestFiles {
-		var fileViolations map[string][]string
-		manifests, err := fc.ReadManifests(m) // read all the manifests stored in a single file
+		var objectViolations map[string][]string
+		objects, err := fc.ReadManifests(m) // read all the objects stored in a single file
 		if err != nil {
-			log.Errorf("reading manifests %s", err.Error())
-			return manifestFileViolations, err
+			log.Errorf("reading objects %s", err.Error())
+			return manifestViolations, err
 		}
 
 		// validation of deployment manifest with constraints, templates loaded
-		fileViolations, err = validateManifests(ctx, c, manifests)
+		objectViolations, err = getObjectViolations(ctx, c, objects)
 		if err != nil {
-			log.Errorf("validating manifests: %s", err.Error())
-			return manifestFileViolations, err
+			log.Errorf("validating objects: %s", err.Error())
+			return manifestViolations, err
 		}
-		manifestFileViolations[m] = fileViolations
+		if len(objectViolations) > 0 {
+			manifestViolations = append(manifestViolations, ManifestViolation{
+				Name:             m,
+				ObjectViolations: objectViolations,
+			})
+		}
 	}
 
-	return manifestFileViolations, nil
+	return manifestViolations, nil
 }

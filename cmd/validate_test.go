@@ -37,36 +37,40 @@ func TestRunValidate(t *testing.T) {
 	manifestPathEmpty := ""
 	manifestPathDirectorySuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
 	manifestPathDirectoryError, _ := filepath.Abs("../pkg/safeguards/tests/all/error")
-	manifestPathFileSuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest.yaml")
-	manifestPathFileError, _ := filepath.Abs("../pkg/safeguards/tests/all/error/all-error-manifest.yaml")
+	manifestPathFileSuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
+	manifestPathFileError, _ := filepath.Abs("../pkg/safeguards/tests/all/error/all-error-manifest-1.yaml")
 	var manifestFiles []string
 
 	// Scenario 1: empty manifest path should error
 	manifestFiles = append(manifestFiles, manifestPathEmpty)
-	err := safeguards.ValidateManifests(ctx, manifestFiles)
+	_, err := safeguards.GetManifestViolations(ctx, manifestFiles)
 	assert.NotNil(t, err)
 
 	// Scenario 2a: manifest path leads to a directory of manifestFiles - expect success
 	manifestFiles, err = getManifestFiles(manifestPathDirectorySuccess)
 	assert.Nil(t, err)
-	err = safeguards.ValidateManifests(ctx, manifestFiles)
+	v, err := safeguards.GetManifestViolations(ctx, manifestFiles)
 	assert.Nil(t, err)
+	assert.Equal(t, len(v), 0)
 
 	// Scenario 2b: manifest path leads to a directory of manifestFiles - expect failure
 	manifestFiles, err = getManifestFiles(manifestPathDirectoryError)
 	assert.Nil(t, err)
-	err = safeguards.ValidateManifests(ctx, manifestFiles)
-	assert.NotNil(t, err)
+	v, err = safeguards.GetManifestViolations(ctx, manifestFiles)
+	assert.Nil(t, err)
+	assert.Greater(t, len(v), 0)
 
 	// Scenario 3a: manifest path leads to one manifest file - expect success
 	manifestFiles = []string{}
 	manifestFiles = append(manifestFiles, manifestPathFileSuccess)
-	err = safeguards.ValidateManifests(ctx, manifestFiles)
+	v, err = safeguards.GetManifestViolations(ctx, manifestFiles)
 	assert.Nil(t, err)
+	assert.Equal(t, len(v), 0)
 
 	// Scenario 3b: manifest path leads to one manifest file - expect failure
 	manifestFiles = []string{}
 	manifestFiles = append(manifestFiles, manifestPathFileError)
-	err = safeguards.ValidateManifests(ctx, manifestFiles)
-	assert.NotNil(t, err)
+	v, err = safeguards.GetManifestViolations(ctx, manifestFiles)
+	assert.Nil(t, err)
+	assert.Greater(t, len(v), 0)
 }

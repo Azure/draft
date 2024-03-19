@@ -79,7 +79,7 @@ func getManifestFiles(p string) ([]string, error) {
 	return manifestFiles, nil
 }
 
-// run is our entry point to ValidateManifests
+// run is our entry point to GetManifestViolations
 func (vc *validateCmd) run(c *cobra.Command) error {
 	if vc.manifestPath == "" {
 		return fmt.Errorf("path to the manifests cannot be empty")
@@ -106,19 +106,18 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 	}
 
 	log.Debugf("validating manifests")
-	var manifestFileViolations map[string]map[string][]string
-	manifestFileViolations, err = safeguards.ValidateManifests(ctx, manifestFiles)
+	manifestViolations, err := safeguards.GetManifestViolations(ctx, manifestFiles)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err.Error())
 		return err
 	}
 
 	anyViolationFound := false
-	for manifestSource, fileViolations := range manifestFileViolations {
-		log.Printf("Analyzing %s for violations", manifestSource)
+	for _, v := range manifestViolations {
+		log.Printf("Analyzing %s for violations", v.Name)
 		manifestViolationsFound := false
 		// returning the full list of violations after each manifest is checked
-		for file, violations := range fileViolations {
+		for file, violations := range v.ObjectViolations {
 			log.Printf("  %s:", file)
 			for _, violation := range violations {
 				log.Printf("    %s", violation)

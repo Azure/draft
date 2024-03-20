@@ -3,6 +3,7 @@ package safeguards
 import (
 	"context"
 	"embed"
+
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	log "github.com/sirupsen/logrus"
 
@@ -32,57 +33,62 @@ func init() {
 	}
 }
 
-// ValidateManifests is what will be called by `draft validate` to validate the user's manifests
-// against each safeguards constraint
-func ValidateManifests(ctx context.Context, manifestFiles []string) error {
+type ManifestViolation struct {
+	Name             string              // the name of the manifest
+	ObjectViolations map[string][]string // a map of string object names to slice of string objectViolations
+}
+
+// GetManifestViolations takes in a list of manifest files and returns a slice of ManifestViolation structs
+func GetManifestViolations(ctx context.Context, manifestFiles []string) ([]ManifestViolation, error) {
+	var manifestViolations = make([]ManifestViolation, 0)
+
 	// constraint client instantiation
 	c, err := getConstraintClient()
 	if err != nil {
-		return err
+		return manifestViolations, err
 	}
 
 	// retrieval of templates, constraints, and deployment
 	constraintTemplates, err := fc.ReadConstraintTemplates()
 	if err != nil {
-		return err
+		return manifestViolations, err
 	}
 	constraints, err := fc.ReadConstraints()
 	if err != nil {
-		return err
+		return manifestViolations, err
 	}
 
 	// loading of templates, constraints into constraint client
 	err = loadConstraintTemplates(ctx, c, constraintTemplates)
 	if err != nil {
-		return err
+		return manifestViolations, err
 	}
 	err = loadConstraints(ctx, c, constraints)
 	if err != nil {
-		return err
+		return manifestViolations, err
 	}
 
-	var violations []string
 	for _, m := range manifestFiles {
-		var tempViolations []string
-		manifests, err := fc.ReadManifests(m)
+		var objectViolations map[string][]string
+		objects, err := fc.ReadManifests(m) // read all the objects stored in a single file
 		if err != nil {
-			log.Errorf("reading manifests %s", err.Error())
-			return err
+			log.Errorf("reading objects %s", err.Error())
+			return manifestViolations, err
 		}
 
 		// validation of deployment manifest with constraints, templates loaded
-		tempViolations, err = validateManifests(ctx, c, manifests)
+		objectViolations, err = getObjectViolations(ctx, c, objects)
 		if err != nil {
-			log.Errorf("validating manifests: %s", err.Error())
-			return err
+			log.Errorf("validating objects: %s", err.Error())
+			return manifestViolations, err
 		}
-		violations = append(violations, tempViolations...)
+		if len(objectViolations) > 0 {
+			manifestViolations = append(manifestViolations, ManifestViolation{
+				Name:             m,
+				ObjectViolations: objectViolations,
+			})
+		}
 	}
 
-	// returning the full list of violations after each manifest is checked
-	if len(violations) == 0 {
-		log.Printf("No violations found.")
-	}
-
-	return nil
+	return manifestViolations, nil
 }

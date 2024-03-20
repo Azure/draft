@@ -42,8 +42,8 @@ func TestValidateDeployment_ContainerAllowedImages(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifests_Error(ctx, t, c, testFc, testManifest_CAI.ErrorPaths)
-	validateTestManifests_Success(ctx, t, c, testFc, testManifest_CAI.SuccessPaths)
+	validateTestManifestsFail(ctx, t, c, testFc, testManifest_CAI.ErrorPaths)
+	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CAI.SuccessPaths)
 }
 
 // TODO: rich description here
@@ -65,8 +65,8 @@ func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifests_Error(ctx, t, c, testFc, testManifest_CEP.ErrorPaths)
-	validateTestManifests_Success(ctx, t, c, testFc, testManifest_CEP.SuccessPaths)
+	validateTestManifestsFail(ctx, t, c, testFc, testManifest_CEP.ErrorPaths)
+	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CEP.SuccessPaths)
 }
 
 // // TODO: rich description here
@@ -88,8 +88,8 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifests_Error(ctx, t, c, testFc, testManifest_CL.ErrorPaths)
-	validateTestManifests_Success(ctx, t, c, testFc, testManifest_CL.SuccessPaths)
+	validateTestManifestsFail(ctx, t, c, testFc, testManifest_CL.ErrorPaths)
+	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CL.SuccessPaths)
 }
 
 //// TODO: rich description here
@@ -111,7 +111,7 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	assert.Nil(t, err)
 //
 //	// validating deployment manifests
-//	validateTestManifests_Error(ctx, t, c, testFc, testManifest_CRIP.ErrorPaths)
+//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_CRIP.ErrorPaths)
 //	validateTestManifests_Success(ctx, t, c, testFc, testManifest_CRIP.SuccessPaths)
 //}
 //
@@ -134,7 +134,7 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	assert.Nil(t, err)
 //
 //	// validating deployment manifests
-//	validateTestManifests_Error(ctx, t, c, testFc, testManifest_DBPDB.ErrorPaths)
+//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_DBPDB.ErrorPaths)
 //	validateTestManifests_Success(ctx, t, c, testFc, testManifest_DBPDB.SuccessPaths)
 //}
 //
@@ -157,7 +157,7 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	assert.Nil(t, err)
 //
 //	// validating deployment manifests
-//	validateTestManifests_Error(ctx, t, c, testFc, testManifest_PEA.ErrorPaths)
+//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_PEA.ErrorPaths)
 //	validateTestManifests_Success(ctx, t, c, testFc, testManifest_PEA.SuccessPaths)
 //}
 //
@@ -180,7 +180,7 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	assert.Nil(t, err)
 //
 //	// validating deployment manifests
-//	validateTestManifests_Error(ctx, t, c, testFc, testManifest_RT.ErrorPaths)
+//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_RT.ErrorPaths)
 //	validateTestManifests_Success(ctx, t, c, testFc, testManifest_RT.SuccessPaths)
 //}
 //
@@ -203,7 +203,7 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	assert.Nil(t, err)
 //
 //	// validating deployment manifests
-//	validateTestManifests_Error(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
+//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
 //	validateTestManifests_Success(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
 //}
 //
@@ -234,6 +234,6 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	assert.Nil(t, err)
 //
 //	// validating deployment manifests
-//	validateTestManifests_Error(ctx, t, c, testFc, testManifest_all.ErrorPaths)
+//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_all.ErrorPaths)
 //	validateTestManifests_Success(ctx, t, c, testFc, testManifest_all.SuccessPaths)
 //}

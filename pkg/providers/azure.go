@@ -1,12 +1,15 @@
 package providers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"os/exec"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/spinner"
 
 	bo "github.com/cenkalti/backoff/v4"
@@ -23,6 +26,7 @@ type SetUpCmd struct {
 	tenantId          string
 	appObjectId       string
 	spObjectId        string
+	ctx               context.Context
 }
 
 func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
@@ -177,23 +181,56 @@ func (sc *SetUpCmd) assignSpRole() error {
 }
 
 func (sc *SetUpCmd) getTenantId() error {
-	log.Debug("Fetching Azure account tenant ID")
-	getTenantIdCmd := exec.Command("az", "account", "show", "--query", "tenantId", "--only-show-errors")
-	out, err := getTenantIdCmd.CombinedOutput()
+	log.Debug("getting Azure tenant ID")
+
+	tenants, err := ListTenants(sc.ctx)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("listing tenants: %w", err)
 	}
 
-	var tenantId string
-	if err := json.Unmarshal(out, &tenantId); err != nil {
-		return err
+	if len(tenants) == 0 {
+		return errors.New("no tenants found")
 	}
-	tenantId = fmt.Sprint(tenantId)
-
-	sc.tenantId = tenantId
+	if len(tenants) > 1 {
+		return errors.New("multiple tenants found")
+	}
+	sc.tenantId = fmt.Sprint(&tenants[0])
 
 	return nil
+}
+
+func ListTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error) {
+	log.Debug("listing Azure subscriptions")
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return nil, fmt.Errorf("getting credentials: %w", err)
+	}
+
+	client, err := armsubscription.NewTenantsClient(cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating tenants client: %w", err)
+	}
+
+	var tenants []armsubscription.TenantIDDescription
+	pager := client.NewListPager(nil)
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("listing tenants page: %w", err)
+		}
+
+		for _, t := range page.Value {
+			if t == nil {
+				return nil, errors.New("nil tenant") // this should never happen but it's good to check just in case
+			}
+
+			tenants = append(tenants, *t)
+		}
+	}
+
+	log.Debug("finished listing Azure tenants")
+	return tenants, nil
 }
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {

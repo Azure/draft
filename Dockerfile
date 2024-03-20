@@ -2,14 +2,15 @@ FROM golang:1.21-alpine
 
 WORKDIR /draft
 
-RUN apk add build-base
+RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo make
 RUN apk add py3-pip
-RUN apk add python3-dev libffi-dev openssl-dev cargo
 
-RUN python3 -m venv .venv
-ENV VIRTUAL_ENV .venv
-ENV PATH .venv/bin:$PATH
-RUN pip install azure-cli
+RUN python3 -m venv az-cli-env 
+RUN az-cli-env/bin/pip install --upgrade pip
+RUN az-cli-env/bin/pip install --upgrade azure-cli
+RUN az-cli-env/bin/az --version
+
+ENV PATH "$PATH:/draft/az-cli-env/bin"
 
 RUN apk add github-cli
 

@@ -1,19 +1,19 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"strings"
-
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strings"
 
 	"github.com/Azure/draft/pkg/providers"
 	"github.com/Azure/draft/pkg/spinner"
 )
 
-func newSetUpCmd() *cobra.Command {
+func newSetUpCmd(ctx context.Context) *cobra.Command {
 	sc := &providers.SetUpCmd{}
 
 	// setup-ghCmd represents the setup-gh command
@@ -27,7 +27,7 @@ application and service principle, and will configure that application to trust 
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
-			err := runProviderSetUp(sc, s)
+			err := runProviderSetUp(ctx, sc, s)
 			s.Stop()
 			if err != nil {
 				return err
@@ -72,11 +72,11 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	}
 }
 
-func runProviderSetUp(sc *providers.SetUpCmd, s spinner.Spinner) error {
+func runProviderSetUp(ctx context.Context, sc *providers.SetUpCmd, s spinner.Spinner) error {
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		// call azure provider logic
-		return providers.InitiateAzureOIDCFlow(sc, s)
+		return providers.InitiateAzureOIDCFlow(ctx, sc, s)
 
 	} else {
 		// call logic for user-submitted provider
@@ -203,6 +203,6 @@ func GetAzSubscriptionId(subIds []string) string {
 }
 
 func init() {
-	rootCmd.AddCommand(newSetUpCmd())
-
+	ctx := context.Background()
+	rootCmd.AddCommand(newSetUpCmd(ctx))
 }

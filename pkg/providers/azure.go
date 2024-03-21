@@ -26,10 +26,9 @@ type SetUpCmd struct {
 	tenantId          string
 	appObjectId       string
 	spObjectId        string
-	ctx               context.Context
 }
 
-func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
+func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
 
 	if !HasGhCli() || !IsLoggedInToGh() {
@@ -54,7 +53,7 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 		return err
 	}
 
-	if err := sc.getTenantId(); err != nil {
+	if err := sc.getTenantId(ctx); err != nil {
 		return err
 	}
 
@@ -180,10 +179,10 @@ func (sc *SetUpCmd) assignSpRole() error {
 	return nil
 }
 
-func (sc *SetUpCmd) getTenantId() error {
+func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
 	log.Debug("getting Azure tenant ID")
 
-	tenants, err := ListTenants(sc.ctx)
+	tenants, err := ListTenants(ctx)
 	if err != nil {
 		return fmt.Errorf("listing tenants: %w", err)
 	}
@@ -224,7 +223,6 @@ func ListTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, er
 			if t == nil {
 				return nil, errors.New("nil tenant") // this should never happen but it's good to check just in case
 			}
-
 			tenants = append(tenants, *t)
 		}
 	}

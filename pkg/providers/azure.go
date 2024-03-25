@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"os/exec"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/draft/pkg/cred"
 	"github.com/Azure/draft/pkg/spinner"
 
 	bo "github.com/cenkalti/backoff/v4"
@@ -182,7 +182,7 @@ func (sc *SetUpCmd) assignSpRole() error {
 func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
 	log.Debug("getting Azure tenant ID")
 
-	tenants, err := ListTenants(ctx)
+	tenants, err := listTenants(ctx)
 	if err != nil {
 		return fmt.Errorf("listing tenants: %w", err)
 	}
@@ -198,10 +198,10 @@ func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
 	return nil
 }
 
-func ListTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error) {
+func listTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error) {
 	log.Debug("listing Azure subscriptions")
 
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	cred, err := cred.GetCred()
 	if err != nil {
 		return nil, fmt.Errorf("getting credentials: %w", err)
 	}

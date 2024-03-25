@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/draft/pkg/spinner"
 )
 
-func newSetUpCmd(ctx context.Context) *cobra.Command {
+func newSetUpCmd() *cobra.Command {
 	sc := &providers.SetUpCmd{}
 
 	// setup-ghCmd represents the setup-gh command
@@ -23,6 +23,7 @@ func newSetUpCmd(ctx context.Context) *cobra.Command {
 		Long: `This command will automate the Github OIDC setup process by creating an Azure Active Directory 
 application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
@@ -203,6 +204,5 @@ func GetAzSubscriptionId(subIds []string) string {
 }
 
 func init() {
-	ctx := context.Background()
-	rootCmd.AddCommand(newSetUpCmd(ctx))
+	rootCmd.AddCommand(newSetUpCmd())
 }

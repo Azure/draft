@@ -1,13 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"strings"
-
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strings"
 
 	"github.com/Azure/draft/pkg/providers"
 	"github.com/Azure/draft/pkg/spinner"
@@ -23,11 +23,12 @@ func newSetUpCmd() *cobra.Command {
 		Long: `This command will automate the Github OIDC setup process by creating an Azure Active Directory 
 application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
-			err := runProviderSetUp(sc, s)
+			err := runProviderSetUp(ctx, sc, s)
 			s.Stop()
 			if err != nil {
 				return err
@@ -72,11 +73,11 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	}
 }
 
-func runProviderSetUp(sc *providers.SetUpCmd, s spinner.Spinner) error {
+func runProviderSetUp(ctx context.Context, sc *providers.SetUpCmd, s spinner.Spinner) error {
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		// call azure provider logic
-		return providers.InitiateAzureOIDCFlow(sc, s)
+		return providers.InitiateAzureOIDCFlow(ctx, sc, s)
 
 	} else {
 		// call logic for user-submitted provider
@@ -204,5 +205,4 @@ func GetAzSubscriptionId(subIds []string) string {
 
 func init() {
 	rootCmd.AddCommand(newSetUpCmd())
-
 }

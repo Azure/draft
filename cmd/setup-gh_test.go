@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 )
 
 func TestSetUpConfig(t *testing.T) {
+	ctx := context.Background()
 	mockSetUpCmd := &providers.SetUpCmd{}
 	mockSetUpCmd.AppName = "testingSetUpCommand"
 	mockSetUpCmd.Provider = "Google"
@@ -20,7 +22,7 @@ func TestSetUpConfig(t *testing.T) {
 
 	fillSetUpConfig(mockSetUpCmd)
 
-	err := runProviderSetUp(mockSetUpCmd, s)
+	err := runProviderSetUp(ctx, mockSetUpCmd, s)
 
 	assert.True(t, err == nil)
 }

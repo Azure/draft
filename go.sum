@@ -174,7 +174,7 @@ github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/inconshreveable/mousetrap v1.0.1 h1:U3uMjPSQEBMNp1lFxmllqCPM6P5u/Xq7Pgzkat/bFNc=
 github.com/inconshreveable/mousetrap v1.0.1/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/instrumenta/kubeval v0.16.1 h1:PfnIjhs917dfYSNtat+zik8PTAGrABxbgpbVodSnkfI=
+github.com/instrumenta/kubeval v0.16.1 h1:PticHzCrCqRjwfse1YmlgsN5313Du1PyJ2QnRGVNdVg=
 github.com/instrumenta/kubeval v0.16.1/go.mod h1:K9fO5e4B/bznyi5cKzthudanzcPzPBP2OuB5uE9G1TU=
 github.com/ivanpirog/coloredcobra v1.0.1 h1:aURSdEmlR90/tSiWS0dMjdwOvCVUeYLfltLfbgNxrN4=
 github.com/ivanpirog/coloredcobra v1.0.1/go.mod h1:iho4nEKcnwZFiniGSdcgdvRgZNjxm+h20acv8vqmN6Q=

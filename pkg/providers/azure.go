@@ -2,9 +2,14 @@ package providers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	"github.com/Azure/go-autorest/autorest"
 	"os/exec"
 	"time"
 
@@ -26,6 +31,10 @@ type SetUpCmd struct {
 	tenantId          string
 	appObjectId       string
 	spObjectId        string
+}
+
+type AzureCredentialWrapper struct {
+	token string
 }
 
 func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner) error {
@@ -57,7 +66,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.getAppObjectId(); err != nil {
+	if err := sc.getAppObjectId(ctx); err != nil {
 		return err
 	}
 
@@ -319,21 +328,52 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 }
 
-func (sc *SetUpCmd) getAppObjectId() error {
-	log.Debug("Fetching Azure application object ID")
-	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
-	out, err := getObjectIdCmd.CombinedOutput()
+func (wrapper *AzureCredentialWrapper) OAuthToken() string {
+	decoded, err := base64.StdEncoding.DecodeString(wrapper.token)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		fmt.Println("decode error:", err)
+		return ""
+	}
+	return string(decoded)
+}
+
+func (sc *SetUpCmd) getAppObjectId(ctx context.Context) error {
+	log.Debug("Fetching Azure application object ID")
+
+	cred, err := cred.GetCred()
+	// Get a token from the credentials
+	token, err := cred.GetToken(ctx, policy.TokenRequestOptions{
+		// okay to hardcode to PublicCloud since we should never deploy to anything else in public OSS repo
+		Scopes: []string{cloud.AzurePublic.Services[cloud.ResourceManager].Endpoint + "/.default"},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get token: %w", err)
 	}
 
-	var objectId string
-	if err := json.Unmarshal(out, &objectId); err != nil {
-		return err
+	// Get an authorizer using the obtained token
+	wrapper := &AzureCredentialWrapper{token: token.Token}
+	authorizer := autorest.NewBearerAuthorizer(wrapper)
+	if err != nil {
+		return fmt.Errorf("getting authorizer: %w", err)
 	}
 
-	sc.appObjectId = objectId
+	// Get an ApplicationsClient using the tenant ID
+	appsClient := graphrbac.NewApplicationsClient(sc.tenantId)
+	appsClient.Authorizer = authorizer
+
+	// Retrieve application details using the client
+	app, err := appsClient.Get(ctx, sc.appId)
+	if err != nil {
+		return fmt.Errorf("geting application details: %w", err)
+	}
+
+	// Extract the object ID from the application details
+	appObjectId := *app.ObjectID
+	if appObjectId == "" {
+		return errors.New("application object ID is empty")
+	}
+
+	sc.appObjectId = appObjectId
 
 	return nil
 }

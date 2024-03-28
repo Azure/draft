@@ -202,7 +202,7 @@ func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
 	if len(tenants) > 1 {
 		return errors.New("multiple tenants found")
 	}
-	sc.tenantId = fmt.Sprint(&tenants[0])
+	sc.tenantId = *tenants[0].TenantID
 
 	return nil
 }

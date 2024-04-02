@@ -1,5 +1,27 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: Service
+metadata:
+  name: my-deployment
+  labels:
+    app: my-app
+    environment: production
+    testLabel3: randomlabel
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-container
+          image: nginx:latest
+---
+apiVersion: apps/v1
+kind: Service
 metadata:
   name: my-deployment
   labels:

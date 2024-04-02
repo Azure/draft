@@ -7,6 +7,7 @@ import (
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	log "github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 )
@@ -33,13 +34,8 @@ func init() {
 	}
 }
 
-type ManifestViolation struct {
-	Name             string              // the name of the manifest
-	ObjectViolations map[string][]string // a map of string object names to slice of string objectViolations
-}
-
 // GetManifestViolations takes in a list of manifest files and returns a slice of ManifestViolation structs
-func GetManifestViolations(ctx context.Context, manifestFiles []string) ([]ManifestViolation, error) {
+func GetManifestViolations(ctx context.Context, manifestFiles []ManifestFile) ([]ManifestViolation, error) {
 	var manifestViolations = make([]ManifestViolation, 0)
 
 	// constraint client instantiation
@@ -68,23 +64,40 @@ func GetManifestViolations(ctx context.Context, manifestFiles []string) ([]Manif
 		return manifestViolations, err
 	}
 
+	// organized map of manifest object by file name
+	manifestMap := make(map[string][]*unstructured.Unstructured, 0)
+
+	// aggregate of every manifest object into one list
+	objects := []*unstructured.Unstructured{}
+
 	for _, m := range manifestFiles {
-		var objectViolations map[string][]string
-		objects, err := fc.ReadManifests(m) // read all the objects stored in a single file
+		objs, err := fc.ReadManifests(m.Path) // read all the objects stored in a single file
 		if err != nil {
 			log.Errorf("reading objects %s", err.Error())
 			return manifestViolations, err
 		}
 
+		objects = append(objects, objs...)
+		manifestMap[m.Name] = objs
+	}
+
+	// thbarnes: loadData loads manifest data into client for review as well
+	if len(objects) > 0 {
+		err = loadData(ctx, c, objects)
+	}
+
+	for _, m := range manifestFiles {
+		var objectViolations map[string][]string
+
 		// validation of deployment manifest with constraints, templates loaded
-		objectViolations, err = getObjectViolations(ctx, c, objects)
+		objectViolations, err = getObjectViolations(ctx, c, manifestMap[m.Name])
 		if err != nil {
 			log.Errorf("validating objects: %s", err.Error())
 			return manifestViolations, err
 		}
 		if len(objectViolations) > 0 {
 			manifestViolations = append(manifestViolations, ManifestViolation{
-				Name:             m,
+				Name:             m.Name,
 				ObjectViolations: objectViolations,
 			})
 		}

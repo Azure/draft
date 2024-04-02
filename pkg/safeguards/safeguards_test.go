@@ -203,10 +203,10 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	assert.Nil(t, err)
 //
 //	// validating deployment manifests
-//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
-//	validateTestManifests_Success(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
+//	validateTestManifestsFail(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
+//	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
 //}
-//
+
 //// TODO: rich description here
 //func TestValidateDeployment_All(t *testing.T) {
 //	// instantiate constraint client

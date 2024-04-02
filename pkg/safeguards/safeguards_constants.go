@@ -27,6 +27,16 @@ type Safeguard struct {
 	constraintPath string
 }
 
+type ManifestFile struct {
+	Name string
+	Path string
+}
+
+type ManifestViolation struct {
+	Name             string              // the name of the manifest
+	ObjectViolations map[string][]string // a map of string object names to slice of string objectViolations
+}
+
 var selectedVersion = "v1.0.0"
 
 // TODO: consider getting this from a text file we can bump

@@ -3,13 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/Azure/draft/pkg/safeguards"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/Azure/draft/pkg/safeguards"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 type validateCmd struct {

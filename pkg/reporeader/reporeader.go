@@ -2,6 +2,7 @@ package reporeader
 
 import (
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -55,15 +56,23 @@ func (r FakeRepoReader) FindFiles(path string, patterns []string, maxDepth int) 
 	if r.Files == nil {
 		return files, nil
 	}
+
+	// sort files because map iteration order is undefined. lets us control test behavior
+	sortedFiles := make([]string, 0, len(r.Files))
 	for k := range r.Files {
+		sortedFiles = append(sortedFiles, k)
+	}
+	sort.Strings(sortedFiles)
+
+	for _, file := range sortedFiles {
 		for _, pattern := range patterns {
-			if matched, err := filepath.Match(pattern, filepath.Base(k)); err != nil {
+			if matched, err := filepath.Match(pattern, filepath.Base(file)); err != nil {
 				return nil, err
 			} else if matched {
-				splitPath := strings.Split(k, string(filepath.Separator))
+				splitPath := strings.Split(file, string(filepath.Separator))
 				fileDepth := len(splitPath) - 1
 				if fileDepth <= maxDepth {
-					files = append(files, k)
+					files = append(files, file)
 				}
 			}
 		}

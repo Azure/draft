@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/draft/pkg/cred"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -24,11 +26,24 @@ func newSetUpCmd() *cobra.Command {
 application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
+
+			azCred, err := cred.GetCred()
+			if err != nil {
+				return fmt.Errorf("getting credentials: %w", err)
+			}
+
+			client, err := armsubscription.NewTenantsClient(azCred, nil)
+			if err != nil {
+				return fmt.Errorf("creating tenants client: %w", err)
+			}
+
+			sc.AzTenantClient = client
+
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
-			err := runProviderSetUp(ctx, sc, s)
+			err = runProviderSetUp(ctx, sc, s)
 			s.Stop()
 			if err != nil {
 				return err

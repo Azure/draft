@@ -36,7 +36,7 @@ func init() {
 
 // GetManifestViolations takes in a list of manifest files and returns a slice of ManifestViolation structs
 func GetManifestViolations(ctx context.Context, manifestFiles []ManifestFile) ([]ManifestViolation, error) {
-	var manifestViolations = make([]ManifestViolation, 0)
+	manifestViolations := make([]ManifestViolation, 0)
 
 	// constraint client instantiation
 	c, err := getConstraintClient()
@@ -92,12 +92,10 @@ func GetManifestViolations(ctx context.Context, manifestFiles []ManifestFile) ([
 			log.Errorf("validating objects: %s", err.Error())
 			return manifestViolations, err
 		}
-		if len(objectViolations) > 0 {
-			manifestViolations = append(manifestViolations, ManifestViolation{
-				Name:             m.Name,
-				ObjectViolations: objectViolations,
-			})
-		}
+		manifestViolations = append(manifestViolations, ManifestViolation{
+			Name:             m.Name,
+			ObjectViolations: objectViolations,
+		})
 	}
 
 	return manifestViolations, nil

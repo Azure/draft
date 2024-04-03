@@ -66,24 +66,21 @@ func GetManifestViolations(ctx context.Context, manifestFiles []ManifestFile) ([
 
 	// organized map of manifest object by file name
 	manifestMap := make(map[string][]*unstructured.Unstructured, 0)
-
 	// aggregate of every manifest object into one list
-	objects := []*unstructured.Unstructured{}
-
+	allManifestObjects := []*unstructured.Unstructured{}
 	for _, m := range manifestFiles {
-		objs, err := fc.ReadManifests(m.Path) // read all the objects stored in a single file
+		manifestObjects, err := fc.ReadManifests(m.Path) // read all the objects stored in a single file
 		if err != nil {
 			log.Errorf("reading objects %s", err.Error())
 			return manifestViolations, err
 		}
 
-		objects = append(objects, objs...)
-		manifestMap[m.Name] = objs
+		allManifestObjects = append(allManifestObjects, manifestObjects...)
+		manifestMap[m.Name] = manifestObjects
 	}
 
-	// thbarnes: loadData loads manifest data into client for review as well
-	if len(objects) > 0 {
-		err = loadData(ctx, c, objects)
+	if len(allManifestObjects) > 0 {
+		err = loadManifestObjects(ctx, c, allManifestObjects)
 	}
 
 	for _, m := range manifestFiles {

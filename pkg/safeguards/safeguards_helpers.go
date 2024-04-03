@@ -158,8 +158,7 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 	return nil
 }
 
-// thbarnes: loadObjects name conflict
-func loadData(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) error {
+func loadManifestObjects(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) error {
 	// AddData inserts the provided data into OPA for every target that can handle the data.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.

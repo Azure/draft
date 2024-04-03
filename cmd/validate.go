@@ -137,7 +137,6 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 	if len(manifestViolations) > 0 {
 		c.SilenceUsage = true
-		//return fmt.Errorf("violations found in manifests")
 	} else {
 		log.Printf("✅ No violations found in \"%s\".", vc.manifestPath)
 	}

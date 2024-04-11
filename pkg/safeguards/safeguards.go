@@ -3,6 +3,7 @@ package safeguards
 import (
 	"context"
 	"embed"
+	"fmt"
 
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +37,10 @@ func init() {
 
 // GetManifestViolations takes in a list of manifest files and returns a slice of ManifestViolation structs
 func GetManifestViolations(ctx context.Context, manifestFiles []ManifestFile) ([]ManifestViolation, error) {
+	if len(manifestFiles) == 0 {
+		return nil, fmt.Errorf("path cannot be empty")
+	}
+
 	manifestViolations := make([]ManifestViolation, 0)
 
 	// constraint client instantiation

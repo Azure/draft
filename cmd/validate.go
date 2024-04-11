@@ -54,7 +54,7 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), nil
 }
 
-// getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
+// getManifestFiles uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
 func getManifestFiles(p string) ([]safeguards.ManifestFile, error) {
 	var manifestFiles []safeguards.ManifestFile
 

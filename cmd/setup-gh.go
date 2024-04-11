@@ -37,7 +37,7 @@ application and service principle, and will configure that application to trust 
 				return fmt.Errorf("creating tenants client: %w", err)
 			}
 
-			sc.AzTenantClient = client
+			sc.AzClient.AzTenantClient = client
 
 			fillSetUpConfig(sc)
 

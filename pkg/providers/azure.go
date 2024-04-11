@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"os/exec"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/spinner"
 
 	bo "github.com/cenkalti/backoff/v4"
@@ -26,7 +25,7 @@ type SetUpCmd struct {
 	tenantId          string
 	appObjectId       string
 	spObjectId        string
-	AzTenantClient    azTenantClient
+	AzClient          AzClient
 }
 
 func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner) error {
@@ -199,17 +198,12 @@ func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
 	return nil
 }
 
-//go:generate mockgen -source=./azure.go -destination=./mock/azure.go .
-type azTenantClient interface {
-	NewListPager(options *armsubscription.TenantsClientListOptions) *runtime.Pager[armsubscription.TenantsClientListResponse]
-}
-
 func (sc *SetUpCmd) listTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error) {
 	log.Debug("listing Azure subscriptions")
 
 	var tenants []armsubscription.TenantIDDescription
 
-	pager := sc.AzTenantClient.NewListPager(nil)
+	pager := sc.AzClient.AzTenantClient.NewListPager(nil)
 
 	for pager.More() {
 		page, err := pager.NextPage(ctx)

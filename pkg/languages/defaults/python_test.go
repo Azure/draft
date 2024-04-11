@@ -54,15 +54,15 @@ func TestPythonExtractor_ReadDefaults(t *testing.T) {
 		{
 			name: "extract first python file as entrypoint",
 			args: args{
-				r: reporeader.FakeRepoReader{
+				r: reporeader.FakeRepoReader{ // maps order isn't defined but FakeRepoReader sorts the keys
 					Files: map[string][]byte{
-						"foo.py": []byte("print('hello world')"),
 						"bar.py": []byte("print('hello world')"),
+						"foo.py": []byte("print('hello world')"),
 					},
 				},
 			},
 			want: map[string]string{
-				"ENTRYPOINT": "foo.py",
+				"ENTRYPOINT": "bar.py",
 			},
 			wantErr: false,
 		},

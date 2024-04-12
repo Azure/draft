@@ -8,13 +8,12 @@ import (
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/Azure/go-autorest/autorest"
 	"os/exec"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/Azure/draft/pkg/cred"
 	"github.com/Azure/draft/pkg/spinner"
 
 	bo "github.com/cenkalti/backoff/v4"
@@ -31,6 +30,7 @@ type SetUpCmd struct {
 	tenantId          string
 	appObjectId       string
 	spObjectId        string
+	AzClient          AzClient
 }
 
 type AzureCredentialWrapper struct {
@@ -191,7 +191,7 @@ func (sc *SetUpCmd) assignSpRole() error {
 func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
 	log.Debug("getting Azure tenant ID")
 
-	tenants, err := listTenants(ctx)
+	tenants, err := sc.listTenants(ctx)
 	if err != nil {
 		return fmt.Errorf("listing tenants: %w", err)
 	}
@@ -207,21 +207,13 @@ func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
 	return nil
 }
 
-func listTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error) {
+func (sc *SetUpCmd) listTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error) {
 	log.Debug("listing Azure subscriptions")
 
-	cred, err := cred.GetCred()
-	if err != nil {
-		return nil, fmt.Errorf("getting credentials: %w", err)
-	}
-
-	client, err := armsubscription.NewTenantsClient(cred, nil)
-	if err != nil {
-		return nil, fmt.Errorf("creating tenants client: %w", err)
-	}
-
 	var tenants []armsubscription.TenantIDDescription
-	pager := client.NewListPager(nil)
+
+	pager := sc.AzClient.AzTenantClient.NewListPager(nil)
+
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {

@@ -158,6 +158,20 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 	return nil
 }
 
+func loadManifestObjects(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) error {
+	// AddData inserts the provided data into OPA for every target that can handle the data.
+	// On error, the responses return value will still be populated so that
+	// partial results can be analyzed.
+	for _, o := range objects {
+		_, err := c.AddData(ctx, o)
+		if err != nil {
+			return fmt.Errorf("could not add data: %w", err)
+		}
+	}
+
+	return nil
+}
+
 // getObjectViolations executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of objectViolations
 func getObjectViolations(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) (map[string][]string, error) {
 	// Review makes sure the provided object satisfies all stored constraints.

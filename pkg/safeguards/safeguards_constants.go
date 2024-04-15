@@ -2,7 +2,6 @@ package safeguards
 
 import (
 	"fmt"
-	"io/fs"
 )
 
 const (
@@ -15,17 +14,6 @@ const (
 	Constraint_RT    = "restricted-taints"
 	Constraint_USS   = "unique-service-selectors"
 )
-
-type FileCrawler struct {
-	Safeguards   []Safeguard
-	constraintFS fs.FS
-}
-
-type Safeguard struct {
-	name           string
-	templatePath   string
-	constraintPath string
-}
 
 var selectedVersion = "v1.0.0"
 

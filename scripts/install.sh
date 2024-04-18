@@ -93,7 +93,7 @@ check_jq_processor_present(){
   jqversion=$(jq --version)
   log INFO "Locally installed JQ Processor version is $jqversion"
   if [ -z "${jqversion}" ]; then
-    $PACKAGER install jq
+     yes |$PACKAGER install jq
   fi
   jqversion=$(jq --version)
   set -e

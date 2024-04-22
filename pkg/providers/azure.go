@@ -26,7 +26,6 @@ type SetUpCmd struct {
 	appObjectId       string
 	spObjectId        string
 	AzClient          AzClient
-	GraphClient       GraphClient
 }
 
 func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner) error {
@@ -315,7 +314,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 func (sc *SetUpCmd) getAppObjectId(ctx context.Context) error {
 	log.Debug("Fetching Azure application object ID")
 
-	appID, err := sc.GraphClient.GetApplicationObjectId(ctx, sc.appId)
+	appID, err := GetApplicationObjectId(ctx, sc.appId, sc.AzClient.GraphServiceClient)
 	if err != nil {
 		return fmt.Errorf("getting application object Id: %w", err)
 	}

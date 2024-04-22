@@ -10,7 +10,8 @@ import (
 )
 
 type AzClient struct {
-	AzTenantClient azTenantClient
+	AzTenantClient     azTenantClient
+	GraphServiceClient GraphServiceClient
 }
 
 //go:generate mockgen -source=./az_client.go -destination=./mock/az_client.go .
@@ -18,17 +19,17 @@ type azTenantClient interface {
 	NewListPager(options *armsubscription.TenantsClientListOptions) *runtime.Pager[armsubscription.TenantsClientListResponse]
 }
 
-type GraphClient interface {
-	GetApplicationObjectId(ctx context.Context, appId string) (string, error)
-}
-
-// GraphServiceClientImpl implements the GraphClient interface.
-type GraphServiceClientImpl struct {
+// GraphServiceClient implements the GraphClient interface.
+type GraphServiceClient struct {
 	Client *msgraph.GraphServiceClient
 }
 
-func (g *GraphServiceClientImpl) GetApplicationObjectId(ctx context.Context, appId string) (string, error) {
-	req := g.Client.Applications().ByApplicationId(appId)
+type GraphClient interface {
+	GetApplicationObjectId(ctx context.Context, appId string, graphServiceClient GraphServiceClient) (string, error)
+}
+
+func GetApplicationObjectId(ctx context.Context, appId string, graphServiceClient GraphServiceClient) (string, error) {
+	req := graphServiceClient.Client.Applications().ByApplicationId(appId)
 
 	app, err := req.Get(ctx, nil)
 	if err != nil {

@@ -43,13 +43,13 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.AzTenantClient = client
 
-			graphClient, err := createGraphClient(ctx, azCred)
+			graphServiceClient, err := createGraphClient(azCred)
 			if err != nil {
 				return fmt.Errorf("getting client: %w", err)
 			}
 
-			sc.GraphClient = graphClient
-      
+			sc.AzClient.GraphServiceClient = *graphServiceClient
+			
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
@@ -76,12 +76,12 @@ application and service principle, and will configure that application to trust 
 	return cmd
 }
 
-func createGraphClient(ctx context.Context, azCred *azidentity.DefaultAzureCredential) (providers.GraphClient, error) {
+func createGraphClient(azCred *azidentity.DefaultAzureCredential) (*providers.GraphServiceClient, error) {
 	client, err := msgraph.NewGraphServiceClientWithCredentials(azCred, []string{cloud.AzurePublic.Services[cloud.ResourceManager].Endpoint + "/.default"})
 	if err != nil {
 		return nil, fmt.Errorf("creating graph service client: %w", err)
 	}
-	return &providers.GraphServiceClientImpl{Client: client}, nil
+	return &providers.GraphServiceClient{Client: client}, nil
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {

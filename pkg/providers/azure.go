@@ -314,7 +314,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 func (sc *SetUpCmd) getAppObjectId(ctx context.Context) error {
 	log.Debug("Fetching Azure application object ID")
 
-	appID, err := GetApplicationObjectId(ctx, sc.appId, sc.AzClient.GraphServiceClient)
+	appID, err := sc.AzClient.GraphClient.GetApplicationObjectId(ctx, sc.appId)
 	if err != nil {
 		return fmt.Errorf("getting application object Id: %w", err)
 	}

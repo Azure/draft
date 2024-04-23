@@ -10,6 +10,7 @@
 package mock_providers
 
 import (
+	context "context"
 	reflect "reflect"
 
 	runtime "github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
@@ -52,4 +53,42 @@ func (m *MockazTenantClient) NewListPager(options *armsubscription.TenantsClient
 func (mr *MockazTenantClientMockRecorder) NewListPager(options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewListPager", reflect.TypeOf((*MockazTenantClient)(nil).NewListPager), options)
+}
+
+// MockGraphClient is a mock of GraphClient interface.
+type MockGraphClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockGraphClientMockRecorder
+}
+
+// MockGraphClientMockRecorder is the mock recorder for MockGraphClient.
+type MockGraphClientMockRecorder struct {
+	mock *MockGraphClient
+}
+
+// NewMockGraphClient creates a new mock instance.
+func NewMockGraphClient(ctrl *gomock.Controller) *MockGraphClient {
+	mock := &MockGraphClient{ctrl: ctrl}
+	mock.recorder = &MockGraphClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockGraphClient) EXPECT() *MockGraphClientMockRecorder {
+	return m.recorder
+}
+
+// GetApplicationObjectId mocks base method.
+func (m *MockGraphClient) GetApplicationObjectId(ctx context.Context, appId string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplicationObjectId", ctx, appId)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicationObjectId indicates an expected call of GetApplicationObjectId.
+func (mr *MockGraphClientMockRecorder) GetApplicationObjectId(ctx, appId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationObjectId", reflect.TypeOf((*MockGraphClient)(nil).GetApplicationObjectId), ctx, appId)
 }

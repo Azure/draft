@@ -53,19 +53,33 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), nil
 }
 
+// isYAML determines if a file is of the YAML extension or not
+func isYAML(path string) bool {
+	return filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml"
+}
+
 // getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
 func getManifestFiles(p string) ([]string, error) {
 	var manifestFiles []string
 
-	err := filepath.Walk(p, func(filepath string, info fs.FileInfo, err error) error {
-		if err != nil {
-			return fmt.Errorf("error walking path %s with error: %w", filepath, err)
+	noYamlFiles := true
+	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
+		// skip when walkPath is just given path
+		if p == walkPath {
+			return nil
 		}
 
-		if !info.IsDir() && info.Name() != "" {
-			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
+		if err != nil {
+			return fmt.Errorf("error walking path %s with error: %w", walkPath, err)
+		}
 
-			manifestFiles = append(manifestFiles, filepath)
+		if !info.IsDir() && info.Name() != "" && isYAML(walkPath) {
+			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
+			noYamlFiles = false
+
+			manifestFiles = append(manifestFiles, walkPath)
+		} else if !isYAML(p) {
+			log.Debugf("%s is not a manifest file, skipping...", info.Name())
 		} else {
 			log.Debugf("%s is a directory, skipping...", info.Name())
 		}
@@ -74,6 +88,9 @@ func getManifestFiles(p string) ([]string, error) {
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not walk directory: %w", err)
+	}
+	if noYamlFiles {
+		return nil, fmt.Errorf("no manifest files found within given path")
 	}
 
 	return manifestFiles, nil
@@ -97,8 +114,10 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		if err != nil {
 			return err
 		}
-	} else {
+	} else if isYAML(vc.manifestPath) {
 		manifestFiles = append(manifestFiles, vc.manifestPath)
+	} else {
+		return fmt.Errorf("expected at least one .yaml or .yml file within given path")
 	}
 
 	if err != nil {

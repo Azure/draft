@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/Azure/draft/pkg/safeguards"
@@ -59,11 +60,12 @@ func isYAML(path string) bool {
 }
 
 // getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
-func getManifestFiles(p string) ([]string, error) {
-	var manifestFiles []string
+func getManifestFiles(p string) ([]safeguards.ManifestFile, error) {
+	var manifestFiles []safeguards.ManifestFile
 
 	noYamlFiles := true
 	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
+		manifest := safeguards.ManifestFile{}
 		// skip when walkPath is just given path
 		if p == walkPath {
 			return nil
@@ -77,7 +79,9 @@ func getManifestFiles(p string) ([]string, error) {
 			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
 			noYamlFiles = false
 
-			manifestFiles = append(manifestFiles, walkPath)
+			manifest.Name = info.Name()
+			manifest.Path = walkPath
+			manifestFiles = append(manifestFiles, manifest)
 		} else if !isYAML(p) {
 			log.Debugf("%s is not a manifest file, skipping...", info.Name())
 		} else {
@@ -108,14 +112,17 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		return fmt.Errorf("not a valid file or directory: %w", err)
 	}
 
-	var manifestFiles []string
+	var manifestFiles []safeguards.ManifestFile
 	if isDir {
 		manifestFiles, err = getManifestFiles(vc.manifestPath)
 		if err != nil {
 			return err
 		}
 	} else if isYAML(vc.manifestPath) {
-		manifestFiles = append(manifestFiles, vc.manifestPath)
+		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
+			Name: path.Base(vc.manifestPath),
+			Path: vc.manifestPath,
+		})
 	} else {
 		return fmt.Errorf("expected at least one .yaml or .yml file within given path")
 	}
@@ -138,18 +145,19 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		for file, violations := range v.ObjectViolations {
 			log.Printf("  %s:", file)
 			for _, violation := range violations {
-				log.Printf("    %s", violation)
+				log.Printf("    ❌ %s", violation)
 				manifestViolationsFound = true
 			}
 		}
 		if !manifestViolationsFound {
-			log.Printf("    no violations found.")
+			log.Printf("    ✅ no violations found.")
 		}
 	}
 
 	if len(manifestViolations) > 0 {
 		c.SilenceUsage = true
-		return fmt.Errorf("violations found in manifests")
+	} else {
+		log.Printf("✅ No violations found in \"%s\".", vc.manifestPath)
 	}
 
 	return nil

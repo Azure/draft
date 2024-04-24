@@ -13,6 +13,9 @@ func validateTestManifestsFail(ctx context.Context, t *testing.T, c *constraintc
 		errManifests, err := testFc.ReadManifests(path)
 		assert.Nil(t, err)
 
+		err = loadManifestObjects(ctx, c, errManifests)
+		assert.Nil(t, err)
+
 		// error case - should throw error
 		violations, err := getObjectViolations(ctx, c, errManifests)
 		assert.Nil(t, err)
@@ -23,6 +26,9 @@ func validateTestManifestsFail(ctx context.Context, t *testing.T, c *constraintc
 func validateTestManifestsSuccess(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
 		successManifests, err := testFc.ReadManifests(path)
+		assert.Nil(t, err)
+
+		err = loadManifestObjects(ctx, c, successManifests)
 		assert.Nil(t, err)
 
 		// success case - should not throw error

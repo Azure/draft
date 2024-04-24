@@ -29,9 +29,9 @@ spec:
       - name: my-container
         image: nginx:latest
         resources:
-        limits:
-          cpu: "200m"
-          memory: "1Gi"
+          limits:
+            cpu: "200m"
+            memory: "1Gi"
         livenessProbe:
           httpGet:
             path: /healthz

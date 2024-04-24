@@ -183,30 +183,30 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 //	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_RT.ErrorPaths)
 //	validateTestManifests_Success(ctx, t, c, testFc, testManifest_RT.SuccessPaths)
 //}
-//
-//// TODO: rich description here
-//func TestValidateDeployment_UniqueServiceSelectors(t *testing.T) {
-//	// instantiate constraint client
-//	c, err := getConstraintClient()
-//	assert.Nil(t, err)
-//
-//	// retrieving template, constraint, and deployments
-//	constraintTemplate, err := testFc.ReadConstraintTemplate(testManifest_USS.Name)
-//	assert.Nil(t, err)
-//	constraint, err := testFc.ReadConstraint(testManifest_USS.Name)
-//	assert.Nil(t, err)
-//
-//	// load template, constraint into constraint client
-//	err = loadConstraintTemplates(ctx, c, []*templates.ConstraintTemplate{constraintTemplate})
-//	assert.Nil(t, err)
-//	err = loadConstraints(ctx, c, []*unstructured.Unstructured{constraint})
-//	assert.Nil(t, err)
-//
-//	// validating deployment manifests
-//	validateTestManifests_Fail(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
-//	validateTestManifests_Success(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
-//}
-//
+
+// TODO: rich description here
+func TestValidateDeployment_UniqueServiceSelectors(t *testing.T) {
+	// instantiate constraint client
+	c, err := getConstraintClient()
+	assert.Nil(t, err)
+
+	// retrieving template, constraint, and deployments
+	constraintTemplate, err := testFc.ReadConstraintTemplate(testManifest_USS.Name)
+	assert.Nil(t, err)
+	constraint, err := testFc.ReadConstraint(testManifest_USS.Name)
+	assert.Nil(t, err)
+
+	// load template, constraint into constraint client
+	err = loadConstraintTemplates(ctx, c, []*templates.ConstraintTemplate{constraintTemplate})
+	assert.Nil(t, err)
+	err = loadConstraints(ctx, c, []*unstructured.Unstructured{constraint})
+	assert.Nil(t, err)
+
+	// validating deployment manifests
+	validateTestManifestsFail(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
+	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
+}
+
 //// TODO: rich description here
 //func TestValidateDeployment_All(t *testing.T) {
 //	// instantiate constraint client

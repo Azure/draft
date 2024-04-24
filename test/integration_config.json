@@ -8,7 +8,7 @@
   },
   {
     "language": "go",
-    "version": "1.20",
+    "version": "1.21",
     "port": "8080",
     "serviceport": 8080,
     "repo": "davidgamero/go-echo-no-mod"
@@ -22,7 +22,7 @@
   },
   {
     "language": "rust",
-    "version": "1.59.0",
+    "version": "1.60.0",
     "port": "8000",
     "serviceport": 80,
     "repo": "OliverMKing/tiny-http-hello-world"

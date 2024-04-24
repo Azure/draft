@@ -7,7 +7,7 @@ import (
 const (
 	Constraint_CAI   = "container-allowed-images"
 	Constraint_CEP   = "container-enforce-probes"
-	Constraint_CL    = "container-limits"
+	Constraint_CRL   = "container-resource-limits"
 	Constraint_CRIP  = "container-restricted-image-pulls"
 	Constraint_DBPDB = "disallowed-bad-pod-disruption-budgets"
 	Constraint_PEA   = "pod-enforce-antiaffinity"
@@ -37,9 +37,9 @@ var safeguards = []Safeguard{
 		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CEP, constraintFileName),
 	},
 	{
-		name:           Constraint_CL,
-		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CL, templateFileName),
-		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CL, constraintFileName),
+		name:           Constraint_CRL,
+		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRL, templateFileName),
+		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRL, constraintFileName),
 	},
 	{
 		name:           Constraint_CRIP,

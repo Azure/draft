@@ -42,14 +42,14 @@ var testManifest_CEP = TestManifest{
 	ErrorPaths:   []string{testError_CEP_Standard},
 }
 
-var testError_CL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CL, "CL-error-manifest.yaml")
+var testError_CRL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRL, "CRL-error-manifest.yaml")
 
-var testSuccess_CL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CL, "CL-success-manifest.yaml")
+var testSuccess_CRL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRL, "CRL-success-manifest.yaml")
 
 var testManifest_CL = TestManifest{
-	Name:         Constraint_CL,
-	SuccessPaths: []string{testSuccess_CL_Standard},
-	ErrorPaths:   []string{testError_CL_Standard},
+	Name:         Constraint_CRL,
+	SuccessPaths: []string{testSuccess_CRL_Standard},
+	ErrorPaths:   []string{testError_CRL_Standard},
 }
 
 var testError_CRIP_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRIP, "CRIP-error-manifest.yaml")

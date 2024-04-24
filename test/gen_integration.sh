@@ -52,8 +52,8 @@ jobs:
 
 echo "name: draft Windows Integrations
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    branches: [ main, staging ]
   workflow_dispatch:
 jobs:
   build:

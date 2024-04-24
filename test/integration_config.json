@@ -22,7 +22,7 @@
   },
   {
     "language": "rust",
-    "version": "1.59.0",
+    "version": "1.60.0",
     "port": "8000",
     "serviceport": 80,
     "repo": "OliverMKing/tiny-http-hello-world"

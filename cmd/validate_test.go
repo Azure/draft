@@ -32,6 +32,25 @@ func TestIsDirectory(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+// TestIsYAML tests the isYAML function for proper returns
+func TestIsYAML(t *testing.T) {
+	dirNotYaml, _ := filepath.Abs("../pkg/safeguards/tests/not-yaml")
+	dirYaml, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
+	fileNotYaml, _ := filepath.Abs("../pkg/safeguards/tests/not-yaml/readme.md")
+	fileYaml, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
+
+	assert.False(t, isYAML(fileNotYaml))
+	assert.True(t, isYAML(fileYaml))
+
+	manifestFiles, err := getManifestFiles(dirNotYaml)
+	assert.Nil(t, manifestFiles)
+	assert.NotNil(t, err)
+
+	manifestFiles, err = getManifestFiles(dirYaml)
+	assert.NotNil(t, manifestFiles)
+	assert.Nil(t, err)
+}
+
 // TestRunValidate tests the run command for `draft validate` for proper returns
 func TestRunValidate(t *testing.T) {
 	ctx := context.TODO()

@@ -8,7 +8,7 @@
   },
   {
     "language": "go",
-    "version": "1.21",
+    "version": "1.22",
     "port": "8080",
     "serviceport": 8080,
     "repo": "davidgamero/go-echo-no-mod"

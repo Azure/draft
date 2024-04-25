@@ -38,7 +38,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.22
     # Check if the newest tag already exists
     - name: Check if tag exist
       uses: mukunku/tag-exists-action@5dfe2bf779fe5259360bb10b2041676713dcc8a3 # v1.1.0

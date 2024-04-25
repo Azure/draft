@@ -243,3 +243,88 @@ func TestGetAppObjectId_EmptyAppIdFromGraphClient(t *testing.T) {
 		t.Errorf("Expected error '%v', got '%v'", expectedError, err)
 	}
 }
+
+func TestAssignSpRole(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
+
+	expectedObjectId := "testObjectId"
+	expectedRoleId := "contributor"
+	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
+	expectedRaUid := "<generate_raUid>"
+	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, expectedRaUid).Return(nil)
+
+	sc := &SetUpCmd{
+		AzClient: AzClient{
+			RoleAssignClient: mockRoleAssignClient,
+		},
+		SubscriptionID:    "testSubscriptionID",
+		ResourceGroupName: "testResourceGroupName",
+		spObjectId:        expectedObjectId,
+	}
+
+	err := sc.assignSpRole(context.Background())
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+}
+
+func TestAssignSpRole_Error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
+
+	expectedObjectId := "testObjectId"
+	expectedRoleId := "contributor"
+	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
+	expectedRaUid := "<generate_raUid>"
+	expectedError := errors.New("error")
+
+	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, expectedRaUid).Return(expectedError)
+
+	sc := &SetUpCmd{
+		AzClient: AzClient{
+			RoleAssignClient: mockRoleAssignClient,
+		},
+		SubscriptionID:    "testSubscriptionID",
+		ResourceGroupName: "testResourceGroupName",
+		spObjectId:        expectedObjectId,
+	}
+
+	err := sc.assignSpRole(context.Background())
+	if err == nil {
+		t.Errorf("Expected an error, got nil")
+	}
+}
+
+func TestAssignSpRole_ErrorDuringRoleAssignment(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
+
+	expectedObjectId := "testObjectId"
+	expectedRoleId := "contributor"
+	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
+	expectedRaUid := "<generate_raUid>"
+	expectedError := errors.New("error during role assignment")
+
+	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, expectedRaUid).Return(expectedError)
+
+	sc := &SetUpCmd{
+		AzClient: AzClient{
+			RoleAssignClient: mockRoleAssignClient,
+		},
+		SubscriptionID:    "testSubscriptionID",
+		ResourceGroupName: "testResourceGroupName",
+		spObjectId:        expectedObjectId,
+	}
+
+	err := sc.assignSpRole(context.Background())
+	if err == nil {
+		t.Errorf("Expected an error, but got nil")
+	}
+}

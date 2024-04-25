@@ -92,3 +92,40 @@ func (mr *MockGraphClientMockRecorder) GetApplicationObjectId(ctx, appId any) *g
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationObjectId", reflect.TypeOf((*MockGraphClient)(nil).GetApplicationObjectId), ctx, appId)
 }
+
+// MockRoleAssignClient is a mock of RoleAssignClient interface.
+type MockRoleAssignClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockRoleAssignClientMockRecorder
+}
+
+// MockRoleAssignClientMockRecorder is the mock recorder for MockRoleAssignClient.
+type MockRoleAssignClientMockRecorder struct {
+	mock *MockRoleAssignClient
+}
+
+// NewMockRoleAssignClient creates a new mock instance.
+func NewMockRoleAssignClient(ctrl *gomock.Controller) *MockRoleAssignClient {
+	mock := &MockRoleAssignClient{ctrl: ctrl}
+	mock.recorder = &MockRoleAssignClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRoleAssignClient) EXPECT() *MockRoleAssignClientMockRecorder {
+	return m.recorder
+}
+
+// CreateRoleAssignment mocks base method.
+func (m *MockRoleAssignClient) CreateRoleAssignment(ctx context.Context, objectId, roleId, scope, raUid string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRoleAssignment", ctx, objectId, roleId, scope, raUid)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateRoleAssignment indicates an expected call of CreateRoleAssignment.
+func (mr *MockRoleAssignClientMockRecorder) CreateRoleAssignment(ctx, objectId, roleId, scope, raUid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoleAssignment", reflect.TypeOf((*MockRoleAssignClient)(nil).CreateRoleAssignment), ctx, objectId, roleId, scope, raUid)
+}

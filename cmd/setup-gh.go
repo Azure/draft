@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -50,6 +51,13 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.GraphClient = graphClient
 
+			roleAssignmentClient, err := createRoleAssignment(azCred, sc.SubscriptionID)
+			if err != nil {
+				return fmt.Errorf("getting role assignment client: %w", err)
+			}
+
+			sc.AzClient.RoleAssignClient = roleAssignmentClient
+
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
@@ -82,6 +90,14 @@ func createGraphClient(azCred *azidentity.DefaultAzureCredential) (providers.Gra
 		return nil, fmt.Errorf("creating graph service client: %w", err)
 	}
 	return &providers.GraphServiceClient{Client: client}, nil
+}
+
+func createRoleAssignment(azCred *azidentity.DefaultAzureCredential, subscriptionId string) (providers.RoleAssignClient, error) {
+	client, err := armauthorization.NewRoleAssignmentsClient(subscriptionId, azCred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating role assignment client: %w", err)
+	}
+	return &providers.RoleAssignmentClient{Client: client}, nil
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {

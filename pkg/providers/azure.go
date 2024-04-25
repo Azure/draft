@@ -61,7 +61,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.assignSpRole(); err != nil {
+	if err := sc.assignSpRole(ctx); err != nil {
 		return err
 	}
 
@@ -165,14 +165,21 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	return nil
 }
 
-func (sc *SetUpCmd) assignSpRole() error {
+func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 	log.Debug("Assigning contributor role to service principal...")
+
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
-	out, err := assignSpRoleCmd.CombinedOutput()
+
+	// Create role assignment parameters
+	objectID := sc.spObjectId
+	roleID := "contributor"     // Assuming "contributor" role
+	raUid := "<generate_raUid>" // You need to generate raUid here
+
+	roleAssignmentClient := sc.AzClient.RoleAssignClient
+
+	err := roleAssignmentClient.CreateRoleAssignment(ctx, objectID, roleID, scope, raUid)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("creating role assignment: %w", err)
 	}
 
 	log.Debug("Role assigned successfully!")

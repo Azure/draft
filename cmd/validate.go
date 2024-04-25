@@ -59,15 +59,15 @@ func isYAML(path string) bool {
 	return filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml"
 }
 
-// getManifests uses fs.WalkDir to retrieve a list of the manifest files within the given manifest path
+// getManifests uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
 func getManifestFiles(p string) ([]safeguards.ManifestFile, error) {
 	var manifestFiles []safeguards.ManifestFile
 
 	noYamlFiles := true
 	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
 		manifest := safeguards.ManifestFile{}
-		// skip when walkPath is just given path
-		if p == walkPath {
+		// skip when walkPath is just given path and also a directory
+		if p == walkPath && info.IsDir() {
 			return nil
 		}
 

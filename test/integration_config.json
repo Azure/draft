@@ -1,7 +1,7 @@
 [
   {
     "language": "gomodule",
-    "version": "1.18",
+    "version": "1.22",
     "port": "1323",
     "serviceport": 80,
     "repo": "gambtho/go_echo"

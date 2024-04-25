@@ -13,6 +13,7 @@ const (
 	Constraint_PEA   = "pod-enforce-antiaffinity"
 	Constraint_RT    = "restricted-taints"
 	Constraint_USS   = "unique-service-selectors"
+	Constraint_all   = "all"
 )
 
 var selectedVersion = "v1.0.0"

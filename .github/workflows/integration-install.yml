@@ -43,9 +43,9 @@ jobs:
           elif command -v /c/Users/runneradmin/.local/bin/draft &> /dev/null
           then
             echo "install_dir=/c/Users/runneradmin/.local/bin/draft" >> $GITHUB_ENV
-          elif command -v /Users/runner/.local/bin &> /dev/null
+          elif command -v /c/Users/runner/.local/bin &> /dev/null
           then
-            echo "install_dir=/Users/runner/.local/bin" >> $GITHUB_ENV
+            echo "install_dir=/c/Users/runner/.local/bin" >> $GITHUB_ENV
           else 
             echo "draft could not be found"
             exit 1

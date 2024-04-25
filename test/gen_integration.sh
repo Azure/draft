@@ -26,7 +26,7 @@ echo "# this file is generated using gen_integration.sh
 name: draft Linux Integrations
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, staging ]
   workflow_dispatch:
 jobs:
   build:
@@ -52,8 +52,8 @@ jobs:
 
 echo "name: draft Windows Integrations
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    branches: [ main, staging ]
   workflow_dispatch:
 jobs:
   build:

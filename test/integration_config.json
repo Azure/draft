@@ -1,14 +1,14 @@
 [
   {
     "language": "gomodule",
-    "version": "1.18",
+    "version": "1.22",
     "port": "1323",
     "serviceport": 80,
     "repo": "gambtho/go_echo"
   },
   {
     "language": "go",
-    "version": "1.20",
+    "version": "1.22",
     "port": "8080",
     "serviceport": 8080,
     "repo": "davidgamero/go-echo-no-mod"

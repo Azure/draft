@@ -26,7 +26,7 @@ echo "# this file is generated using gen_integration.sh
 name: draft Linux Integrations
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, staging ]
   workflow_dispatch:
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.18.2
+          go-version: 1.22
       - name: make
         run: make
       - uses: actions/upload-artifact@v3
@@ -52,8 +52,8 @@ jobs:
 
 echo "name: draft Windows Integrations
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    branches: [ main, staging ]
   workflow_dispatch:
 jobs:
   build:
@@ -63,7 +63,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.22
       - name: make
         run: make
       - uses: actions/upload-artifact@v3

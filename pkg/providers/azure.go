@@ -57,7 +57,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.getAppObjectId(); err != nil {
+	if err := sc.getAppObjectId(ctx); err != nil {
 		return err
 	}
 
@@ -311,21 +311,15 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 }
 
-func (sc *SetUpCmd) getAppObjectId() error {
+func (sc *SetUpCmd) getAppObjectId(ctx context.Context) error {
 	log.Debug("Fetching Azure application object ID")
-	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
-	out, err := getObjectIdCmd.CombinedOutput()
+
+	appID, err := sc.AzClient.GraphClient.GetApplicationObjectId(ctx, sc.appId)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("getting application object Id: %w", err)
 	}
 
-	var objectId string
-	if err := json.Unmarshal(out, &objectId); err != nil {
-		return err
-	}
-
-	sc.appObjectId = objectId
+	sc.appObjectId = appID
 
 	return nil
 }

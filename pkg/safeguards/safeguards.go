@@ -35,8 +35,8 @@ func init() {
 	}
 }
 
-// GetManifestViolations takes in a list of manifest files and returns a slice of ManifestViolation structs
-func GetManifestViolations(ctx context.Context, manifestFiles []ManifestFile) ([]ManifestResult, error) {
+// GetManifestResults takes in a list of manifest files and returns a slice of ManifestViolation structs
+func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]ManifestResult, error) {
 	if len(manifestFiles) == 0 {
 		return nil, fmt.Errorf("path cannot be empty")
 	}

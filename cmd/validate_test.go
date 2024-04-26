@@ -43,13 +43,13 @@ func TestRunValidate(t *testing.T) {
 	var manifestFiles []safeguards.ManifestFile
 
 	// Scenario 1: empty manifest path should error
-	_, err := safeguards.GetManifestViolations(ctx, manifestFilesEmpty)
+	_, err := safeguards.GetManifestResults(ctx, manifestFilesEmpty)
 	assert.NotNil(t, err)
 
 	// Scenario 2a: manifest path leads to a directory of manifestFiles - expect success
 	manifestFiles, err = getManifestFiles(manifestPathDirectorySuccess)
 	assert.Nil(t, err)
-	v, err := safeguards.GetManifestViolations(ctx, manifestFiles)
+	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations := countTestViolations(v)
 	assert.Equal(t, numViolations, 0)
@@ -57,21 +57,21 @@ func TestRunValidate(t *testing.T) {
 	// Scenario 2b: manifest path leads to a directory of manifestFiles - expect failure
 	manifestFiles, err = getManifestFiles(manifestPathDirectoryError)
 	assert.Nil(t, err)
-	v, err = safeguards.GetManifestViolations(ctx, manifestFiles)
+	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Greater(t, numViolations, 0)
 
 	// Scenario 3a: manifest path leads to one manifest file - expect success
 	manifestFiles, err = getManifestFiles(manifestPathFileSuccess)
-	v, err = safeguards.GetManifestViolations(ctx, manifestFiles)
+	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 3b: manifest path leads to one manifest file - expect failure
 	manifestFiles, err = getManifestFiles(manifestPathFileError)
-	v, err = safeguards.GetManifestViolations(ctx, manifestFiles)
+	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Greater(t, numViolations, 0)

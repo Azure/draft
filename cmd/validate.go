@@ -83,7 +83,7 @@ func getManifestFiles(p string) ([]safeguards.ManifestFile, error) {
 	return manifestFiles, nil
 }
 
-// run is our entry point to GetManifestViolations
+// run is our entry point to GetManifestResults
 func (vc *validateCmd) run(c *cobra.Command) error {
 	if vc.manifestPath == "" {
 		return fmt.Errorf("path to the manifests cannot be empty")
@@ -113,7 +113,7 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 	}
 
 	log.Debugf("validating manifests")
-	manifestViolations, err := safeguards.GetManifestViolations(ctx, manifestFiles)
+	manifestViolations, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	if err != nil {
 		log.Errorf("validating safeguards: %s", err.Error())
 		return err

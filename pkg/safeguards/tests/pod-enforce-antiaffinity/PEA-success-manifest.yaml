@@ -16,6 +16,34 @@ spec:
       labels:
         app: my-app
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - store
+              topologyKey: "kubernetes.io/hostname"
       containers:
-        - name: my-container
-          image: nginx:latest
+      - name: my-container
+        image: nginx:latest
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+            httpHeaders:
+              - name: my-liveness-probe
+                value: awesome
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+            httpHeaders:
+              - name: my-readiness-probe
+                value: awesome
+          initialDelaySeconds: 3
+          periodSeconds: 3

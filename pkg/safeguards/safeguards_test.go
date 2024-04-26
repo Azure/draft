@@ -23,7 +23,7 @@ func init() {
 	}
 }
 
-// TODO: rich description here
+// TestValidateDeployment_ContainerAllowedImages tests our Container Allowed Images manifest
 func TestValidateDeployment_ContainerAllowedImages(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
@@ -46,7 +46,7 @@ func TestValidateDeployment_ContainerAllowedImages(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CAI.SuccessPaths)
 }
 
-// TODO: rich description here
+// TestValidateDeployment_ContainerEnforceProbes tests our Container Enforce Probes manifest
 func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
@@ -69,8 +69,8 @@ func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CEP.SuccessPaths)
 }
 
-// // TODO: rich description here
-func TestValidateDeployment_ContainerLimits(t *testing.T) {
+// TestValidateDeployment_ContainerResourceLimits tests our Container Resource Limits manifest
+func TestValidateDeployment_ContainerResourceLimits(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
 	assert.Nil(t, err)
@@ -92,7 +92,7 @@ func TestValidateDeployment_ContainerLimits(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CL.SuccessPaths)
 }
 
-// TODO: rich description here
+// TestValidateDeployment_ContainerRestrictedImagePulls tests our Container Restricted Image Pulls manifest
 func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
@@ -115,7 +115,7 @@ func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CRIP.SuccessPaths)
 }
 
-// TODO: rich description here
+// TestValidateDeployment_DisallowedBadPodDisruptionBudget tests our Disallowed Bad Pod Disruption Budget manifest
 func TestValidateDeployment_DisallowedBadPodDisruptionBudget(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
@@ -138,7 +138,7 @@ func TestValidateDeployment_DisallowedBadPodDisruptionBudget(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_DBPDB.SuccessPaths)
 }
 
-// TODO: rich description here
+// TestValidateDeployment_PodEnforceAntiaffinity tests our Pod Enforce Antiaffinity manifest
 func TestValidateDeployment_PodEnforceAntiaffinity(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
@@ -161,7 +161,7 @@ func TestValidateDeployment_PodEnforceAntiaffinity(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_PEA.SuccessPaths)
 }
 
-// TODO: rich description here
+// TestValidateDeployment_RestrictedTaints tests our Restricted Taints manifest
 func TestValidateDeployment_RestrictedTaints(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
@@ -184,7 +184,7 @@ func TestValidateDeployment_RestrictedTaints(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_RT.SuccessPaths)
 }
 
-// TODO: rich description here
+// TestValidateDeployment_UniqueServiceSelectors tests our Unique Service Selectors manifest
 func TestValidateDeployment_UniqueServiceSelectors(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()
@@ -207,7 +207,7 @@ func TestValidateDeployment_UniqueServiceSelectors(t *testing.T) {
 	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
 }
 
-// TODO: rich description here
+// TestValidateDeployment_All tests all of our manifests in a few given manifest files
 func TestValidateDeployment_All(t *testing.T) {
 	// instantiate constraint client
 	c, err := getConstraintClient()

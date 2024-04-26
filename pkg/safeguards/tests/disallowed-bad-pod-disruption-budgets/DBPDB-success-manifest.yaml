@@ -1,21 +1,13 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: policy/v1
+kind: PodDisruptionBudget
 metadata:
-  name: my-deployment
+  name: success-pdb
   labels:
-    app: my-app
+    app: my-success-pdb
     environment: production
-    testLabel3: randomlabel
 spec:
-  replicas: 3
+  minAvailable: 5
+  maxUnavailable: 1
   selector:
     matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-        - name: my-container
-          image: nginx:latest
+      app: my-success-pdb

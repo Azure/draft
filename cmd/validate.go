@@ -54,22 +54,36 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), nil
 }
 
-// getManifestFiles uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
+// isYAML determines if a file is of the YAML extension or not
+func isYAML(path string) bool {
+	return filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml"
+}
+
+// getManifests uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
 func getManifestFiles(p string) ([]safeguards.ManifestFile, error) {
 	var manifestFiles []safeguards.ManifestFile
 
-	err := filepath.Walk(p, func(filepath string, info fs.FileInfo, err error) error {
+	noYamlFiles := true
+	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
 		manifest := safeguards.ManifestFile{}
-		if err != nil {
-			return fmt.Errorf("error walking path %s with error: %w", filepath, err)
+		// skip when walkPath is just given path and also a directory
+		if p == walkPath && info.IsDir() {
+			return nil
 		}
 
-		if !info.IsDir() && info.Name() != "" {
+		if err != nil {
+			return fmt.Errorf("error walking path %s with error: %w", walkPath, err)
+		}
+
+		if !info.IsDir() && info.Name() != "" && isYAML(walkPath) {
 			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
+			noYamlFiles = false
 
 			manifest.Name = info.Name()
-			manifest.Path = filepath
+			manifest.Path = walkPath
 			manifestFiles = append(manifestFiles, manifest)
+		} else if !isYAML(p) {
+			log.Debugf("%s is not a manifest file, skipping...", info.Name())
 		} else {
 			log.Debugf("%s is a directory, skipping...", info.Name())
 		}
@@ -78,6 +92,9 @@ func getManifestFiles(p string) ([]safeguards.ManifestFile, error) {
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not walk directory: %w", err)
+	}
+	if noYamlFiles {
+		return nil, fmt.Errorf("no manifest files found within given path")
 	}
 
 	return manifestFiles, nil
@@ -101,11 +118,13 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		if err != nil {
 			return err
 		}
-	} else {
+	} else if isYAML(vc.manifestPath) {
 		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
 			Name: path.Base(vc.manifestPath),
 			Path: vc.manifestPath,
 		})
+	} else {
+		return fmt.Errorf("expected at least one .yaml or .yml file within given path")
 	}
 
 	if err != nil {

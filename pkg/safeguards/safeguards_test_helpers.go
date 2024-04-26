@@ -17,7 +17,7 @@ func validateTestManifestsFail(ctx context.Context, t *testing.T, c *constraintc
 		assert.Nil(t, err)
 
 		// error case - should throw error
-		violations, err := getObjectViolations(ctx, c, errManifests)
+		violations, err := getObjectResults(ctx, c, errManifests)
 		assert.Nil(t, err)
 		assert.Greater(t, len(violations), 0)
 	}
@@ -32,7 +32,7 @@ func validateTestManifestsSuccess(ctx context.Context, t *testing.T, c *constrai
 		assert.Nil(t, err)
 
 		// success case - should not throw error
-		violations, err := getObjectViolations(ctx, c, successManifests)
+		violations, err := getObjectResults(ctx, c, successManifests)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(violations))
 	}

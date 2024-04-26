@@ -172,34 +172,34 @@ func loadManifestObjects(ctx context.Context, c *constraintclient.Client, object
 	return nil
 }
 
-// getObjectViolations executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of objectViolations
-func getObjectViolations(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) (map[string][]string, error) {
+// getObjectResults executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of objectResults
+func getObjectResults(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) (map[string][]string, error) {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
 
-	var violations = make(map[string][]string) // map of object name to slice of objectViolations
+	var results = make(map[string][]string) // map of object name to slice of objectViolations
 
 	for _, o := range objects {
-		objectViolations := []string{}
+		objectResults := []string{}
 		log.Debugf("Reviewing %s...", o.GetName())
 		res, err := c.Review(ctx, o)
 		if err != nil {
-			return violations, fmt.Errorf("could not review objects: %w", err)
+			return results, fmt.Errorf("could not review objects: %w", err)
 		}
 
 		for _, v := range res.ByTarget {
 			for _, result := range v.Results {
 				if result.Msg != "" {
-					objectViolations = append(objectViolations, result.Msg)
+					objectResults = append(objectResults, result.Msg)
 				}
 			}
 		}
 
-		if len(objectViolations) > 0 {
-			violations[o.GetName()] = objectViolations
+		if len(objectResults) > 0 {
+			results[o.GetName()] = objectResults
 		}
 	}
 
-	return violations, nil
+	return results, nil
 }

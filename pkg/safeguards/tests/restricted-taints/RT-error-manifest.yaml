@@ -1,21 +1,13 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Node
 metadata:
-  name: my-deployment
+  name: my-error-node
   labels:
-    app: my-app
+    app: my-error-node
+    kubernetes.azure.com/mode: "User"
     environment: production
-    testLabel3: randomlabel
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-        - name: my-container
-          image: nginx:latest
+  taints:
+    - key: "CriticalAddonsOnly"
+      effect: "NoSchedule"
+      value: "value"

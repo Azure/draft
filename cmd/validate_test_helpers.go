@@ -2,10 +2,10 @@ package cmd
 
 import "github.com/Azure/draft/pkg/safeguards"
 
-func countTestViolations(violations []safeguards.ManifestViolation) int {
+func countTestViolations(results []safeguards.ManifestResult) int {
 	numViolations := 0
-	for _, v := range violations {
-		numViolations += len(v.ObjectViolations)
+	for _, r := range results {
+		numViolations += len(r.ObjectViolations)
 	}
 
 	return numViolations

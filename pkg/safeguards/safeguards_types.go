@@ -18,7 +18,7 @@ type ManifestFile struct {
 	Path string
 }
 
-type ManifestViolation struct {
+type ManifestResult struct {
 	Name             string              // the name of the manifest
 	ObjectViolations map[string][]string // a map of string object names to slice of string objectViolations
 }

@@ -253,8 +253,7 @@ func TestAssignSpRole(t *testing.T) {
 	expectedObjectId := "testObjectId"
 	expectedRoleId := "contributor"
 	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
-	expectedRaUid := "<generate_raUid>"
-	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, expectedRaUid).Return(nil)
+	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, gomock.Any()).Return(nil)
 
 	sc := &SetUpCmd{
 		AzClient: AzClient{
@@ -280,10 +279,9 @@ func TestAssignSpRole_Error(t *testing.T) {
 	expectedObjectId := "testObjectId"
 	expectedRoleId := "contributor"
 	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
-	expectedRaUid := "<generate_raUid>"
 	expectedError := errors.New("error")
 
-	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, expectedRaUid).Return(expectedError)
+	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, gomock.Any()).Return(expectedError)
 
 	sc := &SetUpCmd{
 		AzClient: AzClient{
@@ -309,10 +307,9 @@ func TestAssignSpRole_ErrorDuringRoleAssignment(t *testing.T) {
 	expectedObjectId := "testObjectId"
 	expectedRoleId := "contributor"
 	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
-	expectedRaUid := "<generate_raUid>"
 	expectedError := errors.New("error during role assignment")
 
-	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, expectedRaUid).Return(expectedError)
+	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, gomock.Any()).Return(expectedError)
 
 	sc := &SetUpCmd{
 		AzClient: AzClient{

@@ -51,7 +51,7 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.GraphClient = graphClient
 
-			roleAssignmentClient, err := createRoleAssignment(azCred, sc.SubscriptionID)
+			roleAssignmentClient, err := createRoleAssignmentClient(azCred, sc.SubscriptionID)
 			if err != nil {
 				return fmt.Errorf("getting role assignment client: %w", err)
 			}
@@ -92,7 +92,7 @@ func createGraphClient(azCred *azidentity.DefaultAzureCredential) (providers.Gra
 	return &providers.GraphServiceClient{Client: client}, nil
 }
 
-func createRoleAssignment(azCred *azidentity.DefaultAzureCredential, subscriptionId string) (providers.RoleAssignClient, error) {
+func createRoleAssignmentClient(azCred *azidentity.DefaultAzureCredential, subscriptionId string) (providers.RoleAssignClient, error) {
 	client, err := armauthorization.NewRoleAssignmentsClient(subscriptionId, azCred, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating role assignment client: %w", err)

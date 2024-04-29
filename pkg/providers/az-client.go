@@ -58,8 +58,6 @@ type RoleAssignClient interface {
 var _ RoleAssignClient = &RoleAssignmentClient{}
 
 func (r *RoleAssignmentClient) CreateRoleAssignment(ctx context.Context, objectId, roleId, scope, raUid string) error {
-	log.Debug("Assigning contributor role to service principal...", "objectId", objectId, "role assignment UID", raUid, "scope", scope)
-
 	fullAssignmentId := fmt.Sprintf("/%s/providers/Microsoft.Authorization/roleAssignments/%s", scope, raUid)
 	fullDefinitionId := fmt.Sprintf("/providers/Microsoft.Authorization/roleDefinitions/%s", roleId)
 

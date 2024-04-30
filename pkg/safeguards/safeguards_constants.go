@@ -7,7 +7,7 @@ import (
 const (
 	Constraint_CAI   = "container-allowed-images"
 	Constraint_CEP   = "container-enforce-probes"
-	Constraint_CL    = "container-limits"
+	Constraint_CL    = "container-resource-limits"
 	Constraint_CRIP  = "container-restricted-image-pulls"
 	Constraint_DBPDB = "disallowed-bad-pod-disruption-budgets"
 	Constraint_PEA   = "pod-enforce-antiaffinity"

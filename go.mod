@@ -1,6 +1,6 @@
 module github.com/Azure/draft
 
-go 1.21
+go 1.22
 
 require (
 	github.com/briandowns/spinner v1.23.0

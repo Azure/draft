@@ -2,13 +2,13 @@ FROM golang:{{VERSION}} AS builder
 ENV PORT {{PORT}}
 EXPOSE {{PORT}}
 
-WORKDIR /go/src/app
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 COPY . .
-
-RUN go get
-RUN go build -v -o app
-RUN mv ./app /go/bin/
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o app-binary
 
 FROM scratch
-COPY --from=builder /go/bin/app /bin/app
-CMD ["/bin/app"]
+WORKDIR /app
+COPY --from=builder /build/app-binary . 
+CMD ["/app/app-binary"]

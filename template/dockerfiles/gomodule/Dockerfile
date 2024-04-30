@@ -9,6 +9,6 @@ RUN go get
 RUN go build -v -o app
 RUN mv ./app /go/bin/
 
-FROM alpine:latest
-COPY --from=builder /go/bin/app /usr/local/bin/app
-CMD ["/usr/local/bin/app"]
+FROM scratch
+COPY --from=builder /go/bin/app /bin/app
+CMD ["/bin/app"]

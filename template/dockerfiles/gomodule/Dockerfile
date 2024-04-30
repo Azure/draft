@@ -11,4 +11,4 @@ RUN mv ./app /go/bin/
 
 FROM alpine:latest
 COPY --from=builder /go/bin/app /usr/local/bin/app
-CMD ["app"]
+CMD ["/usr/local/bin/app"]

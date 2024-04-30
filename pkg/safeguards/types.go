@@ -21,4 +21,5 @@ type ManifestFile struct {
 type ManifestResult struct {
 	Name             string              // the name of the manifest
 	ObjectViolations map[string][]string // a map of string object names to slice of string objectViolations
+	ViolationsCount  int                 // a count of how many violations are associated with this manifest
 }

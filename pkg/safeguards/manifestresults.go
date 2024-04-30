@@ -92,7 +92,7 @@ func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]Ma
 		var objectViolations map[string][]string
 
 		// validation of deployment manifest with constraints, templates loaded
-		objectViolations, err = getObjectResults(ctx, c, manifestMap[m.Name])
+		objectViolations, err = getObjectViolations(ctx, c, manifestMap[m.Name])
 		if err != nil {
 			log.Errorf("validating objects: %s", err.Error())
 			return manifestResults, err
@@ -100,6 +100,7 @@ func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]Ma
 		manifestResults = append(manifestResults, ManifestResult{
 			Name:             m.Name,
 			ObjectViolations: objectViolations,
+			ViolationsCount:  len(objectViolations),
 		})
 	}
 

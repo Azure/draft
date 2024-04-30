@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
@@ -172,20 +174,76 @@ func loadManifestObjects(ctx context.Context, c *constraintclient.Client, object
 	return nil
 }
 
+// IsDirectory determines if a file represented by path is a directory or not
+func IsDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	return fileInfo.IsDir(), nil
+}
+
+// IsYAML determines if a file is of the YAML extension or not
+func IsYAML(path string) bool {
+	return filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml"
+}
+
+// GetManifestFiles uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
+func GetManifestFiles(p string) ([]ManifestFile, error) {
+	var manifestFiles []ManifestFile
+
+	noYamlFiles := true
+	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
+		manifest := ManifestFile{}
+		// skip when walkPath is just given path and also a directory
+		if p == walkPath && info.IsDir() {
+			return nil
+		}
+
+		if err != nil {
+			return fmt.Errorf("error walking path %s with error: %w", walkPath, err)
+		}
+
+		if !info.IsDir() && info.Name() != "" && IsYAML(walkPath) {
+			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
+			noYamlFiles = false
+
+			manifest.Name = info.Name()
+			manifest.Path = walkPath
+			manifestFiles = append(manifestFiles, manifest)
+		} else if !IsYAML(p) {
+			log.Debugf("%s is not a manifest file, skipping...", info.Name())
+		} else {
+			log.Debugf("%s is a directory, skipping...", info.Name())
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not walk directory: %w", err)
+	}
+	if noYamlFiles {
+		return nil, fmt.Errorf("no manifest files found within given path")
+	}
+
+	return manifestFiles, nil
+}
+
 // getObjectViolations executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of objectViolations
 func getObjectViolations(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) (map[string][]string, error) {
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
 
-	var violations = make(map[string][]string) // map of object name to slice of objectViolations
+	var results = make(map[string][]string) // map of object name to slice of objectViolations
 
 	for _, o := range objects {
 		objectViolations := []string{}
 		log.Debugf("Reviewing %s...", o.GetName())
 		res, err := c.Review(ctx, o)
 		if err != nil {
-			return violations, fmt.Errorf("could not review objects: %w", err)
+			return results, fmt.Errorf("could not review objects: %w", err)
 		}
 
 		for _, v := range res.ByTarget {
@@ -197,9 +255,9 @@ func getObjectViolations(ctx context.Context, c *constraintclient.Client, object
 		}
 
 		if len(objectViolations) > 0 {
-			violations[o.GetName()] = objectViolations
+			results[o.GetName()] = objectViolations
 		}
 	}
 
-	return violations, nil
+	return results, nil
 }

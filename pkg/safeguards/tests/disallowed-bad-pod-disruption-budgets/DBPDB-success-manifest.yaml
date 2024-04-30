@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: success-pdb
+  labels:
+    app: my-success-pdb
+    environment: production
+spec:
+  minAvailable: 5
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: my-success-pdb

@@ -1,9 +1,11 @@
 package providers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"os/exec"
 	"time"
 
@@ -23,9 +25,10 @@ type SetUpCmd struct {
 	tenantId          string
 	appObjectId       string
 	spObjectId        string
+	AzClient          AzClient
 }
 
-func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
+func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
 
 	if !HasGhCli() || !IsLoggedInToGh() {
@@ -50,11 +53,11 @@ func InitiateAzureOIDCFlow(sc *SetUpCmd, s spinner.Spinner) error {
 		return err
 	}
 
-	if err := sc.getTenantId(); err != nil {
+	if err := sc.getTenantId(ctx); err != nil {
 		return err
 	}
 
-	if err := sc.getAppObjectId(); err != nil {
+	if err := sc.getAppObjectId(ctx); err != nil {
 		return err
 	}
 
@@ -176,24 +179,48 @@ func (sc *SetUpCmd) assignSpRole() error {
 	return nil
 }
 
-func (sc *SetUpCmd) getTenantId() error {
-	log.Debug("Fetching Azure account tenant ID")
-	getTenantIdCmd := exec.Command("az", "account", "show", "--query", "tenantId", "--only-show-errors")
-	out, err := getTenantIdCmd.CombinedOutput()
+func (sc *SetUpCmd) getTenantId(ctx context.Context) error {
+	log.Debug("getting Azure tenant ID")
+
+	tenants, err := sc.listTenants(ctx)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("listing tenants: %w", err)
 	}
 
-	var tenantId string
-	if err := json.Unmarshal(out, &tenantId); err != nil {
-		return err
+	if len(tenants) == 0 {
+		return errors.New("no tenants found")
 	}
-	tenantId = fmt.Sprint(tenantId)
-
-	sc.tenantId = tenantId
+	if len(tenants) > 1 {
+		return errors.New("multiple tenants found")
+	}
+	sc.tenantId = *tenants[0].TenantID
 
 	return nil
+}
+
+func (sc *SetUpCmd) listTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error) {
+	log.Debug("listing Azure subscriptions")
+
+	var tenants []armsubscription.TenantIDDescription
+
+	pager := sc.AzClient.AzTenantClient.NewListPager(nil)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("listing tenants page: %w", err)
+		}
+
+		for _, t := range page.Value {
+			if t == nil {
+				return nil, errors.New("nil tenant") // this should never happen but it's good to check just in case
+			}
+			tenants = append(tenants, *t)
+		}
+	}
+
+	log.Debug("finished listing Azure tenants")
+	return tenants, nil
 }
 
 func (sc *SetUpCmd) ValidateSetUpConfig() error {
@@ -284,21 +311,15 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 }
 
-func (sc *SetUpCmd) getAppObjectId() error {
+func (sc *SetUpCmd) getAppObjectId(ctx context.Context) error {
 	log.Debug("Fetching Azure application object ID")
-	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
-	out, err := getObjectIdCmd.CombinedOutput()
+
+	appID, err := sc.AzClient.GraphClient.GetApplicationObjectId(ctx, sc.appId)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("getting application object Id: %w", err)
 	}
 
-	var objectId string
-	if err := json.Unmarshal(out, &objectId); err != nil {
-		return err
-	}
-
-	sc.appObjectId = objectId
+	sc.appObjectId = appID
 
 	return nil
 }

@@ -42,14 +42,14 @@ var testManifest_CEP = TestManifest{
 	ErrorPaths:   []string{testError_CEP_Standard},
 }
 
-var testError_CL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CL, "CL-error-manifest.yaml")
+var testError_CRL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRL, "CRL-error-manifest.yaml")
 
-var testSuccess_CL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CL, "CL-success-manifest.yaml")
+var testSuccess_CRL_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRL, "CRL-success-manifest.yaml")
 
 var testManifest_CL = TestManifest{
-	Name:         Constraint_CL,
-	SuccessPaths: []string{testSuccess_CL_Standard},
-	ErrorPaths:   []string{testError_CL_Standard},
+	Name:         Constraint_CRL,
+	SuccessPaths: []string{testSuccess_CRL_Standard},
+	ErrorPaths:   []string{testError_CRL_Standard},
 }
 
 var testError_CRIP_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_CRIP, "CRIP-error-manifest.yaml")
@@ -102,11 +102,13 @@ var testManifest_USS = TestManifest{
 	ErrorPaths:   []string{testError_USS_Standard},
 }
 
-var testError_all_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_USS, "all-error-manifest.yaml")
-var testSuccess_all_Standard = fmt.Sprintf("%s/%s/%s", testManifestDirectory, Constraint_USS, "all-error-manifest.yaml")
+var testError_all_Standard_1 = fmt.Sprintf("%s/%s/%s/%s", testManifestDirectory, Constraint_all, "error", "all-error-manifest-1.yaml")
+var testError_all_Standard_2 = fmt.Sprintf("%s/%s/%s/%s", testManifestDirectory, Constraint_all, "error", "all-error-manifest-2.yaml")
+var testSuccess_all_Standard_1 = fmt.Sprintf("%s/%s/%s/%s", testManifestDirectory, Constraint_all, "success", "all-success-manifest-1.yaml")
+var testSuccess_all_Standard_2 = fmt.Sprintf("%s/%s/%s/%s", testManifestDirectory, Constraint_all, "success", "all-success-manifest-2.yaml")
 
 var testManifest_all = TestManifest{
 	Name:         "all",
-	SuccessPaths: []string{testSuccess_all_Standard},
-	ErrorPaths:   []string{testError_all_Standard},
+	SuccessPaths: []string{testSuccess_all_Standard_1, testSuccess_all_Standard_2},
+	ErrorPaths:   []string{testError_all_Standard_1, testError_all_Standard_2},
 }

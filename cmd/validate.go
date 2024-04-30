@@ -60,7 +60,7 @@ func isYAML(path string) bool {
 }
 
 // getManifests uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
-func getManifestFiles(p string) ([]safeguards.ManifestFile, error) {
+func GetManifestFiles(p string) ([]safeguards.ManifestFile, error) {
 	var manifestFiles []safeguards.ManifestFile
 
 	noYamlFiles := true
@@ -114,7 +114,7 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 	var manifestFiles []safeguards.ManifestFile
 	if isDir {
-		manifestFiles, err = getManifestFiles(vc.manifestPath)
+		manifestFiles, err = GetManifestFiles(vc.manifestPath)
 		if err != nil {
 			return err
 		}

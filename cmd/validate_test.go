@@ -42,11 +42,11 @@ func TestIsYAML(t *testing.T) {
 	assert.False(t, isYAML(fileNotYaml))
 	assert.True(t, isYAML(fileYaml))
 
-	manifestFiles, err := getManifestFiles(dirNotYaml)
+	manifestFiles, err := GetManifestFiles(dirNotYaml)
 	assert.Nil(t, manifestFiles)
 	assert.NotNil(t, err)
 
-	manifestFiles, err = getManifestFiles(dirYaml)
+	manifestFiles, err = GetManifestFiles(dirYaml)
 	assert.NotNil(t, manifestFiles)
 	assert.Nil(t, err)
 }
@@ -66,7 +66,7 @@ func TestRunValidate(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// Scenario 2a: manifest path leads to a directory of manifestFiles - expect success
-	manifestFiles, err = getManifestFiles(manifestPathDirectorySuccess)
+	manifestFiles, err = GetManifestFiles(manifestPathDirectorySuccess)
 	assert.Nil(t, err)
 	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -74,7 +74,7 @@ func TestRunValidate(t *testing.T) {
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 2b: manifest path leads to a directory of manifestFiles - expect failure
-	manifestFiles, err = getManifestFiles(manifestPathDirectoryError)
+	manifestFiles, err = GetManifestFiles(manifestPathDirectoryError)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -82,14 +82,14 @@ func TestRunValidate(t *testing.T) {
 	assert.Greater(t, numViolations, 0)
 
 	// Scenario 3a: manifest path leads to one manifest file - expect success
-	manifestFiles, err = getManifestFiles(manifestPathFileSuccess)
+	manifestFiles, err = GetManifestFiles(manifestPathFileSuccess)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 3b: manifest path leads to one manifest file - expect failure
-	manifestFiles, err = getManifestFiles(manifestPathFileError)
+	manifestFiles, err = GetManifestFiles(manifestPathFileError)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)

@@ -1,13 +1,19 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/draft/pkg/cred"
 	"github.com/manifoldco/promptui"
+	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strings"
 
 	"github.com/Azure/draft/pkg/providers"
 	"github.com/Azure/draft/pkg/spinner"
@@ -23,11 +29,32 @@ func newSetUpCmd() *cobra.Command {
 		Long: `This command will automate the Github OIDC setup process by creating an Azure Active Directory 
 application and service principle, and will configure that application to trust github.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
+			azCred, err := cred.GetCred()
+			if err != nil {
+				return fmt.Errorf("getting credentials: %w", err)
+			}
+
+			client, err := armsubscription.NewTenantsClient(azCred, nil)
+			if err != nil {
+				return fmt.Errorf("creating tenants client: %w", err)
+			}
+
+			sc.AzClient.AzTenantClient = client
+
+			graphClient, err := createGraphClient(azCred)
+			if err != nil {
+				return fmt.Errorf("getting client: %w", err)
+			}
+
+			sc.AzClient.GraphClient = graphClient
+
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
-			err := runProviderSetUp(sc, s)
+			err = runProviderSetUp(ctx, sc, s)
 			s.Stop()
 			if err != nil {
 				return err
@@ -47,6 +74,14 @@ application and service principle, and will configure that application to trust 
 	f.StringVarP(&sc.Repo, "gh-repo", "g", emptyDefaultFlagValue, "specify the github repository link")
 	sc.Provider = provider
 	return cmd
+}
+
+func createGraphClient(azCred *azidentity.DefaultAzureCredential) (providers.GraphClient, error) {
+	client, err := msgraph.NewGraphServiceClientWithCredentials(azCred, []string{cloud.AzurePublic.Services[cloud.ResourceManager].Endpoint + "/.default"})
+	if err != nil {
+		return nil, fmt.Errorf("creating graph service client: %w", err)
+	}
+	return &providers.GraphServiceClient{Client: client}, nil
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {
@@ -72,11 +107,11 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	}
 }
 
-func runProviderSetUp(sc *providers.SetUpCmd, s spinner.Spinner) error {
+func runProviderSetUp(ctx context.Context, sc *providers.SetUpCmd, s spinner.Spinner) error {
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		// call azure provider logic
-		return providers.InitiateAzureOIDCFlow(sc, s)
+		return providers.InitiateAzureOIDCFlow(ctx, sc, s)
 
 	} else {
 		// call logic for user-submitted provider
@@ -204,5 +239,4 @@ func GetAzSubscriptionId(subIds []string) string {
 
 func init() {
 	rootCmd.AddCommand(newSetUpCmd())
-
 }

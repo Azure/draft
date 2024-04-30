@@ -42,8 +42,8 @@ func TestValidateDeployment_ContainerAllowedImages(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_CAI.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CAI.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_CAI.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_CAI.SuccessPaths)
 }
 
 // TestValidateDeployment_ContainerEnforceProbes tests our Container Enforce Probes manifest
@@ -65,8 +65,8 @@ func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_CEP.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CEP.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_CEP.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_CEP.SuccessPaths)
 }
 
 // TestValidateDeployment_ContainerResourceLimits tests our Container Resource Limits manifest
@@ -88,8 +88,8 @@ func TestValidateDeployment_ContainerResourceLimits(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_CL.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CL.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_CL.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_CL.SuccessPaths)
 }
 
 // TestValidateDeployment_ContainerRestrictedImagePulls tests our Container Restricted Image Pulls manifest
@@ -111,8 +111,8 @@ func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_CRIP.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_CRIP.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_CRIP.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_CRIP.SuccessPaths)
 }
 
 // TestValidateDeployment_DisallowedBadPodDisruptionBudget tests our Disallowed Bad Pod Disruption Budget manifest
@@ -134,8 +134,8 @@ func TestValidateDeployment_DisallowedBadPodDisruptionBudget(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_DBPDB.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_DBPDB.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_DBPDB.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_DBPDB.SuccessPaths)
 }
 
 // TestValidateDeployment_PodEnforceAntiaffinity tests our Pod Enforce Antiaffinity manifest
@@ -157,8 +157,8 @@ func TestValidateDeployment_PodEnforceAntiaffinity(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_PEA.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_PEA.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_PEA.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_PEA.SuccessPaths)
 }
 
 // TestValidateDeployment_RestrictedTaints tests our Restricted Taints manifest
@@ -180,8 +180,8 @@ func TestValidateDeployment_RestrictedTaints(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_RT.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_RT.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_RT.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_RT.SuccessPaths)
 }
 
 // TestValidateDeployment_UniqueServiceSelectors tests our Unique Service Selectors manifest
@@ -203,8 +203,8 @@ func TestValidateDeployment_UniqueServiceSelectors(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, testManifest_USS.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, testManifest_USS.SuccessPaths)
 }
 
 // TestValidateDeployment_All tests all of our manifests in a few given manifest files
@@ -234,6 +234,6 @@ func TestValidateDeployment_All(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateTestManifestsFail(ctx, t, c, testFc, testManifest_all.ErrorPaths)
-	validateTestManifestsSuccess(ctx, t, c, testFc, testManifest_all.SuccessPaths)
+	validateAllTestManifestsFail(ctx, t, c, testFc, testManifest_all.ErrorPaths)
+	validateAllTestManifestsSuccess(ctx, t, c, testFc, testManifest_all.SuccessPaths)
 }

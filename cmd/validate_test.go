@@ -19,15 +19,15 @@ func TestIsDirectory(t *testing.T) {
 	pathFalse := path.Join(testWd, "validate.go")
 	pathError := ""
 
-	isDir, err := isDirectory(pathTrue)
+	isDir, err := safeguards.IsDirectory(pathTrue)
 	assert.True(t, isDir)
 	assert.Nil(t, err)
 
-	isDir, err = isDirectory(pathFalse)
+	isDir, err = safeguards.IsDirectory(pathFalse)
 	assert.False(t, isDir)
 	assert.Nil(t, err)
 
-	isDir, err = isDirectory(pathError)
+	isDir, err = safeguards.IsDirectory(pathError)
 	assert.False(t, isDir)
 	assert.NotNil(t, err)
 }
@@ -39,14 +39,14 @@ func TestIsYAML(t *testing.T) {
 	fileNotYaml, _ := filepath.Abs("../pkg/safeguards/tests/not-yaml/readme.md")
 	fileYaml, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
 
-	assert.False(t, isYAML(fileNotYaml))
-	assert.True(t, isYAML(fileYaml))
+	assert.False(t, safeguards.IsYAML(fileNotYaml))
+	assert.True(t, safeguards.IsYAML(fileYaml))
 
-	manifestFiles, err := GetManifestFiles(dirNotYaml)
+	manifestFiles, err := safeguards.GetManifestFiles(dirNotYaml)
 	assert.Nil(t, manifestFiles)
 	assert.NotNil(t, err)
 
-	manifestFiles, err = GetManifestFiles(dirYaml)
+	manifestFiles, err = safeguards.GetManifestFiles(dirYaml)
 	assert.NotNil(t, manifestFiles)
 	assert.Nil(t, err)
 }
@@ -66,7 +66,7 @@ func TestRunValidate(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// Scenario 2a: manifest path leads to a directory of manifestFiles - expect success
-	manifestFiles, err = GetManifestFiles(manifestPathDirectorySuccess)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathDirectorySuccess)
 	assert.Nil(t, err)
 	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -74,7 +74,7 @@ func TestRunValidate(t *testing.T) {
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 2b: manifest path leads to a directory of manifestFiles - expect failure
-	manifestFiles, err = GetManifestFiles(manifestPathDirectoryError)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathDirectoryError)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -82,14 +82,14 @@ func TestRunValidate(t *testing.T) {
 	assert.Greater(t, numViolations, 0)
 
 	// Scenario 3a: manifest path leads to one manifest file - expect success
-	manifestFiles, err = GetManifestFiles(manifestPathFileSuccess)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathFileSuccess)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 3b: manifest path leads to one manifest file - expect failure
-	manifestFiles, err = GetManifestFiles(manifestPathFileError)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathFileError)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)

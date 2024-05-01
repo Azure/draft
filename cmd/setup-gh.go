@@ -97,7 +97,7 @@ func createRoleAssignmentClient(azCred *azidentity.DefaultAzureCredential, subsc
 	if err != nil {
 		return nil, fmt.Errorf("creating role assignment client: %w", err)
 	}
-	return &providers.RoleAssignmentClient{Client: client}, nil
+	return client, nil
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {

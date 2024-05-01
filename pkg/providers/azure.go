@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/google/uuid"
 	"os/exec"
 	"time"
 
@@ -166,18 +166,42 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	return nil
 }
 
+//func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
+//	log.Debug("Assigning contributor role to service principal...")
+//	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
+//
+//	// Create role assignment parameters
+//	objectID := sc.spObjectId
+//	roleID := "contributor"      // Assuming "contributor" role
+//	raUid := uuid.New().String() // Using UUID to serve as raUid
+//
+//	roleAssignmentClient := sc.AzClient.RoleAssignClient
+//
+//	err := roleAssignmentClient.CreateRoleAssignment(ctx, objectID, roleID, scope, raUid)
+//	if err != nil {
+//		return fmt.Errorf("creating role assignment: %w", err)
+//	}
+//
+//	log.Debug("Role assigned successfully!")
+//	return nil
+//}
+
 func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 	log.Debug("Assigning contributor role to service principal...")
-	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
 
-	// Create role assignment parameters
 	objectID := sc.spObjectId
-	roleID := "contributor"      // Assuming "contributor" role
-	raUid := uuid.New().String() // Using UUID to serve as raUid
+	roleID := "contributor"
 
-	roleAssignmentClient := sc.AzClient.RoleAssignClient
+	parameters := armauthorization.RoleAssignmentCreateParameters{
+		Properties: &armauthorization.RoleAssignmentProperties{
+			PrincipalID:      &objectID,
+			RoleDefinitionID: nil,
+		},
+	}
 
-	err := roleAssignmentClient.CreateRoleAssignment(ctx, objectID, roleID, scope, raUid)
+	options := &armauthorization.RoleAssignmentsClientCreateByIDOptions{}
+
+	_, err := sc.AzClient.RoleAssignClient.CreateByID(ctx, roleID, parameters, options)
 	if err != nil {
 		return fmt.Errorf("creating role assignment: %w", err)
 	}

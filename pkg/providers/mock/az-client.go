@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	runtime "github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	armauthorization "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	armsubscription "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -116,16 +117,17 @@ func (m *MockRoleAssignClient) EXPECT() *MockRoleAssignClientMockRecorder {
 	return m.recorder
 }
 
-// CreateRoleAssignment mocks base method.
-func (m *MockRoleAssignClient) CreateRoleAssignment(ctx context.Context, objectId, roleId, scope, raUid string) error {
+// CreateByID mocks base method.
+func (m *MockRoleAssignClient) CreateByID(ctx context.Context, roleAssignmentID string, parameters armauthorization.RoleAssignmentCreateParameters, options *armauthorization.RoleAssignmentsClientCreateByIDOptions) (armauthorization.RoleAssignmentsClientCreateByIDResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRoleAssignment", ctx, objectId, roleId, scope, raUid)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "CreateByID", ctx, roleAssignmentID, parameters, options)
+	ret0, _ := ret[0].(armauthorization.RoleAssignmentsClientCreateByIDResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// CreateRoleAssignment indicates an expected call of CreateRoleAssignment.
-func (mr *MockRoleAssignClientMockRecorder) CreateRoleAssignment(ctx, objectId, roleId, scope, raUid any) *gomock.Call {
+// CreateByID indicates an expected call of CreateByID.
+func (mr *MockRoleAssignClientMockRecorder) CreateByID(ctx, roleAssignmentID, parameters, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoleAssignment", reflect.TypeOf((*MockRoleAssignClient)(nil).CreateRoleAssignment), ctx, objectId, roleId, scope, raUid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateByID", reflect.TypeOf((*MockRoleAssignClient)(nil).CreateByID), ctx, roleAssignmentID, parameters, options)
 }

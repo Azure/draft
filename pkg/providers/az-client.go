@@ -8,7 +8,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
-	log "github.com/sirupsen/logrus"
 )
 
 type AzClient struct {
@@ -47,33 +46,8 @@ func (g *GraphServiceClient) GetApplicationObjectId(ctx context.Context, appId s
 	return *appObjectId, nil
 }
 
-type RoleAssignmentClient struct {
-	Client *armauthorization.RoleAssignmentsClient
-}
-
 type RoleAssignClient interface {
-	CreateRoleAssignment(ctx context.Context, objectId, roleId, scope, raUid string) error
+	CreateByID(ctx context.Context, roleAssignmentID string, parameters armauthorization.RoleAssignmentCreateParameters, options *armauthorization.RoleAssignmentsClientCreateByIDOptions) (armauthorization.RoleAssignmentsClientCreateByIDResponse, error)
 }
 
-var _ RoleAssignClient = &RoleAssignmentClient{}
-
-func (r *RoleAssignmentClient) CreateRoleAssignment(ctx context.Context, objectId, roleId, scope, raUid string) error {
-	fullAssignmentId := fmt.Sprintf("/%s/providers/Microsoft.Authorization/roleAssignments/%s", scope, raUid)
-	fullDefinitionId := fmt.Sprintf("/providers/Microsoft.Authorization/roleDefinitions/%s", roleId)
-
-	params := armauthorization.RoleAssignmentCreateParameters{
-		Properties: &armauthorization.RoleAssignmentProperties{
-			PrincipalID:      &objectId,
-			RoleDefinitionID: &fullDefinitionId,
-		},
-	}
-
-	resp, err := r.Client.CreateByID(ctx, fullAssignmentId, params, nil)
-	log.Debug("response from create role assignment", "resp", resp)
-
-	if err != nil {
-		return fmt.Errorf("creating role assignment: %w", err)
-	}
-
-	return nil
-}
+var _ RoleAssignClient = &armauthorization.RoleAssignmentsClient{}

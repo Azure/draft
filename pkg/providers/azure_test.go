@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/tracing"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	mock_providers "github.com/Azure/draft/pkg/providers/mock"
 	"go.uber.org/mock/gomock"
@@ -250,18 +251,13 @@ func TestAssignSpRole(t *testing.T) {
 
 	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
 
-	expectedObjectId := "testObjectId"
-	expectedRoleId := "contributor"
-	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
-	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, gomock.Any()).Return(nil)
+	mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), "contributor", gomock.Any(), gomock.Any()).Return(armauthorization.RoleAssignmentsClientCreateByIDResponse{}, nil)
 
 	sc := &SetUpCmd{
 		AzClient: AzClient{
 			RoleAssignClient: mockRoleAssignClient,
 		},
-		SubscriptionID:    "testSubscriptionID",
-		ResourceGroupName: "testResourceGroupName",
-		spObjectId:        expectedObjectId,
+		spObjectId: "testObjectId",
 	}
 
 	err := sc.assignSpRole(context.Background())
@@ -276,20 +272,15 @@ func TestAssignSpRole_Error(t *testing.T) {
 
 	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
 
-	expectedObjectId := "testObjectId"
-	expectedRoleId := "contributor"
-	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
+	roleAssignID := "contributor"
 	expectedError := errors.New("error")
-
-	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, gomock.Any()).Return(expectedError)
+	mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), roleAssignID, gomock.Any(), gomock.Any()).Return(armauthorization.RoleAssignmentsClientCreateByIDResponse{}, expectedError)
 
 	sc := &SetUpCmd{
 		AzClient: AzClient{
 			RoleAssignClient: mockRoleAssignClient,
 		},
-		SubscriptionID:    "testSubscriptionID",
-		ResourceGroupName: "testResourceGroupName",
-		spObjectId:        expectedObjectId,
+		spObjectId: "testObjectId",
 	}
 
 	err := sc.assignSpRole(context.Background())
@@ -304,20 +295,15 @@ func TestAssignSpRole_ErrorDuringRoleAssignment(t *testing.T) {
 
 	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
 
-	expectedObjectId := "testObjectId"
-	expectedRoleId := "contributor"
-	expectedScope := "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName"
+	roleAssignID := "contributor"
 	expectedError := errors.New("error during role assignment")
-
-	mockRoleAssignClient.EXPECT().CreateRoleAssignment(gomock.Any(), expectedObjectId, expectedRoleId, expectedScope, gomock.Any()).Return(expectedError)
+	mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), roleAssignID, gomock.Any(), gomock.Any()).Return(armauthorization.RoleAssignmentsClientCreateByIDResponse{}, expectedError)
 
 	sc := &SetUpCmd{
 		AzClient: AzClient{
 			RoleAssignClient: mockRoleAssignClient,
 		},
-		SubscriptionID:    "testSubscriptionID",
-		ResourceGroupName: "testResourceGroupName",
-		spObjectId:        expectedObjectId,
+		spObjectId: "testObjectId",
 	}
 
 	err := sc.assignSpRole(context.Background())

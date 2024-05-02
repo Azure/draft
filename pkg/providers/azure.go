@@ -5,7 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/draft/pkg/cred"
+	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
+	graphmodels "github.com/microsoftgraph/msgraph-sdk-go/models"
 	"os/exec"
 	"time"
 
@@ -45,7 +49,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 
 	if AzAppExists(sc.AppName) {
 		return errors.New("app already exists")
-	} else if err := sc.createAzApp(); err != nil {
+	} else if err := sc.createAzApp(ctx); err != nil {
 		return err
 	}
 
@@ -85,38 +89,36 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 	return nil
 }
 
-func (sc *SetUpCmd) createAzApp() error {
+func (sc *SetUpCmd) createAzApp(ctx context.Context) error {
 	log.Debug("Commencing Azure app creation...")
 	start := time.Now()
 	log.Debug(start)
 
 	createApp := func() error {
-		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
-
-		out, err := createAppCmd.CombinedOutput()
+		azCred, err := cred.GetCred()
 		if err != nil {
-			log.Printf("%s\n", out)
-			return err
+			return fmt.Errorf("getting credentials: %w", err)
+		}
+		graphClient, _ := msgraph.NewGraphServiceClientWithCredentials(azCred, []string{cloud.AzurePublic.Services[cloud.ResourceManager].Endpoint + "/.default"})
+
+		requestBody := graphmodels.NewApplication()
+		displayName := sc.AppName
+		requestBody.SetDisplayName(&displayName)
+
+		application, err := graphClient.Applications().Post(ctx, requestBody, nil)
+		if err != nil {
+			return fmt.Errorf("creating Azure app: %v", err)
 		}
 
-		if AzAppExists(sc.AppName) {
-			var azApp map[string]interface{}
-			if err := json.Unmarshal(out, &azApp); err != nil {
-				return err
-			}
-			appId := fmt.Sprint(azApp["appId"])
+		appId := *application.GetId()
 
-			sc.appId = appId
+		sc.appId = appId
 
-			end := time.Since(start)
-			log.Debug("App created successfully!")
-			log.Debug(end)
-			return nil
-		}
-
-		return errors.New("app creation time has exceeded max elapsed time for exponential backoff")
+		end := time.Since(start)
+		log.Debug("App created successfully!")
+		log.Debug(end)
+		return nil
 	}
-
 	backoff := bo.NewExponentialBackOff()
 	backoff.MaxElapsedTime = 5 * time.Second
 

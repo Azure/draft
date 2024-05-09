@@ -11,6 +11,8 @@ variables:
     description: "the name of the image to use in the deployment"
   - name: "IMAGETAG"
     description: "the tag of the image to use in the deployment"
+  - name: "GENERATORLABEL"
+    description: "the label to identify who generated the resource"
 variableDefaults:
   - name: "PORT"
     value: 80
@@ -23,3 +25,5 @@ variableDefaults:
   - name: "IMAGETAG"
     value: "latest"
     disablePrompt: true
+  - name: "GENERATORLABEL"
+    value: "draft"

@@ -27,3 +27,4 @@ variableDefaults:
     disablePrompt: true
   - name: "GENERATORLABEL"
     value: "draft"
+    disablePrompt: true

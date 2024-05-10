@@ -64,6 +64,15 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 	return prefix
 }
 
+// ApplyDefaultVariables will apply the defaults to variables that are not already set
+func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) {
+	for _, variable := range d.VariableDefaults {
+		if _, ok := customConfig[variable.Name]; !ok {
+			customConfig[variable.Name] = variable.Value
+		}
+	}
+}
+
 // TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
 type TemplateVariableRecorder interface {
 	Record(key, value string)

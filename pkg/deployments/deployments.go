@@ -46,13 +46,8 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 	deployConfig, ok := d.configs[deployType]
 	if !ok {
 		deployConfig = nil
-	}
-
-	// update customInputs with default values where custom values dont exist
-	for _, defaultVar := range deployConfig.VariableDefaults {
-		if _, ok := customInputs[defaultVar.Name]; !ok {
-			customInputs[defaultVar.Name] = defaultVar.Value
-		}
+	} else {
+		deployConfig.ApplyDefaultVariables(customInputs)
 	}
 
 	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, customInputs, templateWriter); err != nil {

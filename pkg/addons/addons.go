@@ -39,6 +39,8 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map
 		return err
 	}
 
+	addOnConfig.ApplyDefaultVariables(userInputs)
+
 	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, userInputs, templateWriter); err != nil {
 		return err
 	}

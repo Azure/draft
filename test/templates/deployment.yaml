@@ -4,6 +4,7 @@ metadata:
   name: my-app
   labels:
     app: my-app
+    kubernetes.azure.com/generator: draft
 spec:
   replicas: 1
   selector:

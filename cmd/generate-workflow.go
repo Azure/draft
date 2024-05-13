@@ -1,12 +1,19 @@
 package cmd
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/maps"
 
+	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/pkg/workflows"
+	"github.com/Azure/draft/template"
 )
 
 type generateWorkflowCmd struct {
@@ -34,7 +41,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 				flagValuesMap = gwCmd.workflowConfig.SetFlagValuesToMap()
 			}
 			log.Info("--> Generating Github workflow")
-			if err := workflows.CreateWorkflows(gwCmd.dest, gwCmd.deployType, gwCmd.flagVariables, gwCmd.templateWriter, flagValuesMap); err != nil {
+			if err := gwCmd.generateWorkflows(gwCmd.dest, gwCmd.deployType, gwCmd.flagVariables, gwCmd.templateWriter, flagValuesMap); err != nil {
 				return err
 			}
 
@@ -60,4 +67,46 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 
 func init() {
 	rootCmd.AddCommand(newGenerateWorkflowCmd())
+}
+
+func (gwc *generateWorkflowCmd) generateWorkflows(dest string, deployType string, flagVariables []string, templateWriter templatewriter.TemplateWriter, flagValuesMap map[string]string) error {
+	if flagValuesMap == nil {
+		return fmt.Errorf("flagValuesMap is nil")
+	}
+	var err error
+	for _, flagVar := range flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			return fmt.Errorf("invalid variable format: %s", flagVar)
+		}
+		flagValuesMap[flagVarName] = flagVarValue
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+	}
+
+	if deployType == "" {
+		selection := &promptui.Select{
+			Label: "Select k8s Deployment Type",
+			Items: []string{"helm", "kustomize", "manifests"},
+		}
+
+		_, deployType, err = selection.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	workflow := workflows.CreateWorkflowsFromEmbedFS(template.Workflows, dest)
+	workflowConfig, err := workflow.GetConfig(deployType)
+	if err != nil {
+		return fmt.Errorf("get config: %w", err)
+	}
+
+	customInputs, err := prompts.RunPromptsFromConfigWithSkips(workflowConfig, maps.Keys(flagValuesMap))
+	if err != nil {
+		return err
+	}
+
+	maps.Copy(customInputs, flagVariablesMap)
+
+	return workflow.CreateWorkflowFiles(deployType, customInputs, templateWriter)
 }

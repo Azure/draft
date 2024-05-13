@@ -28,12 +28,12 @@ func TestWriteDockerfile(t *testing.T) {
 			expectError:        false,
 		},
 		{
-			name: "Test Invalid Go Dockerfile Generation",
+			name: "Test Valid Go Dockerfile Generation with deafult",
 			inputVariables: map[string]string{
 				"PORT": "8080",
 			},
 			generationLanguage: "go",
-			expectError:        true,
+			expectError:        false,
 		},
 		{
 			name: "Test Invalid GenerationLanguage",

@@ -67,7 +67,9 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 // ApplyDefaultVariables will apply the defaults to variables that are not already set
 func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) {
 	for _, variable := range d.VariableDefaults {
-		if _, ok := customConfig[variable.Name]; !ok {
+		// handle where variable is not set or is set to an empty string from cli handling
+		if defaultVal, ok := customConfig[variable.Name]; !ok || defaultVal == "" {
+			log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Value)
 			customConfig[variable.Name] = variable.Value
 		}
 	}

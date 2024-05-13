@@ -24,13 +24,13 @@ type BuilderVar struct {
 	Description      string   `yaml:"description"`
 	VarType          string   `yaml:"type"`
 	ExampleValues    []string `yaml:"exampleValues"`
-	IsPromptDisabled bool     `yaml:"disablePrompt"`
 }
 
 type BuilderVarDefault struct {
-	Name         string `yaml:"name"`
-	Value        string `yaml:"value"`
-	ReferenceVar string `yaml:"referenceVar"`
+	Name             string `yaml:"name"`
+	Value            string `yaml:"value"`
+	ReferenceVar     string `yaml:"referenceVar"`
+	IsPromptDisabled bool   `yaml:"disablePrompt"`
 }
 
 func (d *DraftConfig) GetVariableExampleValues() map[string][]string {

@@ -27,8 +27,6 @@ func TestRun(t *testing.T) {
 	deployTypes := []string{"helm", "kustomize", "manifests"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
-	dir, _ := os.Getwd()
-	log.Println(dir)
 
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
 
@@ -65,14 +63,11 @@ func TestRun(t *testing.T) {
 		mockCC.deployType = deployType
 		err = mockCC.createDeployment()
 		assert.True(t, err == nil)
-		log.Printf("err: %v", err)
 		//check if deployment files have been created
 		err, deploymentFiles := getAllDeploymentFiles(path.Join("../template/deployments", mockCC.deployType))
 		assert.Nil(t, err)
-		log.Printf("err: %v", err)
 		for _, fileName := range deploymentFiles {
 			_, err = os.Stat(fileName)
-			log.Printf("err: %v", err)
 			assert.True(t, err == nil)
 		}
 

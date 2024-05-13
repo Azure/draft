@@ -177,6 +177,10 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[stri
 		workflowConfig.ApplyDefaultVariables(customInputs)
 	}
 
+	if err := updateProductionDeployments(deployType, w.dest, customInputs, templateWriter); err != nil {
+		return fmt.Errorf("update production deployments: %w", err)
+	}
+
 	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, workflowConfig, customInputs, templateWriter); err != nil {
 		return err
 	}

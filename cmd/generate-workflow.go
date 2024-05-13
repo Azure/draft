@@ -106,7 +106,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows(dest string, deployType string
 		return err
 	}
 
-	maps.Copy(customInputs, flagVariablesMap)
+	maps.Copy(customInputs, flagValuesMap)
 
 	return workflow.CreateWorkflowFiles(deployType, customInputs, templateWriter)
 }

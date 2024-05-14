@@ -245,69 +245,65 @@ func TestGetAppObjectId_EmptyAppIdFromGraphClient(t *testing.T) {
 	}
 }
 
+var principalId = "mockPrincipalID"
+var roleDefId = "mockRoleDefinitionID"
+var Id = "mockID"
+var name = "mockName"
+var Idtype = "mocktype"
+
 func TestAssignSpRole(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
-
-	mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), "contributor", gomock.Any(), gomock.Any()).Return(armauthorization.RoleAssignmentsClientCreateByIDResponse{}, nil)
-
-	sc := &SetUpCmd{
-		AzClient: AzClient{
-			RoleAssignClient: mockRoleAssignClient,
+	tests := []struct {
+		name          string
+		expectedError error
+		mockResponse  armauthorization.RoleAssignmentsClientCreateByIDResponse
+	}{
+		{
+			name:          "Success",
+			expectedError: nil,
+			mockResponse: armauthorization.RoleAssignmentsClientCreateByIDResponse{
+				RoleAssignment: armauthorization.RoleAssignment{
+					Properties: &armauthorization.RoleAssignmentPropertiesWithScope{
+						PrincipalID:      &principalId,
+						RoleDefinitionID: &roleDefId,
+					},
+					ID:   &Id,
+					Name: &name,
+					Type: &Idtype,
+				},
+			},
 		},
-		spObjectId: "testObjectId",
-	}
-
-	err := sc.assignSpRole(context.Background())
-	if err != nil {
-		t.Errorf("Expected no error, got: %v", err)
-	}
-}
-
-func TestAssignSpRole_Error(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
-
-	roleAssignID := "contributor"
-	expectedError := errors.New("error")
-	mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), roleAssignID, gomock.Any(), gomock.Any()).Return(armauthorization.RoleAssignmentsClientCreateByIDResponse{}, expectedError)
-
-	sc := &SetUpCmd{
-		AzClient: AzClient{
-			RoleAssignClient: mockRoleAssignClient,
+		{
+			name:          "Error",
+			expectedError: errors.New("error"),
+			mockResponse:  armauthorization.RoleAssignmentsClientCreateByIDResponse{},
 		},
-		spObjectId: "testObjectId",
-	}
-
-	err := sc.assignSpRole(context.Background())
-	if err == nil {
-		t.Errorf("Expected an error, got nil")
-	}
-}
-
-func TestAssignSpRole_ErrorDuringRoleAssignment(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
-
-	roleAssignID := "contributor"
-	expectedError := errors.New("error during role assignment")
-	mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), roleAssignID, gomock.Any(), gomock.Any()).Return(armauthorization.RoleAssignmentsClientCreateByIDResponse{}, expectedError)
-
-	sc := &SetUpCmd{
-		AzClient: AzClient{
-			RoleAssignClient: mockRoleAssignClient,
+		{
+			name:          "ErrorDuringRoleAssignment",
+			expectedError: errors.New("error during role assignment"),
+			mockResponse:  armauthorization.RoleAssignmentsClientCreateByIDResponse{},
 		},
-		spObjectId: "testObjectId",
 	}
 
-	err := sc.assignSpRole(context.Background())
-	if err == nil {
-		t.Errorf("Expected an error, but got nil")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
+
+			mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), "contributor", gomock.Any(), gomock.Any()).Return(tt.mockResponse, tt.expectedError)
+
+			sc := &SetUpCmd{
+				AzClient: AzClient{
+					RoleAssignClient: mockRoleAssignClient,
+				},
+				spObjectId: "testObjectId",
+			}
+
+			err := sc.assignSpRole(context.Background())
+			if !errors.Is(err, tt.expectedError) {
+				t.Errorf("Expected error: %v, got: %v", tt.expectedError, err)
+			}
+		})
 	}
 }

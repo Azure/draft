@@ -166,26 +166,6 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	return nil
 }
 
-//func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
-//	log.Debug("Assigning contributor role to service principal...")
-//	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-//
-//	// Create role assignment parameters
-//	objectID := sc.spObjectId
-//	roleID := "contributor"      // Assuming "contributor" role
-//	raUid := uuid.New().String() // Using UUID to serve as raUid
-//
-//	roleAssignmentClient := sc.AzClient.RoleAssignClient
-//
-//	err := roleAssignmentClient.CreateRoleAssignment(ctx, objectID, roleID, scope, raUid)
-//	if err != nil {
-//		return fmt.Errorf("creating role assignment: %w", err)
-//	}
-//
-//	log.Debug("Role assigned successfully!")
-//	return nil
-//}
-
 func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 	log.Debug("Assigning contributor role to service principal...")
 
@@ -195,13 +175,11 @@ func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 	parameters := armauthorization.RoleAssignmentCreateParameters{
 		Properties: &armauthorization.RoleAssignmentProperties{
 			PrincipalID:      &objectID,
-			RoleDefinitionID: nil,
+			RoleDefinitionID: &roleID,
 		},
 	}
 
-	options := &armauthorization.RoleAssignmentsClientCreateByIDOptions{}
-
-	_, err := sc.AzClient.RoleAssignClient.CreateByID(ctx, roleID, parameters, options)
+	_, err := sc.AzClient.RoleAssignClient.CreateByID(ctx, roleID, parameters, nil)
 	if err != nil {
 		return fmt.Errorf("creating role assignment: %w", err)
 	}

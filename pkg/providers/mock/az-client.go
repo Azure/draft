@@ -10,11 +10,11 @@
 package mock_providers
 
 import (
-	context "context"
 	reflect "reflect"
 
 	runtime "github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	armsubscription "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	applications "github.com/microsoftgraph/msgraph-sdk-go/applications"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -78,17 +78,16 @@ func (m *MockGraphClient) EXPECT() *MockGraphClientMockRecorder {
 	return m.recorder
 }
 
-// GetApplicationObjectId mocks base method.
-func (m *MockGraphClient) GetApplicationObjectId(ctx context.Context, appId string) (string, error) {
+// Applications mocks base method.
+func (m *MockGraphClient) Applications() *applications.ApplicationsRequestBuilder {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplicationObjectId", ctx, appId)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "Applications")
+	ret0, _ := ret[0].(*applications.ApplicationsRequestBuilder)
+	return ret0
 }
 
-// GetApplicationObjectId indicates an expected call of GetApplicationObjectId.
-func (mr *MockGraphClientMockRecorder) GetApplicationObjectId(ctx, appId any) *gomock.Call {
+// Applications indicates an expected call of Applications.
+func (mr *MockGraphClientMockRecorder) Applications() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationObjectId", reflect.TypeOf((*MockGraphClient)(nil).GetApplicationObjectId), ctx, appId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Applications", reflect.TypeOf((*MockGraphClient)(nil).Applications))
 }

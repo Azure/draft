@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
+	graphapp "github.com/microsoftgraph/msgraph-sdk-go/applications"
 )
 
 type AzClient struct {
@@ -19,19 +20,14 @@ type azTenantClient interface {
 	NewListPager(options *armsubscription.TenantsClientListOptions) *runtime.Pager[armsubscription.TenantsClientListResponse]
 }
 
-// GraphServiceClient implements the GraphClient interface.
-type GraphServiceClient struct {
-	Client *msgraph.GraphServiceClient
-}
-
 type GraphClient interface {
-	GetApplicationObjectId(ctx context.Context, appId string) (string, error)
+	Applications() *graphapp.ApplicationsRequestBuilder
 }
 
-var _ GraphClient = &GraphServiceClient{}
+var _ GraphClient = &msgraph.GraphServiceClient{}
 
-func (g *GraphServiceClient) GetApplicationObjectId(ctx context.Context, appId string) (string, error) {
-	req := g.Client.Applications().ByApplicationId(appId)
+func GetApplicationObjectId(ctx context.Context, appId string, graphClient GraphClient) (string, error) {
+	req := graphClient.Applications().ByApplicationId(appId)
 
 	app, err := req.Get(ctx, nil)
 	if err != nil {

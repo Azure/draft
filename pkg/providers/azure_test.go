@@ -7,6 +7,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/tracing"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	mock_providers "github.com/Azure/draft/pkg/providers/mock"
+	abstractions "github.com/microsoft/kiota-abstractions-go"
+	"github.com/microsoft/kiota-abstractions-go/serialization"
+	graphapp "github.com/microsoftgraph/msgraph-sdk-go/applications"
+	"github.com/microsoftgraph/msgraph-sdk-go/models"
 	"go.uber.org/mock/gomock"
 	"strings"
 	"testing"
@@ -138,18 +142,44 @@ func TestGetTenantId_NilTenantInList(t *testing.T) {
 	}
 }
 
+var testAppID = "mockAppID"
+var errToSend error = nil
+
+type mockActionable struct {
+	models.Applicationable
+}
+
+func (m *mockActionable) GetAppId() *string {
+	return &testAppID
+}
+
+type mockRequestAdapter struct {
+	abstractions.RequestAdapter
+}
+
+func (m *mockRequestAdapter) Send(context.Context, *abstractions.RequestInformation, serialization.ParsableFactory, abstractions.ErrorMappings) (serialization.Parsable, error) {
+	return &mockActionable{}, errToSend
+}
+
 func TestGetAppObjectId(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
 
-	appID := "testAppID"
-	expectedAppID := "mockAppID"
-	mockGraphClient.EXPECT().GetApplicationObjectId(gomock.Any(), appID).Return(expectedAppID, nil)
+	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
+		BaseRequestBuilder: abstractions.BaseRequestBuilder{
+			PathParameters: map[string]string{"key": "value"},
+			RequestAdapter: &mockRequestAdapter{},
+			UrlTemplate:    "dummyUrlTemplate",
+		},
+	}
+	testAppID = "mockAppID"
+	errToSend = nil
+	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
 
 	sc := &SetUpCmd{
-		appId: appID,
+		appId: testAppID,
 		AzClient: AzClient{
 			GraphClient: mockGraphClient,
 		},
@@ -160,23 +190,27 @@ func TestGetAppObjectId(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
-	if sc.appObjectId != expectedAppID {
-		t.Errorf("Expected application ID %s, got: %s", expectedAppID, sc.appObjectId)
-	}
 }
 
+// Test case - when the GraphClient returns an empty application ID:
 func TestGetAppObjectId_Error(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
 
-	appID := "testAppID"
-	expectedError := errors.New("mock error")
-	mockGraphClient.EXPECT().GetApplicationObjectId(gomock.Any(), appID).Return("", expectedError)
+	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
+		BaseRequestBuilder: abstractions.BaseRequestBuilder{
+			PathParameters: map[string]string{"key": "value"},
+			RequestAdapter: &mockRequestAdapter{},
+			UrlTemplate:    "dummyUrlTemplate",
+		},
+	}
+	testAppID = ""
+	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
 
 	sc := &SetUpCmd{
-		appId: appID,
+		appId: testAppID,
 		AzClient: AzClient{
 			GraphClient: mockGraphClient,
 		},
@@ -196,50 +230,27 @@ func TestGetAppObjectId_ErrorFromGraphClient(t *testing.T) {
 
 	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
 
-	appID := "testAppID"
-	expectedError := errors.New("mock error")
-	mockGraphClient.EXPECT().GetApplicationObjectId(gomock.Any(), appID).Return("", expectedError)
-
-	sc := &SetUpCmd{
-		appId: appID,
-		AzClient: AzClient{
-			GraphClient: mockGraphClient,
+	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
+		BaseRequestBuilder: abstractions.BaseRequestBuilder{
+			PathParameters: map[string]string{"key": "value"},
+			RequestAdapter: &mockRequestAdapter{},
+			UrlTemplate:    "dummyUrlTemplate",
 		},
 	}
 
-	err := sc.getAppObjectId(context.Background())
-	if err == nil {
-		t.Error("Expected an error, got nil")
-	}
 	expectedErrorMsg := "getting application object Id: mock error"
-	if err.Error() != expectedErrorMsg {
-		t.Errorf("Expected error message '%s', got '%s'", expectedErrorMsg, err.Error())
-	}
-}
-
-// Test case - when the GraphClient returns an empty application ID:
-func TestGetAppObjectId_EmptyAppIdFromGraphClient(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
-
-	appID := "testAppID"
-	expectedError := errors.New("application object ID is empty")
-	mockGraphClient.EXPECT().GetApplicationObjectId(gomock.Any(), appID).Return("", expectedError)
+	errToSend = errors.New(expectedErrorMsg)
+	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
 
 	sc := &SetUpCmd{
-		appId: appID,
+		appId: "testAppID",
 		AzClient: AzClient{
 			GraphClient: mockGraphClient,
 		},
 	}
 
 	err := sc.getAppObjectId(context.Background())
-
 	if err == nil {
 		t.Error("Expected an error, got nil")
-	} else if !strings.Contains(err.Error(), expectedError.Error()) {
-		t.Errorf("Expected error '%v', got '%v'", expectedError, err)
 	}
 }

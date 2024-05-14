@@ -81,7 +81,7 @@ func createGraphClient(azCred *azidentity.DefaultAzureCredential) (providers.Gra
 	if err != nil {
 		return nil, fmt.Errorf("creating graph service client: %w", err)
 	}
-	return &providers.GraphServiceClient{Client: client}, nil
+	return client, nil
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {

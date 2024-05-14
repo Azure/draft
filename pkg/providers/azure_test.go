@@ -162,95 +162,65 @@ func (m *mockRequestAdapter) Send(context.Context, *abstractions.RequestInformat
 }
 
 func TestGetAppObjectId(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
-
-	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
-		BaseRequestBuilder: abstractions.BaseRequestBuilder{
-			PathParameters: map[string]string{"key": "value"},
-			RequestAdapter: &mockRequestAdapter{},
-			UrlTemplate:    "dummyUrlTemplate",
+	tests := []struct {
+		name      string
+		testAppID string
+		errToSend error
+		expectErr bool
+	}{
+		{
+			name:      "Success",
+			testAppID: "mockAppID",
+			errToSend: nil,
+			expectErr: false,
 		},
-	}
-	testAppID = "mockAppID"
-	errToSend = nil
-	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
-
-	sc := &SetUpCmd{
-		appId: testAppID,
-		AzClient: AzClient{
-			GraphClient: mockGraphClient,
+		{
+			name:      "EmptyAppID",
+			testAppID: "",
+			errToSend: nil,
+			expectErr: true,
 		},
-	}
-
-	err := sc.getAppObjectId(context.Background())
-
-	if err != nil {
-		t.Errorf("Expected no error, got: %v", err)
-	}
-}
-
-// Test case - when the GraphClient returns an empty application ID:
-func TestGetAppObjectId_Error(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
-
-	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
-		BaseRequestBuilder: abstractions.BaseRequestBuilder{
-			PathParameters: map[string]string{"key": "value"},
-			RequestAdapter: &mockRequestAdapter{},
-			UrlTemplate:    "dummyUrlTemplate",
-		},
-	}
-	testAppID = ""
-	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
-
-	sc := &SetUpCmd{
-		appId: testAppID,
-		AzClient: AzClient{
-			GraphClient: mockGraphClient,
+		{
+			name:      "ErrorFromGraphClient",
+			testAppID: "testAppID",
+			errToSend: errors.New("getting application object Id: mock error"),
+			expectErr: true,
 		},
 	}
 
-	err := sc.getAppObjectId(context.Background())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	if err == nil {
-		t.Error("Expected an error, got nil")
-	}
-}
+			mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
 
-// Test case - when the GraphClient returns an error
-func TestGetAppObjectId_ErrorFromGraphClient(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+			mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
+				BaseRequestBuilder: abstractions.BaseRequestBuilder{
+					PathParameters: map[string]string{"key": "value"},
+					RequestAdapter: &mockRequestAdapter{},
+					UrlTemplate:    "dummyUrlTemplate",
+				},
+			}
 
-	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
+			testAppID = tt.testAppID
+			errToSend = tt.errToSend
+			mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
 
-	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
-		BaseRequestBuilder: abstractions.BaseRequestBuilder{
-			PathParameters: map[string]string{"key": "value"},
-			RequestAdapter: &mockRequestAdapter{},
-			UrlTemplate:    "dummyUrlTemplate",
-		},
-	}
+			sc := &SetUpCmd{
+				appId: tt.testAppID,
+				AzClient: AzClient{
+					GraphClient: mockGraphClient,
+				},
+			}
 
-	expectedErrorMsg := "getting application object Id: mock error"
-	errToSend = errors.New(expectedErrorMsg)
-	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
-
-	sc := &SetUpCmd{
-		appId: "testAppID",
-		AzClient: AzClient{
-			GraphClient: mockGraphClient,
-		},
-	}
-
-	err := sc.getAppObjectId(context.Background())
-	if err == nil {
-		t.Error("Expected an error, got nil")
+			err := sc.getAppObjectId(context.Background())
+			if tt.expectErr && err == nil {
+				t.Error("Expected an error, got nil")
+			}
+			if !tt.expectErr && err != nil {
+				t.Errorf("Expected no error, got: %v", err)
+			}
+		})
 	}
 }

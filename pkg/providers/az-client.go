@@ -4,14 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
 )
 
 type AzClient struct {
-	AzTenantClient azTenantClient
-	GraphClient    GraphClient
+	AzTenantClient   azTenantClient
+	GraphClient      GraphClient
+	RoleAssignClient RoleAssignClient
 }
 
 //go:generate mockgen -source=./az-client.go -destination=./mock/az-client.go .
@@ -43,3 +47,9 @@ func (g *GraphServiceClient) GetApplicationObjectId(ctx context.Context, appId s
 	}
 	return *appObjectId, nil
 }
+
+type RoleAssignClient interface {
+	CreateByID(ctx context.Context, roleAssignmentID string, parameters armauthorization.RoleAssignmentCreateParameters, options *armauthorization.RoleAssignmentsClientCreateByIDOptions) (armauthorization.RoleAssignmentsClientCreateByIDResponse, error)
+}
+
+var _ RoleAssignClient = &armauthorization.RoleAssignmentsClient{}

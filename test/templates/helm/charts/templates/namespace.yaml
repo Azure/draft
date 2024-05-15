@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "test.labels" . | nindent 4 }}
     openservicemesh.io/monitored-by: osm
+    kubernetes.azure.com/generator: draft
   annotations:
     openservicemesh.io/sidecar-injection: enabled
 

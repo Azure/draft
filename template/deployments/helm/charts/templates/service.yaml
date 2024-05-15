@@ -4,6 +4,7 @@ metadata:
   name: {{ include "{{APPNAME}}.fullname" . }}
   labels:
     {{- include "{{APPNAME}}.labels" . | nindent 4 }}
+    kubernetes.azure.com/generator: {{GENERATORLABEL}}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
   namespace: {{ .Values.namespace }}

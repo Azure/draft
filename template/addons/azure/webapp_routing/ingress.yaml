@@ -12,6 +12,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
   name: {{service-name}}
   namespace: {{service-namespace}}
+  labels:
+    kubernetes.azure.com/generator: {{GENERATORLABEL}}
 spec:
   ingressClassName: webapprouting.kubernetes.azure.com
   rules:

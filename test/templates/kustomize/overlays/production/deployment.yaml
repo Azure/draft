@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test
+  labels:
+    kubernetes.azure.com/generator: draft
 spec:
   template:
     spec:

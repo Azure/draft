@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/cred"
 	"github.com/manifoldco/promptui"
@@ -49,6 +50,13 @@ application and service principle, and will configure that application to trust 
 			}
 
 			sc.AzClient.GraphClient = graphClient
+
+			roleAssignmentClient, err := armauthorization.NewRoleAssignmentsClient(sc.SubscriptionID, azCred, nil)
+			if err != nil {
+				return fmt.Errorf("getting role assignment client: %w", err)
+			}
+
+			sc.AzClient.RoleAssignClient = roleAssignmentClient
 
 			fillSetUpConfig(sc)
 

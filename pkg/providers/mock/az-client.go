@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 
 	runtime "github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	armauthorization "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	armsubscription "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	applications "github.com/microsoftgraph/msgraph-sdk-go/applications"
 	gomock "go.uber.org/mock/gomock"
@@ -90,4 +91,42 @@ func (m *MockGraphClient) Applications() *applications.ApplicationsRequestBuilde
 func (mr *MockGraphClientMockRecorder) Applications() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Applications", reflect.TypeOf((*MockGraphClient)(nil).Applications))
+}
+
+// MockRoleAssignClient is a mock of RoleAssignClient interface.
+type MockRoleAssignClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockRoleAssignClientMockRecorder
+}
+
+// MockRoleAssignClientMockRecorder is the mock recorder for MockRoleAssignClient.
+type MockRoleAssignClientMockRecorder struct {
+	mock *MockRoleAssignClient
+}
+
+// NewMockRoleAssignClient creates a new mock instance.
+func NewMockRoleAssignClient(ctrl *gomock.Controller) *MockRoleAssignClient {
+	mock := &MockRoleAssignClient{ctrl: ctrl}
+	mock.recorder = &MockRoleAssignClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRoleAssignClient) EXPECT() *MockRoleAssignClientMockRecorder {
+	return m.recorder
+}
+
+// CreateByID mocks base method.
+func (m *MockRoleAssignClient) CreateByID(ctx context.Context, roleAssignmentID string, parameters armauthorization.RoleAssignmentCreateParameters, options *armauthorization.RoleAssignmentsClientCreateByIDOptions) (armauthorization.RoleAssignmentsClientCreateByIDResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateByID", ctx, roleAssignmentID, parameters, options)
+	ret0, _ := ret[0].(armauthorization.RoleAssignmentsClientCreateByIDResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateByID indicates an expected call of CreateByID.
+func (mr *MockRoleAssignClientMockRecorder) CreateByID(ctx, roleAssignmentID, parameters, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateByID", reflect.TypeOf((*MockRoleAssignClient)(nil).CreateByID), ctx, roleAssignmentID, parameters, options)
 }

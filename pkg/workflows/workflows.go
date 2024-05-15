@@ -8,23 +8,18 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 
-	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/template"
 )
 
 const (
@@ -37,50 +32,6 @@ type Workflows struct {
 	configs           map[string]*config.DraftConfig
 	dest              string
 	workflowTemplates fs.FS
-}
-
-func CreateWorkflows(dest string, deployType string, flagVariables []string, templateWriter templatewriter.TemplateWriter, flagValuesMap map[string]string) error {
-	if flagValuesMap == nil {
-		return fmt.Errorf("flagValuesMap is nil")
-	}
-	var err error
-	for _, flagVar := range flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		flagValuesMap[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-	}
-
-	if deployType == "" {
-		selection := &promptui.Select{
-			Label: "Select k8s Deployment Type",
-			Items: []string{"helm", "kustomize", "manifests"},
-		}
-
-		_, deployType, err = selection.Run()
-		if err != nil {
-			return err
-		}
-	}
-
-	workflow := createWorkflowsFromEmbedFS(template.Workflows, dest)
-	workflowConfig, ok := workflow.configs[deployType]
-	if !ok {
-		return errors.New("invalid deployment type")
-	}
-	customInputs, err := prompts.RunPromptsFromConfigWithSkips(workflowConfig, maps.Keys(flagValuesMap))
-	if err != nil {
-		return err
-	}
-
-	maps.Copy(customInputs, flagValuesMap)
-
-	if err = updateProductionDeployments(deployType, dest, customInputs, templateWriter); err != nil {
-		return err
-	}
-	return workflow.createWorkflowFiles(deployType, customInputs, templateWriter)
 }
 
 func updateProductionDeployments(deployType, dest string, flagValuesMap map[string]string, templateWriter templatewriter.TemplateWriter) error {
@@ -176,7 +127,15 @@ func (w *Workflows) loadConfig(deployType string) (*config.DraftConfig, error) {
 	return &draftConfig, nil
 }
 
-func createWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workflows {
+func (w *Workflows) GetConfig(deployType string) (*config.DraftConfig, error) {
+	val, ok := w.configs[deployType]
+	if !ok {
+		return nil, fmt.Errorf("deploy type %s unsupported", deployType)
+	}
+	return val, nil
+}
+
+func CreateWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workflows {
 	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, parentDirName)
 	if err != nil {
 		log.Fatal(err)
@@ -204,7 +163,7 @@ func (w *Workflows) populateConfigs() {
 	}
 }
 
-func (w *Workflows) createWorkflowFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := w.workflows[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
@@ -214,6 +173,12 @@ func (w *Workflows) createWorkflowFiles(deployType string, customInputs map[stri
 	workflowConfig, ok := w.configs[deployType]
 	if !ok {
 		workflowConfig = nil
+	} else {
+		workflowConfig.ApplyDefaultVariables(customInputs)
+	}
+
+	if err := updateProductionDeployments(deployType, w.dest, customInputs, templateWriter); err != nil {
+		return fmt.Errorf("update production deployments: %w", err)
 	}
 
 	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, workflowConfig, customInputs, templateWriter); err != nil {

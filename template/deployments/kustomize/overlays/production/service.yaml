@@ -3,5 +3,7 @@ kind: Service
 metadata:
   name: {{APPNAME}}
   namespace: {{NAMESPACE}}
+  labels:
+    kubernetes.azure.com/generator: {{GENERATORLABEL}}
 spec:
   type: LoadBalancer

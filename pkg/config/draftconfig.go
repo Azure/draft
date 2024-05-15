@@ -24,13 +24,13 @@ type BuilderVar struct {
 	Description      string   `yaml:"description"`
 	VarType          string   `yaml:"type"`
 	ExampleValues    []string `yaml:"exampleValues"`
-	IsPromptDisabled bool     `yaml:"disablePrompt"`
 }
 
 type BuilderVarDefault struct {
-	Name         string `yaml:"name"`
-	Value        string `yaml:"value"`
-	ReferenceVar string `yaml:"referenceVar"`
+	Name             string `yaml:"name"`
+	Value            string `yaml:"value"`
+	ReferenceVar     string `yaml:"referenceVar"`
+	IsPromptDisabled bool   `yaml:"disablePrompt"`
 }
 
 func (d *DraftConfig) GetVariableExampleValues() map[string][]string {
@@ -62,6 +62,17 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 	}
 
 	return prefix
+}
+
+// ApplyDefaultVariables will apply the defaults to variables that are not already set
+func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) {
+	for _, variable := range d.VariableDefaults {
+		// handle where variable is not set or is set to an empty string from cli handling
+		if defaultVal, ok := customConfig[variable.Name]; !ok || defaultVal == "" {
+			log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Value)
+			customConfig[variable.Name] = variable.Value
+		}
+	}
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are used read using draft configs

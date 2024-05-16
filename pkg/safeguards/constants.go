@@ -26,6 +26,12 @@ const (
 	constraintFileName = "constraint.yaml"
 )
 
+var Safeguard_CRIP = Safeguard{
+	name:           Constraint_CRIP,
+	templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, templateFileName),
+	constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, constraintFileName),
+}
+
 var safeguards = []Safeguard{
 	{
 		name:           Constraint_CAI,
@@ -41,11 +47,6 @@ var safeguards = []Safeguard{
 		name:           Constraint_CRL,
 		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRL, templateFileName),
 		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRL, constraintFileName),
-	},
-	{
-		name:           Constraint_CRIP,
-		templatePath:   fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, templateFileName),
-		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_CRIP, constraintFileName),
 	},
 	{
 		name:           Constraint_DBPDB,
@@ -68,3 +69,5 @@ var safeguards = []Safeguard{
 		constraintPath: fmt.Sprintf("lib/%s/%s/%s", selectedVersion, Constraint_USS, constraintFileName),
 	},
 }
+
+var safeguardsTesting = append(safeguards, Safeguard_CRIP, Safeguard_CAI)

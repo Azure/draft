@@ -15,9 +15,41 @@ spec:
       labels:
         app: {{APPNAME}}
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - store
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: {{APPNAME}}
           image: {{IMAGENAME}}:{{IMAGETAG}}
           imagePullPolicy: Always
           ports:
             - containerPort: {{PORT}}
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              httpHeaders:
+                - name: my-liveness-probe
+                  value: awesome
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              httpHeaders:
+                - name: my-readiness-probe
+                  value: awesome
+            initialDelaySeconds: 3
+            periodSeconds: 3

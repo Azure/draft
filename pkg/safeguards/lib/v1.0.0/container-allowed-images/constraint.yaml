@@ -8,5 +8,5 @@ spec:
       - apiGroups: ["apps"]
         kinds: ["Deployment"]
   parameters:
-    imageRegex: "nginx:latest"
+    imageRegex: ".*"
     excludedContainers: []

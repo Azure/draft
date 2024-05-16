@@ -27,7 +27,7 @@ func init() {
 	_ = api.AddToScheme(s)
 
 	selectedVersion = getLatestSafeguardsVersion()
-	updateSafeguardPaths()
+	updateSafeguardPaths(&safeguards)
 
 	fc = FileCrawler{
 		Safeguards:   safeguards,

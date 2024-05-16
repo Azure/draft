@@ -40,11 +40,16 @@ func getLatestSafeguardsVersion() string {
 	return supportedVersions[len(supportedVersions)-1]
 }
 
-func updateSafeguardPaths() {
-	for _, sg := range safeguards {
+func updateSafeguardPaths(safeguardList *[]Safeguard) {
+	for _, sg := range *safeguardList {
 		sg.templatePath = fmt.Sprintf("%s/%s/%s", selectedVersion, sg.name, templateFileName)
 		sg.constraintPath = fmt.Sprintf("%s/%s/%s", selectedVersion, sg.name, constraintFileName)
 	}
+}
+
+// adds Safeguard_CRIP to full list of Safeguards
+func AddSafeguardCRIP() {
+	fc.Safeguards = append(fc.Safeguards, Safeguard_CRIP)
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints

@@ -10,8 +10,8 @@ import (
 )
 
 type validateCmd struct {
-	safeguardsOnly bool
-	manifestPath   string
+	manifestPath    string
+	imagePullSecret bool
 }
 
 func init() {
@@ -36,6 +36,7 @@ func newValidateCmd() *cobra.Command {
 	f := cmd.Flags()
 
 	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the manifest")
+	f.BoolVarP(&vc.imagePullSecret, "imagePullSecret", "s", false, "'imagePullSecret' enables the Safeguard that checks for usage of an image pull secret within the manifest(s)")
 
 	return cmd
 }
@@ -44,6 +45,12 @@ func newValidateCmd() *cobra.Command {
 func (vc *validateCmd) run(c *cobra.Command) error {
 	if vc.manifestPath == "" {
 		return fmt.Errorf("path to the manifests cannot be empty")
+	}
+
+	// AddSafeguardCRIP just adds Container Restricted Image Pulls to the list of safeguards the client will review
+	// against the given manifest
+	if vc.imagePullSecret {
+		safeguards.AddSafeguardCRIP()
 	}
 
 	ctx := context.Background()

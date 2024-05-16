@@ -4,10 +4,10 @@
 
 ### Added
 
-- [#277](https://github.com/Azure/draft/pull/277) Updates/Fixes for draft. Addes generator label to manifests
+- [#277](https://github.com/Azure/draft/pull/277) Updates/Fixes for draft. Adds generator label to manifests
 - [#275](https://github.com/Azure/draft/pull/275) Add NOTICE file
 - [#274](https://github.com/Azure/draft/pull/274) gomodule multistage build
-- [#273](https://github.com/Azure/draft/pull/273) finighing safeguard additions
+- [#273](https://github.com/Azure/draft/pull/273) finishing safeguard additions
 - [#272](https://github.com/Azure/draft/pull/272) sdk calls for assignsprole
 - [#271](https://github.com/Azure/draft/pull/271) update draft to go 1.22
 - [#269](https://github.com/Azure/draft/pull/269) yaml file extension validation

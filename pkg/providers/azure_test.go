@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/tracing"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	mock_providers "github.com/Azure/draft/pkg/providers/mock"
 	"go.uber.org/mock/gomock"
@@ -241,5 +242,68 @@ func TestGetAppObjectId_EmptyAppIdFromGraphClient(t *testing.T) {
 		t.Error("Expected an error, got nil")
 	} else if !strings.Contains(err.Error(), expectedError.Error()) {
 		t.Errorf("Expected error '%v', got '%v'", expectedError, err)
+	}
+}
+
+var principalId = "mockPrincipalID"
+var roleDefId = "mockRoleDefinitionID"
+var Id = "mockID"
+var name = "mockName"
+var Idtype = "mocktype"
+
+func TestAssignSpRole(t *testing.T) {
+	tests := []struct {
+		name          string
+		expectedError error
+		mockResponse  armauthorization.RoleAssignmentsClientCreateByIDResponse
+	}{
+		{
+			name:          "Success",
+			expectedError: nil,
+			mockResponse: armauthorization.RoleAssignmentsClientCreateByIDResponse{
+				RoleAssignment: armauthorization.RoleAssignment{
+					Properties: &armauthorization.RoleAssignmentPropertiesWithScope{
+						PrincipalID:      &principalId,
+						RoleDefinitionID: &roleDefId,
+					},
+					ID:   &Id,
+					Name: &name,
+					Type: &Idtype,
+				},
+			},
+		},
+		{
+			name:          "Error",
+			expectedError: errors.New("error"),
+			mockResponse:  armauthorization.RoleAssignmentsClientCreateByIDResponse{},
+		},
+		{
+			name:          "ErrorDuringRoleAssignment",
+			expectedError: errors.New("error during role assignment"),
+			mockResponse:  armauthorization.RoleAssignmentsClientCreateByIDResponse{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRoleAssignClient := mock_providers.NewMockRoleAssignClient(ctrl)
+
+			mockRoleAssignClient.EXPECT().CreateByID(gomock.Any(), "contributor", gomock.Any(), gomock.Any()).Return(tt.mockResponse, tt.expectedError)
+
+			sc := &SetUpCmd{
+				AzClient: AzClient{
+					RoleAssignClient: mockRoleAssignClient,
+				},
+				spObjectId: "testObjectId",
+			}
+
+			err := sc.assignSpRole(context.Background())
+			if !errors.Is(err, tt.expectedError) {
+				t.Errorf("Expected error: %v, got: %v", tt.expectedError, err)
+			}
+		})
 	}
 }

@@ -70,4 +70,4 @@ var safeguards = []Safeguard{
 	},
 }
 
-var safeguardsTesting = append(safeguards, Safeguard_CRIP, Safeguard_CAI)
+var safeguardsTesting = append(safeguards, Safeguard_CRIP)

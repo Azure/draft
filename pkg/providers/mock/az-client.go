@@ -10,6 +10,7 @@
 package mock_providers
 
 import (
+	context "context"
 	reflect "reflect"
 
 	runtime "github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"

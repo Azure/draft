@@ -7,11 +7,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/tracing"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	graphapp "github.com/microsoftgraph/msgraph-sdk-go/applications"
+
 	mock_providers "github.com/Azure/draft/pkg/providers/mock"
 	abstractions "github.com/microsoft/kiota-abstractions-go"
 	"github.com/microsoft/kiota-abstractions-go/serialization"
-	graphapp "github.com/microsoftgraph/msgraph-sdk-go/applications"
 	"github.com/microsoftgraph/msgraph-sdk-go/models"
+
 	"go.uber.org/mock/gomock"
 	"strings"
 	"testing"
@@ -144,22 +146,60 @@ func TestGetTenantId_NilTenantInList(t *testing.T) {
 }
 
 var testAppID = "mockAppID"
+var testID = "mockID"
 var errToSend error = nil
 
-type mockActionable struct {
+type mockApplicationable struct {
 	models.Applicationable
 }
 
-func (m *mockActionable) GetAppId() *string {
+func (m *mockApplicationable) GetAppId() *string {
 	return &testAppID
+}
+
+func (m *mockApplicationable) GetId() *string {
+	return &testID
+}
+
+type mockSerialWriter struct {
+	serialization.SerializationWriter
+}
+
+func (m *mockSerialWriter) GetSerializedContent() ([]byte, error) {
+	content := []byte("a few bytes")
+	return content, nil
+}
+
+func (m *mockSerialWriter) Close() error {
+	return nil
+}
+
+func (m *mockSerialWriter) WriteObjectValue(string, serialization.Parsable, ...serialization.Parsable) error {
+	return nil
+}
+
+type mockSerialWriterFactory struct {
+	serialization.SerializationWriterFactory
+}
+
+func (m *mockSerialWriterFactory) GetSerializationWriter(string) (serialization.SerializationWriter, error) {
+	return &mockSerialWriter{}, nil
 }
 
 type mockRequestAdapter struct {
 	abstractions.RequestAdapter
 }
 
-func (m *mockRequestAdapter) Send(context.Context, *abstractions.RequestInformation, serialization.ParsableFactory, abstractions.ErrorMappings) (serialization.Parsable, error) {
-	return &mockActionable{}, errToSend
+func (m *mockRequestAdapter) Send(
+	context.Context,
+	*abstractions.RequestInformation,
+	serialization.ParsableFactory,
+	abstractions.ErrorMappings) (serialization.Parsable, error) {
+	return &mockApplicationable{}, errToSend
+}
+
+func (m *mockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory {
+	return &mockSerialWriterFactory{}
 }
 
 func TestGetAppObjectId(t *testing.T) {
@@ -286,5 +326,69 @@ func TestAssignSpRole(t *testing.T) {
 				t.Errorf("Expected error: %v, got: %v", tt.expectedError, err)
 			}
 		})
+	}
+}
+
+func TestCreateAzApp(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
+
+	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
+		BaseRequestBuilder: abstractions.BaseRequestBuilder{
+			PathParameters: map[string]string{"key": "value"},
+			RequestAdapter: &mockRequestAdapter{},
+			UrlTemplate:    "dummyUrlTemplate",
+		},
+	}
+
+	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
+
+	sc := &SetUpCmd{
+		AzClient: AzClient{
+			GraphClient: mockGraphClient,
+		},
+		AppName: "AppName",
+	}
+
+	err := sc.createAzApp(context.Background())
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+}
+
+func TestCreateAzApp_ErrorCreatingApp(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
+
+	errToSend = errors.New("getting application object Id: mock error")
+
+	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
+		BaseRequestBuilder: abstractions.BaseRequestBuilder{
+			PathParameters: map[string]string{"key": "value"},
+			RequestAdapter: &mockRequestAdapter{},
+			UrlTemplate:    "dummyUrlTemplate",
+		},
+	}
+
+	expectedErr := errors.New("creating Azure app: getting application object Id: mock error")
+
+	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
+
+	sc := &SetUpCmd{
+		AzClient: AzClient{
+			GraphClient: mockGraphClient,
+		},
+		AppName: "",
+	}
+
+	err := sc.createAzApp(context.Background())
+
+	if err == nil || err.Error() != expectedErr.Error() {
+		t.Errorf("Expected error %v, got: %v", expectedErr, err)
 	}
 }

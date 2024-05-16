@@ -101,7 +101,6 @@ func (sc *SetUpCmd) createAzApp(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("creating Azure app: %v", err)
 		}
-
 		sc.appId = *application.GetId()
 
 		end := time.Since(start)

@@ -33,17 +33,17 @@ spec:
             - containerPort: {{PORT}}
           resources:
             limits:
-              cpu: "200m"
-              memory: "1Gi"
+              cpu: "250m"
+              memory: "256Mi"
           livenessProbe:
             httpGet:
-              path: /healthz
-              port: 8080
+              path: /
+              port: 80
             initialDelaySeconds: 3
             periodSeconds: 3
           readinessProbe:
             httpGet:
-              path: /healthz
-              port: 8080
+              path: /
+              port: 80
             initialDelaySeconds: 3
             periodSeconds: 3

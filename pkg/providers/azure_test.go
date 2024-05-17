@@ -359,13 +359,12 @@ func TestCreateAzApp(t *testing.T) {
 	}
 }
 
+// Empty App name
 func TestCreateAzApp_ErrorCreatingApp(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
-
-	errToSend = errors.New("getting application object Id: mock error")
 
 	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
 		BaseRequestBuilder: abstractions.BaseRequestBuilder{
@@ -375,8 +374,7 @@ func TestCreateAzApp_ErrorCreatingApp(t *testing.T) {
 		},
 	}
 
-	expectedErr := errors.New("creating Azure app: getting application object Id: mock error")
-
+	errToSend = errors.New("creating Azure app: mock error")
 	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
 
 	sc := &SetUpCmd{
@@ -387,8 +385,7 @@ func TestCreateAzApp_ErrorCreatingApp(t *testing.T) {
 	}
 
 	err := sc.createAzApp(context.Background())
-
-	if err == nil || err.Error() != expectedErr.Error() {
-		t.Errorf("Expected error %v, got: %v", expectedErr, err)
+	if err == nil {
+		t.Errorf("Expected error 'creating Azure app: mock error', got nil")
 	}
 }

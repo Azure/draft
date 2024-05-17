@@ -15,35 +15,9 @@ spec:
       labels:
         app: {{APPNAME}}
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                      - store
-              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: {{APPNAME}}
           image: {{IMAGENAME}}:{{IMAGETAG}}
           imagePullPolicy: Always
           ports:
             - containerPort: {{PORT}}
-          resources:
-            limits:
-              cpu: "250m"
-              memory: "256Mi"
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 3
-            periodSeconds: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 3
-            periodSeconds: 3

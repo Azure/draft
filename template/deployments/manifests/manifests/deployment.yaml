@@ -23,11 +23,17 @@ spec:
             - containerPort: {{PORT}}
           livenessProbe:
             httpGet:
-              path: /
-              port: 80
+              path: /healthz
+              port: 8080
+              httpHeaders:
+                - name: my-liveness-probe
+                  value: awesome
             initialDelaySeconds: 3
             periodSeconds: 3
           readinessProbe:
             httpGet:
-              path: /
-              port: 80
+              path: /healthz
+              port: 8080
+              httpHeaders:
+                - name: my-readiness-probe
+                  value: awesome

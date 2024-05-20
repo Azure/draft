@@ -4,7 +4,6 @@ metadata:
   name: {{APPNAME}}
   labels:
     app: {{APPNAME}}
-    kubernetes.azure.com/generator: {{GENERATORLABEL}}
   namespace: {{NAMESPACE}}
 spec:
   replicas: 1
@@ -16,9 +15,35 @@ spec:
       labels:
         app: {{APPNAME}}
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - {{APPNAME}}
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: {{APPNAME}}
           image: {{IMAGENAME}}:{{IMAGETAG}}
           imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "1Gi"
           ports:
             - containerPort: {{PORT}}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{PORT}}
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{PORT}}
+            initialDelaySeconds: 3
+            periodSeconds: 3

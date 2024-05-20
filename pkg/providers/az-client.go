@@ -4,18 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
+	"github.com/microsoftgraph/msgraph-sdk-go/serviceprincipals"
 )
 
 type AzClient struct {
-	AzTenantClient   azTenantClient
-	GraphClient      GraphClient
-	RoleAssignClient RoleAssignClient
+	AzTenantClient         azTenantClient
+	GraphClient            GraphClient
+	RoleAssignClient       RoleAssignClient
+	GraphBaseServiceClient GraphBaseServiceClient
 }
 
 //go:generate mockgen -source=./az-client.go -destination=./mock/az-client.go .
@@ -53,3 +53,9 @@ type RoleAssignClient interface {
 }
 
 var _ RoleAssignClient = &armauthorization.RoleAssignmentsClient{}
+
+type GraphBaseServiceClient interface {
+	ServicePrincipals() serviceprincipals.ServicePrincipalsRequestBuilder
+}
+
+//var _ GraphBaseServiceClient = &msgraph.GraphBaseServiceClient{}

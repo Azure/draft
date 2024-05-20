@@ -16,6 +16,7 @@ import (
 	runtime "github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	armauthorization "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	armsubscription "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	serviceprincipals "github.com/microsoftgraph/msgraph-sdk-go/serviceprincipals"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -130,4 +131,41 @@ func (m *MockRoleAssignClient) CreateByID(ctx context.Context, roleAssignmentID 
 func (mr *MockRoleAssignClientMockRecorder) CreateByID(ctx, roleAssignmentID, parameters, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateByID", reflect.TypeOf((*MockRoleAssignClient)(nil).CreateByID), ctx, roleAssignmentID, parameters, options)
+}
+
+// MockGraphBaseServiceClient is a mock of GraphBaseServiceClient interface.
+type MockGraphBaseServiceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockGraphBaseServiceClientMockRecorder
+}
+
+// MockGraphBaseServiceClientMockRecorder is the mock recorder for MockGraphBaseServiceClient.
+type MockGraphBaseServiceClientMockRecorder struct {
+	mock *MockGraphBaseServiceClient
+}
+
+// NewMockGraphBaseServiceClient creates a new mock instance.
+func NewMockGraphBaseServiceClient(ctrl *gomock.Controller) *MockGraphBaseServiceClient {
+	mock := &MockGraphBaseServiceClient{ctrl: ctrl}
+	mock.recorder = &MockGraphBaseServiceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockGraphBaseServiceClient) EXPECT() *MockGraphBaseServiceClientMockRecorder {
+	return m.recorder
+}
+
+// ServicePrincipals mocks base method.
+func (m *MockGraphBaseServiceClient) ServicePrincipals() serviceprincipals.ServicePrincipalsRequestBuilder {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServicePrincipals")
+	ret0, _ := ret[0].(serviceprincipals.ServicePrincipalsRequestBuilder)
+	return ret0
+}
+
+// ServicePrincipals indicates an expected call of ServicePrincipals.
+func (mr *MockGraphBaseServiceClientMockRecorder) ServicePrincipals() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServicePrincipals", reflect.TypeOf((*MockGraphBaseServiceClient)(nil).ServicePrincipals))
 }

@@ -8,6 +8,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	mock_providers "github.com/Azure/draft/pkg/providers/mock"
+	abstractions "github.com/microsoft/kiota-abstractions-go"
+	"github.com/microsoft/kiota-abstractions-go/serialization"
+	"github.com/microsoftgraph/msgraph-sdk-go/models"
+	"github.com/microsoftgraph/msgraph-sdk-go/serviceprincipals"
 	"go.uber.org/mock/gomock"
 	"strings"
 	"testing"
@@ -305,5 +309,123 @@ func TestAssignSpRole(t *testing.T) {
 				t.Errorf("Expected error: %v, got: %v", tt.expectedError, err)
 			}
 		})
+	}
+}
+
+var testID = "mockID"
+var spErrToSend error = nil
+
+type mockServicePrincipalable struct {
+	models.ServicePrincipalable
+}
+
+func (m *mockServicePrincipalable) GetId() *string {
+	return &testID
+}
+
+type mockSerialWriter struct {
+	serialization.SerializationWriter
+}
+
+func (m *mockSerialWriter) GetSerializedContent() ([]byte, error) {
+	content := []byte("a few bytes")
+	return content, nil
+}
+
+func (m *mockSerialWriter) Close() error {
+	return nil
+}
+
+func (m *mockSerialWriter) WriteObjectValue(string, serialization.Parsable, ...serialization.Parsable) error {
+	return nil
+}
+
+type mockSerialWriterFactory struct {
+	serialization.SerializationWriterFactory
+}
+
+func (m *mockSerialWriterFactory) GetSerializationWriter(string) (serialization.SerializationWriter, error) {
+	return &mockSerialWriter{}, nil
+}
+
+type mockBaseRequestAdapter struct {
+	abstractions.RequestAdapter
+}
+
+func (m *mockBaseRequestAdapter) Send(
+	context.Context,
+	*abstractions.RequestInformation,
+	serialization.ParsableFactory,
+	abstractions.ErrorMappings) (serialization.Parsable, error) {
+	return &mockServicePrincipalable{}, spErrToSend
+}
+
+func (m *mockBaseRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory {
+	return &mockSerialWriterFactory{}
+}
+
+func TestCreateServicePrincipal(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Test setup
+	testID = "mockID"
+	spErrToSend = nil
+
+	mockGraphBaseServiceClient := mock_providers.NewMockGraphBaseServiceClient(ctrl)
+
+	mockBaseReqBuilder := serviceprincipals.ServicePrincipalsRequestBuilder{
+		BaseRequestBuilder: abstractions.BaseRequestBuilder{
+			PathParameters: map[string]string{"key": "value"},
+			RequestAdapter: &mockBaseRequestAdapter{},
+			UrlTemplate:    "dummyUrlTemplate",
+		},
+	}
+
+	mockGraphBaseServiceClient.EXPECT().ServicePrincipals().Return(mockBaseReqBuilder).AnyTimes()
+
+	sc := &SetUpCmd{
+		AzClient: AzClient{
+			GraphBaseServiceClient: mockGraphBaseServiceClient,
+		},
+		AppName: "AppName",
+	}
+
+	err := sc.CreateServicePrincipal(context.Background())
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+}
+
+func TestCreateServicePrincipal_Error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Test setup
+	testID = "mockID"
+	spErrToSend = errors.New("creating Azure service principal: mock error")
+
+	mockGraphBaseServiceClient := mock_providers.NewMockGraphBaseServiceClient(ctrl)
+
+	mockBaseReqBuilder := serviceprincipals.ServicePrincipalsRequestBuilder{
+		BaseRequestBuilder: abstractions.BaseRequestBuilder{
+			PathParameters: map[string]string{"key": "value"},
+			RequestAdapter: &mockBaseRequestAdapter{},
+			UrlTemplate:    "dummyUrlTemplate",
+		},
+	}
+
+	mockGraphBaseServiceClient.EXPECT().ServicePrincipals().Return(mockBaseReqBuilder).AnyTimes()
+
+	sc := &SetUpCmd{
+		AzClient: AzClient{
+			GraphBaseServiceClient: mockGraphBaseServiceClient,
+		},
+		AppName: "",
+	}
+
+	err := sc.CreateServicePrincipal(context.Background())
+	if err == nil {
+		t.Errorf("Expected error 'creating Azure service principal: mock error', got nil")
 	}
 }

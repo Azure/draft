@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	graphmodels "github.com/microsoftgraph/msgraph-sdk-go/models"
 	"os/exec"
 	"time"
 
@@ -50,7 +51,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.CreateServicePrincipal(); err != nil {
+	if err := sc.CreateServicePrincipal(ctx); err != nil {
 		return err
 	}
 
@@ -130,28 +131,66 @@ func (sc *SetUpCmd) createAzApp() error {
 	return nil
 }
 
-func (sc *SetUpCmd) CreateServicePrincipal() error {
+//func (sc *SetUpCmd) CreateServicePrincipal() error {
+//	log.Debug("Creating Azure service principal...")
+//	start := time.Now()
+//	log.Debug(start)
+//
+//	createServicePrincipal := func() error {
+//		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
+//		out, err := createSpCmd.CombinedOutput()
+//		if err != nil {
+//			log.Printf("%s\n", out)
+//			return err
+//		}
+//
+//		log.Debug("Checking sp was created...")
+//		if sc.ServicePrincipalExists() {
+//			log.Debug("Service principal created successfully!")
+//			end := time.Since(start)
+//			log.Debug(end)
+//			return nil
+//		}
+//
+//		return errors.New("service principal not found")
+//	}
+//
+//	backoff := bo.NewExponentialBackOff()
+//	backoff.MaxElapsedTime = 5 * time.Second
+//
+//	err := bo.Retry(createServicePrincipal, backoff)
+//	if err != nil {
+//		log.Debug(err)
+//		return err
+//	}
+//
+//	return nil
+//}
+
+func (sc *SetUpCmd) CreateServicePrincipal(ctx context.Context) error {
 	log.Debug("Creating Azure service principal...")
 	start := time.Now()
 	log.Debug(start)
 
 	createServicePrincipal := func() error {
-		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
-		out, err := createSpCmd.CombinedOutput()
+		requestBody := graphmodels.NewServicePrincipal()
+		appId := sc.appId
+		requestBody.SetAppId(&appId)
+
+		spRequestBuilder := sc.AzClient.GraphBaseServiceClient.ServicePrincipals()
+
+		servicePrincipal, err := spRequestBuilder.Post(ctx, requestBody, nil)
 		if err != nil {
-			log.Printf("%s\n", out)
-			return err
+			return fmt.Errorf("creating Azure service principal: %v", err)
 		}
 
-		log.Debug("Checking sp was created...")
-		if sc.ServicePrincipalExists() {
-			log.Debug("Service principal created successfully!")
-			end := time.Since(start)
-			log.Debug(end)
-			return nil
-		}
+		log.Debug("Service principal created successfully!")
+		end := time.Since(start)
+		log.Debug(end)
 
-		return errors.New("service principal not found")
+		sc.spObjectId = *servicePrincipal.GetId()
+
+		return nil
 	}
 
 	backoff := bo.NewExponentialBackOff()
@@ -162,7 +201,6 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 		log.Debug(err)
 		return err
 	}
-
 	return nil
 }
 

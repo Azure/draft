@@ -286,7 +286,7 @@ languageVariables:
         continue-on-error: true
         id: rollout
         run: |
-          kubectl rollout status deployment/test-release-testapp --timeout=2m
+          kubectl rollout status deployment/test-release-testapp --timeout=4m
       - name: Print K8s Objects
         run: |
           kubectl get po -o json

@@ -23,7 +23,7 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - store
+                      - {{APPNAME}}
               topologyKey: "kubernetes.io/hostname"
       containers:
         - name: {{APPNAME}}

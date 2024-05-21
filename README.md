@@ -50,7 +50,9 @@ If you plan on deploying your application through your GitHub Action, commit all
 
 ### `draft validate`
 
-Draft validate scans your manifests and populates warnings messages in your code terminal if your manifests are not following best practices. All best practices are sourced from AKS’s deployment safeguards feature. To learn more about deployment safeguards, visit the [offical documentation](https://learn.microsoft.com/azure/aks/deployment-safeguards). To view the best practices that are use in Draft, view the [safeguards package](https://github.com/Azure/draft/tree/main/pkg/safeguards/lib/v1.0.0).
+Draft validate scans your manifests and populates warnings messages in your code terminal if your manifests are not following best practices. All best practices are sourced from AKS’s deployment safeguards feature. To learn more about deployment safeguards, visit the [offical documentation](https://learn.microsoft.com/azure/aks/deployment-safeguards). To view the best practices that are used in Draft, view the [safeguards package](https://github.com/Azure/draft/tree/main/pkg/safeguards/lib/v1.0.0).
+
+![screenshot of draft-validate](./ghAssets/draft-validate.png)
 
 ### `draft info`
 The `draft info` command prints information about supported languages and deployment types.

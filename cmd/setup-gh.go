@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/cred"
 	"github.com/manifoldco/promptui"
+	azure "github.com/microsoft/kiota-authentication-azure-go"
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -58,16 +58,10 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.RoleAssignClient = roleAssignmentClient
 
-			graphCreds, err := cred.GetGraphCred()
+			graphClientFics, err := createGraphClientFics()
 			if err != nil {
-				return fmt.Errorf("getting credentials: %w", err)
+				return fmt.Errorf("getting Azure CLI graph client: %w", err)
 			}
-
-			graphClientFics, err := msgraph.NewGraphServiceClientWithCredentials(graphCreds, []string{"User.Read"})
-			if err != nil {
-				return fmt.Errorf("getting graph client: %w", err)
-			}
-
 			sc.AzClient.GraphClientFics = graphClientFics
 
 			fillSetUpConfig(sc)
@@ -102,6 +96,27 @@ func createGraphClient(azCred *azidentity.DefaultAzureCredential) (providers.Gra
 		return nil, fmt.Errorf("creating graph service client: %w", err)
 	}
 	return &providers.GraphServiceClient{Client: client}, nil
+}
+
+func createGraphClientFics() (*msgraph.GraphServiceClient, error) {
+	azClicred, err := azidentity.NewAzureCLICredential(nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating Azure CLI credential: %w", err)
+	}
+
+	authProvider, err := azure.NewAzureIdentityAuthenticationProvider(azClicred)
+	if err != nil {
+		return nil, fmt.Errorf("creating authentication provider: %w", err)
+	}
+
+	adapter, err := msgraph.NewGraphRequestAdapter(authProvider)
+	if err != nil {
+		return nil, fmt.Errorf("creating request adapter: %w", err)
+	}
+
+	client := msgraph.NewGraphServiceClient(adapter)
+
+	return client, nil
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {

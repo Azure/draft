@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crl-success-manifest
+spec:
+  containers:
+    - name: my-container
+      image: nginx:latest
+      resources:
+        limits:
+          cpu: "200m"
+          memory: "1Gi"

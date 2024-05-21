@@ -10,12 +10,14 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
+	graphapp "github.com/microsoftgraph/msgraph-sdk-go/applications"
 )
 
 type AzClient struct {
 	AzTenantClient   azTenantClient
 	GraphClient      GraphClient
 	RoleAssignClient RoleAssignClient
+	GraphClientFics  GraphClientFics
 }
 
 //go:generate mockgen -source=./az-client.go -destination=./mock/az-client.go .
@@ -53,3 +55,7 @@ type RoleAssignClient interface {
 }
 
 var _ RoleAssignClient = &armauthorization.RoleAssignmentsClient{}
+
+type GraphClientFics interface {
+	Applications() *graphapp.ApplicationsRequestBuilder
+}

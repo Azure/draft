@@ -58,6 +58,18 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.RoleAssignClient = roleAssignmentClient
 
+			graphCreds, err := cred.GetGraphCred()
+			if err != nil {
+				return fmt.Errorf("getting credentials: %w", err)
+			}
+
+			graphClientFics, err := msgraph.NewGraphServiceClientWithCredentials(graphCreds, []string{"User.Read"})
+			if err != nil {
+				return fmt.Errorf("getting graph client: %w", err)
+			}
+
+			sc.AzClient.GraphClientFics = graphClientFics
+
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")

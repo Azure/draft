@@ -66,8 +66,8 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if !sc.hasFederatedCredentials() {
-		if err := sc.createFederatedCredentials(); err != nil {
+	if !sc.hasFederatedCredentials(ctx) {
+		if err := sc.createFederatedCredentials(ctx); err != nil {
 			return err
 		}
 	}
@@ -254,26 +254,19 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 	return nil
 }
 
-func (sc *SetUpCmd) hasFederatedCredentials() bool {
+func (sc *SetUpCmd) hasFederatedCredentials(ctx context.Context) bool {
 	log.Debug("Checking for existing federated credentials...")
-	uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appObjectId)
-	getFicCmd := exec.Command("az", "rest", "--method", "GET", "--uri", uri, "--query", "value")
-	out, err := getFicCmd.CombinedOutput()
+
+	client := sc.AzClient.GraphClientFics
+
+	federatedIdentityCredentials, err := client.Applications().ByApplicationId(sc.appId).FederatedIdentityCredentials().ByFederatedIdentityCredentialId("").Get(ctx, nil)
 	if err != nil {
-		log.Errorf("error getting fic: %s", err)
+		log.Errorf("getting federated Identity credentials: %s", err)
 		return false
 	}
 
-	var fics []interface{}
-	if err = json.Unmarshal(out, &fics); err != nil {
-		log.Errorf("error marshaling fics: %s", err)
-		return false
-	}
-
-	if len(fics) > 0 {
+	if federatedIdentityCredentials != nil {
 		log.Debug("Credentials found")
-		// TODO: ask user if they want to use current credentials?
-		// TODO: check if fics with the name we want exist already
 		return true
 	}
 
@@ -281,7 +274,7 @@ func (sc *SetUpCmd) hasFederatedCredentials() bool {
 	return false
 }
 
-func (sc *SetUpCmd) createFederatedCredentials() error {
+func (sc *SetUpCmd) createFederatedCredentials(ctx context.Context) error {
 	log.Debug("Creating federated credentials...")
 	fics := &[]string{
 		`{"name":"prfic","subject":"repo:%s:pull_request","issuer":"https://token.actions.githubusercontent.com","description":"pr","audiences":["api://AzureADTokenExchange"]}`,
@@ -308,7 +301,7 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 	// check to make sure credentials were created
 	// count to prevent infinite loop
 	for count < 10 {
-		if sc.hasFederatedCredentials() {
+		if sc.hasFederatedCredentials(ctx) {
 			break
 		}
 

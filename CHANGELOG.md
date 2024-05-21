@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.0.35] - 2024-05-21
+
+### Added
+
+- [#285](https://github.com/Azure/draft/pull/285) Update README.md
+- [#284](https://github.com/Azure/draft/pull/284) Update NOTICE file
+- [#281](https://github.com/Azure/draft/pull/281) Add draft validate functionality to main
+
 ## [0.0.34] - 2024-05-16
 
 ### Added

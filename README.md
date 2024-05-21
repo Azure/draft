@@ -48,6 +48,10 @@ If you don’t plan on using the GitHub Action, you can directly apply your depl
 
 If you plan on deploying your application through your GitHub Action, commit all the files to your repository and watch your application get deployed!
 
+### `draft validate`
+
+Draft validate scans your manifests and populates warnings messages in your code terminal if your manifests are not following best practices. All best practices are sourced from AKS’s deployment safeguards feature. To learn more about deployment safeguards, visit the [offical documentation](https://learn.microsoft.com/azure/aks/deployment-safeguards).
+
 ### `draft info`
 The `draft info` command prints information about supported languages and deployment types.
 
@@ -87,6 +91,7 @@ Draft makes it easier for developers to get started building apps that run on Ku
 - `draft setup-gh` automates the GitHub OIDC setup process for your project.
 - `draft generate-workflow` generates a GitHub Actions workflow for automatic build and deploy to a Kubernetes cluster.
 - `draft update` automatically make your application to be internet accessible.
+- `draft validate` scan your manifests to see if they are following Kubernetes best practices.
 - `draft info` print supported language and field information in json format.
 
 Use `draft [command] --help` for more information about a command.

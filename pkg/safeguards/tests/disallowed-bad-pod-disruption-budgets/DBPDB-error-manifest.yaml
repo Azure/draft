@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: error-pdb
+  labels:
+    app: my-error-pdb
+    environment: production
+spec:
+  minAvailable: 0
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: my-error-pdb

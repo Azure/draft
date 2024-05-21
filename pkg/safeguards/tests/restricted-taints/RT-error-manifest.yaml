@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Node
+metadata:
+  name: my-error-node
+  labels:
+    app: my-error-node
+    kubernetes.azure.com/mode: "User"
+    environment: production
+spec:
+  taints:
+    - key: "CriticalAddonsOnly"
+      effect: "NoSchedule"
+      value: "value"

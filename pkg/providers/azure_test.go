@@ -330,71 +330,58 @@ func TestAssignSpRole(t *testing.T) {
 }
 
 func TestCreateAzApp(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	// Test setup
-	errToSend = nil // no error expected
-	testAppID = "mockAppID"
-	testID = "mockID"
-
-	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
-
-	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
-		BaseRequestBuilder: abstractions.BaseRequestBuilder{
-			PathParameters: map[string]string{"key": "value"},
-			RequestAdapter: &mockRequestAdapter{},
-			UrlTemplate:    "dummyUrlTemplate",
+	tests := []struct {
+		name      string
+		appName   string
+		errToSend error
+		expectErr bool
+	}{
+		{
+			name:      "Success",
+			appName:   "AppName",
+			errToSend: nil,
+			expectErr: false,
+		},
+		{
+			name:      "ErrorCreatingApp",
+			appName:   "",
+			errToSend: errors.New("creating Azure app: mock error"),
+			expectErr: true,
 		},
 	}
 
-	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	sc := &SetUpCmd{
-		AzClient: AzClient{
-			GraphClient: mockGraphClient,
-		},
-		AppName: "AppName",
-	}
+			errToSend = tt.errToSend
+			mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
 
-	err := sc.createAzApp(context.Background())
+			mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
+				BaseRequestBuilder: abstractions.BaseRequestBuilder{
+					PathParameters: map[string]string{"key": "value"},
+					RequestAdapter: &mockRequestAdapter{},
+					UrlTemplate:    "dummyUrlTemplate",
+				},
+			}
 
-	if err != nil {
-		t.Errorf("Expected no error, got: %v", err)
-	}
-}
+			mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
 
-// Empty App name
-func TestCreateAzApp_ErrorCreatingApp(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+			sc := &SetUpCmd{
+				AzClient: AzClient{
+					GraphClient: mockGraphClient,
+				},
+				AppName: tt.appName,
+			}
 
-	// Test setup
-	errToSend = errors.New("creating Azure app: mock error")
-	testAppID = "mockAppID"
-	testID = "mockID"
-
-	mockGraphClient := mock_providers.NewMockGraphClient(ctrl)
-
-	mockAppRequestBuilder := &graphapp.ApplicationsRequestBuilder{
-		BaseRequestBuilder: abstractions.BaseRequestBuilder{
-			PathParameters: map[string]string{"key": "value"},
-			RequestAdapter: &mockRequestAdapter{},
-			UrlTemplate:    "dummyUrlTemplate",
-		},
-	}
-
-	mockGraphClient.EXPECT().Applications().Return(mockAppRequestBuilder).AnyTimes()
-
-	sc := &SetUpCmd{
-		AzClient: AzClient{
-			GraphClient: mockGraphClient,
-		},
-		AppName: "",
-	}
-
-	err := sc.createAzApp(context.Background())
-	if err == nil {
-		t.Errorf("Expected error 'creating Azure app: mock error', got nil")
+			err := sc.createAzApp(context.Background())
+			if tt.expectErr && err == nil {
+				t.Errorf("Expected error, got nil")
+			}
+			if !tt.expectErr && err != nil {
+				t.Errorf("Expected no error, got: %v", err)
+			}
+		})
 	}
 }

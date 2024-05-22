@@ -131,42 +131,6 @@ func (sc *SetUpCmd) createAzApp() error {
 	return nil
 }
 
-//func (sc *SetUpCmd) CreateServicePrincipal() error {
-//	log.Debug("Creating Azure service principal...")
-//	start := time.Now()
-//	log.Debug(start)
-//
-//	createServicePrincipal := func() error {
-//		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
-//		out, err := createSpCmd.CombinedOutput()
-//		if err != nil {
-//			log.Printf("%s\n", out)
-//			return err
-//		}
-//
-//		log.Debug("Checking sp was created...")
-//		if sc.ServicePrincipalExists() {
-//			log.Debug("Service principal created successfully!")
-//			end := time.Since(start)
-//			log.Debug(end)
-//			return nil
-//		}
-//
-//		return errors.New("service principal not found")
-//	}
-//
-//	backoff := bo.NewExponentialBackOff()
-//	backoff.MaxElapsedTime = 5 * time.Second
-//
-//	err := bo.Retry(createServicePrincipal, backoff)
-//	if err != nil {
-//		log.Debug(err)
-//		return err
-//	}
-//
-//	return nil
-//}
-
 func (sc *SetUpCmd) CreateServicePrincipal(ctx context.Context) error {
 	log.Debug("Creating Azure service principal...")
 	start := time.Now()

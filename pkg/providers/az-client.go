@@ -57,5 +57,3 @@ var _ RoleAssignClient = &armauthorization.RoleAssignmentsClient{}
 type GraphBaseServiceClient interface {
 	ServicePrincipals() serviceprincipals.ServicePrincipalsRequestBuilder
 }
-
-//var _ GraphBaseServiceClient = &msgraph.GraphBaseServiceClient{}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	graphmodels "github.com/microsoftgraph/msgraph-sdk-go/models"
 	"os/exec"
 	"time"
 
@@ -276,24 +277,61 @@ func (sc *SetUpCmd) hasFederatedCredentials(ctx context.Context) bool {
 
 func (sc *SetUpCmd) createFederatedCredentials(ctx context.Context) error {
 	log.Debug("Creating federated credentials...")
-	fics := &[]string{
-		`{"name":"prfic","subject":"repo:%s:pull_request","issuer":"https://token.actions.githubusercontent.com","description":"pr","audiences":["api://AzureADTokenExchange"]}`,
-		`{"name":"mainfic","subject":"repo:%s:ref:refs/heads/main","issuer":"https://token.actions.githubusercontent.com","description":"main","audiences":["api://AzureADTokenExchange"]}`,
-		`{"name":"masterfic","subject":"repo:%s:ref:refs/heads/master","issuer":"https://token.actions.githubusercontent.com","description":"master","audiences":["api://AzureADTokenExchange"]}`,
+
+	fics := []struct {
+		name        string
+		subject     string
+		issuer      string
+		description string
+		audiences   []string
+	}{
+		{
+			name:        "prfic",
+			subject:     "repo:%s:pull_request\",\"issuer",
+			issuer:      "https://token.actions.githubusercontent.com",
+			description: "pr",
+			audiences:   []string{"api://AzureADTokenExchange"},
+		},
+		{
+			name:        "mainfic",
+			subject:     "repo:%s:ref:refs/heads/main",
+			issuer:      "https://token.actions.githubusercontent.com",
+			description: "main",
+			audiences:   []string{"api://AzureADTokenExchange"},
+		},
+		{
+			name:        "masterfic",
+			subject:     "repo:%s:ref:refs/heads/master",
+			issuer:      "https://token.actions.githubusercontent.com",
+			description: "master",
+			audiences:   []string{"api://AzureADTokenExchange"},
+		},
 	}
 
-	uri := "https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials"
+	client := sc.AzClient.GraphClientFics
 
-	for _, fic := range *fics {
-		createFicCmd := exec.Command("az", "rest", "--method", "POST", "--uri", fmt.Sprintf(uri, sc.appObjectId), "--body", fmt.Sprintf(fic, sc.Repo))
-		out, err := createFicCmd.CombinedOutput()
+	for _, fic := range fics {
+		requestBody := graphmodels.NewFederatedIdentityCredential()
+		name := fic.name
+		requestBody.SetName(&name)
+
+		subject := fic.subject
+		requestBody.SetSubject(&subject)
+
+		issuer := fic.issuer
+		requestBody.SetIssuer(&issuer)
+
+		audiences := fic.audiences
+		requestBody.SetAudiences(audiences)
+
+		description := fic.description
+		requestBody.SetDescription(&description)
+
+		_, err := client.Applications().ByApplicationId(sc.appId).FederatedIdentityCredentials().Post(ctx, requestBody, nil)
 		if err != nil {
-			log.Printf("%s\n", out)
-			return err
+			return fmt.Errorf("creating federated identity credentials: %v", err)
 		}
-
 	}
-
 	log.Debug("Waiting 10 seconds to allow credentials time to populate")
 	time.Sleep(10 * time.Second)
 	count := 0
@@ -310,7 +348,6 @@ func (sc *SetUpCmd) createFederatedCredentials(ctx context.Context) error {
 	}
 
 	return nil
-
 }
 
 func (sc *SetUpCmd) getAppObjectId(ctx context.Context) error {

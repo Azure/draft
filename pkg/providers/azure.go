@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"os/exec"
 	"time"
@@ -57,11 +58,11 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.getAppObjectId(); err != nil {
+	if err := sc.getAppObjectId(ctx); err != nil {
 		return err
 	}
 
-	if err := sc.assignSpRole(); err != nil {
+	if err := sc.assignSpRole(ctx); err != nil {
 		return err
 	}
 
@@ -165,14 +166,22 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	return nil
 }
 
-func (sc *SetUpCmd) assignSpRole() error {
+func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 	log.Debug("Assigning contributor role to service principal...")
-	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
-	out, err := assignSpRoleCmd.CombinedOutput()
+
+	objectID := sc.spObjectId
+	roleID := "contributor"
+
+	parameters := armauthorization.RoleAssignmentCreateParameters{
+		Properties: &armauthorization.RoleAssignmentProperties{
+			PrincipalID:      &objectID,
+			RoleDefinitionID: &roleID,
+		},
+	}
+
+	_, err := sc.AzClient.RoleAssignClient.CreateByID(ctx, roleID, parameters, nil)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("creating role assignment: %w", err)
 	}
 
 	log.Debug("Role assigned successfully!")
@@ -311,21 +320,15 @@ func (sc *SetUpCmd) createFederatedCredentials() error {
 
 }
 
-func (sc *SetUpCmd) getAppObjectId() error {
+func (sc *SetUpCmd) getAppObjectId(ctx context.Context) error {
 	log.Debug("Fetching Azure application object ID")
-	getObjectIdCmd := exec.Command("az", "ad", "app", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
-	out, err := getObjectIdCmd.CombinedOutput()
+
+	appID, err := sc.AzClient.GraphClient.GetApplicationObjectId(ctx, sc.appId)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("getting application object Id: %w", err)
 	}
 
-	var objectId string
-	if err := json.Unmarshal(out, &objectId); err != nil {
-		return err
-	}
-
-	sc.appObjectId = objectId
+	sc.appObjectId = appID
 
 	return nil
 }

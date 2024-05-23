@@ -4,6 +4,7 @@ metadata:
   name: {{ include "test.fullname" . }}
   labels:
     {{- include "test.labels" . | nindent 4 }}
+    kubernetes.azure.com/generator: draft
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}

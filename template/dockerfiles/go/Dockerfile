@@ -6,8 +6,7 @@ WORKDIR /go/src/app
 COPY . .
 
 ARG GO111MODULE=off
-RUN go get -d -v ./...
-RUN go build -v -o app ./...
+RUN go build -v -o app ./main.go
 RUN mv ./app /go/bin/
 
 CMD ["app"]

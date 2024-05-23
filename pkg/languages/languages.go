@@ -52,6 +52,8 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 	draftConfig, ok := l.configs[lang]
 	if !ok {
 		draftConfig = nil
+	} else {
+		draftConfig.ApplyDefaultVariables(customInputs)
 	}
 
 	if err := osutil.CopyDir(l.dockerfileTemplates, srcDir, l.dest, draftConfig, customInputs, templateWriter); err != nil {

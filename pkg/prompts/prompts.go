@@ -35,7 +35,7 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 			log.Debugf("Skipping prompt for %s", promptVariableName)
 			continue
 		}
-		if customPrompt.IsPromptDisabled {
+		if GetIsPromptDisabled(customPrompt.Name, config.VariableDefaults) {
 			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", promptVariableName)
 			noPromptDefaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
 			if noPromptDefaultValue == "" {
@@ -88,6 +88,15 @@ func GetVariableDefaultValue(variableName string, variableDefaults []config.Buil
 		}
 	}
 	return defaultValue
+}
+
+func GetIsPromptDisabled(variableName string, variableDefaults []config.BuilderVarDefault) bool {
+	for _, variableDefault := range variableDefaults {
+		if variableDefault.Name == variableName {
+			return variableDefault.IsPromptDisabled
+		}
+	}
+	return false
 }
 
 func RunBoolPrompt(customPrompt config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {

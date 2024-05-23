@@ -4,9 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/cred"
 	"github.com/manifoldco/promptui"
+	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"strings"
@@ -39,6 +44,20 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.AzTenantClient = client
 
+			graphClient, err := createGraphClient(azCred)
+			if err != nil {
+				return fmt.Errorf("getting client: %w", err)
+			}
+
+			sc.AzClient.GraphClient = graphClient
+
+			roleAssignmentClient, err := armauthorization.NewRoleAssignmentsClient(sc.SubscriptionID, azCred, nil)
+			if err != nil {
+				return fmt.Errorf("getting role assignment client: %w", err)
+			}
+
+			sc.AzClient.RoleAssignClient = roleAssignmentClient
+
 			fillSetUpConfig(sc)
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
@@ -63,6 +82,14 @@ application and service principle, and will configure that application to trust 
 	f.StringVarP(&sc.Repo, "gh-repo", "g", emptyDefaultFlagValue, "specify the github repository link")
 	sc.Provider = provider
 	return cmd
+}
+
+func createGraphClient(azCred *azidentity.DefaultAzureCredential) (providers.GraphClient, error) {
+	client, err := msgraph.NewGraphServiceClientWithCredentials(azCred, []string{cloud.AzurePublic.Services[cloud.ResourceManager].Endpoint + "/.default"})
+	if err != nil {
+		return nil, fmt.Errorf("creating graph service client: %w", err)
+	}
+	return &providers.GraphServiceClient{Client: client}, nil
 }
 
 func fillSetUpConfig(sc *providers.SetUpCmd) {

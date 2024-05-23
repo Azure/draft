@@ -158,8 +158,9 @@ install() {
       exit 1
   fi
 
-  if [[ "$ARCH" != "x86_64" ]]; then
-       echo "Draft CLI is only available for linux x86_64 architecture"
+  log INFO "validating ARCH: $ARCH"
+  if [[ "$ARCH" != "x86_64" && "$ARCH" != "arm64" ]]; then
+       echo "Draft CLI is only available for linux x86_64 and arm64 architecture"
        file_issue_prompt
        exit 1
   fi

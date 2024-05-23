@@ -4,6 +4,7 @@ metadata:
   name: {{APPNAME}}
   labels:
     app: {{APPNAME}}
+    kubernetes.azure.com/generator: {{GENERATORLABEL}}
   namespace: {{NAMESPACE}}
 spec:
   selector:

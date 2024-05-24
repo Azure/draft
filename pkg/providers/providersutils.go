@@ -12,6 +12,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type SubOp struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func GetAzCliVersion() string {
 	azCmd := exec.Command("az", "version", "-o", "json")
 	out, err := azCmd.CombinedOutput()
@@ -271,14 +276,35 @@ func GetCurrentAzSubscriptionId() []string {
 		}
 	}
 
-	getAccountCmd := exec.Command("az", "account", "show", "--query", "[id]")
-	out, err := getAccountCmd.CombinedOutput()
+	getAccountCmdOne := exec.Command("az", "account", "list", "--all", "--query", "[].{id: id, name: name}")
+	out1, err := getAccountCmdOne.CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var ids []string
-	json.Unmarshal(out, &ids)
+	var so []SubOp
+	json.Unmarshal(out1, &so)
 
-	return ids
+	getAccountCmdTwo := exec.Command("az", "account", "show", "--query", "[id]")
+	out2, err := getAccountCmdTwo.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var id []string
+	json.Unmarshal(out2, &id)
+
+	subs := make([]string, len(so))
+
+	for i := range so {
+		subscription := fmt.Sprintf("%s (%s)", so[i].Name, so[i].ID)
+
+		if so[i].ID == id[0] {
+			subs = append([]string{subscription}, subs...)
+		} else {
+			subs[i] = subscription
+		}
+	}
+
+	return subs
 }

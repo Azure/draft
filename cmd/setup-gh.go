@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
@@ -14,7 +16,6 @@ import (
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 
 	"github.com/Azure/draft/pkg/providers"
 	"github.com/Azure/draft/pkg/spinner"
@@ -99,8 +100,8 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 
 	if sc.SubscriptionID == "" {
 		if strings.ToLower(sc.Provider) == "azure" {
-			currentSub := providers.GetCurrentAzSubscriptionId()
-			sc.SubscriptionID = GetAzSubscriptionId(currentSub)
+			currentSubs := providers.GetCurrentAzSubscriptionId()
+			sc.SubscriptionID = GetAzSubscriptionId(currentSubs)
 		} else {
 			sc.SubscriptionID = getSubscriptionID()
 		}
@@ -231,10 +232,10 @@ func getCloudProvider() string {
 	return selectResponse
 }
 
-func GetAzSubscriptionId(subIds []string) string {
+func GetAzSubscriptionId(subs []string) string {
 	selection := &promptui.Select{
-		Label: "Please choose the subscription ID you would like to use.",
-		Items: subIds,
+		Label: "Please choose the subscription ID you would like to use",
+		Items: subs,
 	}
 
 	_, selectResponse, err := selection.Run()

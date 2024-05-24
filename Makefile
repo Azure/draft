@@ -1,5 +1,5 @@
 .PHONY: all
-all: go-generate vendor build generate-integrations
+all: go-generate build generate-integrations
 
 
 .PHONY: go-generate
@@ -21,7 +21,7 @@ run-unit-tests:
 
 #TODO: add more e2e tests to the local testing
 .PHONY: run-e2e-tests-local
-run-e2e-tests-local: go-generate vendor build
+run-e2e-tests-local: go-generate build
 	test/check_info_schema.sh;
 
 .PHONY: generate-integrations
@@ -30,16 +30,12 @@ generate-integrations:
 	./gen_integration.sh; \
 	cd ..;
 
-.PHONY: vendor
-vendor:
-	GO111MODULE=on go mod vendor;
-
 .PHONY: build
 build:
 	GO111MODULE=on go build -v -o .
 
 .PHONY: build-all
-build-all: go-generate vendor build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
+build-all: go-generate build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
 
 .PHONY: build-windows-amd64
 build-windows-amd64:

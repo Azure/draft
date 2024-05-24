@@ -17,5 +17,5 @@ RUN apk add github-cli
 COPY . ./
 RUN make go-generate
 
-RUN go mod vendor
+RUN go mod download
 ENTRYPOINT ["go"]

@@ -167,34 +167,6 @@ func IsSubscriptionIdValid(subscriptionId string) error {
 	return nil
 }
 
-func isValidResourceGroup(
-	subscriptionId string,
-	resourceGroup string,
-) error {
-	if resourceGroup == "" {
-		return errors.New("resource group cannot be empty")
-	}
-
-	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
-	getResourceGroupCmd := exec.Command("az", "group", "list", "--subscription", subscriptionId, "--query", query)
-	out, err := getResourceGroupCmd.CombinedOutput()
-	if err != nil {
-		log.Errorf("failed to validate resource group %q from subscription %q: %s", resourceGroup, subscriptionId, err)
-		return err
-	}
-
-	var rg []interface{}
-	if err = json.Unmarshal(out, &rg); err != nil {
-		return err
-	}
-
-	if len(rg) == 0 {
-		return fmt.Errorf("resource group %q not found from subscription %q", resourceGroup, subscriptionId)
-	}
-
-	return nil
-}
-
 func isValidGhRepo(repo string) error {
 	listReposCmd := exec.Command("gh", "repo", "view", repo)
 	_, err := listReposCmd.CombinedOutput()

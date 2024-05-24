@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"os/exec"
 	"time"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	"github.com/Azure/draft/pkg/spinner"
 
@@ -236,10 +237,6 @@ func (sc *SetUpCmd) ValidateSetUpConfig() error {
 	log.Debug("Checking that provided information is valid...")
 
 	if err := IsSubscriptionIdValid(sc.SubscriptionID); err != nil {
-		return err
-	}
-
-	if err := isValidResourceGroup(sc.SubscriptionID, sc.ResourceGroupName); err != nil {
 		return err
 	}
 

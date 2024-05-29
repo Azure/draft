@@ -15,7 +15,7 @@ func TestLoggedInToGh(t *testing.T) {
 }
 
 func TestCheckAzCliInstalled(t *testing.T) {
-	var err error 
+	var err error
 	CheckAzCliInstalled()
 
 	assert.Nil(t, err)

@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type SubOp struct {
+type SubLabel struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
@@ -268,7 +268,7 @@ func AzAksExists(aksName string, resourceGroup string) bool {
 	return true
 }
 
-func GetCurrentAzSubscriptionId() []string {
+func GetCurrentAzSubscriptionId() string {
 	CheckAzCliInstalled()
 	if !IsLoggedInToAz() {
 		if err := LogInToAz(); err != nil {
@@ -276,35 +276,40 @@ func GetCurrentAzSubscriptionId() []string {
 		}
 	}
 
-	getAccountCmdOne := exec.Command("az", "account", "list", "--all", "--query", "[].{id: id, name: name}")
-	out1, err := getAccountCmdOne.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var so []SubOp
-	json.Unmarshal(out1, &so)
-
-	getAccountCmdTwo := exec.Command("az", "account", "show", "--query", "[id]")
-	out2, err := getAccountCmdTwo.CombinedOutput()
+	getAccountCmd := exec.Command("az", "account", "show", "--query", "[id]")
+	out, err := getAccountCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var id []string
-	json.Unmarshal(out2, &id)
+	json.Unmarshal(out, &id)
 
-	subs := make([]string, len(so))
+	return id[0]
+}
 
-	for i := range so {
-		subscription := fmt.Sprintf("%s (%s)", so[i].Name, so[i].ID)
-
-		if so[i].ID == id[0] {
-			subs = append([]string{subscription}, subs...)
-		} else {
-			subs[i] = subscription
+func GetAzSubscriptionLabels(id string) []SubLabel {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			log.Fatal(err)
 		}
 	}
 
-	return subs
+	getAccountCmd := exec.Command("az", "account", "list", "--all", "--query", "[].{id: id, name: name}")
+	out, err := getAccountCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var subLabels []SubLabel
+	json.Unmarshal(out, &subLabels)
+
+	for idx, val := range subLabels {
+		if val.ID == id {
+			subLabels[0], subLabels[idx] = subLabels[idx], subLabels[0]
+		}
+	}
+
+	return subLabels
 }

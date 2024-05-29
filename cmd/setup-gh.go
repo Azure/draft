@@ -100,8 +100,9 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 
 	if sc.SubscriptionID == "" {
 		if strings.ToLower(sc.Provider) == "azure" {
-			currentSubs := providers.GetCurrentAzSubscriptionId()
-			sc.SubscriptionID = GetAzSubscriptionId(currentSubs)
+			currentSub := providers.GetCurrentAzSubscriptionId()
+			subLabels := providers.GetAzSubscriptionLabels(currentSub)
+			sc.SubscriptionID = GetAzSubscriptionId(subLabels)
 		} else {
 			sc.SubscriptionID = getSubscriptionID()
 		}
@@ -232,18 +233,26 @@ func getCloudProvider() string {
 	return selectResponse
 }
 
-func GetAzSubscriptionId(subs []string) string {
+func GetAzSubscriptionId(subLabels []providers.SubLabel) string {
 	selection := &promptui.Select{
 		Label: "Please choose the subscription ID you would like to use",
-		Items: subs,
+		Items: subLabels,
+		Templates: &promptui.SelectTemplates{
+			Active:   `▸ {{ .Name }} ({{ .ID }})`,
+			Inactive: `  {{ .Name }} ({{ .ID }})`,
+		},
+		Searcher: func(input string, i int) bool {
+			return strings.Contains(strings.ToLower(subLabels[i].Name), strings.ToLower(input)) ||
+				strings.Contains(strings.ToLower(subLabels[i].ID), strings.ToLower(input))
+		},
 	}
 
-	_, selectResponse, err := selection.Run()
+	idx, _, err := selection.Run()
 	if err != nil {
 		return err.Error()
 	}
 
-	return selectResponse
+	return subLabels[idx].ID
 }
 
 func init() {

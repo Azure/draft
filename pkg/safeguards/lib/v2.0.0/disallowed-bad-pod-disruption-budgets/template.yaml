@@ -1,0 +1,111 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sazurev1disallowedbadpoddisruptionbudgets
+  annotations:
+    metadata.gatekeeper.sh/title: "Pod Disruption Budget"
+    metadata.gatekeeper.sh/version: 1.0.0
+    metadata.gatekeeper.sh/requires-sync-data: |
+      "[
+        [
+          {
+            "groups": ["policy"],
+            "versions": ["v1"],
+            "kinds": ["PodDisruptionBudget"]
+          },
+          {
+            "groups": ["apps"],
+            "versions": ["v1"],
+            "kinds": ["StatefulSet", "ReplicaSet", "Deployment"]
+          }
+        ]
+      ]"
+    description: Prevents customers from applying bad Pod Disruption Budgets
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAzureV1DisallowedBadPodDisruptionBudgets
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sazurev1disallowedbadpoddisruptionbudgets
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "PodDisruptionBudget"
+          pdb := input.review.object
+          not valid_pdb_max_unavailable(pdb)
+          msg := sprintf(
+            "PodDisruptionBudget <%s> has maxUnavailable of 0, only positive integers are allowed for maxUnavailable",
+            [pdb.metadata.name]
+          )
+        }
+
+        violation[{"msg": msg}] {
+          obj := input.review.object
+          pdb := data.inventory.namespace[obj.metadata.namespace]["policy/v1"].PodDisruptionBudget[_]
+          obj.spec.selector.matchLabels == pdb.spec.selector.matchLabels
+          not valid_pdb_max_unavailable(pdb)
+          msg := sprintf(
+            "%s <%s> has been selected by PodDisruptionBudget <%s> but has maxUnavailable of 0, only positive integers are allowed for maxUnavailable",
+            [obj.kind, obj.metadata.name, pdb.metadata.name]
+          )
+        }
+
+        violation[{"msg": msg}] {
+          obj := input.review.object
+          pdb := data.inventory.namespace[obj.metadata.namespace]["policy/v1"].PodDisruptionBudget[_]
+          obj.spec.selector.matchLabels == pdb.spec.selector.matchLabels
+          not valid_pdb_min_available(obj, pdb)
+          msg := sprintf("%s <%s> has %d replica(s) but PodDisruptionBudget <%s> has minAvailable of %d, only positive integers less than %d are allowed for minAvailable",
+            [obj.kind, obj.metadata.name, obj.spec.replicas, pdb.metadata.name, pdb.spec.minAvailable, obj.spec.replicas])
+        }
+
+        violation[{"msg":msg}] {
+          input.review.kind.kind == "PodDisruptionBudget"
+            pdb := input.review.object
+
+            matchingDeploys := {x | x.spec.selector.matchLabels == pdb.spec.selector.matchLabels; x = data.inventory.namespace[pdb.metadata.namespace]["apps/v1"].Deployment[_]}
+            deploy := matchingDeploys[_]
+            not valid_pdb_min_available(deploy, pdb)
+
+            msg := sprintf("PodDisruptionBudget %s specifies minAvailable of %d, but matching Deployment %s has %d replicas. minAvailable should be less than %d",[pdb.metadata.name,pdb.spec.minAvailable,deploy.metadata.name,deploy.spec.replicas,deploy.spec.replicas])
+        }
+
+        violation[{"msg":msg}] {
+          input.review.kind.kind == "PodDisruptionBudget"
+            pdb := input.review.object
+
+            matchingSS := {x | x.spec.selector.matchLabels == pdb.spec.selector.matchLabels; x = data.inventory.namespace[pdb.metadata.namespace]["apps/v1"].StatefulSet[_]}
+            ss := matchingSS[_]
+            not valid_pdb_min_available(ss, pdb)
+
+            msg := sprintf("PodDisruptionBudget %s specifies minAvailable of %d, but matching StatefulSet %s has %d replicas. minAvailable should be less than %d",[pdb.metadata.name,pdb.spec.minAvailable,ss.metadata.name,ss.spec.replicas,ss.spec.replicas])
+        }
+
+        violation[{"msg":msg}] {
+          input.review.kind.kind == "PodDisruptionBudget"
+            pdb := input.review.object
+
+            matchingRS := {x | x.spec.selector.matchLabels == pdb.spec.selector.matchLabels; x = data.inventory.namespace[pdb.metadata.namespace]["apps/v1"].ReplicaSet[_]}
+            rs := matchingRS[_]
+            not valid_pdb_min_available(rs, pdb)
+
+            msg := sprintf("PodDisruptionBudget %s specifies minAvailable of %d, but matching ReplicaSet %s has %d replicas. minAvailable should be less than %d",[pdb.metadata.name,pdb.spec.minAvailable,rs.metadata.name,rs.spec.replicas,rs.spec.replicas])
+        }
+
+        valid_pdb_min_available(obj, pdb) {
+          # default to -1 if minAvailable is not set so valid_pdb_min_available is always true
+          # for objects with >= 0 replicas. If minAvailable defaults to >= 0, objects with
+          # replicas field might violate this constraint if they are equal to the default set here
+          min_available := object.get(pdb.spec, "minAvailable", -1)
+          obj.spec.replicas > min_available
+        }
+
+        valid_pdb_max_unavailable(pdb) {
+          # default to 1 if maxUnavailable is not set so valid_pdb_max_unavailable always returns true.
+          # If maxUnavailable defaults to 0, it violates this constraint because all pods needs to be
+          # available and no pods can be evicted voluntarily
+          max_unavailable := object.get(pdb.spec, "maxUnavailable", 1)
+          max_unavailable > 0
+        }

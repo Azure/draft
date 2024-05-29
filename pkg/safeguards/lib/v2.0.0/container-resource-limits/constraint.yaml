@@ -8,7 +8,7 @@ spec:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    cpuLimit : "200m"
+    cpuLimit : "2"
     memoryLimit: "1Gi"
     excludedContainers: []
     excludedImages: []

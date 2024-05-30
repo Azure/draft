@@ -5,16 +5,19 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/cred"
 	"github.com/manifoldco/promptui"
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 
 	"github.com/Azure/draft/pkg/providers"
 	"github.com/Azure/draft/pkg/spinner"
@@ -58,7 +61,10 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.RoleAssignClient = roleAssignmentClient
 
-			fillSetUpConfig(sc)
+			err = fillSetUpConfig(ctx, sc, azCred)
+			if err != nil {
+				return fmt.Errorf("filling setup config: %w", err)
+			}
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
@@ -92,7 +98,7 @@ func createGraphClient(azCred *azidentity.DefaultAzureCredential) (providers.Gra
 	return &providers.GraphServiceClient{Client: client}, nil
 }
 
-func fillSetUpConfig(sc *providers.SetUpCmd) {
+func fillSetUpConfig(ctx context.Context, sc *providers.SetUpCmd, azCred azcore.TokenCredential) error {
 	if sc.AppName == "" {
 		sc.AppName = getAppName()
 	}
@@ -106,13 +112,24 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 		}
 	}
 
+	rgClient, err := armresources.NewResourceGroupsClient(sc.SubscriptionID, azCred, nil)
+	if err != nil {
+		return fmt.Errorf("getting role assignment client: %w", err)
+	}
+	sc.AzClient.ResourceGroupsClient = rgClient
+
 	if sc.ResourceGroupName == "" {
-		sc.ResourceGroupName = getResourceGroup()
+		sc.ResourceGroupName, err = getResourceGroup(ctx, sc.AzClient.ResourceGroupsClient)
+		if err != nil {
+			return fmt.Errorf("getting resourcegroup: %w", err)
+		}
 	}
 
 	if sc.Repo == "" {
 		sc.Repo = getGhRepo()
 	}
+
+	return nil
 }
 
 func runProviderSetUp(ctx context.Context, sc *providers.SetUpCmd, s spinner.Spinner) error {
@@ -173,26 +190,39 @@ func getSubscriptionID() string {
 	return result
 }
 
-func getResourceGroup() string {
-	validate := func(input string) error {
-		if input == "" {
-			return errors.New("Invalid resource group name")
+func getResourceGroup(ctx context.Context, rgClient providers.ResourceGroupsClient) (string, error) {
+	rg := ""
+	for rg == "" {
+		validate := func(input string) error {
+			if input == "" {
+				return errors.New("Invalid resource group name")
+			}
+			return nil
 		}
-		return nil
+		prompt := promptui.Prompt{
+			Label:    "Enter resource group name",
+			Validate: validate,
+		}
+		result, err := prompt.Run()
+		if err != nil {
+			return rg, err
+		}
+
+		log.Debugf("checking if resource group '%s' exists", result)
+		resp, err := rgClient.CheckExistence(ctx, result, nil)
+		if err != nil {
+			return rg, fmt.Errorf("checking for existance of resource group %s: %w", result, err)
+		}
+
+		if !resp.Success {
+			log.Printf("unable to locate resource group: %s", result)
+		} else {
+			rg = result
+		}
+
 	}
 
-	prompt := promptui.Prompt{
-		Label:    "Enter resource group name",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		return err.Error()
-	}
-
-	return result
+	return rg, nil
 }
 
 func getGhRepo() string {

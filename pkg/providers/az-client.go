@@ -7,20 +7,28 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	msgraph "github.com/microsoftgraph/msgraph-sdk-go"
 )
 
 type AzClient struct {
-	AzTenantClient   azTenantClient
-	GraphClient      GraphClient
-	RoleAssignClient RoleAssignClient
+	AzTenantClient       azTenantClient
+	GraphClient          GraphClient
+	RoleAssignClient     RoleAssignClient
+	ResourceGroupsClient ResourceGroupsClient
 }
 
 //go:generate mockgen -source=./az-client.go -destination=./mock/az-client.go .
 type azTenantClient interface {
 	NewListPager(options *armsubscription.TenantsClientListOptions) *runtime.Pager[armsubscription.TenantsClientListResponse]
+}
+
+var _ ResourceGroupsClient = &armresources.ResourceGroupsClient{}
+
+type ResourceGroupsClient interface {
+	CheckExistence(ctx context.Context, resourceGroupName string, options *armresources.ResourceGroupsClientCheckExistenceOptions) (armresources.ResourceGroupsClientCheckExistenceResponse, error)
 }
 
 // GraphServiceClient implements the GraphClient interface.

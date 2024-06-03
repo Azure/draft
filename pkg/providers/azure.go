@@ -365,3 +365,56 @@ func (sc *SetUpCmd) setAzTenantId() error {
 	}
 	return err
 }
+
+func (sc *SetUpCmd) CleanUpAzureResources(appName string) error {
+	log.Debug("Starting cleanup of Azure resources...")
+
+	// Fetch the app ID using the app name
+	if sc.appId == "" {
+		getAppIdCmd := exec.Command("az", "ad", "app", "list", "--display-name", appName, "--query", "[0].appId", "--only-show-errors")
+		out, err := getAppIdCmd.CombinedOutput()
+		if err != nil {
+			log.Printf("%s\n", out)
+			return err
+		}
+
+		var appId string
+		if err := json.Unmarshal(out, &appId); err != nil {
+			return err
+		}
+
+		sc.appId = appId
+	}
+
+	// Delete federated credentials
+	if sc.hasFederatedCredentials() {
+		uri := fmt.Sprintf("https://graph.microsoft.com/beta/applications/%s/federatedIdentityCredentials", sc.appObjectId)
+		deleteFicCmd := exec.Command("az", "rest", "--method", "DELETE", "--uri", uri)
+		out, err := deleteFicCmd.CombinedOutput()
+		if err != nil {
+			log.Printf("%s\n", out)
+			return err
+		}
+		log.Debug("Deleted federated credentials successfully.")
+	}
+
+	// Delete the service principal
+	deleteSpCmd := exec.Command("az", "ad", "sp", "delete", "--id", sc.appId, "--only-show-errors")
+	out, err := deleteSpCmd.CombinedOutput()
+	if err != nil {
+		log.Printf("%s\n", out)
+		return err
+	}
+	log.Debug("Deleted service principal successfully.")
+
+	// Delete the Azure AD application
+	deleteAppCmd := exec.Command("az", "ad", "app", "delete", "--id", sc.appId, "--only-show-errors")
+	out, err = deleteAppCmd.CombinedOutput()
+	if err != nil {
+		log.Printf("%s\n", out)
+		return err
+	}
+	log.Debug("Deleted Azure AD application successfully.")
+
+	return nil
+}

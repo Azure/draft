@@ -66,4 +66,4 @@ clean:
 	else \
 	  az ad app delete --id $$APP_ID_TO_DELETE; \
 	  echo "Deleted Azure AD application with display name: $$APP_DISPLAY_NAME"; \
-    fi
+	fi

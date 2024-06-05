@@ -7,6 +7,7 @@ RUN apk add py3-pip
 
 RUN python3 -m venv az-cli-env
 RUN az-cli-env/bin/pip install --upgrade pip
+RUN az-cli-env/bin/pip install --upgrade setuptools
 RUN az-cli-env/bin/pip install --upgrade azure-cli
 RUN az-cli-env/bin/pip install --upgrade setuptools
 RUN az-cli-env/bin/az --version

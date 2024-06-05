@@ -1,8 +1,10 @@
 package prompts
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
@@ -175,4 +177,70 @@ func GetInputFromPrompt(desiredInput string) string {
 	}
 
 	return input
+}
+
+type SelectOpt[T any] struct {
+	// Field returns the name to use for each select item.
+	Field func(t T) string
+	// Default is the default selection. If Field is used this should be the result of calling Field on the default.
+	Default *T
+}
+
+func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
+	selections := make([]interface{}, len(items))
+	for i, item := range items {
+		selections[i] = item
+	}
+
+	if opt != nil && opt.Field != nil {
+		for i, item := range items {
+			selections[i] = opt.Field(item)
+		}
+	}
+
+	if len(selections) == 0 {
+		return *new(T), errors.New("no selection options")
+	}
+
+	if _, ok := selections[0].(string); !ok {
+		return *new(T), errors.New("selections must be of type string or use opt.Field")
+	}
+
+	searcher := func(search string, i int) bool {
+		str, _ := selections[i].(string) // no need to check if okay, we guard earlier
+
+		selection := strings.ToLower(str)
+		search = strings.ToLower(search)
+
+		return strings.Contains(selection, search)
+	}
+
+	// sort the default selection to top if exists
+	if opt != nil && opt.Default != nil {
+		defaultStr := opt.Field(*opt.Default)
+		for i, selection := range selections {
+			if defaultStr == selection {
+				selections[0], selections[i] = selections[i], selections[0]
+				items[0], items[i] = items[i], items[0]
+				break
+			}
+		}
+	}
+
+	p := promptui.Select{
+		Label:    label,
+		Items:    selections,
+		Searcher: searcher,
+	}
+
+	i, _, err := p.Run()
+	if err != nil {
+		return *new(T), fmt.Errorf("running select: %w", err)
+	}
+
+	if i >= len(items) {
+		return *new(T), errors.New("items index out of range")
+	}
+
+	return items[i], nil
 }

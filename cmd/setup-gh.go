@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/cred"
+	"github.com/Azure/draft/pkg/prompts"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 
 	"github.com/Azure/draft/pkg/providers"
 	"github.com/Azure/draft/pkg/spinner"
@@ -39,7 +41,10 @@ application and service principle, and will configure that application to trust 
 
 			sc.AzClient.AzTenantClient = client
 
-			fillSetUpConfig(sc)
+			err = fillSetUpConfig(sc)
+			if err != nil {
+				return fmt.Errorf("filling setup config: %w", err)
+			}
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
@@ -65,15 +70,27 @@ application and service principle, and will configure that application to trust 
 	return cmd
 }
 
-func fillSetUpConfig(sc *providers.SetUpCmd) {
+func fillSetUpConfig(sc *providers.SetUpCmd) error {
 	if sc.AppName == "" {
 		sc.AppName = getAppName()
 	}
 
 	if sc.SubscriptionID == "" {
 		if strings.ToLower(sc.Provider) == "azure" {
-			currentSub := providers.GetCurrentAzSubscriptionId()
-			sc.SubscriptionID = GetAzSubscriptionId(currentSub)
+			currentSub, err := providers.GetCurrentAzSubscriptionLabel()
+			if err != nil {
+				return fmt.Errorf("getting current subscription ID: %w", err)
+			}
+
+			subLabels, err := providers.GetAzSubscriptionLabels()
+			if err != nil {
+				return fmt.Errorf("getting subscription labels: %w", err)
+			}
+
+			sc.SubscriptionID, err = GetAzSubscriptionId(subLabels, currentSub)
+			if err != nil {
+				return fmt.Errorf("getting subscription ID: %w", err)
+			}
 		} else {
 			sc.SubscriptionID = getSubscriptionID()
 		}
@@ -86,6 +103,8 @@ func fillSetUpConfig(sc *providers.SetUpCmd) {
 	if sc.Repo == "" {
 		sc.Repo = getGhRepo()
 	}
+
+	return nil
 }
 
 func runProviderSetUp(ctx context.Context, sc *providers.SetUpCmd, s spinner.Spinner) error {
@@ -204,18 +223,18 @@ func getCloudProvider() string {
 	return selectResponse
 }
 
-func GetAzSubscriptionId(subIds []string) string {
-	selection := &promptui.Select{
-		Label: "Please choose the subscription ID you would like to use.",
-		Items: subIds,
-	}
-
-	_, selectResponse, err := selection.Run()
+func GetAzSubscriptionId(subLabels []providers.SubLabel, currentSub providers.SubLabel) (string, error) {
+	subLabel, err := prompts.Select("Please choose the subscription ID you would like to use", subLabels, &prompts.SelectOpt[providers.SubLabel]{
+		Field: func(subLabel providers.SubLabel) string {
+			return subLabel.Name + " (" + subLabel.ID + ")"
+		},
+		Default: &currentSub,
+	})
 	if err != nil {
-		return err.Error()
+		return "", fmt.Errorf("selecting subscription ID: %w", err)
 	}
 
-	return selectResponse
+	return subLabel.ID, nil
 }
 
 func init() {

@@ -221,6 +221,7 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 		for i, selection := range selections {
 			if defaultStr == selection {
 				selections[0], selections[i] = selections[i], selections[0]
+				items[0], items[i] = items[i], items[0]
 				break
 			}
 		}

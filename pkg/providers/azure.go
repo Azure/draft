@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-
 	"github.com/Azure/draft/pkg/spinner"
 
 	bo "github.com/cenkalti/backoff/v4"

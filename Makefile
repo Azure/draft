@@ -56,3 +56,14 @@ build-darwin-amd64:
 .PHONY: build-darwin-arm64
 build-darwin-arm64:
 	GOOS=darwin GOARCH=arm64 go build -ldflags "-X github.com/Azure/draft/cmd.VERSION=${DRAFT_VERSION}" -v -o ./bin/draft-darwin-arm64
+
+.PHONY: clean-entra-app
+clean-entra-app:
+	@read -p "Enter the display name of the Azure entra application to delete: " APP_DISPLAY_NAME; \
+	APP_ID_TO_DELETE=$$(az ad app list --display-name $$APP_DISPLAY_NAME | jq -r '.[].appId'); \
+	if [ -z "$$APP_ID_TO_DELETE" ]; then \
+	  echo "No Azure entra application found with the specified display name: $$APP_DISPLAY_NAME"; \
+	else \
+	  az ad app delete --id $$APP_ID_TO_DELETE; \
+	  echo "Deleted Azure entra application with display name: $$APP_DISPLAY_NAME"; \
+	fi

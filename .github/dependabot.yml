@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/template/workflows/helm/.github/workflows"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/template/workflows/kustomize/.github/workflows"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/template/workflows/manifests/.github/workflows"
+    schedule:
+      interval: "weekly"

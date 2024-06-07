@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -79,6 +82,21 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.
 func GetVariableDefaultValue(variableName string, variableDefaults []config.BuilderVarDefault, inputs map[string]string) string {
 	defaultValue := ""
+
+	if variableName == "APPNAME" {
+		dirName, err := getCurrentDirName() //draft
+		if err != nil {
+			log.Errorf("Error retrieving current directory name: %v", err)
+			return "my-app" // Default to "my-app" if there's an error
+		}
+		defaultValue = sanitizeAppName(dirName)
+		// If the sanitized directory name is invalid, default to "my-app"
+		if defaultValue == "" {
+			defaultValue = "my-app"
+		}
+		return defaultValue
+	}
+
 	for _, variableDefault := range variableDefaults {
 		if variableDefault.Name == variableName {
 			defaultValue = variableDefault.Value
@@ -153,9 +171,19 @@ func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue str
 	if err != nil {
 		return "", err
 	}
-	// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
-	if input == "" && defaultString != "" {
-		input = defaultValue
+	if customPrompt.Name == "APPNAME" {
+		// Sanitize the user input
+		sanitizedInput := sanitizeAppName(input)
+		if sanitizedInput == "" {
+			// If sanitized input is empty, use the sanitized directory-based name
+			sanitizedInput = defaultValue
+		}
+		input = sanitizedInput
+	} else {
+		// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
+		if input == "" && defaultString != "" {
+			input = defaultValue
+		}
 	}
 	return input, nil
 }
@@ -243,4 +271,41 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 	}
 
 	return items[i], nil
+}
+
+func getCurrentDirName() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("getting current directory: %v", err)
+	}
+	return filepath.Base(dir), nil
+}
+
+// Sanitize the directory name to comply with k8s label rules
+func sanitizeAppName(name string) string {
+	// Remove all characters except alphanumeric, '-', '_', '.'
+	reg := regexp.MustCompile(`[^a-zA-Z0-9-_.]+`)
+	sanitized := reg.ReplaceAllString(name, "")
+
+	// Trim leading and trailing '-', '_', '.'
+	sanitized = strings.Trim(sanitized, "-._")
+
+	// If name is empty, return empty string
+	if sanitized == "" {
+		return ""
+	}
+
+	// Ensure appname starts with alphanumeric characters
+	regStart := regexp.MustCompile(`^[^a-zA-Z0-9]+`)
+	sanitized = regStart.ReplaceAllString(sanitized, "")
+
+	// Ensure appname ends with alphanumeric characters
+	regEnd := regexp.MustCompile(`[^a-zA-Z0-9]+$`)
+	sanitized = regEnd.ReplaceAllString(sanitized, "")
+
+	if len(sanitized) > 63 {
+		sanitized = sanitized[:63]
+	}
+
+	return sanitized
 }

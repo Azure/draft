@@ -6,14 +6,16 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
 )
+
+const defaultAppName = "my-app"
 
 func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error) {
 	return RunPromptsFromConfigWithSkips(config, []string{})
@@ -84,16 +86,13 @@ func GetVariableDefaultValue(variableName string, variableDefaults []config.Buil
 	defaultValue := ""
 
 	if variableName == "APPNAME" {
-		dirName, err := getCurrentDirName() //draft
+		dirName, err := getCurrentDirName()
 		if err != nil {
-			log.Errorf("Error retrieving current directory name: %v", err)
-			return "my-app" // Default to "my-app" if there's an error
+			log.Errorf("Error retrieving current directory name: %s", err)
+			return defaultAppName
 		}
 		defaultValue = sanitizeAppName(dirName)
-		// If the sanitized directory name is invalid, default to "my-app"
-		if defaultValue == "" {
-			defaultValue = "my-app"
-		}
+
 		return defaultValue
 	}
 
@@ -147,11 +146,40 @@ func NoBlankStringValidator(s string) error {
 	return nil
 }
 
+// Validator for App name
+func appNameValidator(name string) error {
+	if name == "" {
+		return fmt.Errorf("application name cannot be empty")
+	}
+
+	if !unicode.IsLetter(rune(name[0])) && !unicode.IsDigit(rune(name[0])) {
+		return fmt.Errorf("application name must start with a letter or digit")
+	}
+
+	if name[len(name)-1] == '-' || name[len(name)-1] == '_' || name[len(name)-1] == '.' {
+		return fmt.Errorf("application name cannot end with '-', '_', or '.'")
+	}
+
+	for _, r := range name {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '-' && r != '_' && r != '.' {
+			return fmt.Errorf("application name can only contain letters, digits, '-', '_', and '.'")
+		}
+	}
+
+	if len(name) > 63 {
+		return fmt.Errorf("application name cannot be longer than 63 characters")
+	}
+
+	return nil
+}
+
 // RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
 func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue string, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
 	var validatorFunc func(string) error
 	if validate == nil {
 		validatorFunc = NoBlankStringValidator
+	} else {
+		validatorFunc = validate
 	}
 
 	defaultString := ""
@@ -160,32 +188,33 @@ func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue str
 		defaultString = " (default: " + defaultValue + ")"
 	}
 
-	prompt := &promptui.Prompt{
-		Label:    "Please enter " + customPrompt.Description + defaultString,
-		Validate: validatorFunc,
-		Stdin:    Stdin,
-		Stdout:   Stdout,
-	}
+	for {
+		prompt := &promptui.Prompt{
+			Label:    "Please enter " + customPrompt.Description + defaultString,
+			Validate: validatorFunc,
+			Stdin:    Stdin,
+			Stdout:   Stdout,
+		}
 
-	input, err := prompt.Run()
-	if err != nil {
-		return "", err
-	}
-	if customPrompt.Name == "APPNAME" {
-		// Sanitize the user input
-		sanitizedInput := sanitizeAppName(input)
-		if sanitizedInput == "" {
-			// If sanitized input is empty, use the sanitized directory-based name
-			sanitizedInput = defaultValue
+		input, err := prompt.Run()
+		if err != nil {
+			return "", err
 		}
-		input = sanitizedInput
-	} else {
-		// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
-		if input == "" && defaultString != "" {
-			input = defaultValue
+		if customPrompt.Name == "APPNAME" {
+			err := appNameValidator(input)
+			if err != nil {
+				fmt.Println(err.Error())
+				continue
+			}
+			input = sanitizeAppName(input)
+		} else {
+			// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
+			if input == "" && defaultString != "" {
+				input = defaultValue
+			}
 		}
+		return input, nil
 	}
-	return input, nil
 }
 
 func GetInputFromPrompt(desiredInput string) string {
@@ -276,36 +305,32 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 func getCurrentDirName() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("getting current directory: %v", err)
+		fmt.Errorf("getting current directory: %v", err)
 	}
 	return filepath.Base(dir), nil
 }
 
 // Sanitize the directory name to comply with k8s label rules
 func sanitizeAppName(name string) string {
+	var builder strings.Builder
+
 	// Remove all characters except alphanumeric, '-', '_', '.'
-	reg := regexp.MustCompile(`[^a-zA-Z0-9-_.]+`)
-	sanitized := reg.ReplaceAllString(name, "")
+	for _, r := range name {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_' || r == '.' {
+			builder.WriteRune(r)
+		}
+	}
 
-	// Trim leading and trailing '-', '_', '.'
-	sanitized = strings.Trim(sanitized, "-._")
-
-	// If name is empty, return empty string
+	sanitized := builder.String()
 	if sanitized == "" {
-		return ""
+		sanitized = defaultAppName
+	} else {
+		// Trim leading and trailing '-', '_', '.'
+		sanitized = strings.Trim(sanitized, "-._")
+		// Ensure the length does not exceed 63 characters
+		if len(sanitized) > 63 {
+			sanitized = sanitized[:63]
+		}
 	}
-
-	// Ensure appname starts with alphanumeric characters
-	regStart := regexp.MustCompile(`^[^a-zA-Z0-9]+`)
-	sanitized = regStart.ReplaceAllString(sanitized, "")
-
-	// Ensure appname ends with alphanumeric characters
-	regEnd := regexp.MustCompile(`[^a-zA-Z0-9]+$`)
-	sanitized = regEnd.ReplaceAllString(sanitized, "")
-
-	if len(sanitized) > 63 {
-		sanitized = sanitized[:63]
-	}
-
 	return sanitized
 }

@@ -82,6 +82,7 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 }
 
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.
+
 func GetVariableDefaultValue(variableName string, variableDefaults []config.BuilderVarDefault, inputs map[string]string) string {
 	defaultValue := ""
 
@@ -92,7 +93,6 @@ func GetVariableDefaultValue(variableName string, variableDefaults []config.Buil
 			return defaultAppName
 		}
 		defaultValue = sanitizeAppName(dirName)
-
 		return defaultValue
 	}
 
@@ -157,7 +157,7 @@ func appNameValidator(name string) error {
 	}
 
 	if name[len(name)-1] == '-' || name[len(name)-1] == '_' || name[len(name)-1] == '.' {
-		return fmt.Errorf("application name cannot end with '-', '_', or '.'")
+		return fmt.Errorf("application name must end with a letter or digit")
 	}
 
 	for _, r := range name {
@@ -175,34 +175,30 @@ func appNameValidator(name string) error {
 
 // RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
 func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue string, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
-	var validatorFunc func(string) error
 	if validate == nil {
-		validatorFunc = NoBlankStringValidator
-	} else {
-		validatorFunc = validate
+		validate = NoBlankStringValidator
 	}
 
 	defaultString := ""
 	if defaultValue != "" {
-		validatorFunc = AllowAllStringValidator
+		validate = AllowAllStringValidator
 		defaultString = " (default: " + defaultValue + ")"
 	}
 
+	prompt := &promptui.Prompt{
+		Label:    "Please enter " + customPrompt.Description + defaultString,
+		Validate: validate,
+		Default:  defaultValue,
+		Stdin:    Stdin,
+		Stdout:   Stdout,
+	}
 	for {
-		prompt := &promptui.Prompt{
-			Label:    "Please enter " + customPrompt.Description + defaultString,
-			Validate: validatorFunc,
-			Stdin:    Stdin,
-			Stdout:   Stdout,
-		}
-
 		input, err := prompt.Run()
 		if err != nil {
 			return "", err
 		}
 		if customPrompt.Name == "APPNAME" {
-			err := appNameValidator(input)
-			if err != nil {
+			if err := appNameValidator(input); err != nil {
 				fmt.Println(err.Error())
 				continue
 			}

@@ -198,13 +198,8 @@ func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue str
 		return nil
 	}
 
-	defaultString := ""
-	if defaultValue != "" {
-		defaultString = " (default: " + defaultValue + ")"
-	}
-
 	prompt := &promptui.Prompt{
-		Label:    "Please enter " + customPrompt.Description + defaultString,
+		Label:    "Please enter " + customPrompt.Description + " (default: " + defaultValue + ")",
 		Validate: validatorFunc,
 		Stdin:    Stdin,
 		Stdout:   Stdout,

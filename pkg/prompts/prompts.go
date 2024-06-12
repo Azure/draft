@@ -17,6 +17,9 @@ import (
 
 const defaultAppName = "my-app"
 
+// Function to get current directory name
+var getCurrentDirNameFunc = getCurrentDirName
+
 func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error) {
 	return RunPromptsFromConfigWithSkips(config, []string{})
 }
@@ -82,12 +85,11 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 }
 
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.
-
 func GetVariableDefaultValue(variableName string, variableDefaults []config.BuilderVarDefault, inputs map[string]string) string {
 	defaultValue := ""
 
 	if variableName == "APPNAME" {
-		dirName, err := getCurrentDirName()
+		dirName, err := getCurrentDirNameFunc()
 		if err != nil {
 			log.Errorf("Error retrieving current directory name: %s", err)
 			return defaultAppName
@@ -179,38 +181,44 @@ func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue str
 		validate = NoBlankStringValidator
 	}
 
+	validatorFunc := func(input string) error {
+		// Allow blank inputs because defaults are set later
+		if input == "" {
+			return nil
+		}
+		if customPrompt.Name == "APPNAME" {
+			if err := appNameValidator(input); err != nil {
+				return err
+			}
+		} else {
+			if err := validate(input); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
 	defaultString := ""
 	if defaultValue != "" {
-		validate = AllowAllStringValidator
 		defaultString = " (default: " + defaultValue + ")"
 	}
 
 	prompt := &promptui.Prompt{
 		Label:    "Please enter " + customPrompt.Description + defaultString,
-		Validate: validate,
-		Default:  defaultValue,
+		Validate: validatorFunc,
 		Stdin:    Stdin,
 		Stdout:   Stdout,
 	}
-	for {
-		input, err := prompt.Run()
-		if err != nil {
-			return "", err
-		}
-		if customPrompt.Name == "APPNAME" {
-			if err := appNameValidator(input); err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
-			input = sanitizeAppName(input)
-		} else {
-			// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
-			if input == "" && defaultString != "" {
-				input = defaultValue
-			}
-		}
-		return input, nil
+
+	input, err := prompt.Run()
+	if err != nil {
+		return "", err
 	}
+
+	if input == "" && defaultValue != "" {
+		input = defaultValue
+	}
+	return input, nil
 }
 
 func GetInputFromPrompt(desiredInput string) string {
@@ -301,9 +309,10 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 func getCurrentDirName() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
-		fmt.Errorf("getting current directory: %v", err)
+		return "", fmt.Errorf("getting current directory: %v", err)
 	}
-	return filepath.Base(dir), nil
+	dirName := filepath.Base(dir)
+	return sanitizeAppName(dirName), nil
 }
 
 // Sanitize the directory name to comply with k8s label rules

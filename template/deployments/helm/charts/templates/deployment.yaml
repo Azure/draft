@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "{{APPNAME}}.fullname" . }}
+  name: {{ include "my-app.fullname" . }}
   labels:
-    {{- include "{{APPNAME}}.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{GENERATORLABEL}}
+    {{- include "my-app.labels" . | nindent 4 }}
+    kubernetes.azure.com/generator: {{.Values.generatorlabel }}
   namespace: {{ .Values.namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -12,7 +12,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "{{APPNAME}}.selectorLabels" . | nindent 6 }}
+      {{- include "my-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -20,7 +20,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "{{APPNAME}}.selectorLabels" . | nindent 8 }}
+        {{- include "my-app.selectorLabels" . | nindent 8 }}
       namespace: {{ .Values.namespace }}
     spec:
       {{- with .Values.imagePullSecrets }}

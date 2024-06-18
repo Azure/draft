@@ -325,12 +325,12 @@ func sanitizeAppName(name string) string {
 	if sanitized == "" {
 		sanitized = defaultAppName
 	} else {
-		// Trim leading and trailing '-', '_', '.'
-		sanitized = strings.Trim(sanitized, "-._")
 		// Ensure the length does not exceed 63 characters
 		if len(sanitized) > 63 {
 			sanitized = sanitized[:63]
 		}
+		// Trim leading and trailing '-', '_', '.'
+		sanitized = strings.Trim(sanitized, "-._")
 	}
 	return sanitized
 }

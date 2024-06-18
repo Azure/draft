@@ -31,45 +31,38 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 
 	inputs := make(map[string]string)
 
-	for _, customPrompt := range config.Variables {
-		promptVariableName := customPrompt.Name
-		if _, ok := skipMap[promptVariableName]; ok {
-			log.Debugf("Skipping prompt for %s", promptVariableName)
+	for name, variable := range config.Variables {
+		if val, ok := skipMap[name]; ok && val != "" {
+			log.Debugf("Skipping prompt for %s", name)
 			continue
 		}
-		if GetIsPromptDisabled(customPrompt.Name, config.VariableDefaults) {
-			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", promptVariableName)
-			noPromptDefaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
+
+		if variable.IsPromptDisabled {
+			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", name)
+			noPromptDefaultValue := GetVariableDefaultValue(name, variable, inputs)
 			if noPromptDefaultValue == "" {
-				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", promptVariableName)
+				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", name)
 			}
-			log.Debugf("Using default value %s for %s", noPromptDefaultValue, promptVariableName)
-			inputs[promptVariableName] = noPromptDefaultValue
+			log.Debugf("Using default value %s for %s", noPromptDefaultValue, name)
+			inputs[name] = noPromptDefaultValue
 			continue
 		}
 
-		log.Debugf("constructing prompt for: %s", promptVariableName)
-		if customPrompt.VarType == "bool" {
-			input, err := RunBoolPrompt(customPrompt, Stdin, Stdout)
+		log.Debugf("constructing prompt for: %s", name)
+		if variable.Type == "bool" {
+			input, err := RunBoolPrompt(variable, Stdin, Stdout)
 			if err != nil {
 				return nil, err
 			}
-			inputs[promptVariableName] = input
+			inputs[name] = input
 		} else {
-			defaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
+			defaultValue := GetVariableDefaultValue(name, variable, inputs)
 
-			stringInput, err := RunDefaultableStringPrompt(customPrompt, defaultValue, nil, Stdin, Stdout)
+			stringInput, err := RunDefaultableStringPrompt(variable, defaultValue, nil, Stdin, Stdout)
 			if err != nil {
 				return nil, err
 			}
-			inputs[promptVariableName] = stringInput
-		}
-	}
-
-	// Substitute the default value for variables where the user didn't enter anything
-	for _, variableDefault := range config.VariableDefaults {
-		if inputs[variableDefault.Name] == "" {
-			inputs[variableDefault.Name] = variableDefault.Value
+			inputs[name] = stringInput
 		}
 	}
 
@@ -77,28 +70,17 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 }
 
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.
-func GetVariableDefaultValue(variableName string, variableDefaults []config.BuilderVarDefault, inputs map[string]string) string {
+func GetVariableDefaultValue(variableName string, variable config.BuilderVar, inputs map[string]string) string {
 	defaultValue := ""
-	for _, variableDefault := range variableDefaults {
-		if variableDefault.Name == variableName {
-			defaultValue = variableDefault.Value
-			log.Debugf("setting default value for %s to %s from variable default rule", variableName, defaultValue)
-			if variableDefault.ReferenceVar != "" && inputs[variableDefault.ReferenceVar] != "" {
-				defaultValue = inputs[variableDefault.ReferenceVar]
-				log.Debugf("setting default value for %s to %s from referenceVar %s", variableName, defaultValue, variableDefault.ReferenceVar)
-			}
-		}
-	}
-	return defaultValue
-}
 
-func GetIsPromptDisabled(variableName string, variableDefaults []config.BuilderVarDefault) bool {
-	for _, variableDefault := range variableDefaults {
-		if variableDefault.Name == variableName {
-			return variableDefault.IsPromptDisabled
-		}
+	defaultValue = variable.Value
+	log.Debugf("setting default value for %s to %s from variable default rule", variableName, defaultValue)
+	if variable.ReferenceVar != "" && inputs[variable.ReferenceVar] != "" {
+		defaultValue = inputs[variable.ReferenceVar]
+		log.Debugf("setting default value for %s to %s from referenceVar %s", variableName, defaultValue, variable.ReferenceVar)
 	}
-	return false
+
+	return defaultValue
 }
 
 func RunBoolPrompt(customPrompt config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {

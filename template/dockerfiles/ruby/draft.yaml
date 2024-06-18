@@ -4,14 +4,11 @@ nameOverrides:
   - path: "dockerignore"
     prefix: "."
 variables:
-  - name: "PORT"
+  PORT:
+    default: "80"
     description: "the port exposed in the application"
     type: int
-  - name: "VERSION"
+  VERSION:
+    default: "3.1.2"
     description: "the version of ruby used by the application"
-    exampleValues: ["3.1.2", "2.6", "2.5", "2.4"]
-variableDefaults:
-  - name: "VERSION"
-    value: "3.1.2"
-  - name: "PORT"
-    value: "80"
+    exampleValues: ["3.1.2", "2.6", "2.5", "2.4"] 

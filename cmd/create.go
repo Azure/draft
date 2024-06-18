@@ -265,21 +265,14 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return err
 	}
 
-	// Check for existing duplicate defualts
+	// Check for existing duplicate defaults
 	for k, v := range extractedValues {
-		variableExists := false
-		for i, varD := range langConfig.VariableDefaults {
-			if k == varD.Name {
-				variableExists = true
-				langConfig.VariableDefaults[i].Value = v
-				break
-			}
-		}
-		if !variableExists {
-			langConfig.VariableDefaults = append(langConfig.VariableDefaults, config.BuilderVarDefault{
-				Name:  k,
+		if builderVar, ok := langConfig.Variables[k]; ok {
+			builderVar.Value = v
+		} else {
+			langConfig.Variables[k] = config.BuilderVar{
 				Value: v,
-			})
+			}
 		}
 	}
 
@@ -290,7 +283,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 			return err
 		}
 	} else {
-		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables, langConfig.VariableDefaults)
+		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables)
 		if err != nil {
 			return err
 		}
@@ -328,7 +321,7 @@ func (cc *createCmd) createDeployment() error {
 		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(deployConfig.Variables, cc.createConfig.DeployVariables, deployConfig.VariableDefaults)
+		customInputs, err = validateConfigInputsToPrompts(deployConfig.Variables, cc.createConfig.DeployVariables)
 		if err != nil {
 			return err
 		}
@@ -462,7 +455,7 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required []config.BuilderVar, provided []UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
+func validateConfigInputsToPrompts(required map[string]config.BuilderVar, provided []UserInputs) (map[string]string, error) {
 	customInputs := make(map[string]string)
 
 	// set inputs to provided values
@@ -471,24 +464,28 @@ func validateConfigInputsToPrompts(required []config.BuilderVar, provided []User
 	}
 
 	// fill in missing vars using variable default references
-	for _, variableDefault := range defaults {
-		if customInputs[variableDefault.Name] == "" && variableDefault.ReferenceVar != "" {
-			log.Debugf("variable %s is empty, using default referenceVar value from %s", variableDefault.Name, variableDefault.ReferenceVar)
-			customInputs[variableDefault.Name] = customInputs[variableDefault.ReferenceVar]
+	for name, variable := range required {
+		if customInputs[name] == "" && variable.ReferenceVar != "" {
+			if _, ok := customInputs[variable.ReferenceVar]; !ok {
+				log.Debugf("reference variable %s is empty, adding it in", variable.ReferenceVar)
+				customInputs[variable.ReferenceVar] = required[variable.ReferenceVar].DefaultValue
+			}
+			log.Debugf("variable %s is empty, using default referenceVar value from %s", name, variable.ReferenceVar)
+			customInputs[name] = customInputs[variable.ReferenceVar]
 		}
 	}
 
 	// fill in missing vars using variable default values
-	for _, variableDefault := range defaults {
-		if customInputs[variableDefault.Name] == "" && variableDefault.Value != "" {
-			log.Debugf("setting default value for %s to %s", variableDefault.Name, variableDefault.Value)
-			customInputs[variableDefault.Name] = variableDefault.Value
+	for name, variable := range required {
+		if customInputs[name] == "" && variable.DefaultValue != "" {
+			log.Debugf("variable %s is empty, using default value %s", name, variable.DefaultValue)
+			customInputs[name] = variable.DefaultValue
 		}
 	}
 
-	for _, variable := range required {
-		if _, ok := customInputs[variable.Name]; !ok {
-			return nil, fmt.Errorf("config missing required variable: %s with description: %s", variable.Name, variable.Description)
+	for name, variable := range required {
+		if _, ok := customInputs[name]; !ok {
+			return nil, fmt.Errorf("config missing required variable: %s with description: %s", name, variable.Description)
 		}
 	}
 

@@ -69,11 +69,11 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 	return inputs, nil
 }
 
-// GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.
+// GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal Variable.DefaultValue in that order.
 func GetVariableDefaultValue(variableName string, variable config.BuilderVar, inputs map[string]string) string {
 	defaultValue := ""
 
-	defaultValue = variable.Value
+	defaultValue = variable.DefaultValue
 	log.Debugf("setting default value for %s to %s from variable default rule", variableName, defaultValue)
 	if variable.ReferenceVar != "" && inputs[variable.ReferenceVar] != "" {
 		defaultValue = inputs[variable.ReferenceVar]

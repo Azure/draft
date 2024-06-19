@@ -110,7 +110,7 @@ func TestAllVariablesSubstituted(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.String, func(t *testing.T) {
-			err := checkAllVariablesSubstituted(test.String)
+			err := CheckAllVariablesSubstituted(test.String)
 			didError := err != nil
 			assert.Equal(t, test.ExpectError, didError)
 		})

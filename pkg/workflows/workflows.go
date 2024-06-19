@@ -199,7 +199,7 @@ func GenerateWorkflowBytes(draftConfig *config.DraftConfig, deployType string) (
 	switch deployType {
 	case "helm":
 		srcPath = "workflow/helm/.github/workflows/azure-kubernetes-service-helm.yml"
-	case "manifests":
+	case "kube":
 		srcPath = "workflow/manifests/.github/workflows/azure-kubernetes-service.yml"
 	default:
 		return nil, errors.New("unsupported deploy type")

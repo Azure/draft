@@ -22,6 +22,7 @@ variables:
     resource: "azClusterName"
   DOCKERFILE:
     description: "the path to the Dockerfile"
+    disablePrompt: true
     resource: "dir"
   BUILDCONTEXTPATH:
     default: "."

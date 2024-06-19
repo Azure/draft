@@ -40,7 +40,7 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 		if variable.IsPromptDisabled {
 			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", name)
 			noPromptDefaultValue := GetVariableDefaultValue(name, variable, inputs)
-			if noPromptDefaultValue == "" {
+			if noPromptDefaultValue == "" && name != "DOCKERFILE" {
 				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", name)
 			}
 			log.Debugf("Using default value %s for %s", noPromptDefaultValue, name)

@@ -27,6 +27,7 @@ variables:
     resource: "dir"
   DOCKERFILE:
     description: "the path to the Dockerfile"
+    disablePrompt: true
     resource: "dir"
   BUILDCONTEXTPATH:
     default: "."

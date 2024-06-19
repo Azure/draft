@@ -67,12 +67,12 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) error {
 	for name, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
-		if defaultVal, ok := customConfig[name]; !ok || defaultVal == "" {
-			if variable.Value == "" {
+		if val, ok := customConfig[name]; !ok || val == "" {
+			if variable.DefaultValue == "" && name != "DOCKERFILE" {
 				return errors.New("variable " + name + " has no default value")
 			}
-			log.Infof("Variable %s defaulting to value %s", name, variable.Value)
-			customConfig[name] = variable.Value
+			log.Infof("Variable %s defaulting to value %s", name, variable.DefaultValue)
+			customConfig[name] = variable.DefaultValue
 		}
 	}
 

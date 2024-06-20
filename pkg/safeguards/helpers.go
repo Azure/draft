@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
@@ -20,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/kustomize/api/krusty"
 )
 
 // retrieves the constraint client that does all rego code related operations
@@ -273,4 +275,47 @@ func getObjectViolations(ctx context.Context, c *constraintclient.Client, object
 	}
 
 	return results, nil
+}
+
+func CreateTempDir(p string) string {
+	dir, err := os.MkdirTemp(p, "prefix")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir
+}
+
+func IsKustomize(p string) bool {
+	return strings.Contains(p, "kustomization.yaml")
+}
+
+func RenderKustomizeManifest(ctx context.Context) {
+	// Define the path to your Kustomization directory
+	kustomizationDir := "./path/to/kustomization"
+
+	// Create a new Kustomize build options
+	options := &krusty.Options{
+		DoLegacyResourceSort: true,
+	}
+
+	// Create a new Kustomize build object
+	k := krusty.MakeKustomizer(options)
+
+	// Run the build to generate the manifests
+	resMap, err := k.Run(kustomizationDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error building manifests: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Output the manifests
+	for _, res := range resMap.Resources() {
+		yamlRes, err := res.AsYAML()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error converting resource to YAML: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println(string(yamlRes))
+	}
 }

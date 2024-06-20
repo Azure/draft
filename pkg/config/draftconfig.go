@@ -67,7 +67,7 @@ func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) erro
 	for name, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
 		if val, ok := customConfig[name]; !ok || val == "" {
-			if variable.DefaultValue == "" && name != "DOCKERFILE" {
+			if variable.DefaultValue == "" {
 				return errors.New("variable " + name + " has no default value")
 			}
 			log.Infof("Variable %s defaulting to value %s", name, variable.DefaultValue)

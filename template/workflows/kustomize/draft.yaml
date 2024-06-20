@@ -4,31 +4,23 @@ variables:
     description: "the name of the workflow"
   BRANCHNAME:
     description: "the Github branch to automatically deploy from"
-    resource: "ghBranch"
   ACRRESOURCEGROUP:
     description: "the ACR resource group"
-    resource: "azResourceGroup"
   AZURECONTAINERREGISTRY:
     description: "the Azure container registry name"
-    resource: "azContainerRegistry"
   CONTAINERNAME:
     description: "the container image name"
-    resource: "containerName"
   CLUSTERRESOURCEGROUP:
     description: "the AKS cluster resource group"
-    resource: "azResourceGroup"
   CLUSTERNAME:
     description: "the AKS cluster name"
-    resource: "azClusterName"
   KUSTOMIZEPATH:
     default: "./overlays/production"
     description: "the path to the Kustomize directory"
     disablePrompt: true
-    resource: "dir"
   DOCKERFILE:
     description: "the path to the Dockerfile"
     disablePrompt: true
-    resource: "dir"
   BUILDCONTEXTPATH:
     default: "."
     description: "the path to the Docker build context"

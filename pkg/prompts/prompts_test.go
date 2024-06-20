@@ -76,36 +76,72 @@ func TestGetVariableDefaultValue(t *testing.T) {
 
 func TestRunStringPrompt(t *testing.T) {
 	tests := []struct {
-		testName     string
-		prompt       config.BuilderVar
-		userInputs   []string
-		defaultValue string
-		want         string
-		wantErr      bool
+		testName         string
+		variableName     string
+		prompt           config.BuilderVar
+		userInputs       []string
+		defaultValue     string
+		want             string
+		wantErr          bool
+		mockDirNameValue string
 	}{
 		{
 			testName: "basicPrompt",
 			prompt: config.BuilderVar{
 				Description: "var1 description",
 			},
-			userInputs:   []string{"value-1\n"},
-			defaultValue: "input",
-			want:         "value-1",
-			wantErr:      false,
+			userInputs:       []string{"value-1\n"},
+			defaultValue:     "input",
+			want:             "value-1",
+			wantErr:          false,
+			mockDirNameValue: "",
 		},
 		{
 			testName: "promptWithDefault",
 			prompt: config.BuilderVar{
 				Description: "var1 description",
 			},
-			userInputs:   []string{"\n"},
-			defaultValue: "defaultValue",
-			want:         "defaultValue",
-			wantErr:      false,
+			userInputs:       []string{"\n"},
+			defaultValue:     "defaultValue",
+			want:             "defaultValue",
+			wantErr:          false,
+			mockDirNameValue: "",
+		},
+		{
+			testName:     "appNameUsesDirName",
+			variableName: "APPNAME",
+			prompt: config.BuilderVar{
+				Description: "app name",
+			},
+			userInputs:       []string{"\n"},
+			defaultValue:     "currentdir",
+			want:             "currentdir",
+			wantErr:          false,
+			mockDirNameValue: "currentdir",
+		},
+		{
+			testName:     "invalidAppName",
+			variableName: "APPNAME",
+			prompt: config.BuilderVar{
+				Description: "app name",
+			},
+			userInputs:       []string{"--invalid-app-name\n"},
+			defaultValue:     "defaultApp",
+			want:             "",
+			wantErr:          true,
+			mockDirNameValue: "currentdir",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
+			// Mock the getCurrentDirNameFunc for testing
+			originalGetCurrentDirNameFunc := getCurrentDirNameFunc
+			defer func() { getCurrentDirNameFunc = originalGetCurrentDirNameFunc }()
+			getCurrentDirNameFunc = func() (string, error) {
+				return tt.mockDirNameValue, nil
+			}
+
 			inReader, inWriter := io.Pipe()
 
 			go func() {
@@ -120,7 +156,7 @@ func TestRunStringPrompt(t *testing.T) {
 					t.Errorf("Error closing inWriter: %v", err)
 				}
 			}()
-			got, err := RunDefaultableStringPrompt(tt.prompt, tt.defaultValue, nil, inReader, nil)
+			got, err := RunDefaultableStringPrompt(tt.variableName, tt.defaultValue, tt.prompt, nil, inReader, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunDefaultableStringPrompt() error = %v, wantErr %v", err, tt.wantErr)
@@ -132,6 +168,7 @@ func TestRunStringPrompt(t *testing.T) {
 		})
 	}
 }
+
 func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 	tests := []struct {
 		testName     string

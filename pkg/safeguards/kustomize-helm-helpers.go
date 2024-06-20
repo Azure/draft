@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
+	"helm.sh/helm/v3/pkg/chartutil"
 )
 
 // DirectoryType represents the type of directory.
@@ -29,7 +30,7 @@ func CreateTempDir() (string, error) {
 }
 
 func GetDirectoryType(dirPath string) DirectoryType {
-	if err := isHelmChart(dirPath); err == nil {
+	if isHelm, _ := isHelmChart(dirPath); isHelm {
 		return Helm
 	}
 	// } else if isKustomizeConfig(dirPath) {
@@ -39,10 +40,30 @@ func GetDirectoryType(dirPath string) DirectoryType {
 	return Unknown
 }
 
+func isHelmChart(chartDir string) (bool, error) {
+	// Check if the directory exists
+	if _, err := os.Stat(chartDir); os.IsNotExist(err) {
+		return false, fmt.Errorf("directory does not exist: %s", chartDir)
+	}
+
+	// // Load the chart
+	// _, err := loader.Load(chartDir)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to load chart: %s", err)
+	// }
+
+	// Validate the chart
+	if isHelm, err := chartutil.IsChartDir(chartDir); err != nil {
+		return isHelm, fmt.Errorf("chart validation failed: %s", err)
+	}
+
+	return true, nil
+}
+
 // isHelmChart checks if the given directory is a valid Helm chart with required components.
-func isHelmChart(chartDir string) error {
+func isHelmChart2(chartDir string) error {
 	chartFile := filepath.Join(chartDir, "Chart.yaml")
-	valuesFile := filepath.Join(chartDir, "values.yaml")
+	valuesFile := filepath.Join(chartDir, "Values.yaml")
 	templatesDir := filepath.Join(chartDir, "templates")
 
 	// Check Chart.yaml

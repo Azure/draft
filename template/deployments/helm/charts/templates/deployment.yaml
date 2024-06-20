@@ -1,7 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "my-app.fullname" . }}
+  name: {{- $name := default .Chart.Name .Values.nameOverride }}
+        {{- if contains $name .Release.Name }}
+        {{- .Release.Name | trunc 63 | trimSuffix "-" }}
+        {{- else }}
+        {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+        {{- end }}
+        {{- end }}
   labels:
     {{- include "my-app.labels" . | nindent 4 }}
     kubernetes.azure.com/generator: {{.Values.generatorlabel }}

@@ -1,8 +1,8 @@
 image:
-  repository: my-app
+  repository: "{{APPNAME}}"
   pullPolicy: Always
   tag: "latest"
 service:
   annotations: {}
   type: LoadBalancer
-  port: "{{ .Values.serviceport }}"
+  port: "{{SERVICEPORT}}"

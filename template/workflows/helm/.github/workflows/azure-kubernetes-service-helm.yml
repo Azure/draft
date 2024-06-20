@@ -32,7 +32,7 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: {{WORKFLOWNAME}}
+name: ""Build and deploy an app to AKS with Helm"
 
 on:
   push:
@@ -40,18 +40,14 @@ on:
   workflow_dispatch:
 
 env:
-  ACR_RESOURCE_GROUP: {{ACRRESOURCEGROUP}}
+  RESOURCE_GROUP: {{RESOURCEGROUP}}
   AZURE_CONTAINER_REGISTRY: {{AZURECONTAINERREGISTRY}}
   CONTAINER_NAME: {{CONTAINERNAME}}
-  CLUSTER_RESOURCE_GROUP: {{CLUSTERRESOURCEGROUP}}
   CLUSTER_NAME: {{CLUSTERNAME}}
-  DOCKER_FILE: {{DOCKERFILE}}
   BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
   CHART_PATH: {{CHARTPATH}}
   CHART_OVERRIDE_PATH: {{CHARTOVERRIDEPATH}}
   CHART_OVERRIDES: {{CHARTOVERRIDES}}
-  NAMESPACE: {{NAMESPACE}}
-  PRIVATE_CLUSTER: {{PRIVATECLUSTER}}
   
 jobs:
   buildImage:
@@ -74,7 +70,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} ${{ env.BUILD_CONTEXT_PATH }}
   deploy:
     permissions:
       actions: read
@@ -104,7 +100,7 @@ jobs:
       - name: Get K8s context
         uses: azure/aks-set-context@v3
         with:
-          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+          resource-group: ${{ env.RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
           admin: 'false'
           use-kubelogin: 'true'
@@ -128,5 +124,3 @@ jobs:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
-          namespace: ${{ env.NAMESPACE }}
-          private-cluster: ${{ env.PRIVATE_CLUSTER }}

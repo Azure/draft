@@ -80,6 +80,32 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal Variable.DefaultValue in that order.
 func GetVariableDefaultValue(variableName string, variable config.BuilderVar, inputs map[string]string) string {
 	defaultValue := ""
+<<<<<<< HEAD
+=======
+
+	if variableName == "APPNAME" {
+		dirName, err := getCurrentDirNameFunc()
+		if err != nil {
+			log.Errorf("Error retrieving current directory name: %s", err)
+			return defaultAppName
+		}
+		defaultValue = sanitizeAppName(dirName)
+		return defaultValue
+	}
+
+	for _, variableDefault := range variableDefaults {
+		if variableDefault.Name == variableName {
+			defaultValue = variableDefault.Value
+			log.Debugf("setting default value for %s to %s from variable default rule", variableName, defaultValue)
+			if variableDefault.ReferenceVar != "" && inputs[variableDefault.ReferenceVar] != "" {
+				defaultValue = inputs[variableDefault.ReferenceVar]
+				log.Debugf("setting default value for %s to %s from referenceVar %s", variableName, defaultValue, variableDefault.ReferenceVar)
+			}
+		}
+	}
+	return defaultValue
+}
+>>>>>>> main
 
 	if variableName == "APPNAME" {
 		dirName, err := getCurrentDirNameFunc()
@@ -157,7 +183,11 @@ func appNameValidator(name string) error {
 }
 
 // RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
+<<<<<<< HEAD
 func RunDefaultableStringPrompt(name, defaultValue string, customPrompt config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+=======
+func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue string, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+>>>>>>> main
 	if validate == nil {
 		validate = NoBlankStringValidator
 	}
@@ -167,7 +197,11 @@ func RunDefaultableStringPrompt(name, defaultValue string, customPrompt config.B
 		if input == "" {
 			return nil
 		}
+<<<<<<< HEAD
 		if name == "APPNAME" {
+=======
+		if customPrompt.Name == "APPNAME" {
+>>>>>>> main
 			if err := appNameValidator(input); err != nil {
 				return err
 			}

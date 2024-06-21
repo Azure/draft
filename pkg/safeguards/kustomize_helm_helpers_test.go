@@ -1,10 +1,8 @@
 package safeguards
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,9 +23,7 @@ type testVars struct {
 	validIngressYaml       string
 	invalidChartYaml       string
 	invalidValuesYaml      string
-	invalidDeploymentYaml  string
-	invalidServiceYaml     string
-	invalidIngressYaml     string
+	invalidTemplateYamls   map[string]string
 	expectedValidManifests map[string]string
 }
 
@@ -161,19 +157,59 @@ releaseNamespace: test-namespace
 	validTemplateYamls["service.yaml"] = getExpectedServiceYAML()
 	validTemplateYamls["ingress.yaml"] = getExpectedIngressYAML()
 
-	//invalidTemplateYamls := make(map[string]string)
 	//invalidDeploymentYaml := strings.Replace(deploymentYAML, "{{ .Values.image.repository }}", "{{ .Values.invalidField }}", 1)
-	invalidServiceYaml := strings.Replace(serviceYAML, "kind: Service\n", "", 1)
-	invalidIngressYaml := strings.Replace(ingressYAML, "kind: Ingress\n", "", 1)
+	// invalidServiceYaml := strings.Replace(serviceYAML, "kind: Service\n", "", 1)
+	// invalidIngressYaml := strings.Replace(ingressYAML, "kind: Ingress\n", "", 1)
 
 	invalidDeploymentYaml := `
+	apiVersion: apps/v1
+	kind: Deployment
+	metadata:
+	  name: {{ .Release.Name }}-deployment
+	  namespace: {{ .Release.Namespace }}
+	spec:
+	  replicas: {{ .Values.replicaCount }}
+	  selector:
+	    matchLabels:
+	      app: my-web-app
+	  template:
+	    metadata:
+	      labels:
+	        app: my-web-app
+	    spec:
+	      containers:
+	        - name: nginx
+	          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+	`
+	invalidDeploymentSyntaxErr := `
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-deployment
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount
+  selector:
+    matchLabels:
+      app: my-web-app
+  template:
+    metadata:
+      labels:
+        app: my-web-ap
+    spec:
+      containers:
+        - name: nginx
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag
+`
+	// Create invalid templates
+	invalidDeploymentValues := `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.nonExistentField }}
   selector:
     matchLabels:
       app: my-web-app
@@ -184,15 +220,17 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          image: {{ .Values.image.invalidField }}:{{ .Values.image.tag }}
 `
-
-	// invalidTemplateYamls["deployment.yaml"] = invalidDeploymentYaml
-	// invalidTemplateYamls["service.yaml"] =
+	invalidTemplateYamls := make(map[string]string)
+	invalidTemplateYamls["deployment.yaml"] = invalidDeploymentYaml
+	invalidTemplateYamls["deploymentSyntax.yaml"] = invalidDeploymentSyntaxErr
+	invalidTemplateYamls["deploymentValues.yaml"] = invalidDeploymentValues
+	// invalidTemplateYamls["service.yaml"] = se
 	// invalidTemplateYamls["ingress.yaml"] = strings.Replace(ingressYAML, "kind: Ingress\n", "", 1)
 
 	//validTemplateYamls: map[string]string{"service.yaml": serviceYAML}
-	return testVars{validChartYaml: chartYAML, validValuesYaml: valuesYAML, validDeploymentYaml: deploymentYAML, validServiceYaml: serviceYAML, validIngressYaml: ingressYAML, invalidChartYaml: invalidChartYaml, invalidValuesYaml: invalidValuesYaml, invalidDeploymentYaml: invalidDeploymentYaml, invalidServiceYaml: invalidServiceYaml, invalidIngressYaml: invalidIngressYaml, expectedValidManifests: expectedValidManifests}
+	return testVars{validChartYaml: chartYAML, validValuesYaml: valuesYAML, validDeploymentYaml: deploymentYAML, validServiceYaml: serviceYAML, validIngressYaml: ingressYAML, invalidChartYaml: invalidChartYaml, invalidValuesYaml: invalidValuesYaml, invalidTemplateYamls: invalidTemplateYamls, expectedValidManifests: expectedValidManifests}
 }
 
 func TestRenderHelmChart_Valid(t *testing.T) {
@@ -288,8 +326,7 @@ func TestInvalidChartAndValues(t *testing.T) {
 	assert.Contains(t, err.Error(), "<.Values.service.type>: nil pointer evaluating interface {}.type")
 }
 
-func TestInvalidTemplates(t *testing.T) {
-	cleanupDir(testTempDir)
+func TestInvalidTemplate(t *testing.T) {
 	v := setup(t)
 	t.Cleanup(func() { cleanupDir(testTempDir) })
 
@@ -303,7 +340,7 @@ func TestInvalidTemplates(t *testing.T) {
 		t.Fatalf("Failed to write values.yaml: %s", err)
 	}
 
-	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidDeploymentYaml), 0644)
+	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidTemplateYamls["deploymentValues.yaml"]), 0644)
 	if err != nil {
 		t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
 	}
@@ -311,7 +348,39 @@ func TestInvalidTemplates(t *testing.T) {
 	// Run the function
 	err = RenderHelmChart(chartPath, valuesPath, testTempDir)
 	assert.NotNil(t, err)
-	fmt.Println("err: ", err)
+	assert.Contains(t, err.Error(), "failed to render chart: template: my-web-app/templates/deployment.yaml")
+	assert.Contains(t, err.Error(), "map has no entry for key \"nonExistentField\"")
+
+	cleanupDir(testTempDir)
+	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidTemplateYamls["deploymentSyntax.yaml"]), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
+	}
+
+	// Run the function
+	err = RenderHelmChart(chartPath, valuesPath, testTempDir)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "parse error")
+	assert.Contains(t, err.Error(), "function \"selector\" not defined")
+}
+
+func TestInvalidTemplateSyntax(t *testing.T) {
+	v := setup(t)
+	t.Cleanup(func() { cleanupDir(testTempDir) })
+
+	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write Chart.yaml: %s", err)
+	}
+
+	err = os.WriteFile(valuesPath, []byte(v.validValuesYaml), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write values.yaml: %s", err)
+	}
+
+	// assert.Contains(t, err.Error(), "failed to render chart: template: my-web-app/templates/deployment.yaml")
+	// assert.Contains(t, err.Error(), "map has no entry for key \"nonExistentField\"")
+
 }
 
 func cleanupDir(dir string) {

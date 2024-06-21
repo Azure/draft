@@ -62,8 +62,9 @@ func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
 		return fmt.Errorf("failed to merge values: %s", err)
 	}
 
+	e := engine.Engine{Strict: true}
 	// Render the templates
-	renderedFiles, err := engine.Render(chart, mergedValues)
+	renderedFiles, err := e.Render(chart, mergedValues)
 	if err != nil {
 		return fmt.Errorf("failed to render chart: %s", err)
 	}

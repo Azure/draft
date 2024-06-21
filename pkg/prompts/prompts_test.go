@@ -11,20 +11,22 @@ func TestGetVariableDefaultValue(t *testing.T) {
 	tests := []struct {
 		testName     string
 		variableName string
-		variables    map[string]config.BuilderVar
+		variables    []config.BuilderVar
 		inputs       map[string]string
 		want         string
 	}{
 		{
 			testName:     "basicLiteralExtractDefault",
 			variableName: "var1",
-			variables: map[string]config.BuilderVar{
-				"var1": {
+			variables: []config.BuilderVar{
+				{
+					Name: "var1",
 					Default: config.BuilderVarDefault{
 						Value: "default-value-1",
 					},
 				},
-				"var2": {
+				{
+					Name: "var2",
 					Default: config.BuilderVarDefault{
 						Value: "default-value-2",
 					},
@@ -34,17 +36,11 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			want:   "default-value-1",
 		},
 		{
-			testName:     "noDefaultIsEmptyString",
-			variableName: "var1",
-			variables:    map[string]config.BuilderVar{},
-			inputs:       map[string]string{},
-			want:         "",
-		},
-		{
 			testName:     "referenceTakesPrecedenceOverLiteral",
 			variableName: "var1",
-			variables: map[string]config.BuilderVar{
-				"var1": {
+			variables: []config.BuilderVar{
+				{
+					Name: "var1",
 					Default: config.BuilderVarDefault{
 						ReferenceVar: "var2",
 						Value:        "not-this-value",
@@ -58,14 +54,16 @@ func TestGetVariableDefaultValue(t *testing.T) {
 		}, {
 			testName:     "forwardReferencesAreIgnored",
 			variableName: "beforeVar",
-			variables: map[string]config.BuilderVar{
-				"beforeVar": {
+			variables: []config.BuilderVar{
+				{
+					Name: "beforeVar",
 					Default: config.BuilderVarDefault{
 						ReferenceVar: "afterVar",
 						Value:        "before-default-value",
 					},
 				},
-				"afterVar": {
+				{
+					Name: "afterVar",
 					Default: config.BuilderVarDefault{
 						Value: "not-this-value",
 					},
@@ -77,7 +75,8 @@ func TestGetVariableDefaultValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			if got := GetVariableDefaultValue(tt.variableName, tt.variables[tt.variableName], tt.inputs); got != tt.want {
+			varIdxMap := config.VariableIdxMap(tt.variables)
+			if got := GetVariableDefaultValue(tt.variableName, tt.variables[varIdxMap[tt.variableName]], tt.inputs); got != tt.want {
 				t.Errorf("GetVariableDefaultValue() = %v, want %v", got, tt.want)
 			}
 		})

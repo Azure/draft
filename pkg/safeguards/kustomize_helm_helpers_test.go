@@ -289,6 +289,7 @@ func TestInvalidChartAndValues(t *testing.T) {
 }
 
 func TestInvalidTemplates(t *testing.T) {
+	cleanupDir(testTempDir)
 	v := setup(t)
 	t.Cleanup(func() { cleanupDir(testTempDir) })
 

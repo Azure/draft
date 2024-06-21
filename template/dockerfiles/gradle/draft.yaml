@@ -4,16 +4,16 @@ nameOverrides:
   - path: "dockerignore"
     prefix: "."
 variables:
-  - name: "BUILDERVERSION"
-    default: 
-      value: "jdk21"
-    description: "the version of gradle used during the builder stage to generate the executable"
-    exampleValues: ["jdk8","jdk11","jdk17","jdk19","jdk21"]
   - name: "PORT"
     default: 
       value: "80"
     description: "the port exposed in the application"
     type: int
+  - name: "BUILDERVERSION"
+    default: 
+      value: "jdk21"
+    description: "the version of gradle used during the builder stage to generate the executable"
+    exampleValues: ["jdk8","jdk11","jdk17","jdk19","jdk21"]
   - name: "VERSION"
     default: 
       value: "21-jre"

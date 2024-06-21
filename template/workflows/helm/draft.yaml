@@ -23,9 +23,4 @@ variables:
       disablePrompt: true
       value: "./charts/production.yaml"
     description: "the path to the Helm chart override file"
-  - name: "CHARTOVERRIDES"
-    default: 
-      disablePrompt: true
-      value: "replicas:2"
-    description: "the Helm chart overrides"
   

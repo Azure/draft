@@ -26,7 +26,6 @@ type BuilderVar struct {
 	Description   string            `yaml:"description"`
 	ExampleValues []string          `yaml:"exampleValues"`
 	Type          string            `yaml:"type"`
-	Value         string            `yaml:"value"`
 }
 
 type BuilderVarDefault struct {
@@ -86,16 +85,4 @@ func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) erro
 // TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
 type TemplateVariableRecorder interface {
 	Record(key, value string)
-}
-
-func (d *DraftConfig) VariableMap() (map[string]string, error) {
-	varMap := make(map[string]string)
-	for _, variable := range d.Variables {
-		if variable.Value == "" {
-			return nil, errors.New("variable " + variable.Name + " has no default value")
-		}
-		varMap[variable.Name] = variable.Value
-	}
-
-	return varMap, nil
 }

@@ -4,12 +4,12 @@ nameOverrides:
   - path: "dockerignore"
     prefix: "."
 variables:
-  PORT:
+  - name: "PORT"
     default: 
       value: "80"
     description: "the port exposed in the application"
     type: int
-  VERSION:
+  - name: "VERSION"
     default: 
       value: "5.5"
     description: "the version of swift used by the application"

@@ -8,9 +8,9 @@ import (
 
 // TODO: remove Name Overrides since we don't need them anymore
 type DraftConfig struct {
-	DisplayName   string                `yaml:"displayName"`
-	NameOverrides []FileNameOverride    `yaml:"nameOverrides"`
-	Variables     map[string]BuilderVar `yaml:"variables"`
+	DisplayName   string             `yaml:"displayName"`
+	NameOverrides []FileNameOverride `yaml:"nameOverrides"`
+	Variables     []BuilderVar       `yaml:"variables"`
 
 	nameOverrideMap map[string]string
 }
@@ -21,6 +21,7 @@ type FileNameOverride struct {
 }
 
 type BuilderVar struct {
+	Name          string            `yaml:"name"`
 	Default       BuilderVarDefault `yaml:"default"`
 	Description   string            `yaml:"description"`
 	ExampleValues []string          `yaml:"exampleValues"`
@@ -36,9 +37,9 @@ type BuilderVarDefault struct {
 
 func (d *DraftConfig) GetVariableExampleValues() map[string][]string {
 	variableExampleValues := make(map[string][]string)
-	for name, variable := range d.Variables {
+	for _, variable := range d.Variables {
 		if len(variable.ExampleValues) > 0 {
-			variableExampleValues[name] = variable.ExampleValues
+			variableExampleValues[variable.Name] = variable.ExampleValues
 		}
 	}
 
@@ -68,14 +69,14 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 
 // ApplyDefaultVariables will apply the defaults to variables that are not already set
 func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) error {
-	for name, variable := range d.Variables {
+	for _, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
-		if val, ok := customConfig[name]; !ok || val == "" {
+		if val, ok := customConfig[variable.Name]; !ok || val == "" {
 			if variable.Default.Value == "" {
-				return errors.New("variable " + name + " has no default value")
+				return errors.New("variable " + variable.Name + " has no default value")
 			}
-			log.Infof("Variable %s defaulting to value %s", name, variable.Default.Value)
-			customConfig[name] = variable.Default.Value
+			log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
+			customConfig[variable.Name] = variable.Default.Value
 		}
 	}
 
@@ -89,11 +90,11 @@ type TemplateVariableRecorder interface {
 
 func (d *DraftConfig) VariableMap() (map[string]string, error) {
 	varMap := make(map[string]string)
-	for name, variable := range d.Variables {
+	for _, variable := range d.Variables {
 		if variable.Value == "" {
-			return nil, errors.New("variable " + name + " has no default value")
+			return nil, errors.New("variable " + variable.Name + " has no default value")
 		}
-		varMap[name] = variable.Value
+		varMap[variable.Name] = variable.Value
 	}
 
 	return varMap, nil

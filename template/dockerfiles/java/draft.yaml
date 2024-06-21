@@ -4,17 +4,17 @@ nameOverrides:
   - path: "dockerignore"
     prefix: "."
 variables:
-  PORT:
+  - name: "PORT"
     default: 
       value: "80"
     description: "the port exposed in the application"
     type: int
-  BUILDERVERSION:
+  - name: "BUILDERVERSION"
     default: 
       value: "3"
     description: "the version of maven used during the builder stage to generate the executable"
     exampleValues: ["3-eclipse-temurin-11", "3-eclipse-temurin-17", "3-eclipse-temurin-21", "3 (jdk-21)"]
-  VERSION:
+  - name: "VERSION"
     default: 
       value: "21-jre"
     description: "the java version used by the application"

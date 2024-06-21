@@ -68,11 +68,13 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 
 // ApplyDefaultVariables will apply the defaults to variables that are not already set
 func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) error {
+	varIdxMap := d.VariableIdxMap()
+
 	for _, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
 		if customInputs[variable.Name] == "" {
 			if variable.Default.ReferenceVar != "" {
-				customInputs[variable.Name] = d.RecurseReferenceVars(variable, customInputs, make(map[string]int))
+				customInputs[variable.Name] = d.RecurseReferenceVars(variable, customInputs, varIdxMap)
 				log.Infof("Variable %s defaulting to value %s", variable.Name, customInputs[variable.Name])
 			}
 
@@ -98,6 +100,16 @@ func (d *DraftConfig) RecurseReferenceVars(variable BuilderVar, customInputs map
 	}
 
 	return variable.Default.Value
+}
+
+func (d *DraftConfig) VariableIdxMap() map[string]int {
+	varIdxMap := make(map[string]int)
+
+	for i, variable := range d.Variables {
+		varIdxMap[variable.Name] = i
+	}
+
+	return varIdxMap
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are used read using draft configs

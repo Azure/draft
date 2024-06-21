@@ -364,25 +364,6 @@ func TestInvalidTemplate(t *testing.T) {
 	assert.Contains(t, err.Error(), "function \"selector\" not defined")
 }
 
-func TestInvalidTemplateSyntax(t *testing.T) {
-	v := setup(t)
-	t.Cleanup(func() { cleanupDir(testTempDir) })
-
-	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write Chart.yaml: %s", err)
-	}
-
-	err = os.WriteFile(valuesPath, []byte(v.validValuesYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write values.yaml: %s", err)
-	}
-
-	// assert.Contains(t, err.Error(), "failed to render chart: template: my-web-app/templates/deployment.yaml")
-	// assert.Contains(t, err.Error(), "map has no entry for key \"nonExistentField\"")
-
-}
-
 func cleanupDir(dir string) {
 	os.RemoveAll(dir)
 }

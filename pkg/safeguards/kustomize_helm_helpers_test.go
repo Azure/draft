@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	chartPath   = "testdata/my-web-app"             // Path to the test chart directory
-	valuesPath  = "testdata/my-web-app/values.yaml" // Path to the test values.yaml file
-	testTempDir = "testdata/output/manifests"       // Path to the output directory
+	tempDir    = "testdata"
+	chartPath  = "testdata/my-web-app"             // Path to the test chart directory
+	valuesPath = "testdata/my-web-app/values.yaml" // Path to the test values.yaml file
+	outputDir  = "testdata/output/manifests"       // Path to the output directory
 )
 
 type testVars struct {
@@ -36,7 +37,7 @@ type testVars struct {
  */
 func setup(t *testing.T) testVars {
 	// Ensure the output directory is empty before running the test
-	if err := os.RemoveAll(testTempDir); err != nil {
+	if err := os.RemoveAll(outputDir); err != nil {
 		t.Fatalf("Failed to clean output directory: %s", err)
 	}
 
@@ -236,8 +237,7 @@ spec:
 
 func TestRenderHelmChart_Valid(t *testing.T) {
 	v := setup(t)
-	// Register cleanup function to remove output directory after the test
-	t.Cleanup(func() { cleanupDir(testTempDir) })
+	t.Cleanup(func() { cleanupDir(tempDir) })
 
 	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
 	if err != nil {
@@ -265,20 +265,21 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	}
 
 	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, testTempDir)
+	err = RenderHelmChart(chartPath, valuesPath, outputDir)
 	assert.Nil(t, err)
 
 	// Check that the output directory exists and contains expected files
 	expectedFiles := []string{"deployment.yaml", "service.yaml", "ingress.yaml"}
 	for _, fileName := range expectedFiles {
-		outputFilePath := filepath.Join(testTempDir, fileName)
+		outputFilePath := filepath.Join(outputDir, fileName)
 		assert.FileExists(t, outputFilePath, "Expected file does not exist: %s", outputFilePath)
 	}
 
 	//assert that each file output matches expected yaml after values are filled in
-	assert.Equal(t, parseYAML(t, getExpectedDeploymentYAML()), parseYAML(t, readFile(t, filepath.Join(testTempDir, "deployment.yaml"))))
-	assert.Equal(t, parseYAML(t, getExpectedServiceYAML()), parseYAML(t, readFile(t, filepath.Join(testTempDir, "service.yaml"))))
-	assert.Equal(t, parseYAML(t, getExpectedIngressYAML()), parseYAML(t, readFile(t, filepath.Join(testTempDir, "ingress.yaml"))))
+	assert.Equal(t, parseYAML(t, getExpectedDeploymentYAML()), parseYAML(t, readFile(t, filepath.Join(outputDir, "deployment.yaml"))))
+	assert.Equal(t, parseYAML(t, getExpectedServiceYAML()), parseYAML(t, readFile(t, filepath.Join(outputDir, "service.yaml"))))
+	assert.Equal(t, parseYAML(t, getExpectedIngressYAML()), parseYAML(t, readFile(t, filepath.Join(outputDir, "ingress.yaml"))))
+
 }
 
 /**
@@ -288,7 +289,7 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 // Should fail if the chart and values.yaml are invalid
 func TestInvalidChartAndValues(t *testing.T) {
 	v := setup(t)
-	t.Cleanup(func() { cleanupDir(testTempDir) })
+	t.Cleanup(func() { cleanupDir(tempDir) })
 
 	// Invalid Chart.yaml
 	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.invalidChartYaml), 0644)
@@ -296,7 +297,7 @@ func TestInvalidChartAndValues(t *testing.T) {
 		t.Fatalf("Failed to write Chart.yaml: %s", err)
 	}
 
-	err = RenderHelmChart(chartPath, valuesPath, testTempDir)
+	err = RenderHelmChart(chartPath, valuesPath, outputDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to load chart: validation: chart.metadata.name is required")
 
@@ -320,7 +321,7 @@ func TestInvalidChartAndValues(t *testing.T) {
 	}
 
 	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, testTempDir)
+	err = RenderHelmChart(chartPath, valuesPath, outputDir)
 
 	// Assert that an error occurs
 	assert.NotNil(t, err)
@@ -330,7 +331,7 @@ func TestInvalidChartAndValues(t *testing.T) {
 
 func TestInvalidTemplate(t *testing.T) {
 	v := setup(t)
-	t.Cleanup(func() { cleanupDir(testTempDir) })
+	t.Cleanup(func() { cleanupDir(tempDir) })
 
 	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
 	if err != nil {
@@ -348,26 +349,30 @@ func TestInvalidTemplate(t *testing.T) {
 	}
 
 	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, testTempDir)
+	err = RenderHelmChart(chartPath, valuesPath, outputDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to render chart: template: my-web-app/templates/deployment.yaml")
 	assert.Contains(t, err.Error(), "map has no entry for key \"nonExistentField\"")
 
-	cleanupDir(testTempDir)
+	cleanupDir(outputDir)
 	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidTemplateYamls["deploymentSyntax.yaml"]), 0644)
 	if err != nil {
 		t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
 	}
 
 	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, testTempDir)
+	err = RenderHelmChart(chartPath, valuesPath, outputDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "parse error")
 	assert.Contains(t, err.Error(), "function \"selector\" not defined")
 }
 
 func cleanupDir(dir string) {
-	os.RemoveAll(dir)
+	err := os.RemoveAll(dir)
+	if err != nil {
+		fmt.Printf("Failed to clean directory: %s", err)
+
+	}
 }
 
 func getExpectedDeploymentYAML() string {

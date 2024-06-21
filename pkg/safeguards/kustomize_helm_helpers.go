@@ -74,12 +74,8 @@ func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
 		return fmt.Errorf("failed to create output directory: %s", err)
 	}
 
-	fmt.Println("Before printing out rendered files ")
 	// Write each rendered file to the output directory with the same name as in templates/
 	for filePath, content := range renderedFiles {
-		fmt.Printf("Generated manifest file: %s\n", tempDir)
-		fmt.Println(content)
-		fmt.Println("========================================")
 		outputFilePath := filepath.Join(tempDir, filepath.Base(filePath))
 		if err := os.WriteFile(outputFilePath, []byte(content), 0644); err != nil {
 			return fmt.Errorf("failed to write manifest file: %s", err)

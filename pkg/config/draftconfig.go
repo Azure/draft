@@ -67,19 +67,37 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 }
 
 // ApplyDefaultVariables will apply the defaults to variables that are not already set
-func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) error {
+func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) error {
 	for _, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
-		if val, ok := customConfig[variable.Name]; !ok || val == "" {
-			if variable.Default.Value == "" {
-				return errors.New("variable " + variable.Name + " has no default value")
+		if customInputs[variable.Name] == "" {
+			if variable.Default.ReferenceVar != "" {
+				customInputs[variable.Name] = d.RecurseReferenceVars(variable, customInputs, make(map[string]int))
+				log.Infof("Variable %s defaulting to value %s", variable.Name, customInputs[variable.Name])
 			}
-			log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
-			customConfig[variable.Name] = variable.Default.Value
+
+			if customInputs[variable.Name] == "" {
+				if variable.Default.Value != "" {
+					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
+					customInputs[variable.Name] = variable.Default.Value
+				} else {
+					return errors.New("variable " + variable.Name + " has no default value")
+				}
+			}
 		}
 	}
 
 	return nil
+}
+
+func (d *DraftConfig) RecurseReferenceVars(variable BuilderVar, customInputs map[string]string, varIdxMap map[string]int) string {
+	if customInputs[variable.Default.ReferenceVar] != "" {
+		return customInputs[variable.Default.ReferenceVar]
+	} else if variable.Default.ReferenceVar != "" {
+		return d.RecurseReferenceVars(d.Variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap)
+	}
+
+	return variable.Default.Value
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are used read using draft configs

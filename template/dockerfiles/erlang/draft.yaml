@@ -4,17 +4,17 @@ nameOverrides:
   - path: "dockerignore"
     prefix: "."
 variables:
-  PORT:
+  - name: "PORT"
     default: 
       value: "80"
     description: "the port exposed in the application"
     type: int
-  BUILDERVERSION:
+  - name: "BUILDERVERSION"
     default: 
       value: "24.2-alpine"
     description: "the version of erlang used during the builder stage to generate the executable"
     exampleValues: ["24.2-alpine"]
-  VERSION:
+  - name: "VERSION"
     default: 
       value: "3.15"
     description: "the version of alpine used by the application"

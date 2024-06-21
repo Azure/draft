@@ -142,9 +142,12 @@ func TestInitConfig(t *testing.T) {
 }
 
 func TestValidateConfigInputsToPromptsPass(t *testing.T) {
-	required := map[string]config.BuilderVar{
-		"REQUIRED_PROVIDED": {},
-		"REQUIRED_DEFAULTED": {
+	required := []config.BuilderVar{
+		{
+			Name: "REQUIRED_PROVIDED",
+		},
+		{
+			Name: "REQUIRED_DEFAULTED",
 			Default: config.BuilderVarDefault{
 				Value: "DEFAULT_VALUE",
 			},
@@ -160,9 +163,13 @@ func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 }
 
 func TestValidateConfigInputsToPromptsMissing(t *testing.T) {
-	required := map[string]config.BuilderVar{
-		"REQUIRED_PROVIDED": {},
-		"REQUIRED_MISSING":  {},
+	required := []config.BuilderVar{
+		{
+			Name: "REQUIRED_PROVIDED",
+		},
+		{
+			Name: "REQUIRED_MISSING",
+		},
 	}
 	provided := []UserInputs{
 		{Name: "REQUIRED_PROVIDED"},

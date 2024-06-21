@@ -265,14 +265,23 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return err
 	}
 
-	// Check for existing duplicate defaults
+	// Check for existing duplicate defualts
 	for k, v := range extractedValues {
-		if builderVar, ok := langConfig.Variables[k]; ok {
-			builderVar.Value = v
-		} else {
-			langConfig.Variables[k] = config.BuilderVar{
-				Value: v,
+		variableExists := false
+		for i, variable := range langConfig.Variables {
+			if k == variable.Name {
+				variableExists = true
+				langConfig.Variables[i].Default.Value = v
+				break
 			}
+		}
+		if !variableExists {
+			langConfig.Variables = append(langConfig.Variables, config.BuilderVar{
+				Name: k,
+				Default: config.BuilderVarDefault{
+					Value: v,
+				},
+			})
 		}
 	}
 
@@ -455,7 +464,7 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required map[string]config.BuilderVar, provided []UserInputs) (map[string]string, error) {
+func validateConfigInputsToPrompts(required []config.BuilderVar, provided []UserInputs) (map[string]string, error) {
 	customInputs := make(map[string]string)
 
 	// set inputs to provided values
@@ -464,28 +473,27 @@ func validateConfigInputsToPrompts(required map[string]config.BuilderVar, provid
 	}
 
 	// fill in missing vars using variable default references
-	for name, variable := range required {
-		if customInputs[name] == "" && variable.Default.ReferenceVar != "" {
-			if _, ok := customInputs[variable.Default.ReferenceVar]; !ok {
-				log.Debugf("reference variable %s is empty, adding it in", variable.Default.ReferenceVar)
-				customInputs[variable.Default.ReferenceVar] = required[variable.Default.ReferenceVar].Default.Value
-			}
-			log.Debugf("variable %s is empty, using default referenceVar value from %s", name, variable.Default.ReferenceVar)
-			customInputs[name] = customInputs[variable.Default.ReferenceVar]
+	for _, variable := range required {
+		if customInputs[variable.Name] == "" && variable.Default.ReferenceVar != "" {
+			log.Debugf("variable %s is empty, using default referenceVar value from %s", variable.Name, variable.Default.ReferenceVar)
+			customInputs[variable.Name] = customInputs[variable.Default.ReferenceVar]
 		}
 	}
 
 	// fill in missing vars using variable default values
-	for name, variable := range required {
-		if customInputs[name] == "" && variable.Default.Value != "" {
-			log.Debugf("variable %s is empty, using default value %s", name, variable.Default.Value)
-			customInputs[name] = variable.Default.Value
+	for _, variable := range required {
+		if customInputs[variable.Name] == "" && variable.Default.Value != "" {
+			log.Debugf("variable %s is empty, using default value %s", variable.Name, variable.Default.Value)
+			customInputs[variable.Name] = variable.Default.Value
 		}
 	}
 
-	for name, variable := range required {
-		if _, ok := customInputs[name]; !ok {
-			return nil, fmt.Errorf("config missing required variable: %s with description: %s", name, variable.Description)
+	for _, variable := range required {
+		value, ok := customInputs[variable.Name]
+		if !ok {
+			return nil, fmt.Errorf("config missing required variable: %s with description: %s", variable.Name, variable.Description)
+		} else if value == "" {
+			return nil, fmt.Errorf("value for variable %s is empty", variable.Name)
 		}
 	}
 

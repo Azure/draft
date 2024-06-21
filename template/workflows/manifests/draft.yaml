@@ -1,20 +1,20 @@
 variables:
-  BRANCHNAME:
+  - name: "BRANCHNAME"
     description: "the Github branch to automatically deploy from"
-  RESOURCEGROUP:
+  - name: "RESOURCEGROUP"
     description: "the ACR resource group"
-  AZURECONTAINERREGISTRY:
+  - name: "AZURECONTAINERREGISTRY"
     description: "the Azure container registry name"
-  CONTAINERNAME:
+  - name: "CONTAINERNAME"
     description: "the container image name"
-  CLUSTERNAME:
+  - name: "CLUSTERNAME"
     description: "the AKS cluster name"
-  DEPLOYMENTMANIFESTPATH:
+  - name: "DEPLOYMENTMANIFESTPATH"
     default: 
       disablePrompt: true
       value: "./manifests"
     description: "the path to the Kubernetes deployment manifest"
-  BUILDCONTEXTPATH:
+  - name: "BUILDCONTEXTPATH"
     default: 
       value: "."
     description: "the path to the Docker build context"

@@ -39,38 +39,38 @@ func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []st
 
 	inputs := make(map[string]string)
 
-	for name, variable := range config.Variables {
-		if val, ok := skipMap[name]; ok && val != "" {
-			log.Debugf("Skipping prompt for %s", name)
+	for _, variable := range config.Variables {
+		if val, ok := skipMap[variable.Name]; ok && val != "" {
+			log.Debugf("Skipping prompt for %s", variable.Name)
 			continue
 		}
 
 		if variable.Default.IsPromptDisabled {
-			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", name)
-			noPromptDefaultValue := GetVariableDefaultValue(name, variable, inputs)
+			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", variable.Name)
+			noPromptDefaultValue := GetVariableDefaultValue(variable.Name, variable, inputs)
 			if noPromptDefaultValue == "" {
-				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", name)
+				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", variable.Name)
 			}
-			log.Debugf("Using default value %s for %s", noPromptDefaultValue, name)
-			inputs[name] = noPromptDefaultValue
+			log.Debugf("Using default value %s for %s", noPromptDefaultValue, variable.Name)
+			inputs[variable.Name] = noPromptDefaultValue
 			continue
 		}
 
-		log.Debugf("constructing prompt for: %s", name)
+		log.Debugf("constructing prompt for: %s", variable.Name)
 		if variable.Type == "bool" {
 			input, err := RunBoolPrompt(variable, Stdin, Stdout)
 			if err != nil {
 				return nil, err
 			}
-			inputs[name] = input
+			inputs[variable.Name] = input
 		} else {
-			defaultValue := GetVariableDefaultValue(name, variable, inputs)
+			defaultValue := GetVariableDefaultValue(variable.Name, variable, inputs)
 
-			stringInput, err := RunDefaultableStringPrompt(name, defaultValue, variable, nil, Stdin, Stdout)
+			stringInput, err := RunDefaultableStringPrompt(variable.Name, defaultValue, variable, nil, Stdin, Stdout)
 			if err != nil {
 				return nil, err
 			}
-			inputs[name] = stringInput
+			inputs[variable.Name] = stringInput
 		}
 	}
 

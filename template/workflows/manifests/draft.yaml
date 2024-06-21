@@ -1,4 +1,8 @@
 variables:
+  WORKFLOWNAME:
+    default:
+      value: "Build and deploy an app to AKS"
+    description: "the name of the workflow"
   BRANCHNAME:
     description: "the Github branch to automatically deploy from"
   ACRRESOURCEGROUP:
@@ -26,3 +30,12 @@ variables:
     default: 
       value: "."
     description: "the path to the Docker build context"
+  NAMESPACE:
+    default:
+      value: "default"
+    description: "the Kubernetes namespace"
+  PRIVATECLUSTER:
+    default:
+      value: "false"
+    description: "set to true if the AKS cluster is private"
+    type: "bool"

@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -89,13 +90,26 @@ type TemplateVariableRecorder interface {
 }
 
 func (d *DraftConfig) VariableMap() (map[string]string, error) {
-	varMap := make(map[string]string)
+	envArgs := make(map[string]string)
+
 	for _, variable := range d.Variables {
-		if variable.Value == "" {
-			return nil, errors.New("variable " + variable.Name + " has no default value")
-		}
-		varMap[variable.Name] = variable.Value
+		envArgs[variable.Name] = variable.Value
 	}
 
-	return varMap, nil
+	err := d.ApplyDefaultVariables(envArgs)
+	if err != nil {
+		return nil, fmt.Errorf("creating variable map: %w", err)
+	}
+
+	return envArgs, nil
+}
+
+func (d *DraftConfig) VariableIdxMap() map[string]int {
+	varIdxMap := make(map[string]int)
+
+	for i, variable := range d.Variables {
+		varIdxMap[variable.Name] = i
+	}
+
+	return varIdxMap
 }

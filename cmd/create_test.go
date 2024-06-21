@@ -143,8 +143,12 @@ func TestInitConfig(t *testing.T) {
 
 func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 	required := map[string]config.BuilderVar{
-		"REQUIRED_PROVIDED":  {},
-		"REQUIRED_DEFAULTED": {DefaultValue: "DEFAULT_VALUE"},
+		"REQUIRED_PROVIDED": {},
+		"REQUIRED_DEFAULTED": {
+			Default: config.BuilderVarDefault{
+				Value: "DEFAULT_VALUE",
+			},
+		},
 	}
 	provided := []UserInputs{
 		{Name: "REQUIRED_PROVIDED", Value: "PROVIDED_VALUE"},

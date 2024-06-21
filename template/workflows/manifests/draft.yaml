@@ -10,9 +10,11 @@ variables:
   CLUSTERNAME:
     description: "the AKS cluster name"
   DEPLOYMENTMANIFESTPATH:
-    default: "./manifests"
+    default: 
+      disablePrompt: true
+      value: "./manifests"
     description: "the path to the Kubernetes deployment manifest"
-    disablePrompt: true
   BUILDCONTEXTPATH:
-    default: "."
+    default: 
+      value: "."
     description: "the path to the Docker build context"

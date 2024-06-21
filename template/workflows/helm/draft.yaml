@@ -10,18 +10,22 @@ variables:
   CLUSTERNAME:
     description: "the AKS cluster name"
   BUILDCONTEXTPATH:
-    default: "."
+    default:
+      value: "."
     description: "the path to the Docker build context"
   CHARTPATH:
-    default: "./charts"
+    default: 
+      disablePrompt: true
+      value: "./charts"
     description: "the path to the Helm chart"
-    disablePrompt: true
   CHARTOVERRIDEPATH:
-    default: "./charts/production.yaml"
+    default: 
+      disablePrompt: true
+      value: "./charts/production.yaml"
     description: "the path to the Helm chart override file"
-    disablePrompt: true
   CHARTOVERRIDES:
-    default: "replicas:2"
+    default: 
+      disablePrompt: true
+      value: "replicas:2"
     description: "the Helm chart overrides"
-    disablePrompt: true
   

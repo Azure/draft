@@ -10,9 +10,11 @@ variables:
   CLUSTERNAME:
     description: "the AKS cluster name"
   KUSTOMIZEPATH:
-    default: "./overlays/production"
+    default: 
+      disablePrompt: true
+      value: "./overlays/production"
     description: "the path to the Kustomize directory"
-    disablePrompt: true
   BUILDCONTEXTPATH:
-    default: "."
+    default: 
+      value: "."
     description: "the path to the Docker build context"

@@ -1,16 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{- $name := default .Chart.Name .Values.nameOverride }}
-        {{- if contains $name .Release.Name }}
-        {{- .Release.Name | trunc 63 | trimSuffix "-" }}
-        {{- else }}
-        {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-        {{- end }}
-        {{- end }}
+  name: {{ .Values.fullname | quote }}
   labels:
-    {{- include "my-app.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
+    {{ .Values.commonLabels | nindent 4 }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
   namespace: {{ .Values.namespace }}
@@ -22,4 +15,4 @@ spec:
       protocol: TCP
       name: svchttp
   selector:
-    {{- include "my-app.selectorLabels" . | nindent 4 }}
+    {{ .Values.selectorLabels | nindent 4 }}

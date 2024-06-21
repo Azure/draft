@@ -1,16 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{- $name := default .Chart.Name .Values.nameOverride }}
-        {{- if contains $name .Release.Name }}
-        {{- .Release.Name | trunc 63 | trimSuffix "-" }}
-        {{- else }}
-        {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-        {{- end }}
-        {{- end }}
+  name: {{ .Values.fullname | quote }}
   labels:
-    {{- include "my-app.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{.Values.generatorlabel }}
+    {{ .Values.commonLabels | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -18,7 +11,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "my-app.selectorLabels" . | nindent 6 }}
+      {{ .Values.selectorLabels | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -26,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "my-app.selectorLabels" . | nindent 8 }}
+        {{ .Values.selectorLabels | nindent 8 }}
       namespace: {{ .Values.namespace }}
     spec:
       {{- with .Values.imagePullSecrets }}

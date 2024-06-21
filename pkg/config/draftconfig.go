@@ -21,13 +21,17 @@ type FileNameOverride struct {
 }
 
 type BuilderVar struct {
-	DefaultValue     string   `yaml:"default"`
-	Description      string   `yaml:"description"`
-	ExampleValues    []string `yaml:"exampleValues"`
-	IsPromptDisabled bool     `yaml:"disablePrompt"`
-	ReferenceVar     string   `yaml:"referenceVar"`
-	Type             string   `yaml:"type"`
-	Value            string   `yaml:"value"`
+	Default       BuilderVarDefault `yaml:"default"`
+	Description   string            `yaml:"description"`
+	ExampleValues []string          `yaml:"exampleValues"`
+	Type          string            `yaml:"type"`
+	Value         string            `yaml:"value"`
+}
+
+type BuilderVarDefault struct {
+	IsPromptDisabled bool   `yaml:"disablePrompt"`
+	ReferenceVar     string `yaml:"referenceVar"`
+	Value            string `yaml:"value"`
 }
 
 func (d *DraftConfig) GetVariableExampleValues() map[string][]string {
@@ -67,11 +71,11 @@ func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) erro
 	for name, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
 		if val, ok := customConfig[name]; !ok || val == "" {
-			if variable.DefaultValue == "" && name != "DOCKERFILE" {
+			if variable.Default.Value == "" {
 				return errors.New("variable " + name + " has no default value")
 			}
-			log.Infof("Variable %s defaulting to value %s", name, variable.DefaultValue)
-			customConfig[name] = variable.DefaultValue
+			log.Infof("Variable %s defaulting to value %s", name, variable.Default.Value)
+			customConfig[name] = variable.Default.Value
 		}
 	}
 

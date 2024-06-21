@@ -1,7 +1,4 @@
 variables:
-  WORKFLOWNAME:
-    default: "Build and deploy an app to AKS with Helm"
-    description: "the name of the workflow"
   BRANCHNAME:
     description: "the Github branch to automatically deploy from"
   ACRRESOURCEGROUP:
@@ -15,19 +12,16 @@ variables:
   CLUSTERNAME:
     description: "the AKS cluster name"
   KUSTOMIZEPATH:
-    default: "./overlays/production"
+    default: 
+      disablePrompt: true
+      value: "./overlays/production"
     description: "the path to the Kustomize directory"
-    disablePrompt: true
   DOCKERFILE:
+    default:
+      disablePrompt: true
+      value: "./Dockerfile"
     description: "the path to the Dockerfile"
-    disablePrompt: true
   BUILDCONTEXTPATH:
-    default: "."
+    default: 
+      value: "."
     description: "the path to the Docker build context"
-  NAMESPACE:
-    default: "default"
-    description: "the Kubernetes namespace"
-  PRIVATECLUSTER:
-    default: "false"
-    description: "set to true if the AKS cluster is private"
-    type: "bool"

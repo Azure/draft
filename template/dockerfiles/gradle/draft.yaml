@@ -5,14 +5,17 @@ nameOverrides:
     prefix: "."
 variables:
   BUILDERVERSION:
-    default: "jdk21"
+    default: 
+      value: "jdk21"
     description: "the version of gradle used during the builder stage to generate the executable"
     exampleValues: ["jdk8","jdk11","jdk17","jdk19","jdk21"]
   PORT:
-    default: "80"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   VERSION:
-    default: "21-jre"
+    default: 
+      value: "21-jre"
     description: "the java version used by the application"
     exampleValues: ["11-jre","17-jre","19-jre","21-jre"]

@@ -5,10 +5,12 @@ nameOverrides:
     prefix: "."
 variables:
   PORT:
-    default: "80"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   VERSION:
-    default: "1.70.0"
+    default: 
+      value: "1.70.0"
     description: "the version of rust used by the application"
     exampleValues: ["1.70.0","1.65.0", "1.60", "1.54", "1.53"]

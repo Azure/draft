@@ -5,10 +5,12 @@ nameOverrides:
     prefix: "."
 variables:
   PORT:
-    default: "80"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   VERSION:
-    default: "5.5"
+    default: 
+      value: "5.5"
     description: "the version of swift used by the application"
     exampleValues: ["5.2","5.5"]

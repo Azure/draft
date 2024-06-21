@@ -5,10 +5,12 @@ nameOverrides:
     prefix: "."
 variables:
   PORT:
-    default: "80"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   VERSION:
-    default: "14"
+    default: 
+      value: "14"
     description: "the version of node used in the application"
     exampleValues: ["10.16.3", "12.16.3", "14.15.4"]

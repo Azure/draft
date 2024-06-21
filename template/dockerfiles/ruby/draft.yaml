@@ -5,10 +5,12 @@ nameOverrides:
     prefix: "."
 variables:
   PORT:
-    default: "80"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   VERSION:
-    default: "3.1.2"
+    default: 
+      value: "3.1.2"
     description: "the version of ruby used by the application"
     exampleValues: ["3.1.2", "2.6", "2.5", "2.4"] 

@@ -20,10 +20,14 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			variableName: "var1",
 			variables: map[string]config.BuilderVar{
 				"var1": {
-					DefaultValue: "default-value-1",
+					Default: config.BuilderVarDefault{
+						Value: "default-value-1",
+					},
 				},
 				"var2": {
-					DefaultValue: "default-value-2",
+					Default: config.BuilderVarDefault{
+						Value: "default-value-2",
+					},
 				},
 			},
 			inputs: map[string]string{},
@@ -41,8 +45,10 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			variableName: "var1",
 			variables: map[string]config.BuilderVar{
 				"var1": {
-					DefaultValue: "not-this-value",
-					ReferenceVar: "var2",
+					Default: config.BuilderVarDefault{
+						ReferenceVar: "var2",
+						Value:        "not-this-value",
+					},
 				},
 			},
 			inputs: map[string]string{
@@ -54,11 +60,15 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			variableName: "beforeVar",
 			variables: map[string]config.BuilderVar{
 				"beforeVar": {
-					DefaultValue: "before-default-value",
-					ReferenceVar: "afterVar",
+					Default: config.BuilderVarDefault{
+						ReferenceVar: "afterVar",
+						Value:        "before-default-value",
+					},
 				},
 				"afterVar": {
-					DefaultValue: "not-this-value",
+					Default: config.BuilderVarDefault{
+						Value: "not-this-value",
+					},
 				},
 			},
 			inputs: map[string]string{},
@@ -76,36 +86,72 @@ func TestGetVariableDefaultValue(t *testing.T) {
 
 func TestRunStringPrompt(t *testing.T) {
 	tests := []struct {
-		testName     string
-		prompt       config.BuilderVar
-		userInputs   []string
-		defaultValue string
-		want         string
-		wantErr      bool
+		testName         string
+		variableName     string
+		prompt           config.BuilderVar
+		userInputs       []string
+		defaultValue     string
+		want             string
+		wantErr          bool
+		mockDirNameValue string
 	}{
 		{
 			testName: "basicPrompt",
 			prompt: config.BuilderVar{
 				Description: "var1 description",
 			},
-			userInputs:   []string{"value-1\n"},
-			defaultValue: "input",
-			want:         "value-1",
-			wantErr:      false,
+			userInputs:       []string{"value-1\n"},
+			defaultValue:     "input",
+			want:             "value-1",
+			wantErr:          false,
+			mockDirNameValue: "",
 		},
 		{
 			testName: "promptWithDefault",
 			prompt: config.BuilderVar{
 				Description: "var1 description",
 			},
-			userInputs:   []string{"\n"},
-			defaultValue: "defaultValue",
-			want:         "defaultValue",
-			wantErr:      false,
+			userInputs:       []string{"\n"},
+			defaultValue:     "defaultValue",
+			want:             "defaultValue",
+			wantErr:          false,
+			mockDirNameValue: "",
+		},
+		{
+			testName:     "appNameUsesDirName",
+			variableName: "APPNAME",
+			prompt: config.BuilderVar{
+				Description: "app name",
+			},
+			userInputs:       []string{"\n"},
+			defaultValue:     "currentdir",
+			want:             "currentdir",
+			wantErr:          false,
+			mockDirNameValue: "currentdir",
+		},
+		{
+			testName:     "invalidAppName",
+			variableName: "APPNAME",
+			prompt: config.BuilderVar{
+				Description: "app name",
+			},
+			userInputs:       []string{"--invalid-app-name\n"},
+			defaultValue:     "defaultApp",
+			want:             "",
+			wantErr:          true,
+			mockDirNameValue: "currentdir",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
+			// Mock the getCurrentDirNameFunc for testing
+			originalGetCurrentDirNameFunc := getCurrentDirNameFunc
+			defer func() { getCurrentDirNameFunc = originalGetCurrentDirNameFunc }()
+			getCurrentDirNameFunc = func() (string, error) {
+				return tt.mockDirNameValue, nil
+			}
+
 			inReader, inWriter := io.Pipe()
 
 			go func() {
@@ -120,7 +166,7 @@ func TestRunStringPrompt(t *testing.T) {
 					t.Errorf("Error closing inWriter: %v", err)
 				}
 			}()
-			got, err := RunDefaultableStringPrompt(tt.prompt, tt.defaultValue, nil, inReader, nil)
+			got, err := RunDefaultableStringPrompt(tt.variableName, tt.defaultValue, tt.prompt, nil, inReader, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunDefaultableStringPrompt() error = %v, wantErr %v", err, tt.wantErr)
@@ -132,6 +178,7 @@ func TestRunStringPrompt(t *testing.T) {
 		})
 	}
 }
+
 func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 	tests := []struct {
 		testName     string
@@ -146,9 +193,11 @@ func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 			config: config.DraftConfig{
 				Variables: map[string]config.BuilderVar{
 					"var1": {
-						DefaultValue:     "defaultValue",
-						Description:      "var1 description",
-						IsPromptDisabled: true,
+						Default: config.BuilderVarDefault{
+							IsPromptDisabled: true,
+							Value:            "defaultValue",
+						},
+						Description: "var1 description",
 					},
 				},
 			},
@@ -162,22 +211,30 @@ func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 			config: config.DraftConfig{
 				Variables: map[string]config.BuilderVar{
 					"var1-no-prompt": {
-						DefaultValue:     "defaultValueNoPrompt1",
-						Description:      "var1 has IsPromptDisabled and should skip prompt and use default value",
-						IsPromptDisabled: true,
+						Default: config.BuilderVarDefault{
+							IsPromptDisabled: true,
+							Value:            "defaultValueNoPrompt1",
+						},
+						Description: "var1 has IsPromptDisabled and should skip prompt and use default value",
 					},
 					"var2-default": {
-						DefaultValue: "defaultValue2",
-						Description:  "var2 has a default value and will receive an empty value, so it should use the default value",
+						Default: config.BuilderVarDefault{
+							Value: "defaultValue2",
+						},
+						Description: "var2 has a default value and will receive an empty value, so it should use the default value",
 					},
 					"var3-no-prompt": {
-						DefaultValue:     "defaultValueNoPrompt3",
-						Description:      "var3 has IsPromptDisabled and should skip prompt and use default value",
-						IsPromptDisabled: true,
+						Default: config.BuilderVarDefault{
+							IsPromptDisabled: true,
+							Value:            "defaultValueNoPrompt3",
+						},
+						Description: "var3 has IsPromptDisabled and should skip prompt and use default value",
 					},
 					"var4": {
-						DefaultValue: "defaultValue4",
-						Description:  "var4 has a default value, but has a value entered, so it should use the entered value",
+						Default: config.BuilderVarDefault{
+							Value: "defaultValue4",
+						},
+						Description: "var4 has a default value, but has a value entered, so it should use the entered value",
 					},
 				},
 			},

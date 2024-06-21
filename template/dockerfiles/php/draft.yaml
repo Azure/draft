@@ -5,14 +5,17 @@ nameOverrides:
     prefix: "."
 variables:
   PORT:
-    default: "80"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   BUILDERVERSION:
-    default: "1"
+    default: 
+      value: "1"
     description: "the version of composer installed during the build stage to be used by the application"
     exampleValues: ["1"]
   VERSION:
-    default: "7.1-apache"
+    default: 
+      value: "7.1-apache"
     description: "the version of php used by the application"
     exampleValues: ["7.1-apache"]

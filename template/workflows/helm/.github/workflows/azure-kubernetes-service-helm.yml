@@ -32,7 +32,7 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: ""Build and deploy an app to AKS with Helm"
+name: "Build and deploy an app to AKS with Helm"
 
 on:
   push:

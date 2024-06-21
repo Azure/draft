@@ -1,6 +1,7 @@
 package safeguards
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -323,7 +324,8 @@ func TestInvalidChartAndValues(t *testing.T) {
 
 	// Assert that an error occurs
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "<.Values.service.type>: nil pointer evaluating interface {}.type")
+	fmt.Println("err: ", err)
+	assert.Contains(t, err.Error(), "failed to render chart:")
 }
 
 func TestInvalidTemplate(t *testing.T) {

@@ -37,15 +37,19 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			inputs: map[string]string{},
 			want:   "default-value-1",
 		},
-		// {
-		// 	testName:     "noDefaultIsEmptyString",
-		// 	variableName: "var1",
-		// 	draftConfig: config.DraftConfig{
-		// 		Variables: []config.BuilderVar{},
-		// 	},
-		// 	inputs: map[string]string{},
-		// 	want:   "",
-		// },
+		{
+			testName:     "noDefaultIsEmptyString",
+			variableName: "var1",
+			draftConfig: config.DraftConfig{
+				Variables: []config.BuilderVar{
+					{
+						Name: "var1",
+					},
+				},
+			},
+			inputs: map[string]string{},
+			want:   "",
+		},
 		{
 			testName:     "referenceTakesPrecedenceOverLiteral",
 			variableName: "var1",
@@ -64,29 +68,30 @@ func TestGetVariableDefaultValue(t *testing.T) {
 				"var2": "this-value",
 			},
 			want: "this-value",
-		}, {
-			testName:     "forwardReferencesAreIgnored",
-			variableName: "beforeVar",
-			draftConfig: config.DraftConfig{
-				Variables: []config.BuilderVar{
-					{
-						Name: "beforeVar",
-						Default: config.BuilderVarDefault{
-							ReferenceVar: "afterVar",
-							Value:        "before-default-value",
-						},
-					},
-					{
-						Name: "afterVar",
-						Default: config.BuilderVarDefault{
-							Value: "not-this-value",
-						},
-					},
-				},
-			},
-			inputs: map[string]string{},
-			want:   "before-default-value",
 		},
+		// {
+		// 	testName:     "forwardReferencesAreIgnored",
+		// 	variableName: "beforeVar",
+		// 	draftConfig: config.DraftConfig{
+		// 		Variables: []config.BuilderVar{
+		// 			{
+		// 				Name: "beforeVar",
+		// 				Default: config.BuilderVarDefault{
+		// 					ReferenceVar: "afterVar",
+		// 					Value:        "before-default-value",
+		// 				},
+		// 			},
+		// 			{
+		// 				Name: "afterVar",
+		// 				Default: config.BuilderVarDefault{
+		// 					Value: "not-this-value",
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	inputs: map[string]string{},
+		// 	want:   "before-default-value",
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {

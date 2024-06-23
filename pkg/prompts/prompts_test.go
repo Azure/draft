@@ -36,6 +36,17 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			want:   "default-value-1",
 		},
 		{
+			testName:     "noDefaultIsEmptyString",
+			variableName: "var1",
+			variables: []config.BuilderVar{
+				{
+					Name: "var1",
+				},
+			},
+			inputs: map[string]string{},
+			want:   "",
+		},
+		{
 			testName:     "referenceTakesPrecedenceOverLiteral",
 			variableName: "var1",
 			variables: []config.BuilderVar{

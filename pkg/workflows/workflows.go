@@ -195,6 +195,10 @@ func GenerateWorkflowBytes(draftConfig *config.DraftConfig, deployType string) (
 		return nil, fmt.Errorf("generate workflow bytes: %w", err)
 	}
 
+	if err = draftConfig.ApplyDefaultVariables(envArgs); err != nil {
+		return nil, fmt.Errorf("apply default variables: %w", err)
+	}
+
 	var srcPath string
 
 	switch deployType {

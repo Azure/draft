@@ -1,22 +1,26 @@
 variables:
+  - name: "BRANCHNAME"
+    description: "the Github branch to automatically deploy from"
+  - name: "RESOURCEGROUP"
+    description: "the ACR resource group"
   - name: "AZURECONTAINERREGISTRY"
     description: "the Azure container registry name"
   - name: "CONTAINERNAME"
     description: "the container image name"
-  - name: "RESOURCEGROUP"
-    description: "the Azure resource group of your AKS cluster"
   - name: "CLUSTERNAME"
     description: "the AKS cluster name"
-  - name: "BRANCHNAME"
-    description: "the Github branch to automatically deploy from"
   - name: "BUILDCONTEXTPATH"
+    default:
+      value: "."
     description: "the path to the Docker build context"
-variableDefaults:
   - name: "CHARTPATH"
-    value: "./charts"
-    disablePrompt: true
+    default: 
+      disablePrompt: true
+      value: "./charts"
+    description: "the path to the Helm chart"
   - name: "CHARTOVERRIDEPATH"
-    value: "./charts/production.yaml"
-    disablePrompt: true
-  - name: "BUILDCONTEXTPATH"
-    value: "."
+    default: 
+      disablePrompt: true
+      value: "./charts/production.yaml"
+    description: "the path to the Helm chart override file"
+  

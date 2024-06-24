@@ -1,19 +1,20 @@
 variables:
+  - name: "BRANCHNAME"
+    description: "the Github branch to automatically deploy from"
+  - name: "RESOURCEGROUP"
+    description: "the ACR resource group"
   - name: "AZURECONTAINERREGISTRY"
     description: "the Azure container registry name"
   - name: "CONTAINERNAME"
     description: "the container image name"
-  - name: "RESOURCEGROUP"
-    description: "the Azure resource group of your AKS cluster"
   - name: "CLUSTERNAME"
     description: "the AKS cluster name"
-  - name: "BRANCHNAME"
-    description: "the Github branch to automatically deploy from"
-  - name: "BUILDCONTEXTPATH"
-    description: "the path to the Docker build context"
-variableDefaults:
   - name: "KUSTOMIZEPATH"
-    value: "./overlays/production"
-    disablePrompt: true
+    default: 
+      disablePrompt: true
+      value: "./overlays/production"
+    description: "the path to the Kustomize directory"
   - name: "BUILDCONTEXTPATH"
-    value: "."
+    default: 
+      value: "."
+    description: "the path to the Docker build context"

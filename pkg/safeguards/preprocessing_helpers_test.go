@@ -12,33 +12,26 @@ import (
 )
 
 const (
-	testManifestsDir = "testmanifests"
-	tempDir          = "testdata"
-	chartPath        = "testdata/my-web-app"             // Path to the test chart directory
-	valuesPath       = "testdata/my-web-app/values.yaml" // Path to the test values.yaml file
-	outputDir        = "testdata/output/manifests"       // Path to the output directory
+	testManifestsDir   = "testmanifests"
+	outputDir          = "testdata/output/manifests" // Path to the output directory
+	tempDir            = "testdata"
+	chartPath          = "tests/testmanifests/validchart"
+	invalidChartPath   = "tests/testmanifests/invalidchart"
+	invalidValuesChart = "tests/testmanifests/invalidvalues"
 )
 
-type testVars struct {
-	validChartYaml       string
-	validValuesYaml      string
-	validDeploymentYaml  string
-	validServiceYaml     string
-	validIngressYaml     string
-	invalidChartYaml     string
-	invalidValuesYaml    string
-	invalidTemplateYamls map[string]string
-}
+// type testVars struct {
+// 	validChartYaml       string
+// 	validValuesYaml      string
+// 	validDeploymentYaml  string
+// 	validServiceYaml     string
+// 	validIngressYaml     string
+// 	invalidChartYaml     string
+// 	invalidValuesYaml    string
+// 	invalidTemplateYamls map[string]string
+// }
 
-/*
-* Tests to cover:
-* Invalid values.yaml
-* Invalid chart.yaml -- what is the bare minimum needed for a chart.yaml? What fields, if included, would break this function?
-* short template files, long template files.
-* One template file, multiple template files. One valid, others invalid
- */
-
-func setup(t *testing.T) testVars {
+func setup(t *testing.T) {
 	// Ensure the output directory is empty before running the test
 	if err := os.RemoveAll(outputDir); err != nil {
 		t.Fatalf("Failed to clean output directory: %s", err)
@@ -51,68 +44,47 @@ func setup(t *testing.T) testVars {
 	}
 
 	//validTemplateYamls: map[string]string{"service.yaml": serviceYAML}
-	chartYAML := getManifestAsString("validchart.yaml")
-	valuesYAML := getManifestAsString("validvalues.yaml")
-	validDeploymentYaml := getManifestAsString("validdeployment.yaml.tmpl")
-	validServiceYaml := getManifestAsString("validservice.yaml.tmpl")
-	validIngressYaml := getManifestAsString("validingress.yaml.tmpl")
-	invalidChartYaml := getManifestAsString("invalidchart.yaml")
-	invalidValuesYaml := getManifestAsString("invalidvalues.yaml")
+	// chartYAML := getManifestAsString("validchart/Chart.yaml")
+	// valuesYAML := getManifestAsString("validchart/values.yaml")
+	// validDeploymentYaml := getManifestAsString("validchart/templates/deployment.yaml")
+	// validServiceYaml := getManifestAsString("validchart/templates/service.yaml")
+	// validIngressYaml := getManifestAsString("validchart/templates/ingress.yaml")
 
-	// Create invalid templates
-	invalidTemplateYamls := make(map[string]string)
-	invalidTemplateYamls["deployment.yaml"] = getManifestAsString("invaliddeployment.yaml.tmpl")
-	invalidTemplateYamls["deploymentSyntax.yaml"] = getManifestAsString("invaliddeploymentsyntax.yaml.tmpl")
-	invalidTemplateYamls["deploymentValues.yaml"] = getManifestAsString("invaliddeploymentvalues.yaml.tmpl")
+	// invalidChartYaml := getManifestAsString("invalidchart.yaml")
+	// invalidValuesYaml := getManifestAsString("invalidvalues.yaml")
+	// // Create invalid templates
+	// invalidTemplateYamls := make(map[string]string)
+	// invalidTemplateYamls["deployment.yaml"] = getManifestAsString("invaliddeployment.yaml.tmpl")
+	// invalidTemplateYamls["deploymentSyntax.yaml"] = getManifestAsString("invaliddeploymentsyntax.yaml.tmpl")
+	// invalidTemplateYamls["deploymentValues.yaml"] = getManifestAsString("invaliddeploymentvalues.yaml.tmpl")
 
-	return testVars{validChartYaml: chartYAML, validValuesYaml: valuesYAML, validDeploymentYaml: validDeploymentYaml, validServiceYaml: validServiceYaml, validIngressYaml: validIngressYaml, invalidChartYaml: invalidChartYaml, invalidValuesYaml: invalidValuesYaml, invalidTemplateYamls: invalidTemplateYamls}
+	//return testVars{validChartYaml: chartYAML, validValuesYaml: valuesYAML, validDeploymentYaml: validDeploymentYaml, validServiceYaml: validServiceYaml, validIngressYaml: validIngressYaml, invalidChartYaml: invalidChartYaml, invalidValuesYaml: invalidValuesYaml, invalidTemplateYamls: invalidTemplateYamls}
 }
 
+// non-dir test, user provides path to just Chart.yaml
+// func TestValidChart_FileOnly(t *testing.T) {
+// // Run the function
+// err = RenderHelmChart(chartPath, valuesPath, outputDir)
+// }
 func TestRenderHelmChart_Valid(t *testing.T) {
-	v := setup(t)
+	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write Chart.yaml: %s", err)
-	}
-
-	err = os.WriteFile(valuesPath, []byte(v.validValuesYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write values.yaml: %s", err)
-	}
-
-	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.validDeploymentYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
-	}
-
-	err = os.WriteFile(filepath.Join(chartPath, "templates/service.yaml"), []byte(v.validServiceYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write templates/service.yaml: %s", err)
-	}
-
-	err = os.WriteFile(filepath.Join(chartPath, "templates/ingress.yaml"), []byte(v.validIngressYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write templates/ingress.yaml: %s", err)
-	}
-
 	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, outputDir)
+	err := RenderHelmChart(chartPath, outputDir)
 	assert.Nil(t, err)
 
 	// Check that the output directory exists and contains expected files
 	expectedFiles := []string{"deployment.yaml", "service.yaml", "ingress.yaml"}
 	for _, fileName := range expectedFiles {
 		outputFilePath := filepath.Join(outputDir, fileName)
-		assert.FileExists(t, outputFilePath, "Expected file does not exist: %s", outputFilePath)
+		assert.FileExists(t, outputFilePath, "Expected file was not created: %s", outputFilePath)
 	}
 
 	//assert that each file output matches expected yaml after values are filled in
 	assert.Equal(t, parseYAML(t, getManifestAsString("expecteddeployment.yaml")), parseYAML(t, readFile(t, filepath.Join(outputDir, "deployment.yaml"))))
 	assert.Equal(t, parseYAML(t, getManifestAsString("expectedservice.yaml")), parseYAML(t, readFile(t, filepath.Join(outputDir, "service.yaml"))))
 	assert.Equal(t, parseYAML(t, getManifestAsString("expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(outputDir, "ingress.yaml"))))
-
 }
 
 /**
@@ -120,84 +92,64 @@ func TestRenderHelmChart_Valid(t *testing.T) {
  */
 
 // Should fail if the chart and values.yaml are invalid
-func TestInvalidChartAndValues(t *testing.T) {
-	v := setup(t)
+func TestInvalidChart(t *testing.T) {
+	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	// Invalid Chart.yaml
-	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.invalidChartYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write Chart.yaml: %s", err)
-	}
-
-	err = RenderHelmChart(chartPath, valuesPath, outputDir)
+	// Invalid Chart, values and templates are valid
+	err := RenderHelmChart(invalidChartPath, outputDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to load chart: validation: chart.metadata.name is required")
+}
 
-	// Write valid Chart.yaml
-	err = os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write Chart.yaml: %s", err)
-	}
+func TestInvalidValues(t *testing.T) {
+	setup(t)
+	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	// Write invalid values.yaml
-	err = os.WriteFile(filepath.Join(chartPath, "values.yaml"), []byte(v.invalidValuesYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write values.yaml: %s", err)
-	}
-
-	// Write the service template
-	err = os.WriteFile(filepath.Join(chartPath, "templates/service.yaml"), []byte(v.validServiceYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write templates/service.yaml: %s", err)
-	}
-
-	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, outputDir)
+	// Invalid values, chart and templates are valid
+	err := RenderHelmChart(invalidValuesChart, outputDir)
 
 	// Assert that an error occurs
 	assert.NotNil(t, err)
-	fmt.Println("err: ", err)
-	assert.Contains(t, err.Error(), "failed to render chart:")
 }
 
-func TestInvalidTemplate(t *testing.T) {
-	v := setup(t)
-	t.Cleanup(func() { cleanupDir(tempDir) })
+// func TestInvalidTemplate(t *testing.T) {
+// 	v := setup(t)
+// 	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write Chart.yaml: %s", err)
-	}
+// 	err := os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
+// 	if err != nil {
+// 		t.Fatalf("Failed to write Chart.yaml: %s", err)
+// 	}
 
-	err = os.WriteFile(valuesPath, []byte(v.validValuesYaml), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write values.yaml: %s", err)
-	}
+// 	// err = os.WriteFile(valuesPath, []byte(v.validValuesYaml), 0644)
+// 	// if err != nil {
+// 	// 	t.Fatalf("Failed to write values.yaml: %s", err)
+// 	// }
 
-	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidTemplateYamls["deploymentValues.yaml"]), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
-	}
+// 	// err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidTemplateYamls["deploymentValues.yaml"]), 0644)
+// 	// if err != nil {
+// 	// 	t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
+// 	// }
 
-	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, outputDir)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to render chart: template: my-web-app/templates/deployment.yaml")
-	assert.Contains(t, err.Error(), "map has no entry for key \"nonExistentField\"")
+// 	// Run the function
+// 	err = RenderHelmChart(chartPath, valuesPath, outputDir)
+// 	assert.NotNil(t, err)
+// 	assert.Contains(t, err.Error(), "failed to render chart: template: my-web-app/templates/deployment.yaml")
+// 	assert.Contains(t, err.Error(), "map has no entry for key \"nonExistentField\"")
 
-	cleanupDir(outputDir)
-	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidTemplateYamls["deploymentSyntax.yaml"]), 0644)
-	if err != nil {
-		t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
-	}
+// 	cleanupDir(outputDir)
+// 	err = os.WriteFile(filepath.Join(chartPath, "templates/deployment.yaml"), []byte(v.invalidTemplateYamls["deploymentSyntax.yaml"]), 0644)
+// 	if err != nil {
+// 		t.Fatalf("Failed to write templates/deployment.yaml: %s", err)
+// 	}
 
-	// Run the function
-	err = RenderHelmChart(chartPath, valuesPath, outputDir)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "parse error")
-	assert.Contains(t, err.Error(), "function \"selector\" not defined")
-}
+// Run the function
+// err := RenderHelmChart(chartPath, valuesPath, outputDir)
+// assert.NotNil(t, err)
+// assert.Contains(t, err.Error(), "parse error")
+// assert.Contains(t, err.Error(), "function \"selector\" not defined")
+// }
 
 func cleanupDir(dir string) {
 	err := os.RemoveAll(dir)

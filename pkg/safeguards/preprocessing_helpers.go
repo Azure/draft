@@ -13,13 +13,14 @@ import (
 )
 
 // Given a valid helm chart, renders to ManifestFile and returns the object
-func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
+func RenderHelmChart(chartPath, tempDir string) error {
 	// Load Helm chart
 	chart, err := loader.Load(chartPath)
 	if err != nil {
 		return fmt.Errorf("failed to load chart: %s", err)
 	}
 
+	valuesPath := filepath.Join(chartPath, "values.yaml") //enforce that values.yaml must be at same level as Chart.yaml
 	// Load values file
 	valuesFile, err := os.ReadFile(valuesPath)
 	if err != nil {
@@ -32,7 +33,7 @@ func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
 	}
 
 	// Extract release options from values
-	releaseName, ok := vals["releaseName"].(string)
+	releaseName, ok := vals["releaseName"].(string) //TODO: What do we want to do if a releaseName and namespace is not specified in the values.yaml?
 	if !ok || releaseName == "" {
 		log.Fatalf("releaseName not found or empty in values.yaml")
 	}

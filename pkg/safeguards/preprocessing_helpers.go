@@ -55,6 +55,7 @@ func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
 	}
 
 	e := engine.Engine{Strict: true}
+
 	// Render the templates
 	renderedFiles, err := e.Render(chart, mergedValues)
 	if err != nil {

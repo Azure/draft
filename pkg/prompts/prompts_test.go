@@ -69,34 +69,34 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			},
 			want: "this-value",
 		},
-		// {
-		// 	testName:     "forwardReferencesAreIgnored",
-		// 	variableName: "beforeVar",
-		// 	draftConfig: config.DraftConfig{
-		// 		Variables: []config.BuilderVar{
-		// 			{
-		// 				Name: "beforeVar",
-		// 				Default: config.BuilderVarDefault{
-		// 					ReferenceVar: "afterVar",
-		// 					Value:        "before-default-value",
-		// 				},
-		// 			},
-		// 			{
-		// 				Name: "afterVar",
-		// 				Default: config.BuilderVarDefault{
-		// 					Value: "not-this-value",
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	inputs: map[string]string{},
-		// 	want:   "before-default-value",
-		// },
+		{
+			testName:     "forwardReferencesAreIgnored",
+			variableName: "beforeVar",
+			draftConfig: config.DraftConfig{
+				Variables: []config.BuilderVar{
+					{
+						Name: "beforeVar",
+						Default: config.BuilderVarDefault{
+							ReferenceVar: "afterVar",
+							Value:        "before-default-value",
+						},
+					},
+					{
+						Name: "afterVar",
+						Default: config.BuilderVarDefault{
+							Value: "not-this-value",
+						},
+					},
+				},
+			},
+			inputs: map[string]string{},
+			want:   "before-default-value",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			varIdxMap := config.VariableIdxMap(tt.draftConfig.Variables)
-			if got := GetVariableDefaultValue(tt.variableName, &tt.draftConfig, tt.draftConfig.Variables[varIdxMap[tt.variableName]], tt.inputs); got != tt.want {
+			if got := GetVariableDefaultValue(tt.variableName, tt.draftConfig.Variables[varIdxMap[tt.variableName]], tt.inputs); got != tt.want {
 				t.Errorf("GetVariableDefaultValue() = %v, want %v", got, tt.want)
 			}
 		})

@@ -2,7 +2,6 @@ package safeguards
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,19 +11,21 @@ import (
 )
 
 const (
-	tempDir                 = "testdata"
-	outputDir               = "testdata/output/manifests" // Path to the output directory
-	chartPath               = "tests/testmanifests/validchart"
-	invalidChartPath        = "tests/testmanifests/invalidchart"
-	invalidValuesChart      = "tests/testmanifests/invalidvalues"
-	invalidDeploymentsChart = "tests/testmanifests/invaliddeployment"
-	invalidDeploymentSyntax = "tests/testmanifests/invaliddeployment-syntax"
-	invalidDeploymentValues = "tests/testmanifests/invaliddeployment-values"
+	tempDir                  = "testdata" // Rendered files are stored here before they are read for comparison
+	chartPath                = "tests/testmanifests/validchart"
+	invalidChartPath         = "tests/testmanifests/invalidchart"
+	invalidValuesChart       = "tests/testmanifests/invalidvalues"
+	invalidDeploymentsChart  = "tests/testmanifests/invaliddeployment"
+	invalidDeploymentSyntax  = "tests/testmanifests/invaliddeployment-syntax"
+	invalidDeploymentValues  = "tests/testmanifests/invaliddeployment-values"
+	differentFolderStructure = "tests/testmanifests/different-structure"
+	deploymentsInOneFile     = "tests/testmanifests/deployments-in-one-file"
+	multipleValuesFile       = "tests/testmanifests/multiple-values-files"
 )
 
 func setup(t *testing.T) {
 	// Ensure the output directory is empty before running the test
-	if err := os.RemoveAll(outputDir); err != nil {
+	if err := os.RemoveAll(tempDir); err != nil {
 		t.Fatalf("Failed to clean output directory: %s", err)
 	}
 
@@ -40,20 +41,20 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	t.Cleanup(func() { cleanupDir(tempDir) })
 
 	// Run the function
-	err := RenderHelmChart(chartPath, outputDir)
+	err := RenderHelmChart(chartPath, tempDir)
 	assert.Nil(t, err)
 
 	// Check that the output directory exists and contains expected files
 	expectedFiles := []string{"deployment.yaml", "service.yaml", "ingress.yaml"}
 	for _, fileName := range expectedFiles {
-		outputFilePath := filepath.Join(outputDir, fileName)
+		outputFilePath := filepath.Join(tempDir, fileName)
 		assert.FileExists(t, outputFilePath, "Expected file was not created: %s", outputFilePath)
 	}
 
 	//assert that each file output matches expected yaml after values are filled in
-	assert.Equal(t, parseYAML(t, getManifestAsString("expecteddeployment.yaml")), parseYAML(t, readFile(t, filepath.Join(outputDir, "deployment.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString("expectedservice.yaml")), parseYAML(t, readFile(t, filepath.Join(outputDir, "service.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString("expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(outputDir, "ingress.yaml"))))
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expecteddeployment.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment.yaml"))))
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedservice.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "service.yaml"))))
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "ingress.yaml"))))
 }
 
 /**
@@ -65,7 +66,7 @@ func TestInvalidChart(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	err := RenderHelmChart(invalidChartPath, outputDir)
+	err := RenderHelmChart(invalidChartPath, tempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to load chart: validation: chart.metadata.name is required")
 }
@@ -74,9 +75,7 @@ func TestInvalidChart(t *testing.T) {
 func TestInvalidValues(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })
-	err := RenderHelmChart(invalidValuesChart, outputDir)
-
-	// Assert that an error occurs
+	err := RenderHelmChart(invalidValuesChart, tempDir)
 	assert.NotNil(t, err)
 }
 
@@ -84,14 +83,38 @@ func TestInvalidDeployments(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	err := RenderHelmChart(invalidDeploymentSyntax, outputDir)
+	err := RenderHelmChart(invalidDeploymentSyntax, tempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "parse error")
 	assert.Contains(t, err.Error(), "function \"selector\" not defined")
 
-	err = RenderHelmChart(invalidDeploymentValues, outputDir)
+	err = RenderHelmChart(invalidDeploymentValues, tempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "map has no entry for key")
+}
+
+func TestDifferentFolderStructure(t *testing.T) {
+	setup(t)
+	t.Cleanup(func() { cleanupDir(tempDir) })
+
+	err := RenderHelmChart(differentFolderStructure, tempDir)
+	assert.Nil(t, err)
+}
+
+func TestResourcesInOneFile(t *testing.T) {
+	setup(t)
+	t.Cleanup(func() { cleanupDir(tempDir) })
+
+	err := RenderHelmChart(deploymentsInOneFile, tempDir)
+	assert.Nil(t, err)
+}
+
+func TestMutlipleValuesFiles(t *testing.T) {
+	setup(t)
+	t.Cleanup(func() { cleanupDir(tempDir) })
+
+	err := RenderHelmChart(multipleValuesFile, tempDir)
+	assert.Nil(t, err)
 }
 
 func cleanupDir(dir string) {
@@ -119,15 +142,14 @@ func parseYAML(t *testing.T, content string) map[string]interface{} {
 	return result
 }
 
-func getManifestAsString(filename string) string {
+func getManifestAsString(t *testing.T, filename string) string {
 	yamlFilePath := filepath.Join("tests/testmanifests", filename)
 
 	yamlFileContent, err := os.ReadFile(yamlFilePath)
 	if err != nil {
-		log.Fatalf("Failed to read YAML file: %s", err)
+		t.Fatalf("Failed to read YAML file: %s", err)
 	}
 
-	// Convert the content to a string
 	yamlContentString := string(yamlFileContent)
 	return yamlContentString
 }

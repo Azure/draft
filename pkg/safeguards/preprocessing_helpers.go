@@ -2,7 +2,6 @@ package safeguards
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -35,12 +34,12 @@ func RenderHelmChart(chartPath, tempDir string) error {
 	// Extract release options from values
 	releaseName, ok := vals["releaseName"].(string) //TODO: What do we want to do if a releaseName and namespace is not specified in the values.yaml?
 	if !ok || releaseName == "" {
-		log.Fatalf("releaseName not found or empty in values.yaml")
+		return fmt.Errorf("releaseName not found or empty in values.yaml")
 	}
 
 	releaseNamespace, ok := vals["releaseNamespace"].(string)
 	if !ok || releaseNamespace == "" {
-		log.Fatalf("releaseNamespace not found or empty in values.yaml")
+		return fmt.Errorf("releaseNamespace not found or empty in values.yaml")
 	}
 
 	options := chartutil.ReleaseOptions{
@@ -48,7 +47,7 @@ func RenderHelmChart(chartPath, tempDir string) error {
 		Namespace: releaseNamespace,
 	}
 
-	// Combine chart values with defaults and release options
+	// Combine chart values with values and release options
 	config := chartutil.Values(vals)
 	mergedValues, err := chartutil.ToRenderValues(chart, config, options, nil)
 	if err != nil {

@@ -52,15 +52,20 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&gwCmd.workflowConfig.AksClusterName, "cluster-name", "c", emptyDefaultFlagValue, "specify the AKS cluster name")
-	f.StringVarP(&gwCmd.workflowConfig.AcrName, "registry-name", "r", emptyDefaultFlagValue, "specify the Azure container registry name")
-	f.StringVar(&gwCmd.workflowConfig.ContainerName, "container-name", emptyDefaultFlagValue, "specify the container image name")
-	f.StringVarP(&gwCmd.workflowConfig.ResourceGroupName, "resource-group", "g", emptyDefaultFlagValue, "specify the Azure resource group of your AKS cluster")
-	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
+	f.StringVarP(&gwCmd.workflowConfig.WorkflowName, "workflow", "w", emptyDefaultFlagValue, "specify the Github workflow name")
 	f.StringVarP(&gwCmd.workflowConfig.BranchName, "branch", "b", emptyDefaultFlagValue, "specify the Github branch to automatically deploy from")
+	f.StringVar(&gwCmd.workflowConfig.AcrResourceGroup, "acr-resource-group", emptyDefaultFlagValue, "specify the Azure container registry resource group")
+	f.StringVarP(&gwCmd.workflowConfig.Acr, "registry-name", "r", emptyDefaultFlagValue, "specify the Azure container registry name")
+	f.StringVar(&gwCmd.workflowConfig.ContainerName, "container-name", emptyDefaultFlagValue, "specify the container image name")
+	f.StringVarP(&gwCmd.workflowConfig.ClusterResourceGroup, "cluster-resource-group", "g", emptyDefaultFlagValue, "specify the Azure resource group of your AKS cluster")
+	f.StringVarP(&gwCmd.workflowConfig.ClusterName, "cluster-name", "c", emptyDefaultFlagValue, "specify the AKS cluster name")
+	f.StringVar(&gwCmd.workflowConfig.Dockerfile, "dockerfile", emptyDefaultFlagValue, "specify the path to the Dockerfile")
+	f.StringVarP(&gwCmd.workflowConfig.BuildContextPath, "build-context-path", "x", emptyDefaultFlagValue, "specify the docker build context path")
+	f.StringVarP(&gwCmd.workflowConfig.Namespace, "namespace", "n", emptyDefaultFlagValue, "specify the Kubernetes namespace")
+	f.StringVarP(&gwCmd.workflowConfig.PrivateCluster, "private-cluster", "p", emptyDefaultFlagValue, "specify if the AKS cluster is private")
+	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVar(&gwCmd.deployType, "deploy-type", emptyDefaultFlagValue, "specify the type of deployment")
 	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
-	f.StringVarP(&gwCmd.workflowConfig.BuildContextPath, "build-context-path", "x", emptyDefaultFlagValue, "specify the docker build context path")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }

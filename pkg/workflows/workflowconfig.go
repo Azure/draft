@@ -1,38 +1,63 @@
 package workflows
 
 type WorkflowConfig struct {
-	AcrName           string
-	ContainerName     string
-	ResourceGroupName string
-	AksClusterName    string
-	BranchName        string
-	BuildContextPath  string
+	WorkflowName         string
+	BranchName           string
+	AcrResourceGroup     string
+	Acr                  string
+	ContainerName        string
+	ClusterResourceGroup string
+	ClusterName          string
+	Dockerfile           string
+	BuildContextPath     string
+	Namespace            string
+	PrivateCluster       string
 }
 
 func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
 	flagValuesMap := make(map[string]string)
-	if config.AcrName != "" {
-		flagValuesMap["AZURECONTAINERREGISTRY"] = config.AcrName
-	}
-
-	if config.ContainerName != "" {
-		flagValuesMap["CONTAINERNAME"] = config.ContainerName
-	}
-
-	if config.ResourceGroupName != "" {
-		flagValuesMap["RESOURCEGROUP"] = config.ResourceGroupName
-	}
-
-	if config.AksClusterName != "" {
-		flagValuesMap["CLUSTERNAME"] = config.AksClusterName
+	if config.WorkflowName != "" {
+		flagValuesMap["WORKFLOWNAME"] = config.WorkflowName
 	}
 
 	if config.BranchName != "" {
 		flagValuesMap["BRANCHNAME"] = config.BranchName
 	}
 
+	if config.AcrResourceGroup != "" {
+		flagValuesMap["ACRRESOURCEGROUP"] = config.AcrResourceGroup
+	}
+
+	if config.Acr != "" {
+		flagValuesMap["AZURECONTAINERREGISTRY"] = config.Acr
+	}
+
+	if config.ContainerName != "" {
+		flagValuesMap["CONTAINERNAME"] = config.ContainerName
+	}
+
+	if config.ClusterResourceGroup != "" {
+		flagValuesMap["RESOURCEGROUP"] = config.ClusterResourceGroup
+	}
+
+	if config.ClusterName != "" {
+		flagValuesMap["CLUSTERNAME"] = config.ClusterName
+	}
+
+	if config.Dockerfile != "" {
+		flagValuesMap["DOCKERFILE"] = config.Dockerfile
+	}
+
 	if config.BuildContextPath != "" {
 		flagValuesMap["BUILDCONTEXTPATH"] = config.BuildContextPath
+	}
+
+	if config.Namespace != "" {
+		flagValuesMap["NAMESPACE"] = config.Namespace
+	}
+
+	if config.PrivateCluster != "" {
+		flagValuesMap["PRIVATECLUSTER"] = config.PrivateCluster
 	}
 
 	return flagValuesMap

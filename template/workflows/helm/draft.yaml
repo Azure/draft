@@ -17,7 +17,6 @@ variables:
     description: "the AKS cluster name"
   - name: "DOCKERFILE"
     default:
-      disablePrompt: true
       value: "./Dockerfile"
     description: "the path to the Dockerfile"
   - name: "BUILDCONTEXTPATH"

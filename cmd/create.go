@@ -265,20 +265,22 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return err
 	}
 
-	// Check for existing duplicate defualts
+	// Check for existing duplicate defaults
 	for k, v := range extractedValues {
 		variableExists := false
-		for i, varD := range langConfig.VariableDefaults {
-			if k == varD.Name {
+		for i, variable := range langConfig.Variables {
+			if k == variable.Name {
 				variableExists = true
-				langConfig.VariableDefaults[i].Value = v
+				langConfig.Variables[i].Default.Value = v
 				break
 			}
 		}
 		if !variableExists {
-			langConfig.VariableDefaults = append(langConfig.VariableDefaults, config.BuilderVarDefault{
-				Name:  k,
-				Value: v,
+			langConfig.Variables = append(langConfig.Variables, config.BuilderVar{
+				Name: k,
+				Default: config.BuilderVarDefault{
+					Value: v,
+				},
 			})
 		}
 	}
@@ -290,7 +292,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 			return err
 		}
 	} else {
-		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables, langConfig.VariableDefaults)
+		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables)
 		if err != nil {
 			return err
 		}
@@ -328,7 +330,7 @@ func (cc *createCmd) createDeployment() error {
 		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(deployConfig.Variables, cc.createConfig.DeployVariables, deployConfig.VariableDefaults)
+		customInputs, err = validateConfigInputsToPrompts(deployConfig.Variables, cc.createConfig.DeployVariables)
 		if err != nil {
 			return err
 		}
@@ -462,7 +464,7 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required []config.BuilderVar, provided []UserInputs, defaults []config.BuilderVarDefault) (map[string]string, error) {
+func validateConfigInputsToPrompts(required []config.BuilderVar, provided []UserInputs) (map[string]string, error) {
 	customInputs := make(map[string]string)
 
 	// set inputs to provided values
@@ -471,24 +473,27 @@ func validateConfigInputsToPrompts(required []config.BuilderVar, provided []User
 	}
 
 	// fill in missing vars using variable default references
-	for _, variableDefault := range defaults {
-		if customInputs[variableDefault.Name] == "" && variableDefault.ReferenceVar != "" {
-			log.Debugf("variable %s is empty, using default referenceVar value from %s", variableDefault.Name, variableDefault.ReferenceVar)
-			customInputs[variableDefault.Name] = customInputs[variableDefault.ReferenceVar]
+	for _, variable := range required {
+		if customInputs[variable.Name] == "" && variable.Default.ReferenceVar != "" {
+			log.Debugf("variable %s is empty, using default referenceVar value from %s", variable.Name, variable.Default.ReferenceVar)
+			customInputs[variable.Name] = customInputs[variable.Default.ReferenceVar]
 		}
 	}
 
 	// fill in missing vars using variable default values
-	for _, variableDefault := range defaults {
-		if customInputs[variableDefault.Name] == "" && variableDefault.Value != "" {
-			log.Debugf("setting default value for %s to %s", variableDefault.Name, variableDefault.Value)
-			customInputs[variableDefault.Name] = variableDefault.Value
+	for _, variable := range required {
+		if customInputs[variable.Name] == "" && variable.Default.Value != "" {
+			log.Debugf("variable %s is empty, using default value %s", variable.Name, variable.Default.Value)
+			customInputs[variable.Name] = variable.Default.Value
 		}
 	}
 
 	for _, variable := range required {
-		if _, ok := customInputs[variable.Name]; !ok {
+		value, ok := customInputs[variable.Name]
+		if !ok {
 			return nil, fmt.Errorf("config missing required variable: %s with description: %s", variable.Name, variable.Description)
+		} else if value == "" {
+			return nil, fmt.Errorf("value for variable %s is empty", variable.Name)
 		}
 	}
 

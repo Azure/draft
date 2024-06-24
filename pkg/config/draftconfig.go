@@ -1,15 +1,16 @@
 package config
 
 import (
+	"errors"
+
 	log "github.com/sirupsen/logrus"
 )
 
 // TODO: remove Name Overrides since we don't need them anymore
 type DraftConfig struct {
-	DisplayName      string              `yaml:"displayName"`
-	NameOverrides    []FileNameOverride  `yaml:"nameOverrides"`
-	Variables        []BuilderVar        `yaml:"variables"`
-	VariableDefaults []BuilderVarDefault `yaml:"variableDefaults"`
+	DisplayName   string             `yaml:"displayName"`
+	NameOverrides []FileNameOverride `yaml:"nameOverrides"`
+	Variables     []BuilderVar       `yaml:"variables"`
 
 	nameOverrideMap map[string]string
 }
@@ -20,17 +21,17 @@ type FileNameOverride struct {
 }
 
 type BuilderVar struct {
-	Name             string   `yaml:"name"`
-	Description      string   `yaml:"description"`
-	VarType          string   `yaml:"type"`
-	ExampleValues    []string `yaml:"exampleValues"`
+	Name          string            `yaml:"name"`
+	Default       BuilderVarDefault `yaml:"default"`
+	Description   string            `yaml:"description"`
+	ExampleValues []string          `yaml:"exampleValues"`
+	Type          string            `yaml:"type"`
 }
 
 type BuilderVarDefault struct {
-	Name             string `yaml:"name"`
-	Value            string `yaml:"value"`
-	ReferenceVar     string `yaml:"referenceVar"`
 	IsPromptDisabled bool   `yaml:"disablePrompt"`
+	ReferenceVar     string `yaml:"referenceVar"`
+	Value            string `yaml:"value"`
 }
 
 func (d *DraftConfig) GetVariableExampleValues() map[string][]string {
@@ -40,6 +41,7 @@ func (d *DraftConfig) GetVariableExampleValues() map[string][]string {
 			variableExampleValues[variable.Name] = variable.ExampleValues
 		}
 	}
+
 	return variableExampleValues
 }
 
@@ -65,14 +67,29 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 }
 
 // ApplyDefaultVariables will apply the defaults to variables that are not already set
-func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) {
-	for _, variable := range d.VariableDefaults {
+func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) error {
+	for _, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
-		if defaultVal, ok := customConfig[variable.Name]; !ok || defaultVal == "" {
-			log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Value)
-			customConfig[variable.Name] = variable.Value
+		if val, ok := customConfig[variable.Name]; !ok || val == "" {
+			if variable.Default.Value == "" {
+				return errors.New("variable " + variable.Name + " has no default value")
+			}
+			log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
+			customConfig[variable.Name] = variable.Default.Value
 		}
 	}
+
+	return nil
+}
+
+func VariableIdxMap(variables []BuilderVar) map[string]int {
+	varIdxMap := make(map[string]int)
+
+	for i, variable := range variables {
+		varIdxMap[variable.Name] = i
+	}
+
+	return varIdxMap
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are used read using draft configs

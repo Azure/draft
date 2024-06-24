@@ -84,6 +84,16 @@ func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) erro
 	return nil
 }
 
+func VariableIdxMap(variables []BuilderVar) map[string]int {
+	varIdxMap := make(map[string]int)
+
+	for i, variable := range variables {
+		varIdxMap[variable.Name] = i
+	}
+
+	return varIdxMap
+}
+
 // TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
 type TemplateVariableRecorder interface {
 	Record(key, value string)

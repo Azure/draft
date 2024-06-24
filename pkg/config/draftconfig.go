@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -74,8 +75,12 @@ func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) erro
 		// handle where variable is not set or is set to an empty string from cli handling
 		if customInputs[variable.Name] == "" {
 			if variable.Default.ReferenceVar != "" {
-				customInputs[variable.Name] = RecurseReferenceVars(d.Variables, variable, customInputs, varIdxMap)
+				defaultVal, err := recurseReferenceVars(d.Variables, variable, customInputs, varIdxMap, variable, true)
+				if err != nil {
+					return fmt.Errorf("apply default variables: %w", err)
+				}
 				log.Infof("Variable %s defaulting to value %s", variable.Name, customInputs[variable.Name])
+				customInputs[variable.Name] = defaultVal
 			}
 
 			if customInputs[variable.Name] == "" {
@@ -92,14 +97,18 @@ func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) erro
 	return nil
 }
 
-func RecurseReferenceVars(variables []BuilderVar, variable BuilderVar, customInputs map[string]string, varIdxMap map[string]int) string {
-	if customInputs[variable.Default.ReferenceVar] != "" {
-		return customInputs[variable.Default.ReferenceVar]
-	} else if variable.Default.ReferenceVar != "" {
-		return RecurseReferenceVars(variables, variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap)
+func recurseReferenceVars(variables []BuilderVar, variable BuilderVar, customInputs map[string]string, varIdxMap map[string]int, variableCheck BuilderVar, isFirst bool) (string, error) {
+	if !isFirst && variable.Name == variableCheck.Name {
+		return "", errors.New("circular reference detected")
 	}
 
-	return variable.Default.Value
+	if customInputs[variable.Default.ReferenceVar] != "" {
+		return customInputs[variable.Default.ReferenceVar], nil
+	} else if variable.Default.ReferenceVar != "" {
+		return recurseReferenceVars(variables, variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap, variableCheck, false)
+	}
+
+	return variable.Default.Value, nil
 }
 
 func VariableIdxMap(variables []BuilderVar) map[string]int {

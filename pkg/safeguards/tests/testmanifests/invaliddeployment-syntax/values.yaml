@@ -2,6 +2,9 @@ replicaCount: 1
 image:
   repository: nginx
   tag: stable
+service:
+  type: ClusterIP
+  port: 80
 ingress:
   enabled: true
   hostname: example.com

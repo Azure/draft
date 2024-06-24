@@ -9,15 +9,13 @@ import (
 
 func TestGetVariableDefaultValue(t *testing.T) {
 	tests := []struct {
-		testName     string
-		variableName string
-		variables    []config.BuilderVar
-		inputs       map[string]string
-		want         string
+		testName  string
+		variables []config.BuilderVar
+		inputs    map[string]string
+		want      string
 	}{
 		{
-			testName:     "basicLiteralExtractDefault",
-			variableName: "var1",
+			testName: "basicLiteralExtractDefault",
 			variables: []config.BuilderVar{
 				{
 					Name: "var1",
@@ -36,8 +34,7 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			want:   "default-value-1",
 		},
 		{
-			testName:     "noDefaultIsEmptyString",
-			variableName: "var1",
+			testName: "noDefaultIsEmptyString",
 			variables: []config.BuilderVar{
 				{
 					Name: "var1",
@@ -47,8 +44,7 @@ func TestGetVariableDefaultValue(t *testing.T) {
 			want:   "",
 		},
 		{
-			testName:     "referenceTakesPrecedenceOverLiteral",
-			variableName: "var1",
+			testName: "referenceTakesPrecedenceOverLiteral",
 			variables: []config.BuilderVar{
 				{
 					Name: "var1",
@@ -62,9 +58,9 @@ func TestGetVariableDefaultValue(t *testing.T) {
 				"var2": "this-value",
 			},
 			want: "this-value",
-		}, {
-			testName:     "forwardReferencesAreIgnored",
-			variableName: "beforeVar",
+		},
+		{
+			testName: "forwardReferencesAreIgnored",
 			variables: []config.BuilderVar{
 				{
 					Name: "beforeVar",
@@ -86,8 +82,7 @@ func TestGetVariableDefaultValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			varIdxMap := config.VariableIdxMap(tt.variables)
-			if got := GetVariableDefaultValue(tt.variableName, tt.variables[varIdxMap[tt.variableName]], tt.inputs); got != tt.want {
+			if got := GetVariableDefaultValue(tt.variables[0], tt.inputs); got != tt.want {
 				t.Errorf("GetVariableDefaultValue() = %v, want %v", got, tt.want)
 			}
 		})
@@ -97,7 +92,6 @@ func TestGetVariableDefaultValue(t *testing.T) {
 func TestRunStringPrompt(t *testing.T) {
 	tests := []struct {
 		testName         string
-		variableName     string
 		prompt           config.BuilderVar
 		userInputs       []string
 		defaultValue     string
@@ -128,9 +122,9 @@ func TestRunStringPrompt(t *testing.T) {
 			mockDirNameValue: "",
 		},
 		{
-			testName:     "appNameUsesDirName",
-			variableName: "APPNAME",
+			testName: "appNameUsesDirName",
 			prompt: config.BuilderVar{
+				Name:        "APPNAME",
 				Description: "app name",
 			},
 			userInputs:       []string{"\n"},
@@ -140,9 +134,9 @@ func TestRunStringPrompt(t *testing.T) {
 			mockDirNameValue: "currentdir",
 		},
 		{
-			testName:     "invalidAppName",
-			variableName: "APPNAME",
+			testName: "invalidAppName",
 			prompt: config.BuilderVar{
+				Name:        "APPNAME",
 				Description: "app name",
 			},
 			userInputs:       []string{"--invalid-app-name\n"},
@@ -176,7 +170,7 @@ func TestRunStringPrompt(t *testing.T) {
 					t.Errorf("Error closing inWriter: %v", err)
 				}
 			}()
-			got, err := RunDefaultableStringPrompt(tt.variableName, tt.defaultValue, tt.prompt, nil, inReader, nil)
+			got, err := RunDefaultableStringPrompt(tt.defaultValue, tt.prompt, nil, inReader, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunDefaultableStringPrompt() error = %v, wantErr %v", err, tt.wantErr)

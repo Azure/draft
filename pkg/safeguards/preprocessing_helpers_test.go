@@ -134,7 +134,6 @@ func TestInvalidChartAndValues(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to load chart: validation: chart.metadata.name is required")
 
-	//assert.Contains(t, err.Error(), "executing \"service.yaml\" at <.Values.service.type>: map has no entry for key \"service\"")
 	// Write valid Chart.yaml
 	err = os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte(v.validChartYaml), 0644)
 	if err != nil {

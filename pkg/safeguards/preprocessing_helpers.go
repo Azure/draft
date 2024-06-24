@@ -26,7 +26,6 @@ func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
 		return fmt.Errorf("failed to read values file: %s", err)
 	}
 
-	// Parse values.yaml
 	vals := map[string]interface{}{}
 	if err := yaml.Unmarshal(valuesFile, &vals); err != nil {
 		return fmt.Errorf("failed to parse values.yaml: %s", err)
@@ -43,16 +42,9 @@ func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
 		log.Fatalf("releaseNamespace not found or empty in values.yaml")
 	}
 
-	// Remove release options from vals map to avoid conflicts
-	delete(vals, "releaseName")
-	delete(vals, "releaseNamespace")
-
 	options := chartutil.ReleaseOptions{
 		Name:      releaseName,
 		Namespace: releaseNamespace,
-		IsInstall: true,
-		IsUpgrade: false,
-		Revision:  1,
 	}
 
 	// Combine chart values with defaults and release options
@@ -69,7 +61,6 @@ func RenderHelmChart(chartPath, valuesPath, tempDir string) error {
 		return fmt.Errorf("failed to render chart: %s", err)
 	}
 
-	// Create the output directory if it doesn't exist
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %s", err)
 	}

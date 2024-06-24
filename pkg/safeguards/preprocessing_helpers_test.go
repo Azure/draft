@@ -19,7 +19,7 @@ const (
 	invalidDeploymentSyntax  = "tests/testmanifests/invaliddeployment-syntax"
 	invalidDeploymentValues  = "tests/testmanifests/invaliddeployment-values"
 	differentFolderStructure = "tests/testmanifests/different-structure"
-	deploymentsInOneFile     = "tests/testmanifests/deployments-in-one-file"
+	multipleTemplateDirs     = "tests/testmanifests/multiple-templates"
 	multipleValuesFile       = "tests/testmanifests/multiple-values-files"
 )
 
@@ -101,11 +101,12 @@ func TestDifferentFolderStructure(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+// Tests both multiple sub directories and multiple resources defined in one file
 func TestResourcesInOneFile(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	err := RenderHelmChart(deploymentsInOneFile, tempDir)
+	err := RenderHelmChart(multipleTemplateDirs, tempDir)
 	assert.Nil(t, err)
 }
 

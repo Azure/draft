@@ -265,7 +265,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		return err
 	}
 
-	// Check for existing duplicate defualts
+	// Check for existing duplicate defaults
 	for k, v := range extractedValues {
 		variableExists := false
 		for i, variable := range langConfig.Variables {

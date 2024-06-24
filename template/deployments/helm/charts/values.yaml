@@ -63,31 +63,3 @@ affinity: {}
 generatorlabel: draft
 
 serviceport: 80
-
-chartName: "my-app"
-
-fullname: |
-  {{- $name := default .Values.chartName .Values.nameOverride }}
-  {{- if contains $name .Release.Name }}
-  {{- .Release.Name | trunc 63 | trimSuffix "-" }}
-  {{- else }}
-  {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-  {{- end }}
-  {{- end }}
-
-chartLabel: |
-  {{- printf "%s-%s" .Values.chartName .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-
-commonLabels: |
-  helm.sh/chart: {{ .Values.chartLabel }}
-  app.kubernetes.io/name: {{ .Values.chartName }}
-  app.kubernetes.io/instance: {{ .Release.Name }}
-  {{- if .Chart.AppVersion }}
-  app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-  {{- end }}
-  app.kubernetes.io/managed-by: {{ .Release.Service }}
-  kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
-
-selectorLabels: |
-  app.kubernetes.io/name: {{ .Values.chartName }}
-  app.kubernetes.io/instance: {{ .Release.Name }}

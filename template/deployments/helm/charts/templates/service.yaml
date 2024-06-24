@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.fullname | quote }}
+  name: {{ include "my-app.fullname" . | quote }}
   labels:
-    {{ .Values.commonLabels | nindent 4 }}
+    {{ include "my-app.labels" . | nindent 4 }}
+    kubernetes.azure.com/generator: {{ .Values.generatorlabels }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
   namespace: {{ .Values.namespace }}
@@ -15,4 +16,4 @@ spec:
       protocol: TCP
       name: svchttp
   selector:
-    {{ .Values.selectorLabels | nindent 4 }}
+    {{ include "my-app.selectorLabels" . | nindent 6 }}

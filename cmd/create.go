@@ -292,7 +292,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 			return err
 		}
 	} else {
-		inputs, err = validateConfigInputsToPrompts(langConfig.Variables, cc.createConfig.LanguageVariables)
+		inputs, err = validateConfigInputsToPrompts(langConfig, cc.createConfig.LanguageVariables)
 		if err != nil {
 			return err
 		}
@@ -330,7 +330,7 @@ func (cc *createCmd) createDeployment() error {
 		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(deployConfig.Variables, cc.createConfig.DeployVariables)
+		customInputs, err = validateConfigInputsToPrompts(deployConfig, cc.createConfig.DeployVariables)
 		if err != nil {
 			return err
 		}
@@ -464,7 +464,7 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(required []config.BuilderVar, provided []UserInputs) (map[string]string, error) {
+func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []UserInputs) (map[string]string, error) {
 	customInputs := make(map[string]string)
 
 	// set inputs to provided values
@@ -472,23 +472,11 @@ func validateConfigInputsToPrompts(required []config.BuilderVar, provided []User
 		customInputs[variable.Name] = variable.Value
 	}
 
-	// fill in missing vars using variable default references
-	for _, variable := range required {
-		if customInputs[variable.Name] == "" && variable.Default.ReferenceVar != "" {
-			log.Debugf("variable %s is empty, using default referenceVar value from %s", variable.Name, variable.Default.ReferenceVar)
-			customInputs[variable.Name] = customInputs[variable.Default.ReferenceVar]
-		}
+	if err := draftConfig.ApplyDefaultVariables(customInputs); err != nil {
+		return nil, fmt.Errorf("validate config inputs to prompts: %w", err)
 	}
 
-	// fill in missing vars using variable default values
-	for _, variable := range required {
-		if customInputs[variable.Name] == "" && variable.Default.Value != "" {
-			log.Debugf("variable %s is empty, using default value %s", variable.Name, variable.Default.Value)
-			customInputs[variable.Name] = variable.Default.Value
-		}
-	}
-
-	for _, variable := range required {
+	for _, variable := range draftConfig.Variables {
 		value, ok := customInputs[variable.Name]
 		if !ok {
 			return nil, fmt.Errorf("config missing required variable: %s with description: %s", variable.Name, variable.Description)

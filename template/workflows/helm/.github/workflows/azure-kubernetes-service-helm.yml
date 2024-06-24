@@ -116,8 +116,7 @@ jobs:
           renderEngine: "helm"
           helmChart: ${{ env.CHART_PATH }}
           overrideFiles: ${{ env.CHART_OVERRIDE_PATH }}
-          overrides: |
-            replicas:2
+          overrides: ${{ env.CHART_OVERRIDES }}
           helm-version: "latest"
         id: bake
 

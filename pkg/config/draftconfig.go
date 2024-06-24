@@ -69,19 +69,47 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 }
 
 // ApplyDefaultVariables will apply the defaults to variables that are not already set
-func (d *DraftConfig) ApplyDefaultVariables(customConfig map[string]string) error {
+func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) error {
+	varIdxMap := VariableIdxMap(d.Variables)
+
 	for _, variable := range d.Variables {
 		// handle where variable is not set or is set to an empty string from cli handling
-		if val, ok := customConfig[variable.Name]; !ok || val == "" {
-			if variable.Default.Value == "" {
-				return errors.New("variable " + variable.Name + " has no default value")
+		if customInputs[variable.Name] == "" {
+			if variable.Default.ReferenceVar != "" {
+				defaultVal, err := recurseReferenceVars(d.Variables, variable, customInputs, varIdxMap, variable, true)
+				if err != nil {
+					return fmt.Errorf("apply default variables: %w", err)
+				}
+				log.Infof("Variable %s defaulting to value %s", variable.Name, customInputs[variable.Name])
+				customInputs[variable.Name] = defaultVal
 			}
-			log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
-			customConfig[variable.Name] = variable.Default.Value
+
+			if customInputs[variable.Name] == "" {
+				if variable.Default.Value != "" {
+					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
+					customInputs[variable.Name] = variable.Default.Value
+				} else {
+					return errors.New("variable " + variable.Name + " has no default value")
+				}
+			}
 		}
 	}
 
 	return nil
+}
+
+func recurseReferenceVars(variables []BuilderVar, variable BuilderVar, customInputs map[string]string, varIdxMap map[string]int, variableCheck BuilderVar, isFirst bool) (string, error) {
+	if !isFirst && variable.Name == variableCheck.Name {
+		return "", errors.New("circular reference detected")
+	}
+
+	if customInputs[variable.Default.ReferenceVar] != "" {
+		return customInputs[variable.Default.ReferenceVar], nil
+	} else if variable.Default.ReferenceVar != "" {
+		return recurseReferenceVars(variables, variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap, variableCheck, false)
+	}
+
+	return variable.Default.Value, nil
 }
 
 func VariableIdxMap(variables []BuilderVar) map[string]int {

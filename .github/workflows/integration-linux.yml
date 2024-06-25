@@ -1713,6 +1713,7 @@ jobs:
           curl -m 3 $SERVICEIP:80
           kill $tunnelPID
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests -w someWorkflow -b main --acr-resource-group someAcrResourceGroup -r someRegistry --container-name someContainer -g someClusterResourceGroup -c someAksCluster --dockerfile ./Dockerfile --build-context-path . -n default --private-cluster false
+      # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1
         with:

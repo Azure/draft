@@ -305,7 +305,7 @@ languageVariables:
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
       - run: |
-          ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type helm --build-context-path .
+          ./draft -v generate-workflow -d ./langtest/ --deploy-type helm -w someWorkflow -b main --acr-resource-group someAcrResourceGroup -r someRegistry --container-name someContainer -g someClusterResourceGroup -c someAksCluster --dockerfile ./Dockerfile --build-context-path . -n default --private-cluster false
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
@@ -455,7 +455,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -b main -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer --deploy-type kustomize --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize -w someWorkflow -b main --acr-resource-group someAcrResourceGroup -r someRegistry --container-name someContainer -g someClusterResourceGroup -c someAksCluster --dockerfile ./Dockerfile --build-context-path . -n default --private-cluster false
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1
@@ -596,7 +596,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ -b main -c someAksCluster -r localhost -g someResourceGroup --container-name testapp --deploy-type manifests --build-context-path .
+      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests -w someWorkflow -b main --acr-resource-group someAcrResourceGroup -r someRegistry --container-name someContainer -g someClusterResourceGroup -c someAksCluster --dockerfile ./Dockerfile --build-context-path . -n default --private-cluster false
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1

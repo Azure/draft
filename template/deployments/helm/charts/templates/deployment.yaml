@@ -4,7 +4,6 @@ metadata:
   name: {{ .Chart.Name | quote }}
   labels:
     {{- toYaml .Values.commonLabels | nindent 4 }}
-    kubernetes.azure.com/generator: {{ .Values.generatorlabels }}
   namespace: {{ .Values.namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -15,13 +14,12 @@ spec:
       {{- toYaml .Values.selectorLabels | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- toYaml .Values.selectorLabels | nindent 6 }}
-      namespace: {{ .Values.namespace }}
+        {{ .Values.selectorLabels | nindent 8 }}
+      {{ - with .Values.podAnnotations }}
+      annotations:
+        {{ - toYaml . | nindent 8 }}
+      {{ - end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

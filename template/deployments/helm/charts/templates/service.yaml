@@ -4,7 +4,6 @@ metadata:
   name: {{ .Chart.Name | quote }}
   labels:
     {{- toYaml .Values.commonLabels | nindent 4 }}
-    kubernetes.azure.com/generator: {{ .Values.generatorlabels }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
   namespace: {{ .Values.namespace }}

@@ -63,7 +63,8 @@ func TestCreateWorkflows(t *testing.T) {
 				os.Remove(".overlays")
 				os.Remove(".github")
 			},
-		}, {
+		},
+		{
 			name:         "manifests",
 			deployType:   "manifests",
 			flagValues:   flagValuesMap,

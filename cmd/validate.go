@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 	"path"
 
 	"github.com/Azure/draft/pkg/safeguards"
@@ -62,7 +63,32 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 	var manifestFiles []safeguards.ManifestFile
 	if isDir {
-		manifestFiles, err = safeguards.GetManifestFiles(vc.manifestPath)
+		finalDir := vc.manifestPath
+
+		if err != nil {
+			return err //if we want to return the error, otherwise we can just return and use a bool in the function
+		}
+		res := safeguards.GetDirectoryType(vc.manifestPath)
+		if res != safeguards.Unknown {
+			tempDir, err := safeguards.CreateTempDir()
+			if err != nil {
+				return err
+			}
+
+			defer func() error {
+				if err := os.RemoveAll(tempDir); err != nil {
+					log.Errorf("failed to remove temp directory: %s", err)
+				}
+				return err
+			}()
+			finalDir = tempDir
+
+			// if res == safeguards.Helm {
+			// 	safeguards.RenderHelm()
+			// }
+		}
+
+		manifestFiles, err = safeguards.GetManifestFiles(finalDir)
 		if err != nil {
 			return err
 		}

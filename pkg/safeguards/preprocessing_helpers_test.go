@@ -21,6 +21,7 @@ const (
 	differentFolderStructure = "tests/testmanifests/different-structure"
 	multipleTemplateDirs     = "tests/testmanifests/multiple-templates"
 	multipleValuesFile       = "tests/testmanifests/multiple-values-files"
+	subcharts                = "tests/testmanifests/multiple-charts"
 )
 
 func setup(t *testing.T) {
@@ -40,7 +41,6 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })
 
-	// Run the function
 	err := RenderHelmChart(chartPath, tempDir)
 	assert.Nil(t, err)
 
@@ -57,6 +57,27 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "ingress.yaml"))))
 }
 
+func TestSubCharts(t *testing.T) {
+	setup(t)
+	//t.Cleanup(func() { cleanupDir(tempDir) })
+
+	err := RenderHelmChart(subcharts, tempDir)
+	assert.Nil(t, err)
+
+	//assert that 3 files were created in temp dir: 1 from main chart, 2 from subcharts
+	files, _ := os.ReadDir(tempDir)
+	assert.Equal(t, len(files), 3)
+	expectedFiles := []string{"maindeployment.yaml", "deployment1.yaml", "deployment2.yaml"}
+	for _, fileName := range expectedFiles {
+		outputFilePath := filepath.Join(tempDir, fileName)
+		assert.FileExists(t, outputFilePath, "Expected file was not created: %s", outputFilePath)
+	}
+	//assert that the files are equal
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-mainchart.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "maindeployment.yaml"))))
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart1.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment1.yaml"))))
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart2.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment2.yaml"))))
+}
+
 /**
 * Testing user errors
  */
@@ -68,10 +89,10 @@ func TestInvalidChart(t *testing.T) {
 
 	err := RenderHelmChart(invalidChartPath, tempDir)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to load chart: validation: chart.metadata.name is required")
+	assert.Contains(t, err.Error(), "failed to load main chart: validation: chart.metadata.name is required")
 }
 
-// Should fail if values.yaml is invalid
+// Should fail if values.yaml doesn't contain all values necessary for templating
 func TestInvalidValues(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(tempDir) })

@@ -15,11 +15,11 @@ spec:
   template:
     metadata:
       labels:
-        {{ .Values.selectorLabels | nindent 8 }}
-      {{ - with .Values.podAnnotations }}
+        {{- toYaml .Values.selectorLabels | nindent 8 }}
+      {{- with .Values.podAnnotations }}
       annotations:
-        {{ - toYaml . | nindent 8 }}
-      {{ - end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

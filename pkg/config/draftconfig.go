@@ -76,7 +76,7 @@ func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) erro
 		// handle where variable is not set or is set to an empty string from cli handling
 		if customInputs[variable.Name] == "" {
 			if variable.Default.ReferenceVar != "" {
-				defaultVal, err := recurseReferenceVars(d.Variables, variable, customInputs, varIdxMap, variable, true)
+				defaultVal, err := recurseReferenceVars(d.Variables, d.Variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap, d.Variables[varIdxMap[variable.Default.ReferenceVar]], true)
 				if err != nil {
 					return fmt.Errorf("apply default variables: %w", err)
 				}
@@ -98,13 +98,14 @@ func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) erro
 	return nil
 }
 
+// recurseReferenceVars recursively checks each variable's ReferenceVar if it doesn't have a custom input. If there's no more ReferenceVars, it will return the default value of the last ReferenceVar.
 func recurseReferenceVars(variables []BuilderVar, variable BuilderVar, customInputs map[string]string, varIdxMap map[string]int, variableCheck BuilderVar, isFirst bool) (string, error) {
 	if !isFirst && variable.Name == variableCheck.Name {
-		return "", errors.New("circular reference detected")
+		return "", errors.New("cyclical reference detected")
 	}
 
-	if customInputs[variable.Default.ReferenceVar] != "" {
-		return customInputs[variable.Default.ReferenceVar], nil
+	if customInputs[variable.Name] != "" {
+		return customInputs[variable.Name], nil
 	} else if variable.Default.ReferenceVar != "" {
 		return recurseReferenceVars(variables, variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap, variableCheck, false)
 	}

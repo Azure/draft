@@ -35,5 +35,5 @@ variables:
   - name: "PRIVATECLUSTER"
     default:
       value: "false"
-    description: "set to true if the AKS cluster is private"
+    description: "true if the AKS cluster is private"
     type: "bool"

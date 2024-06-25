@@ -63,3 +63,16 @@ affinity: {}
 generatorlabel: draft
 
 serviceport: 80
+
+chartLabel: "{{ printf \"%s-%s\" .Chart.Name .Chart.Version | replace \"+\" \"_\" | trunc 63 | trimSuffix \"-\" }}"
+
+commonLabels:
+  helm.sh/chart: "{{ .Values.chartLabel }}"
+  app.kubernetes.io/name: "{{ .Chart.Name }}"
+  app.kubernetes.io/instance: "{{ .Release.Name }}"
+  app.kubernetes.io/version: "{{ .Chart.AppVersion | quote }}"
+  app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+
+selectorLabels:
+  app.kubernetes.io/name: "{{ .Chart.Name }}"
+  app.kubernetes.io/instance: "{{ .Release.Name }}"

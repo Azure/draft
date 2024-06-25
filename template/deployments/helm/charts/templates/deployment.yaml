@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "my-app.fullname" . | quote }}
+  name: {{ .Chart.Name | quote }}
   labels:
-    {{ include "my-app.labels" . | nindent 4 }}
+    {{- toYaml .Values.commonLabels | nindent 4 }}
     kubernetes.azure.com/generator: {{ .Values.generatorlabels }}
   namespace: {{ .Values.namespace }}
 spec:
@@ -12,7 +12,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{ include "my-app.selectorLabels" . | nindent 6 }}
+      {{- toYaml .Values.selectorLabels | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -20,7 +20,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{ include "my-app.selectorLabels" . | nindent 8 }}
+        {{- toYaml .Values.selectorLabels | nindent 6 }}
       namespace: {{ .Values.namespace }}
     spec:
       {{- with .Values.imagePullSecrets }}

@@ -12,28 +12,26 @@ import (
 	"helm.sh/helm/v3/pkg/engine"
 )
 
-// Given a valid helm chart, renders to ManifestFile and returns the object
+// func RenderHelmChart(mainChartPath, tempDir string) error {
+// 	// Load and render subcharts
+// 	err := renderChart(mainChartPath, tempDir)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to load charts: %s", err)
+// 	}
+
+//		return nil
+//	}
+//
+// Given a Helm chart directory, render all templates and write them to a temporary directory
 func RenderHelmChart(mainChartPath, tempDir string) error {
-	// Load and render subcharts
-	err := renderChart(mainChartPath, tempDir)
-	if err != nil {
-		return fmt.Errorf("failed to load charts: %s", err)
-	}
-
-	return nil
-
-}
-
-func renderChart(mainChartPath, tempDir string) error {
 	loadedCharts := make(map[string]*chart.Chart) // map of chart path to chart object
+
 	mainChart, err := loader.Load(mainChartPath)
 	if err != nil {
 		return fmt.Errorf("failed to load main chart: %s", err)
 	}
-
 	loadedCharts[mainChartPath] = mainChart
 
-	//chart := loadedCharts[mainChartPath]
 	// Load subcharts
 	for _, dep := range mainChart.Metadata.Dependencies {
 		fmt.Println("Shouldn't be here *********")

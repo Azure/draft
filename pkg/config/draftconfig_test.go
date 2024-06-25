@@ -90,6 +90,22 @@ func TestApplyDefaultVariables(t *testing.T) {
 			},
 		},
 		{
+			testName: "variablesHaveNoInputOrDefault",
+			draftConfig: DraftConfig{
+				Variables: []BuilderVar{
+					{
+						Name: "var1",
+					},
+					{
+						Name: "var2",
+					},
+				},
+			},
+			customInputs: map[string]string{},
+			want:         map[string]string{},
+			wantErr:      true,
+		},
+		{
 			testName: "getDefaultFromReferenceVarCustomInputs",
 			draftConfig: DraftConfig{
 				Variables: []BuilderVar{

@@ -12,18 +12,11 @@ import (
 	"helm.sh/helm/v3/pkg/engine"
 )
 
-// func RenderHelmChart(mainChartPath, tempDir string) error {
-// 	// Load and render subcharts
-// 	err := renderChart(mainChartPath, tempDir)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to load charts: %s", err)
-// 	}
-
-//		return nil
-//	}
-//
-// Given a Helm chart directory, render all templates and write them to a temporary directory
-func RenderHelmChart(mainChartPath, tempDir string) error {
+// Given a Helm chart directory or file, render all templates and write them to a temporary directory
+func RenderHelmChart(isFile bool, mainChartPath, tempDir string) error {
+	if isFile { //get the directory that the chart lives in
+		mainChartPath = filepath.Dir(mainChartPath)
+	}
 	loadedCharts := make(map[string]*chart.Chart) // map of chart path to chart object
 
 	mainChart, err := loader.Load(mainChartPath)
@@ -32,10 +25,12 @@ func RenderHelmChart(mainChartPath, tempDir string) error {
 	}
 	loadedCharts[mainChartPath] = mainChart
 
-	// Load subcharts
+	// Load subcharts and dependencies
 	for _, dep := range mainChart.Metadata.Dependencies {
-		fmt.Println("Shouldn't be here *********")
-		chartPath := filepath.Join(mainChartPath, "charts", dep.Name)
+		// Resolve the chart path based on the main chart's directory
+		chartPath := filepath.Join(mainChartPath, dep.Repository[len("file://"):])
+		chartPath = filepath.Clean(chartPath)
+
 		subChart, err := loader.Load(chartPath)
 		if err != nil {
 			return fmt.Errorf("failed to load chart: %s", err)

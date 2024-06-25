@@ -52,6 +52,8 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	}
 
 	f := cmd.Flags()
+	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
+	f.StringVar(&gwCmd.deployType, "deploy-type", emptyDefaultFlagValue, "specify the type of deployment")
 	f.StringVarP(&gwCmd.workflowConfig.WorkflowName, "workflow", "w", emptyDefaultFlagValue, "specify the Github workflow name")
 	f.StringVarP(&gwCmd.workflowConfig.BranchName, "branch", "b", emptyDefaultFlagValue, "specify the Github branch to automatically deploy from")
 	f.StringVar(&gwCmd.workflowConfig.AcrResourceGroup, "acr-resource-group", emptyDefaultFlagValue, "specify the Azure container registry resource group")
@@ -63,8 +65,6 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVarP(&gwCmd.workflowConfig.BuildContextPath, "build-context-path", "x", emptyDefaultFlagValue, "specify the docker build context path")
 	f.StringVarP(&gwCmd.workflowConfig.Namespace, "namespace", "n", emptyDefaultFlagValue, "specify the Kubernetes namespace")
 	f.StringVar(&gwCmd.workflowConfig.PrivateCluster, "private-cluster", emptyDefaultFlagValue, "specify if the AKS cluster is private")
-	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
-	f.StringVar(&gwCmd.deployType, "deploy-type", emptyDefaultFlagValue, "specify the type of deployment")
 	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd

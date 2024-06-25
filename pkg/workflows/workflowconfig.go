@@ -37,7 +37,7 @@ func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
 	}
 
 	if config.ClusterResourceGroup != "" {
-		flagValuesMap["RESOURCEGROUP"] = config.ClusterResourceGroup
+		flagValuesMap["CLUSTERRESOURCEGROUP"] = config.ClusterResourceGroup
 	}
 
 	if config.ClusterName != "" {

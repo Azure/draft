@@ -62,7 +62,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVar(&gwCmd.workflowConfig.Dockerfile, "dockerfile", emptyDefaultFlagValue, "specify the path to the Dockerfile")
 	f.StringVarP(&gwCmd.workflowConfig.BuildContextPath, "build-context-path", "x", emptyDefaultFlagValue, "specify the docker build context path")
 	f.StringVarP(&gwCmd.workflowConfig.Namespace, "namespace", "n", emptyDefaultFlagValue, "specify the Kubernetes namespace")
-	f.StringVarP(&gwCmd.workflowConfig.PrivateCluster, "private-cluster", "p", emptyDefaultFlagValue, "specify if the AKS cluster is private")
+	f.StringVar(&gwCmd.workflowConfig.PrivateCluster, "private-cluster", emptyDefaultFlagValue, "specify if the AKS cluster is private")
 	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVar(&gwCmd.deployType, "deploy-type", emptyDefaultFlagValue, "specify the type of deployment")
 	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")

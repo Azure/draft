@@ -25,8 +25,8 @@ func TestCreateWorkflows(t *testing.T) {
 	dest := "."
 	deployType := "helm"
 	templatewriter := &writers.LocalFSWriter{}
-	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "."}
-	flagValuesMapNoRoot := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "test"}
+	flagValuesMap := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": ".", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
+	flagValuesMapNoRoot := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": "test", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
 
 	tests := []struct {
 		name         string
@@ -236,8 +236,8 @@ func TestPopulateConfigs(t *testing.T) {
 
 func TestCreateWorkflowFiles(t *testing.T) {
 	templatewriter := &writers.LocalFSWriter{}
-	customInputs := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "BUILDCONTEXTPATH": "."}
-	customInputsNoRoot := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "BUILDCONTEXTPATH": "test"}
+	customInputs := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": ".", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "CHARTOVERRIDES": "replicas:2", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
+	customInputsNoRoot := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": ".", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "CHARTOVERRIDES": "replicas:2", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
 	badInputs := map[string]string{}
 
 	workflowTemplate, err := createMockWorkflowTemplatesFS()

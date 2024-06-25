@@ -4,7 +4,7 @@ type WorkflowConfig struct {
 	WorkflowName         string
 	BranchName           string
 	AcrResourceGroup     string
-	Acr                  string
+	AcrName              string
 	ContainerName        string
 	ClusterResourceGroup string
 	ClusterName          string
@@ -28,8 +28,8 @@ func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
 		flagValuesMap["ACRRESOURCEGROUP"] = config.AcrResourceGroup
 	}
 
-	if config.Acr != "" {
-		flagValuesMap["AZURECONTAINERREGISTRY"] = config.Acr
+	if config.AcrName != "" {
+		flagValuesMap["AZURECONTAINERREGISTRY"] = config.AcrName
 	}
 
 	if config.ContainerName != "" {

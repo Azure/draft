@@ -20,7 +20,6 @@ import (
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/template"
 )
 
 const (
@@ -187,37 +186,4 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[stri
 	}
 
 	return nil
-}
-
-func GenerateWorkflowBytes(draftConfig *config.DraftConfig, deployType string) ([]byte, error) {
-	envArgs, err := draftConfig.VariableMap()
-	if err != nil {
-		return nil, fmt.Errorf("generate workflow bytes: %w", err)
-	}
-
-	if err = draftConfig.ApplyDefaultVariables(envArgs); err != nil {
-		return nil, fmt.Errorf("apply default variables: %w", err)
-	}
-
-	var srcPath string
-
-	switch deployType {
-	case "helm":
-		srcPath = "workflow/helm/.github/workflows/azure-kubernetes-service-helm.yml"
-	case "manifests":
-		srcPath = "workflow/manifests/.github/workflows/azure-kubernetes-service.yml"
-	default:
-		return nil, errors.New("unsupported deploy type")
-	}
-
-	workflowBytes, err := osutil.ReplaceTemplateVariables(template.Workflows, srcPath, envArgs)
-	if err != nil {
-		return nil, fmt.Errorf("replace template variables: %w", err)
-	}
-
-	if err = osutil.CheckAllVariablesSubstituted(string(workflowBytes)); err != nil {
-		return nil, fmt.Errorf("check all variables substituted: %w", err)
-	}
-
-	return workflowBytes, nil
 }

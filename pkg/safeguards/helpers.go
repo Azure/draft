@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/filesys"
 	"strings"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
@@ -290,32 +292,42 @@ func IsKustomize(p string) bool {
 	return strings.Contains(p, "kustomization.yaml")
 }
 
-func RenderKustomizeManifest(ctx context.Context) {
-	// Define the path to your Kustomization directory
-	kustomizationDir := "./path/to/kustomization"
+func RenderKustomizeManifest(ctx context.Context, dir string) error {
+	// TODO implement logger
+
+	kustomizeFS := filesys.MakeFsInMemory()
 
 	// Create a new Kustomize build options
 	options := &krusty.Options{
-		DoLegacyResourceSort: true,
+		Reorder:           "",
+		AddManagedbyLabel: true,
+		LoadRestrictions:  types.LoadRestrictionsUnknown,
+		PluginConfig:      &types.PluginConfig{},
 	}
 
 	// Create a new Kustomize build object
 	k := krusty.MakeKustomizer(options)
 
 	// Run the build to generate the manifests
-	resMap, err := k.Run(kustomizationDir)
+	resMap, err := k.Run(kustomizeFS, dir)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error building manifests: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Error building manifests: %s\n", err.Error())
 	}
 
 	// Output the manifests
 	for _, res := range resMap.Resources() {
 		yamlRes, err := res.AsYAML()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error converting resource to YAML: %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("Error converting resource to YAML: %s\n", err.Error())
 		}
-		fmt.Println(string(yamlRes))
+
+		// write yamlRes to dir
+		err = os.WriteFile(res.GetName()+".yaml", yamlRes, 0777)
+		if err != nil {
+			return fmt.Errorf("Error writing yaml resource: %s\n", err.Error())
+		}
+
 	}
+
+	return nil
 }

@@ -75,7 +75,10 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 			// 3. render kustomization.yaml into actual manifest file
 			// do not pollute user's fs with rendered files
-			safeguards.RenderKustomizeManifest(ctx)
+			err = safeguards.RenderKustomizeManifest(ctx, tempDir)
+			if err != nil {
+				return err
+			}
 		} else {
 			tempDir = vc.manifestPath
 		}

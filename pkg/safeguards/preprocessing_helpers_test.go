@@ -30,22 +30,15 @@ const (
 	directPath_ToInvalidChart = "tests/testmanifests/invalidchart/Chart.yaml"
 )
 
-func setup(t *testing.T) {
-	// Ensure the output directory is empty before running the test
-	if err := os.RemoveAll(tempDir); err != nil {
-		t.Fatalf("Failed to clean output directory: %s", err)
-	}
-
-	// Create the templates directory
-	err := os.MkdirAll(filepath.Join(chartPath, "templates"), 0755)
-	if err != nil {
-		t.Fatalf("Failed to create templates directory: %s", err)
+func makeTempDir(t *testing.T) {
+	if err := os.MkdirAll(tempDir, 0755); err != nil {
+		t.Fatalf("failed to create temporary output directory: %s", err)
 	}
 }
 
 // Test rendering a valid Helm chart with no subcharts and three templates
 func TestRenderHelmChart_Valid(t *testing.T) {
-	setup(t)
+	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
 	err := RenderHelmChart(false, chartPath, tempDir)
@@ -64,6 +57,7 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "ingress.yaml"))))
 
 	cleanupDir(t, tempDir)
+	makeTempDir(t)
 
 	//Test by giving file directly
 	err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
@@ -82,7 +76,7 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 
 // Should successfully render a Helm chart with sub charts and be able to render subchart separately within a helm chart
 func TestSubCharts(t *testing.T) {
-	setup(t)
+	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
 	err := RenderHelmChart(false, subcharts, tempDir)
@@ -102,18 +96,21 @@ func TestSubCharts(t *testing.T) {
 	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart2.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment2.yaml"))))
 
 	cleanupDir(t, tempDir)
+	makeTempDir(t)
 
 	// Given a sub-chart dir, that specific sub chart only should be evaluated and rendered
 	err = RenderHelmChart(false, subchartDir, tempDir)
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)
+	makeTempDir(t)
 
 	// Given a Chart.yaml in the main directory, main chart and subcharts should be evaluated
 	err = RenderHelmChart(true, directPath_ToMainChartYaml, tempDir)
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)
+	makeTempDir(t)
 
 	//Given path to a sub- Chart.yaml with a dependency on another subchart, should render both subcharts, but not the main chart
 	err = RenderHelmChart(true, directPath_ToSubchartYaml, tempDir)
@@ -136,7 +133,7 @@ func TestSubCharts(t *testing.T) {
 
 // Should fail if the Chart.yaml is invalid
 func TestInvalidChartAndValues(t *testing.T) {
-	setup(t)
+	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
 	err := RenderHelmChart(false, invalidChartPath, tempDir)
@@ -148,12 +145,14 @@ func TestInvalidChartAndValues(t *testing.T) {
 
 	// Should fail if values.yaml doesn't contain all values necessary for templating
 	cleanupDir(t, tempDir)
+	makeTempDir(t)
+
 	err = RenderHelmChart(false, invalidValuesChart, tempDir)
 	assert.NotNil(t, err)
 }
 
 func TestInvalidDeployments(t *testing.T) {
-	setup(t)
+	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
 	err := RenderHelmChart(false, invalidDeploymentSyntax, tempDir)
@@ -168,17 +167,20 @@ func TestInvalidDeployments(t *testing.T) {
 
 /** Test different helm folder structures */
 func TestDifferentFolderStructures(t *testing.T) {
-	setup(t)
+	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
 	err := RenderHelmChart(false, folderwithHelpersTmpl, tempDir) // includes _helpers.tpl
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)
+	makeTempDir(t)
+
 	err = RenderHelmChart(false, multipleTemplateDirs, tempDir) // all manifests defined in one file
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)
+	makeTempDir(t)
 	err = RenderHelmChart(false, multipleValuesFile, tempDir) // contains three values files
 	assert.Nil(t, err)
 }

@@ -82,7 +82,7 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", emptyDefaultFlagValue, "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", emptyDefaultFlagValue, "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
-	f.StringVarP(&cc.deployType, "deploy-type", "", emptyDefaultFlagValue, "specify deployement type (eg. helm, kustomize, manifests)")
+	f.StringVarP(&cc.deployType, "deploy-type", "", emptyDefaultFlagValue, "specify deployment type (eg. helm, kustomize, manifests)")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")

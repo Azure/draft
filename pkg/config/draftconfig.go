@@ -22,12 +22,13 @@ type FileNameOverride struct {
 }
 
 type BuilderVar struct {
-	Name          string            `yaml:"name"`
-	Default       BuilderVarDefault `yaml:"default"`
-	Description   string            `yaml:"description"`
-	ExampleValues []string          `yaml:"exampleValues"`
-	Type          string            `yaml:"type"`
-	Value         string            `yaml:"value"`
+	Name           string            `yaml:"name"`
+	Default        BuilderVarDefault `yaml:"default"`
+	Description    string            `yaml:"description"`
+	DeploymentType string            `yaml:"deploymentType"`
+	ExampleValues  []string          `yaml:"exampleValues"`
+	Type           string            `yaml:"type"`
+	Value          string            `yaml:"value"`
 }
 
 type BuilderVarDefault struct {
@@ -123,7 +124,7 @@ func VariableIdxMap(variables []BuilderVar) map[string]int {
 	return varIdxMap
 }
 
-// TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
+// TemplateVariableRecorder is an interface for recording variables that are read using draft configs
 type TemplateVariableRecorder interface {
 	Record(key, value string)
 }

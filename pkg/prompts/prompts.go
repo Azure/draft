@@ -20,39 +20,32 @@ const defaultAppName = "my-app"
 // Function to get current directory name
 var getCurrentDirNameFunc = getCurrentDirName
 
-func RunPromptsFromConfig(draftConfig *config.DraftConfig) (map[string]string, error) {
-	return RunPromptsFromConfigWithSkips(draftConfig, []string{})
+func RunPromptsFromConfig(draftConfig *config.DraftConfig, varIdxMap map[string]int) error {
+	return RunPromptsFromConfigWithSkips(draftConfig, varIdxMap)
 }
 
-func RunPromptsFromConfigWithSkips(draftConfig *config.DraftConfig, varsToSkip []string) (map[string]string, error) {
-	return RunPromptsFromConfigWithSkipsIO(draftConfig, varsToSkip, nil, nil)
+func RunPromptsFromConfigWithSkips(draftConfig *config.DraftConfig, varIdxMap map[string]int) error {
+	return RunPromptsFromConfigWithSkipsIO(draftConfig, varIdxMap, nil, nil)
 }
 
 // RunPromptsFromConfigWithSkipsIO runs the prompts for the given draftConfig
 // skipping any variables in varsToSkip or where the BuilderVar.IsPromptDisabled is true.
 // If Stdin or Stdout are nil, the default values will be used.
-func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, varsToSkip []string, Stdin io.ReadCloser, Stdout io.WriteCloser) (map[string]string, error) {
-	skipMap := make(map[string]interface{})
-	for _, v := range varsToSkip {
-		skipMap[v] = interface{}(nil)
-	}
-
-	inputs := make(map[string]string)
-
+func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, varIdxMap map[string]int, Stdin io.ReadCloser, Stdout io.WriteCloser) error {
 	for _, variable := range draftConfig.Variables {
-		if val, ok := skipMap[variable.Name]; ok && val != "" {
+		if variable.Value != "" {
 			log.Debugf("Skipping prompt for %s", variable.Name)
 			continue
 		}
 
 		if variable.Default.IsPromptDisabled {
 			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", variable.Name)
-			noPromptDefaultValue := GetVariableDefaultValue(variable, inputs)
+			noPromptDefaultValue := GetVariableDefaultValue(draftConfig.Variables, variable, varIdxMap)
 			if noPromptDefaultValue == "" {
-				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", variable.Name)
+				return fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", variable.Name)
 			}
 			log.Debugf("Using default value %s for %s", noPromptDefaultValue, variable.Name)
-			inputs[variable.Name] = noPromptDefaultValue
+			variable.Value = noPromptDefaultValue
 			continue
 		}
 
@@ -60,25 +53,25 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, varsToSkip
 		if variable.Type == "bool" {
 			input, err := RunBoolPrompt(variable, Stdin, Stdout)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			inputs[variable.Name] = input
+			variable.Value = input
 		} else {
-			defaultValue := GetVariableDefaultValue(variable, inputs)
+			defaultValue := GetVariableDefaultValue(draftConfig.Variables, variable, varIdxMap)
 
 			stringInput, err := RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			inputs[variable.Name] = stringInput
+			variable.Value = stringInput
 		}
 	}
 
-	return inputs, nil
+	return nil
 }
 
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal Variable.DefaultValue in that order.
-func GetVariableDefaultValue(variable config.BuilderVar, inputs map[string]string) string {
+func GetVariableDefaultValue(variables []config.BuilderVar, variable config.BuilderVar, varIdxMap map[string]int) string {
 	defaultValue := ""
 
 	if variable.Name == "APPNAME" {
@@ -93,8 +86,8 @@ func GetVariableDefaultValue(variable config.BuilderVar, inputs map[string]strin
 
 	defaultValue = variable.Default.Value
 	log.Debugf("setting default value for %s to %s from variable default rule", variable.Name, defaultValue)
-	if variable.Default.ReferenceVar != "" && inputs[variable.Default.ReferenceVar] != "" {
-		defaultValue = inputs[variable.Default.ReferenceVar]
+	if variable.Default.ReferenceVar != "" && variables[varIdxMap[variable.Default.ReferenceVar]].Value != "" {
+		defaultValue = variables[varIdxMap[variable.Default.ReferenceVar]].Value
 		log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
 	}
 

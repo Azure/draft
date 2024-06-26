@@ -1,5 +1,7 @@
 package workflows
 
+import "github.com/Azure/draft/pkg/config"
+
 type WorkflowConfig struct {
 	WorkflowName         string
 	BranchName           string
@@ -12,6 +14,20 @@ type WorkflowConfig struct {
 	BuildContextPath     string
 	Namespace            string
 	PrivateCluster       string
+}
+
+func (wc *WorkflowConfig) SetFlagsToValues(draftConfig *config.DraftConfig, varIdxMap map[string]int) {
+	draftConfig.Variables[varIdxMap["WORKFLOWNAME"]].Value = wc.WorkflowName
+	draftConfig.Variables[varIdxMap["BRANCHNAME"]].Value = wc.BranchName
+	draftConfig.Variables[varIdxMap["ACRRESOURCEGROUP"]].Value = wc.AcrResourceGroup
+	draftConfig.Variables[varIdxMap["AZURECONTAINERREGISTRY"]].Value = wc.AcrName
+	draftConfig.Variables[varIdxMap["CONTAINERNAME"]].Value = wc.ContainerName
+	draftConfig.Variables[varIdxMap["CLUSTERRESOURCEGROUP"]].Value = wc.ClusterResourceGroup
+	draftConfig.Variables[varIdxMap["CLUSTERNAME"]].Value = wc.ClusterName
+	draftConfig.Variables[varIdxMap["DOCKERFILE"]].Value = wc.Dockerfile
+	draftConfig.Variables[varIdxMap["BUILDCONTEXTPATH"]].Value = wc.BuildContextPath
+	draftConfig.Variables[varIdxMap["NAMESPACE"]].Value = wc.Namespace
+	draftConfig.Variables[varIdxMap["PRIVATECLUSTER"]].Value = wc.PrivateCluster
 }
 
 func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {

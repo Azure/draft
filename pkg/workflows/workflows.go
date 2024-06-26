@@ -34,8 +34,9 @@ type Workflows struct {
 	workflowTemplates fs.FS
 }
 
-func updateProductionDeployments(deployType, dest string, flagValuesMap map[string]string, templateWriter templatewriter.TemplateWriter) error {
-	productionImage := fmt.Sprintf("%s.azurecr.io/%s", flagValuesMap["AZURECONTAINERREGISTRY"], flagValuesMap["CONTAINERNAME"])
+func UpdateProductionDeployments(deployType, dest string, draftConfig *config.DraftConfig, varIdxMap map[string]int, templateWriter templatewriter.TemplateWriter) error {
+	// TODO: check if variables have values
+	productionImage := fmt.Sprintf("%s.azurecr.io/%s", draftConfig.Variables[varIdxMap["AZURECONTAINERREGISTRY"]].Value, draftConfig.Variables[varIdxMap["CONTAINERNAME"]].Value)
 	switch deployType {
 	case "helm":
 		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
@@ -163,25 +164,22 @@ func (w *Workflows) populateConfigs() {
 	}
 }
 
-func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := w.workflows[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
 	srcDir := path.Join(parentDirName, val.Name())
 	log.Debugf("source directory for workflow template: %s", srcDir)
-	workflowConfig, ok := w.configs[deployType]
-	if !ok {
-		workflowConfig = nil
-	} else {
-		workflowConfig.ApplyDefaultVariables(customInputs)
+
+	valuesMap, err := draftConfig.VariableMap()
+	if err != nil {
+		return fmt.Errorf("create workflow files: %w", err)
 	}
 
-	if err := updateProductionDeployments(deployType, w.dest, customInputs, templateWriter); err != nil {
-		return fmt.Errorf("update production deployments: %w", err)
-	}
+	draftConfig.ApplyDefaultVariables(valuesMap)
 
-	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, workflowConfig, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, draftConfig, valuesMap, templateWriter); err != nil {
 		return err
 	}
 

@@ -89,7 +89,7 @@ func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) erro
 					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
 					customInputs[variable.Name] = variable.Default.Value
 				} else {
-					return errors.New("variable " + variable.Name + " has no default value")
+					return fmt.Errorf("variable %s has no default value", variable.Name)
 				}
 			}
 		}
@@ -123,11 +123,6 @@ func VariableIdxMap(variables []BuilderVar) map[string]int {
 	return varIdxMap
 }
 
-// TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
-type TemplateVariableRecorder interface {
-	Record(key, value string)
-}
-
 func (d *DraftConfig) VariableMap() (map[string]string, error) {
 	envArgs := make(map[string]string)
 
@@ -151,4 +146,9 @@ func (d *DraftConfig) VariableIdxMap() map[string]int {
 	}
 
 	return varIdxMap
+}
+
+// TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
+type TemplateVariableRecorder interface {
+	Record(key, value string)
 }

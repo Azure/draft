@@ -10,7 +10,7 @@ func TestApplyDefaultVariables(t *testing.T) {
 		draftConfig  DraftConfig
 		customInputs map[string]string
 		want         map[string]string
-		wantErr      bool
+		wantErrMsg   string
 	}{
 		{
 			testName: "keepAllCustomInputs",
@@ -103,7 +103,7 @@ func TestApplyDefaultVariables(t *testing.T) {
 			},
 			customInputs: map[string]string{},
 			want:         map[string]string{},
-			wantErr:      true,
+			wantErrMsg:   "variable var1 has no default value",
 		},
 		{
 			testName: "getDefaultFromReferenceVarCustomInputs",
@@ -185,12 +185,12 @@ func TestApplyDefaultVariables(t *testing.T) {
 			},
 			customInputs: map[string]string{},
 			want:         map[string]string{},
-			wantErr:      true,
+			wantErrMsg:   "apply default variables: cyclical reference detected",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			if err := tt.draftConfig.ApplyDefaultVariables(tt.customInputs); (err != nil) != tt.wantErr {
+			if err := tt.draftConfig.ApplyDefaultVariables(tt.customInputs); err != nil && err.Error() != tt.wantErrMsg {
 				t.Error(err)
 			} else {
 				for k, v := range tt.want {

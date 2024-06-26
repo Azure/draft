@@ -12,17 +12,18 @@ import (
 	"helm.sh/helm/v3/pkg/engine"
 )
 
-// Given a Helm chart directory or file, render all templates and write them to a temporary directory
+// Given a Helm chart directory or file, renders all templates and writes them to the specified directory
 func RenderHelmChart(isFile bool, mainChartPath, tempDir string) error {
-	if isFile { //get the directory that the chart lives in
+	if isFile { // Get the directory that the Chart.yaml lives in
 		mainChartPath = filepath.Dir(mainChartPath)
 	}
-	loadedCharts := make(map[string]*chart.Chart) // map of chart path to chart object
 
 	mainChart, err := loader.Load(mainChartPath)
 	if err != nil {
 		return fmt.Errorf("failed to load main chart: %s", err)
 	}
+
+	loadedCharts := make(map[string]*chart.Chart) // map of chart path to chart object
 	loadedCharts[mainChartPath] = mainChart
 
 	// Load subcharts and dependencies
@@ -67,6 +68,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) error {
 	return nil
 }
 
+// Returns values from values.yaml and release options specified in values.yaml
 func getValues(chart *chart.Chart, valuesPath string) (chartutil.Values, error) {
 	// Load values file
 	valuesFile, err := os.ReadFile(valuesPath)

@@ -43,6 +43,7 @@ func setup(t *testing.T) {
 	}
 }
 
+// Test rendering a valid Helm chart with no subcharts and three templates
 func TestRenderHelmChart_Valid(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
@@ -79,6 +80,7 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "ingress.yaml"))))
 }
 
+// Should successfully render a Helm chart with sub charts and be able to render subchart separately within a helm chart
 func TestSubCharts(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
@@ -124,7 +126,8 @@ func TestSubCharts(t *testing.T) {
 	//expect mainchart.yaml to not exist
 	outputFilePath := filepath.Join(tempDir, "maindeployment.yaml")
 	assert.NoFileExists(t, outputFilePath, "Unexpected file was created: %s", outputFilePath)
-
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart1.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment1.yaml"))))
+	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart2.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment2.yaml"))))
 }
 
 /**
@@ -163,6 +166,7 @@ func TestInvalidDeployments(t *testing.T) {
 	assert.Contains(t, err.Error(), "map has no entry for key")
 }
 
+/** Test different helm folder structures */
 func TestDifferentFolderStructures(t *testing.T) {
 	setup(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })

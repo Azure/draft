@@ -84,7 +84,7 @@ func getValues(chart *chart.Chart, valuesPath string) (chartutil.Values, error) 
 
 func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}) (chartutil.Values, error) {
 	// Extract release options from values
-	releaseName, ok := vals["releaseName"].(string) //TODO: What do we want to do if a releaseName and namespace is not specified in the values.yaml?
+	releaseName, ok := vals["releaseName"].(string)
 	if !ok || releaseName == "" {
 		return nil, fmt.Errorf("releaseName not found or empty in values.yaml")
 	}

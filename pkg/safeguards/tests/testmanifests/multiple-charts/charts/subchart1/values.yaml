@@ -1,0 +1,6 @@
+replicaCount: 2
+image:
+  repository: nginx
+  tag: stable
+releaseName: test-release
+releaseNamespace: test-namespace

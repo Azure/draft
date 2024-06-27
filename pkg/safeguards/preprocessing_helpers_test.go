@@ -50,7 +50,6 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	expectedFiles["service.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedservice.yaml")
 	expectedFiles["ingress.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedingress.yaml")
 
-	//expectedFiles := []string{"deployment.yaml", "service.yaml", "ingress.yaml"}
 	for _, writtenFile := range manifestFiles {
 		expectedYaml := expectedFiles[writtenFile.Name]
 		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
@@ -60,7 +59,7 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
-	// //Test by giving file directly
+	// Test by giving file directly
 	manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
 	assert.Nil(t, err)
 
@@ -79,7 +78,7 @@ func TestSubCharts(t *testing.T) {
 	manifestFiles, err := RenderHelmChart(false, subcharts, tempDir)
 	assert.Nil(t, err)
 
-	//assert that 3 files were created in temp dir: 1 from main chart, 2 from subcharts
+	// Assert that 3 files were created in temp dir: 1 from main chart, 2 from subcharts
 	files, _ := os.ReadDir(tempDir)
 	assert.Equal(t, len(files), 3)
 
@@ -111,7 +110,7 @@ func TestSubCharts(t *testing.T) {
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
-	//Given path to a sub- Chart.yaml with a dependency on another subchart, should render both subcharts, but not the main chart
+	// Given path to a sub- Chart.yaml with a dependency on another subchart, should render both subcharts, but not the main chart
 	manifestFiles, err = RenderHelmChart(true, directPath_ToSubchartYaml, tempDir)
 	assert.Nil(t, err)
 
@@ -168,10 +167,10 @@ func TestInvalidDeployments(t *testing.T) {
 	assert.Contains(t, err.Error(), "map has no entry for key")
 }
 
-/** Test different helm folder structures */
+// Test different helm folder structures
 func TestDifferentFolderStructures(t *testing.T) {
 	makeTempDir(t)
-	//t.Cleanup(func() { cleanupDir(t, tempDir) })
+	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
 	manifestFiles, err := RenderHelmChart(false, folderwithHelpersTmpl, tempDir) // includes _helpers.tpl
 	assert.Nil(t, err)
@@ -218,8 +217,6 @@ func parseYAML(t *testing.T, content string) map[string]interface{} {
 }
 
 func getManifestAsString(t *testing.T, filePath string) string {
-	//yamlFilePath := filepath.Join("tests/testmanifests", filename)
-
 	yamlFileContent, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatalf("Failed to read YAML file: %s", err)

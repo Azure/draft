@@ -17,34 +17,28 @@ spec:
         - name: nginx
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
 ---
-{{- if .Values.ingress.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .Release.Name }}-ingress
-  namespace: {{ .Release.Namespace }}
-spec:
-  rules:
-    - host: {{ .Values.ingress.hostname }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-service
-                port:
-                  number: {{ .Values.service.port }}
-{{- end }}
----
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-service
+  name: {{ .Release.Name }}-configmap
   namespace: {{ .Release.Namespace }}
-spec:
-  type: {{ .Values.service.type }}
-  ports:
-    - port: {{ .Values.service.port }}
-  selector:
-    app: my-web-app
+data:
+  config.yaml: |
+    replicaCount: {{ .Values.replicaCount }}
+    image:
+      repository: {{ .Values.image.repository }}
+      tag: {{ .Values.image.tag }}
+      pullPolicy: {{ .Values.image.pullPolicy }}
+    service:
+      type: {{ .Values.service.type }}
+      port: {{ .Values.service.port }}
+    ingress:
+      enabled: {{ .Values.ingress.enabled }}
+      hostname: {{ .Values.ingress.hostname }}
+      annotations: 
+        {{- range $key, $value := .Values.ingress.annotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      tls: {{ .Values.ingress.tls }}
+      tlsSecret: {{ .Values.ingress.tlsSecret }}
+

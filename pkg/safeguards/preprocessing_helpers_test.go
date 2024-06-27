@@ -41,37 +41,34 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	err := RenderHelmChart(false, chartPath, tempDir)
+	manifestFiles, err := RenderHelmChart(false, chartPath, tempDir)
 	assert.Nil(t, err)
 
 	// Check that the output directory exists and contains expected files
-	expectedFiles := []string{"deployment.yaml", "service.yaml", "ingress.yaml"}
-	for _, fileName := range expectedFiles {
-		outputFilePath := filepath.Join(tempDir, fileName)
-		assert.FileExists(t, outputFilePath, "Expected file was not created: %s", outputFilePath)
-	}
+	expectedFiles := make(map[string]string)
+	expectedFiles["deployment.yaml"] = getManifestAsString(t, "tests/testmanifests/expecteddeployment.yaml")
+	expectedFiles["service.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedservice.yaml")
+	expectedFiles["ingress.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedingress.yaml")
 
-	//assert that each file output matches expected yaml after values are filled in
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expecteddeployment.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedservice.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "service.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "ingress.yaml"))))
+	//expectedFiles := []string{"deployment.yaml", "service.yaml", "ingress.yaml"}
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
+	}
 
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
-	//Test by giving file directly
-	err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
+	// //Test by giving file directly
+	manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
 	assert.Nil(t, err)
 
-	for _, fileName := range expectedFiles {
-		outputFilePath := filepath.Join(tempDir, fileName)
-		assert.FileExists(t, outputFilePath, "Expected file was not created: %s", outputFilePath)
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
 	}
-
-	//assert that each file output matches expected yaml after values are filled in
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expecteddeployment.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedservice.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "service.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expectedingress.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "ingress.yaml"))))
 }
 
 // Should successfully render a Helm chart with sub charts and be able to render subchart separately within a helm chart
@@ -79,52 +76,58 @@ func TestSubCharts(t *testing.T) {
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	err := RenderHelmChart(false, subcharts, tempDir)
+	manifestFiles, err := RenderHelmChart(false, subcharts, tempDir)
 	assert.Nil(t, err)
 
 	//assert that 3 files were created in temp dir: 1 from main chart, 2 from subcharts
 	files, _ := os.ReadDir(tempDir)
 	assert.Equal(t, len(files), 3)
-	expectedFiles := []string{"maindeployment.yaml", "deployment1.yaml", "deployment2.yaml"}
-	for _, fileName := range expectedFiles {
-		outputFilePath := filepath.Join(tempDir, fileName)
-		assert.FileExists(t, outputFilePath, "Expected file was not created: %s", outputFilePath)
+
+	expectedFiles := make(map[string]string)
+	expectedFiles["maindeployment.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-mainchart.yaml")
+	expectedFiles["deployment1.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart1.yaml")
+	expectedFiles["deployment2.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart2.yaml")
+
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
 	}
-	//assert that the files are equal
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-mainchart.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "maindeployment.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart1.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment1.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart2.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment2.yaml"))))
 
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
 	// Given a sub-chart dir, that specific sub chart only should be evaluated and rendered
-	err = RenderHelmChart(false, subchartDir, tempDir)
+	_, err = RenderHelmChart(false, subchartDir, tempDir)
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
 	// Given a Chart.yaml in the main directory, main chart and subcharts should be evaluated
-	err = RenderHelmChart(true, directPath_ToMainChartYaml, tempDir)
+	_, err = RenderHelmChart(true, directPath_ToMainChartYaml, tempDir)
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
 	//Given path to a sub- Chart.yaml with a dependency on another subchart, should render both subcharts, but not the main chart
-	err = RenderHelmChart(true, directPath_ToSubchartYaml, tempDir)
+	manifestFiles, err = RenderHelmChart(true, directPath_ToSubchartYaml, tempDir)
 	assert.Nil(t, err)
-	expectedFiles = []string{"deployment1.yaml", "deployment2.yaml"}
-	for _, fileName := range expectedFiles {
-		outputFilePath := filepath.Join(tempDir, fileName)
-		assert.FileExists(t, outputFilePath, "Expected file was not created: %s", outputFilePath)
+
+	expectedFiles = make(map[string]string)
+	expectedFiles["deployment1.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart1.yaml")
+	expectedFiles["deployment2.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart2.yaml")
+
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
 	}
+
 	//expect mainchart.yaml to not exist
 	outputFilePath := filepath.Join(tempDir, "maindeployment.yaml")
 	assert.NoFileExists(t, outputFilePath, "Unexpected file was created: %s", outputFilePath)
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart1.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment1.yaml"))))
-	assert.Equal(t, parseYAML(t, getManifestAsString(t, "expected-subchart2.yaml")), parseYAML(t, readFile(t, filepath.Join(tempDir, "deployment2.yaml"))))
 }
 
 /**
@@ -136,18 +139,18 @@ func TestInvalidChartAndValues(t *testing.T) {
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	err := RenderHelmChart(false, invalidChartPath, tempDir)
+	_, err := RenderHelmChart(false, invalidChartPath, tempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to load main chart: validation: chart.metadata.name is required")
 
-	err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
+	_, err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
 	assert.Nil(t, err)
 
 	// Should fail if values.yaml doesn't contain all values necessary for templating
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
-	err = RenderHelmChart(false, invalidValuesChart, tempDir)
+	_, err = RenderHelmChart(false, invalidValuesChart, tempDir)
 	assert.NotNil(t, err)
 }
 
@@ -155,12 +158,12 @@ func TestInvalidDeployments(t *testing.T) {
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	err := RenderHelmChart(false, invalidDeploymentSyntax, tempDir)
+	_, err := RenderHelmChart(false, invalidDeploymentSyntax, tempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "parse error")
 	assert.Contains(t, err.Error(), "function \"selector\" not defined")
 
-	err = RenderHelmChart(false, invalidDeploymentValues, tempDir)
+	_, err = RenderHelmChart(false, invalidDeploymentValues, tempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "map has no entry for key")
 }
@@ -168,21 +171,34 @@ func TestInvalidDeployments(t *testing.T) {
 /** Test different helm folder structures */
 func TestDifferentFolderStructures(t *testing.T) {
 	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	//t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	err := RenderHelmChart(false, folderwithHelpersTmpl, tempDir) // includes _helpers.tpl
+	manifestFiles, err := RenderHelmChart(false, folderwithHelpersTmpl, tempDir) // includes _helpers.tpl
 	assert.Nil(t, err)
 
+	expectedFiles := make(map[string]string)
+	expectedFiles["deployment.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-helpers-deployment.yaml")
+	expectedFiles["service.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-helpers-service.yaml")
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
+	}
 	cleanupDir(t, tempDir)
 	makeTempDir(t)
 
-	err = RenderHelmChart(false, multipleTemplateDirs, tempDir) // all manifests defined in one file
+	manifestFiles, err = RenderHelmChart(false, multipleTemplateDirs, tempDir) // all manifests defined in one file
 	assert.Nil(t, err)
 
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
-	err = RenderHelmChart(false, multipleValuesFile, tempDir) // contains three values files
-	assert.Nil(t, err)
+	expectedFiles = make(map[string]string)
+	expectedFiles["resources.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-resources.yaml")
+	expectedFiles["service-1.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedservice.yaml")
+	expectedFiles["service-2.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedservice2.yaml")
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
+	}
 }
 
 func cleanupDir(t *testing.T, dir string) {
@@ -190,14 +206,6 @@ func cleanupDir(t *testing.T, dir string) {
 	if err != nil {
 		t.Fatalf("Failed to clean directory: %s", err)
 	}
-}
-
-func readFile(t *testing.T, path string) string {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("Failed to read file: %s", err)
-	}
-	return string(data)
 }
 
 func parseYAML(t *testing.T, content string) map[string]interface{} {
@@ -209,10 +217,10 @@ func parseYAML(t *testing.T, content string) map[string]interface{} {
 	return result
 }
 
-func getManifestAsString(t *testing.T, filename string) string {
-	yamlFilePath := filepath.Join("tests/testmanifests", filename)
+func getManifestAsString(t *testing.T, filePath string) string {
+	//yamlFilePath := filepath.Join("tests/testmanifests", filename)
 
-	yamlFileContent, err := os.ReadFile(yamlFilePath)
+	yamlFileContent, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatalf("Failed to read YAML file: %s", err)
 	}

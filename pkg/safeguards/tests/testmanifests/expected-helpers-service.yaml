@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-release-mychart
+  labels:
+    
+    helm.sh/chart: mychart-0.1.0
+    test-release-mychart: test-release
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: test-release
+    app.kubernetes.io/version: 1.16.0
+    app.kubernetes.io/component: mychart
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: test-release-mychart

@@ -292,8 +292,8 @@ func IsKustomize(p string) bool {
 	return strings.Contains(p, "kustomization.yaml")
 }
 
-func RenderKustomizeManifest(ctx context.Context, dir string) error {
-	// TODO implement logger
+func RenderKustomizeManifest(dir string) error {
+	log.Debugf("Rendering kustomization.yaml...")
 
 	kustomizeFS := filesys.MakeFsInMemory()
 
@@ -322,7 +322,7 @@ func RenderKustomizeManifest(ctx context.Context, dir string) error {
 		}
 
 		// write yamlRes to dir
-		err = os.WriteFile(res.GetName()+".yaml", yamlRes, 0777)
+		err = os.WriteFile(res.GetName()+".yaml", yamlRes, 0644)
 		if err != nil {
 			return fmt.Errorf("Error writing yaml resource: %s\n", err.Error())
 		}

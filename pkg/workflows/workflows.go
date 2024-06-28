@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
@@ -15,16 +16,12 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/templatewriter"
-)
-
-const (
-	parentDirName  = "workflows"
-	configFileName = "/draft.yaml"
 )
 
 type Workflows struct {
@@ -34,9 +31,31 @@ type Workflows struct {
 	workflowTemplates fs.FS
 }
 
-func UpdateProductionDeployments(deployType, dest string, draftConfig *config.DraftConfig, varIdxMap map[string]int, templateWriter templatewriter.TemplateWriter) error {
-	// TODO: check if variables have values
-	productionImage := fmt.Sprintf("%s.azurecr.io/%s", draftConfig.Variables[varIdxMap["AZURECONTAINERREGISTRY"]].Value, draftConfig.Variables[varIdxMap["CONTAINERNAME"]].Value)
+type DeploymentType string
+
+const (
+	parentDirName                          = "workflows"
+	configFileName                         = "/draft.yaml"
+	emptyDefaultFlagValue                  = ""
+	helmDeploymentType      DeploymentType = "helm"
+	kustomizeDeploymentType DeploymentType = "kustomize"
+	manifestsDeploymentType DeploymentType = "manifests"
+)
+
+var allDeploymentTypes = []DeploymentType{helmDeploymentType, kustomizeDeploymentType, manifestsDeploymentType}
+
+func UpdateProductionDeployments(deployType, dest string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
+	acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY")
+	if err != nil {
+		return fmt.Errorf("get variable: %w", err)
+	}
+
+	containerName, err := draftConfig.GetVariable("CONTAINERNAME")
+	if err != nil {
+		return fmt.Errorf("get variable: %w", err)
+	}
+
+	productionImage := fmt.Sprintf("%s.azurecr.io/%s", acr.Value, containerName.Value)
 	switch deployType {
 	case "helm":
 		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
@@ -181,6 +200,81 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.D
 
 	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, draftConfig, valuesMap, templateWriter); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (w *Workflows) CreateFlags(f *pflag.FlagSet) error {
+	type FlagInfo struct {
+		description     string
+		deploymentTypes []DeploymentType
+		isEnvArgCommon  bool
+	}
+
+	flags := make(map[string]FlagInfo)
+	configs := make(map[DeploymentType]*config.DraftConfig)
+
+	for _, deploymentType := range allDeploymentTypes {
+		draftConfig, err := w.GetConfig(string(deploymentType))
+		if err != nil {
+			return fmt.Errorf("get config: %w", err)
+		} else {
+			configs[deploymentType] = draftConfig
+
+			for _, variable := range draftConfig.Variables {
+				if flag, ok := flags[variable.Name]; ok {
+					flag.deploymentTypes = append(flag.deploymentTypes, deploymentType)
+					flag.isEnvArgCommon = true
+				} else {
+					flags[variable.Name] = FlagInfo{
+						description:     variable.Description,
+						deploymentTypes: []DeploymentType{deploymentType},
+						isEnvArgCommon:  false,
+					}
+				}
+			}
+		}
+	}
+
+	for varName, flagInfo := range flags {
+		flagName := strings.ToLower(varName)
+
+		for _, deploymentType := range flagInfo.deploymentTypes {
+			variable, err := configs[deploymentType].GetVariable(varName)
+			if err != nil {
+				return fmt.Errorf("get variable: %w", err)
+			}
+
+			if flagInfo.isEnvArgCommon {
+				f.StringVar(&variable.Value, flagName, emptyDefaultFlagValue, flagInfo.description)
+			} else {
+				f.StringVar(&variable.Value, flagName, emptyDefaultFlagValue, fmt.Sprintf("%s (%s)", flagInfo.description, deploymentType))
+			}
+		}
+	}
+
+	return nil
+}
+
+func (w *Workflows) HandleFlagVariables(flagValuesMap map[string]string, deploymentType string) error {
+	for flagVarName, flagVarValue := range flagValuesMap {
+		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
+		switch flagVarName {
+		case "destination":
+			w.dest = flagVarValue
+		case "deploy-type":
+			continue
+		default:
+			// handles flags that are meant to represent environment arguments
+			envArg := strings.ToUpper(flagVarName)
+
+			if variable, err := w.configs[deploymentType].GetVariable(envArg); err != nil {
+				return fmt.Errorf("flag variable name %s not valid", flagVarName)
+			} else {
+				variable.Value = flagVarValue
+			}
+		}
 	}
 
 	return nil

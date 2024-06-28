@@ -487,3 +487,15 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 
 	return customInputs, nil
 }
+
+func FlagVariablesToMap(flagVariables []string) map[string]string {
+	flagValuesMap := make(map[string]string)
+	for _, flagVar := range flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			log.Fatalf("invalid variable format: %s", flagVar)
+		}
+		flagValuesMap[flagVarName] = flagVarValue
+	}
+	return flagValuesMap
+}

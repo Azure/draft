@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
@@ -17,7 +15,7 @@ import (
 )
 
 type generateWorkflowCmd struct {
-	workflowConfig workflows.WorkflowConfig
+	workflow       *workflows.Workflows
 	dest           string
 	deployType     string
 	flagVariables  []string
@@ -46,23 +44,12 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
-
-	for variables := range draftConfig.Variables {
-		f.StringVar(&gwCmd.workflowConfig.Variables[variables].Value, draftConfig.Variables[variables].Name, emptyDefaultFlagValue, ""+draftConfig.Variables[variables].Description+DeploymentType)
+	gwCmd.workflow = workflows.CreateWorkflowsFromEmbedFS(template.Workflows, ".")
+	if err := gwCmd.workflow.CreateFlags(f); err != nil {
+		log.Fatalf("create flags: %v", err)
 	}
-
-	f.StringVarP(&gwCmd.workflowConfig.WorkflowName, "workflow-name", "w", emptyDefaultFlagValue, "specify the Github workflow name")
-	f.StringVarP(&gwCmd.workflowConfig.BranchName, "branch-name", "b", emptyDefaultFlagValue, "specify the Github branch to automatically deploy from")
-	f.StringVar(&gwCmd.workflowConfig.AcrResourceGroup, "acr-resource-group", emptyDefaultFlagValue, "specify the Azure container registry resource group")
-	f.StringVarP(&gwCmd.workflowConfig.AcrName, "azure-container-registry", "r", emptyDefaultFlagValue, "specify the Azure container registry name")
-	f.StringVar(&gwCmd.workflowConfig.ContainerName, "container-name", emptyDefaultFlagValue, "specify the container image name")
-	f.StringVarP(&gwCmd.workflowConfig.ClusterResourceGroup, "cluster-resource-group", "g", emptyDefaultFlagValue, "specify the Azure resource group of your AKS cluster")
-	f.StringVarP(&gwCmd.workflowConfig.ClusterName, "cluster-name", "c", emptyDefaultFlagValue, "specify the AKS cluster name")
-	f.StringVar(&gwCmd.workflowConfig.Dockerfile, "dockerfile", emptyDefaultFlagValue, "specify the path to the Dockerfile")
-	f.StringVarP(&gwCmd.workflowConfig.BuildContextPath, "build-context-path", "x", emptyDefaultFlagValue, "specify the docker build context path")
-	f.StringVarP(&gwCmd.workflowConfig.Namespace, "namespace", "n", emptyDefaultFlagValue, "specify the Kubernetes namespace")
-	f.StringVar(&gwCmd.workflowConfig.PrivateCluster, "private-cluster", emptyDefaultFlagValue, "specify if the AKS cluster is private")
+	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
+	f.StringVarP(&gwCmd.deployType, "deploy-type", "", "", "specify the k8s deployment type (helm, kustomize, manifests)")
 	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
@@ -75,7 +62,7 @@ func init() {
 func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	var err error
 
-	flagValuesMap := flagVariablesToMap(gwc.flagVariables)
+	flagValuesMap := FlagVariablesToMap(gwc.flagVariables)
 
 	if gwc.deployType == "" {
 		if flagValue := flagValuesMap["deploy-type"]; flagValue == "helm" || flagValue == "kustomize" || flagValue == "manifests" {
@@ -99,54 +86,15 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return fmt.Errorf("get config: %w", err)
 	}
 
-	varIdxMap := config.VariableIdxMap(draftConfig.Variables)
+	workflow.HandleFlagVariables(flagValuesMap, gwc.deployType)
 
-	gwc.workflowConfig.SetFlagsToValues(draftConfig, varIdxMap)
-
-	gwc.handleFlagVariables(flagValuesMap, draftConfig, varIdxMap)
-
-	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig, varIdxMap); err != nil {
+	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig); err != nil {
 		return err
 	}
 
-	if err := workflows.UpdateProductionDeployments(gwc.deployType, gwc.dest, draftConfig, varIdxMap, gwc.templateWriter); err != nil {
+	if err := workflows.UpdateProductionDeployments(gwc.deployType, gwc.dest, draftConfig, gwc.templateWriter); err != nil {
 		return fmt.Errorf("update production deployments: %w", err)
 	}
 
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
-}
-
-func flagVariablesToMap(flagVariables []string) map[string]string {
-	flagValuesMap := make(map[string]string)
-	for _, flagVar := range flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			log.Fatalf("invalid variable format: %s", flagVar)
-		}
-		flagValuesMap[flagVarName] = flagVarValue
-	}
-	return flagValuesMap
-}
-
-func (gwc *generateWorkflowCmd) handleFlagVariables(flagValuesMap map[string]string, draftConfig *config.DraftConfig, varIdxMap map[string]int) error {
-	for flagVarName, flagVarValue := range flagValuesMap {
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-		switch flagVarName {
-		case "destination":
-			gwc.dest = flagVarValue
-		case "deploy-type":
-			continue
-		default:
-			// comment here
-			envArg := strings.ToUpper(strings.ReplaceAll(flagVarName, "-", ""))
-
-			if idx, ok := varIdxMap[envArg]; !ok {
-				return fmt.Errorf("flag variable name %s not valid", flagVarName)
-			} else {
-				draftConfig.Variables[idx].Value = flagVarValue
-			}
-		}
-	}
-
-	return nil
 }

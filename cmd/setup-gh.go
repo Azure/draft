@@ -87,7 +87,7 @@ func fillSetUpConfig(sc *providers.SetUpCmd) error {
 				return fmt.Errorf("getting subscription labels: %w", err)
 			}
 
-			sc.SubscriptionID, err = GetAzSubscriptionId(subLabels, currentSub)
+			sc.SubscriptionID, err = getAzSubscriptionId(subLabels, currentSub)
 			if err != nil {
 				return fmt.Errorf("getting subscription ID: %w", err)
 			}
@@ -223,7 +223,7 @@ func getCloudProvider() string {
 	return selectResponse
 }
 
-func GetAzSubscriptionId(subLabels []providers.SubLabel, currentSub providers.SubLabel) (string, error) {
+func getAzSubscriptionId(subLabels []providers.SubLabel, currentSub providers.SubLabel) (string, error) {
 	subLabel, err := prompts.Select("Please choose the subscription ID you would like to use", subLabels, &prompts.SelectOpt[providers.SubLabel]{
 		Field: func(subLabel providers.SubLabel) string {
 			return subLabel.Name + " (" + subLabel.ID + ")"

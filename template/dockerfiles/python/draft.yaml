@@ -5,19 +5,18 @@ nameOverrides:
     prefix: "."
 variables:
   - name: "PORT"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   - name: "VERSION"
+    default: 
+      value: "3"
     description: "the version of python used by the application"
     exampleValues: ["3.9", "3.8", "3.7", "3.6"]
   - name: "ENTRYPOINT"
+    default: 
+      value: "app.py"
     description: "the entrypoint file of the repository"
     type: string
     exampleValues: ["app.py", "main.py"]
-variableDefaults:
-  - name: "VERSION"
-    value: "3"
-  - name: "PORT"
-    value: "80"
-  - name: "ENTRYPOINT"
-    value: "app.py"

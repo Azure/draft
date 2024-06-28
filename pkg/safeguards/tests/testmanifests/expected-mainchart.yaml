@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-release-main
+  labels:
+    app: mainchart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mainchart
+  template:
+    metadata:
+      labels:
+        app: mainchart
+    spec:
+      containers:
+        - name: mainchart
+          image: nginx:stable

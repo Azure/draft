@@ -1,4 +1,4 @@
-package safeguards
+package preprocessing
 
 import (
 	"os"

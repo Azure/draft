@@ -1,19 +1,25 @@
-package safeguards
+package preprocessing
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/Azure/draft/pkg/safeguards"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
+	"sigs.k8s.io/kustomize/api/krusty"
+	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/filesys"
 )
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
-func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]ManifestFile, error) {
+func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.ManifestFile, error) {
 	if isFile { // Get the directory that the Chart.yaml lives in
 		mainChartPath = filepath.Dir(mainChartPath)
 	}
@@ -39,7 +45,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]ManifestFile
 		loadedCharts[chartPath] = subChart
 	}
 
-	var manifestFiles []ManifestFile
+	var manifestFiles []safeguards.ManifestFile
 	for chartPath, chart := range loadedCharts {
 		valuesPath := filepath.Join(chartPath, "values.yaml") // Enforce that values.yaml must be at same level as Chart.yaml
 		mergedValues, err := getValues(chart, valuesPath)
@@ -58,7 +64,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]ManifestFile
 			if err := os.WriteFile(outputFilePath, []byte(content), 0644); err != nil {
 				return nil, fmt.Errorf("failed to write manifest file: %s", err)
 			}
-			manifestFiles = append(manifestFiles, ManifestFile{Name: filepath.Base(filePath), Path: outputFilePath})
+			manifestFiles = append(manifestFiles, safeguards.ManifestFile{Name: filepath.Base(filePath), Path: outputFilePath})
 		}
 	}
 
@@ -107,4 +113,57 @@ func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}) (chartut
 	}
 
 	return mergedValues, nil
+}
+
+func CreateTempDir(p string) string {
+	dir, err := os.MkdirTemp(p, "prefix")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir
+}
+
+func IsKustomize(p string) bool {
+	return strings.Contains(p, "kustomization.yaml")
+}
+
+func RenderKustomizeManifest(dir string) error {
+	log.Debugf("Rendering kustomization.yaml...")
+
+	kustomizeFS := filesys.MakeFsInMemory()
+
+	// Create a new Kustomize build options
+	options := &krusty.Options{
+		Reorder:           "",
+		AddManagedbyLabel: true,
+		LoadRestrictions:  types.LoadRestrictionsUnknown,
+		PluginConfig:      &types.PluginConfig{},
+	}
+
+	// Create a new Kustomize build object
+	k := krusty.MakeKustomizer(options)
+
+	// Run the build to generate the manifests
+	resMap, err := k.Run(kustomizeFS, dir)
+	if err != nil {
+		return fmt.Errorf("Error building manifests: %s\n", err.Error())
+	}
+
+	// Output the manifests
+	for _, res := range resMap.Resources() {
+		yamlRes, err := res.AsYAML()
+		if err != nil {
+			return fmt.Errorf("Error converting resource to YAML: %s\n", err.Error())
+		}
+
+		// write yamlRes to dir
+		err = os.WriteFile(res.GetName()+".yaml", yamlRes, 0644)
+		if err != nil {
+			return fmt.Errorf("Error writing yaml resource: %s\n", err.Error())
+		}
+
+	}
+
+	return nil
 }

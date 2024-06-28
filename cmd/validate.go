@@ -3,11 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"path"
-
 	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
+	"path"
 )
 
 type validateCmd struct {
@@ -62,7 +63,28 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 	var manifestFiles []safeguards.ManifestFile
 	if isDir {
-		manifestFiles, err = safeguards.GetManifestFiles(vc.manifestPath)
+		// kustomize pre-processing
+		//
+		// 1. check for k.yaml
+		var tempDir string
+		if preprocessing.IsKustomize(vc.manifestPath) {
+			// 2. create a temp dir (create tempdir func)
+			// os.MkdirTemp
+			tempDir = preprocessing.CreateTempDir(vc.manifestPath)
+			// defer cleanup()
+			defer os.RemoveAll(tempDir)
+
+			// 3. render kustomization.yaml into actual manifest file
+			// do not pollute user's fs with rendered files
+			err = preprocessing.RenderKustomizeManifest(tempDir)
+			if err != nil {
+				return err
+			}
+		} else {
+			tempDir = vc.manifestPath
+		}
+		// 4. pass into safeguards.GetManifestFiles
+		manifestFiles, err = safeguards.GetManifestFiles(tempDir)
 		if err != nil {
 			return err
 		}

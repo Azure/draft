@@ -7,9 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sigs.k8s.io/kustomize/api/types"
-	"sigs.k8s.io/kustomize/kyaml/filesys"
-	"strings"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
@@ -18,12 +15,10 @@ import (
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/gator/reader"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
 	log "github.com/sirupsen/logrus"
-
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"sigs.k8s.io/kustomize/api/krusty"
 )
 
 // retrieves the constraint client that does all rego code related operations
@@ -277,57 +272,4 @@ func getObjectViolations(ctx context.Context, c *constraintclient.Client, object
 	}
 
 	return results, nil
-}
-
-func CreateTempDir(p string) string {
-	dir, err := os.MkdirTemp(p, "prefix")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return dir
-}
-
-func IsKustomize(p string) bool {
-	return strings.Contains(p, "kustomization.yaml")
-}
-
-func RenderKustomizeManifest(dir string) error {
-	log.Debugf("Rendering kustomization.yaml...")
-
-	kustomizeFS := filesys.MakeFsInMemory()
-
-	// Create a new Kustomize build options
-	options := &krusty.Options{
-		Reorder:           "",
-		AddManagedbyLabel: true,
-		LoadRestrictions:  types.LoadRestrictionsUnknown,
-		PluginConfig:      &types.PluginConfig{},
-	}
-
-	// Create a new Kustomize build object
-	k := krusty.MakeKustomizer(options)
-
-	// Run the build to generate the manifests
-	resMap, err := k.Run(kustomizeFS, dir)
-	if err != nil {
-		return fmt.Errorf("Error building manifests: %s\n", err.Error())
-	}
-
-	// Output the manifests
-	for _, res := range resMap.Resources() {
-		yamlRes, err := res.AsYAML()
-		if err != nil {
-			return fmt.Errorf("Error converting resource to YAML: %s\n", err.Error())
-		}
-
-		// write yamlRes to dir
-		err = os.WriteFile(res.GetName()+".yaml", yamlRes, 0644)
-		if err != nil {
-			return fmt.Errorf("Error writing yaml resource: %s\n", err.Error())
-		}
-
-	}
-
-	return nil
 }

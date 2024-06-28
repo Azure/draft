@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -66,16 +67,16 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		//
 		// 1. check for k.yaml
 		var tempDir string
-		if safeguards.IsKustomize(vc.manifestPath) {
+		if preprocessing.IsKustomize(vc.manifestPath) {
 			// 2. create a temp dir (create tempdir func)
 			// os.MkdirTemp
-			tempDir = safeguards.CreateTempDir(vc.manifestPath)
+			tempDir = preprocessing.CreateTempDir(vc.manifestPath)
 			// defer cleanup()
 			defer os.RemoveAll(tempDir)
 
 			// 3. render kustomization.yaml into actual manifest file
 			// do not pollute user's fs with rendered files
-			err = safeguards.RenderKustomizeManifest(tempDir)
+			err = preprocessing.RenderKustomizeManifest(tempDir)
 			if err != nil {
 				return err
 			}

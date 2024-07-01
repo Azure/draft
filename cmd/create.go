@@ -41,7 +41,6 @@ const emptyDefaultFlagValue = ""
 const currentDirDefaultFlagValue = "."
 
 type createCmd struct {
-	appName    string
 	lang       string
 	dest       string
 	deployType string
@@ -79,7 +78,6 @@ func newCreateCmd() *cobra.Command {
 	f := cmd.Flags()
 
 	f.StringVarP(&cc.createConfigPath, "create-config", "c", emptyDefaultFlagValue, "specify the path to the configuration file")
-	f.StringVarP(&cc.appName, "app", "a", emptyDefaultFlagValue, "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", emptyDefaultFlagValue, "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVarP(&cc.deployType, "deploy-type", "", emptyDefaultFlagValue, "specify deployment type (eg. helm, kustomize, manifests)")
@@ -285,10 +283,8 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
-	var inputs map[string]string
 	if cc.createConfig.LanguageVariables == nil {
-		inputs, err = prompts.RunPromptsFromConfigWithSkips(langConfig, maps.Keys(flagVariablesMap))
-		if err != nil {
+		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
 			return err
 		}
 	} else {
@@ -464,12 +460,14 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []UserInputs) (map[string]string, error) {
-	customInputs := make(map[string]string)
-
+func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []UserInputs) error {
 	// set inputs to provided values
-	for _, variable := range provided {
-		customInputs[variable.Name] = variable.Value
+	for _, providedVar := range provided {
+		variable, err := draftConfig.GetVariable(providedVar.Name)
+		if err != nil {
+			return fmt.Errorf("validate config inputs to prompts: %w", providedVar.Name, err)
+		}
+		variable.Value = providedVar.Value
 	}
 
 	if err := draftConfig.ApplyDefaultVariables(customInputs); err != nil {

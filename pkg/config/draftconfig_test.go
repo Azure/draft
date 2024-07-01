@@ -6,33 +6,30 @@ import (
 
 func TestApplyDefaultVariables(t *testing.T) {
 	tests := []struct {
-		testName     string
-		draftConfig  DraftConfig
-		customInputs map[string]string
-		want         map[string]string
-		wantErr      bool
+		testName    string
+		draftConfig DraftConfig
+		want        map[string]string
+		wantErr     bool
 	}{
 		{
 			testName: "keepAllCustomInputs",
 			draftConfig: DraftConfig{
-				Variables: []BuilderVar{
+				Variables: []*BuilderVar{
 					{
-						Name: "var1",
+						Name:  "var1",
+						Value: "custom-value-1",
 						Default: BuilderVarDefault{
 							Value: "default-value-1",
 						},
 					},
 					{
-						Name: "var2",
+						Name:  "var2",
+						Value: "custom-value-2",
 						Default: BuilderVarDefault{
 							Value: "default-value-2",
 						},
 					},
 				},
-			},
-			customInputs: map[string]string{
-				"var1": "custom-value-1",
-				"var2": "custom-value-2",
 			},
 			want: map[string]string{
 				"var1": "custom-value-1",
@@ -42,7 +39,7 @@ func TestApplyDefaultVariables(t *testing.T) {
 		{
 			testName: "applyDefaultToEmptyCustomInputs",
 			draftConfig: DraftConfig{
-				Variables: []BuilderVar{
+				Variables: []*BuilderVar{
 					{
 						Name: "var1",
 						Default: BuilderVarDefault{
@@ -57,7 +54,6 @@ func TestApplyDefaultVariables(t *testing.T) {
 					},
 				},
 			},
-			customInputs: map[string]string{},
 			want: map[string]string{
 				"var1": "default-value-1",
 				"var2": "default-value-2",
@@ -66,9 +62,10 @@ func TestApplyDefaultVariables(t *testing.T) {
 		{
 			testName: "applyDefaultToPartialCustomInputs",
 			draftConfig: DraftConfig{
-				Variables: []BuilderVar{
+				Variables: []*BuilderVar{
 					{
-						Name: "var1",
+						Name:  "var1",
+						Value: "custom-value-1",
 						Default: BuilderVarDefault{
 							Value: "default-value-1",
 						},
@@ -80,9 +77,6 @@ func TestApplyDefaultVariables(t *testing.T) {
 						},
 					},
 				},
-			},
-			customInputs: map[string]string{
-				"var1": "custom-value-1",
 			},
 			want: map[string]string{
 				"var1": "custom-value-1",
@@ -92,7 +86,7 @@ func TestApplyDefaultVariables(t *testing.T) {
 		{
 			testName: "variablesHaveNoInputOrDefault",
 			draftConfig: DraftConfig{
-				Variables: []BuilderVar{
+				Variables: []*BuilderVar{
 					{
 						Name: "var1",
 					},
@@ -101,14 +95,13 @@ func TestApplyDefaultVariables(t *testing.T) {
 					},
 				},
 			},
-			customInputs: map[string]string{},
-			want:         map[string]string{},
-			wantErr:      true,
+			want:    map[string]string{},
+			wantErr: true,
 		},
 		{
 			testName: "getDefaultFromReferenceVarCustomInputs",
 			draftConfig: DraftConfig{
-				Variables: []BuilderVar{
+				Variables: []*BuilderVar{
 					{
 						Name: "var1",
 						Default: BuilderVarDefault{
@@ -117,15 +110,13 @@ func TestApplyDefaultVariables(t *testing.T) {
 						},
 					},
 					{
-						Name: "var2",
+						Name:  "var2",
+						Value: "this-value",
 						Default: BuilderVarDefault{
 							Value: "not-this-value",
 						},
 					},
 				},
-			},
-			customInputs: map[string]string{
-				"var2": "this-value",
 			},
 			want: map[string]string{
 				"var1": "this-value",
@@ -135,7 +126,7 @@ func TestApplyDefaultVariables(t *testing.T) {
 		{
 			testName: "getDefaultFromReferenceVar",
 			draftConfig: DraftConfig{
-				Variables: []BuilderVar{
+				Variables: []*BuilderVar{
 					{
 						Name: "var1",
 						Default: BuilderVarDefault{
@@ -158,7 +149,6 @@ func TestApplyDefaultVariables(t *testing.T) {
 					},
 				},
 			},
-			customInputs: map[string]string{},
 			want: map[string]string{
 				"var1": "default-value-3",
 				"var2": "default-value-3",
@@ -168,7 +158,7 @@ func TestApplyDefaultVariables(t *testing.T) {
 		{
 			testName: "cyclicalReferenceVarsDetected",
 			draftConfig: DraftConfig{
-				Variables: []BuilderVar{
+				Variables: []*BuilderVar{
 					{
 						Name: "var1",
 						Default: BuilderVarDefault{
@@ -183,19 +173,18 @@ func TestApplyDefaultVariables(t *testing.T) {
 					},
 				},
 			},
-			customInputs: map[string]string{},
-			want:         map[string]string{},
-			wantErr:      true,
+			want:    map[string]string{},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			if err := tt.draftConfig.ApplyDefaultVariables(tt.customInputs); (err != nil) != tt.wantErr {
+			if envArgs, err := tt.draftConfig.VariableMap(); (err != nil) != tt.wantErr {
 				t.Error(err)
 			} else {
 				for k, v := range tt.want {
-					if tt.customInputs[k] != v {
-						t.Errorf("got: %s, want: %s", tt.customInputs[k], v)
+					if envArgs[k] != v {
+						t.Errorf("got: %s, want: %s, for test: %s", envArgs[k], v, tt.testName)
 					}
 				}
 			}

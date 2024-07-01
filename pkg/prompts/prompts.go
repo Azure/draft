@@ -71,7 +71,7 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 }
 
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal Variable.DefaultValue in that order.
-func GetVariableDefaultValue(draftConfig *config.DraftConfig, variable config.BuilderVar) string {
+func GetVariableDefaultValue(draftConfig *config.DraftConfig, variable *config.BuilderVar) string {
 	defaultValue := ""
 
 	if variable.Name == "APPNAME" {
@@ -90,15 +90,17 @@ func GetVariableDefaultValue(draftConfig *config.DraftConfig, variable config.Bu
 		if referenceVar, err := draftConfig.GetVariable(variable.Default.ReferenceVar); err != nil {
 			log.Errorf("Error getting reference variable %s: %s", variable.Default.ReferenceVar, err)
 		} else {
-			defaultValue = referenceVar.Value
-			log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
+			if referenceVar.Value != "" {
+				defaultValue = referenceVar.Value
+				log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
+			}
 		}
 	}
 
 	return defaultValue
 }
 
-func RunBoolPrompt(customPrompt config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+func RunBoolPrompt(customPrompt *config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
 	newSelect := &promptui.Select{
 		Label:  "Please select " + customPrompt.Description,
 		Items:  []bool{true, false},
@@ -154,7 +156,7 @@ func appNameValidator(name string) error {
 }
 
 // RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
-func RunDefaultableStringPrompt(defaultValue string, customPrompt config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
 	if validate == nil {
 		validate = NoBlankStringValidator
 	}

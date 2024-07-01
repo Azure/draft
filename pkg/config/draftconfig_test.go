@@ -179,12 +179,17 @@ func TestApplyDefaultVariables(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			if envArgs, err := tt.draftConfig.VariableMap(); (err != nil) != tt.wantErr {
+			if err := tt.draftConfig.ApplyDefaultVariables(); (err != nil) != tt.wantErr {
 				t.Error(err)
 			} else {
 				for k, v := range tt.want {
-					if envArgs[k] != v {
-						t.Errorf("got: %s, want: %s, for test: %s", envArgs[k], v, tt.testName)
+					variable, err := tt.draftConfig.GetVariable(k)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if variable.Value != v {
+						t.Errorf("got: %s, want: %s, for test: %s", variable.Value, v, tt.testName)
 					}
 				}
 			}

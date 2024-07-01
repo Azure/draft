@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -23,7 +22,6 @@ type updateCmd struct {
 	provider                 string
 	addon                    string
 	flagVariables            []string
-	userInputs               map[string]string
 	templateWriter           templatewriter.TemplateWriter
 	addonFS                  embed.FS
 	templateVariableRecorder config.TemplateVariableRecorder
@@ -59,15 +57,7 @@ func newUpdateCmd() *cobra.Command {
 }
 
 func (uc *updateCmd) run() error {
-	flagVariablesMap := make(map[string]string)
-	for _, flagVar := range uc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		flagVariablesMap[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-	}
+	flagVariablesMap := FlagVariablesToMap(uc.flagVariables)
 
 	if uc.addon == "" {
 		addon, err := addons.PromptAddon(template.Addons, uc.provider)
@@ -82,22 +72,23 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	uc.userInputs, err = addons.PromptAddonValues(uc.dest, flagVariablesMap, addonConfig)
+	uc.handleFlagVariables(flagVariablesMap, addonConfig.DraftConfig)
+
+	err = addons.PromptAddonValues(uc.dest, &addonConfig)
 	if err != nil {
 		return err
 	}
-	log.Debugf("addonInputs is: %s", uc.userInputs)
 
 	if dryRun {
 		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
 		uc.templateVariableRecorder = dryRunRecorder
 		uc.templateWriter = dryRunRecorder
-		for k, v := range uc.userInputs {
-			uc.templateVariableRecorder.Record(k, v)
+		for _, variable := range addonConfig.DraftConfig.Variables {
+			uc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
-	err = addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, uc.userInputs, uc.templateWriter)
+	err = addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, addonConfig, uc.templateWriter)
 
 	if dryRun {
 		dryRunText, err := json.MarshalIndent(dryRunRecorder.DryRunInfo, "", TWO_SPACES)
@@ -118,4 +109,27 @@ func (uc *updateCmd) run() error {
 
 func init() {
 	rootCmd.AddCommand(newUpdateCmd())
+}
+
+func (uc *updateCmd) handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig) error {
+	for flagName, flagValue := range flagVariablesMap {
+		log.Debugf("flag variable %s=%s", flagName, flagValue)
+		switch flagName {
+		case "destination":
+			uc.dest = flagValue
+		case "provider":
+			uc.provider = flagValue
+		case "addon":
+			uc.addon = flagValue
+		default:
+			// handles flags that are meant to represent environment arguments
+			if variable, err := draftConfig.GetVariable(flagName); err != nil {
+				return fmt.Errorf("flag variable name %s not a valid environment argument", flagName)
+			} else {
+				variable.Value = flagValue
+			}
+		}
+	}
+
+	return nil
 }

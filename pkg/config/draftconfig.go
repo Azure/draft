@@ -69,6 +69,13 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 	return prefix
 }
 
+func (d *DraftConfig) AddVariable(name, value string) {
+	d.Variables = append(d.Variables, &BuilderVar{
+		Name:  name,
+		Value: value,
+	})
+}
+
 func initVarIdxMap(variables []*BuilderVar) map[string]int {
 	varIdxMap := make(map[string]int)
 
@@ -141,21 +148,6 @@ func (d *DraftConfig) recurseReferenceVars(referenceVar *BuilderVar, variableChe
 	}
 
 	return referenceVar.Default.Value, nil
-}
-
-func (d *DraftConfig) VariableMap() (map[string]string, error) {
-	err := d.ApplyDefaultVariables()
-	if err != nil {
-		return nil, fmt.Errorf("creating variable map: %w", err)
-	}
-
-	envArgs := make(map[string]string)
-
-	for _, variable := range d.Variables {
-		envArgs[variable.Name] = variable.Value
-	}
-
-	return envArgs, nil
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs

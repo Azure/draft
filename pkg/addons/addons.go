@@ -23,25 +23,20 @@ var (
 	parentDirName = "addons"
 )
 
-func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
-	addOnConfig, err := GetAddonConfig(addons, provider, addon)
-	if err != nil {
-		return err
-	}
-
+func GenerateAddon(addons embed.FS, provider, addon, dest string, addonConfig AddonConfig, templateWriter templatewriter.TemplateWriter) error {
 	selectedAddonPath, err := GetAddonPath(addons, provider, addon)
 	if err != nil {
 		return err
 	}
 
-	addonDestPath, err := addOnConfig.GetAddonDestPath(dest)
+	addonDestPath, err := addonConfig.GetAddonDestPath(dest)
 	if err != nil {
 		return err
 	}
 
-	addOnConfig.ApplyDefaultVariables(userInputs)
+	addonConfig.DraftConfig.ApplyDefaultVariables()
 
-	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, userInputs, templateWriter); err != nil {
+	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, addonConfig.DraftConfig, templateWriter); err != nil {
 		return err
 	}
 
@@ -106,38 +101,29 @@ func PromptAddon(addons embed.FS, provider string) (string, error) {
 	return addon, nil
 }
 
-func PromptAddonValues(dest string, userInputs map[string]string, addOnConfig AddonConfig) (map[string]string, error) {
-	log.Debugf("getAddonValues: %s", userInputs)
-	var err error
-
-	inputsToSkip := maps.Keys(userInputs)
-	log.Debugf("inputsToSkip: %s", inputsToSkip)
-	promptInputs, err := prompts.RunPromptsFromConfigWithSkips(&addOnConfig.DraftConfig, inputsToSkip)
+func PromptAddonValues(dest string, addOnConfig *AddonConfig) error {
+	err := prompts.RunPromptsFromConfigWithSkips(addOnConfig.DraftConfig)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	log.Debug("got user inputs")
-	for k, v := range promptInputs {
-		userInputs[k] = v
-	}
 
 	referenceMap, err := addOnConfig.GetReferenceValueMap(dest)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	log.Debug("got reference map")
 	// merge maps
 	for refName, refVal := range referenceMap {
 		// check for key collision
-		if _, ok := userInputs[refName]; ok {
-			return nil, errors.New("variable name collision between references and userInputs")
+		if _, err := addOnConfig.DraftConfig.GetVariable(refName); err == nil {
+			return errors.New("variable name collision between references and DraftConfig")
 		}
 		if strings.Contains(strings.ToLower(refName), "namespace") && refVal == "" {
 			refVal = "default" //hack here to have explicit namespacing, probably a better way to do this
 		}
-		userInputs[refName] = refVal
+		addOnConfig.DraftConfig.AddVariable(refName, refVal)
 	}
 
-	log.Debugf("merged maps into: %s", userInputs)
-	return userInputs, nil
+	return nil
 }

@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
@@ -86,7 +88,9 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return fmt.Errorf("get config: %w", err)
 	}
 
-	workflow.HandleFlagVariables(flagValuesMap, gwc.deployType)
+	if err := gwc.handleFlagVariables(flagValuesMap, draftConfig); err != nil {
+		return fmt.Errorf("handle flag variables: %w", err)
+	}
 
 	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig); err != nil {
 		return err
@@ -97,4 +101,37 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	}
 
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
+}
+
+func (gwc *generateWorkflowCmd) handleFlagVariables(flagVariablesMap map[string]string, drafConfig *config.DraftConfig) error {
+	for flagName, flagValue := range flagVariablesMap {
+		log.Debugf("flag variable %s=%s", flagName, flagValue)
+		switch flagName {
+		case "destination":
+			gwc.workflow.Dest = flagValue
+		case "deploy-type":
+			continue
+		default:
+			// handles flags that are meant to represent environment arguments
+			if variable, err := drafConfig.GetVariable(flagName); err != nil {
+				return fmt.Errorf("flag variable name %s not a valid environment argument", flagName)
+			} else {
+				variable.Value = flagValue
+			}
+		}
+	}
+
+	return nil
+}
+
+func FlagVariablesToMap(flagVariables []string) map[string]string {
+	flagValuesMap := make(map[string]string)
+	for _, flagVar := range flagVariables {
+		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
+		if !ok {
+			log.Fatalf("invalid variable format: %s", flagVar)
+		}
+		flagValuesMap[flagVarName] = flagVarValue
+	}
+	return flagValuesMap
 }

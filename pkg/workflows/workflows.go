@@ -27,7 +27,7 @@ import (
 type Workflows struct {
 	workflows         map[string]fs.DirEntry
 	configs           map[string]*config.DraftConfig
-	dest              string
+	Dest              string
 	workflowTemplates fs.FS
 }
 
@@ -163,7 +163,7 @@ func CreateWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workfl
 
 	w := &Workflows{
 		workflows:         deployMap,
-		dest:              dest,
+		Dest:              dest,
 		configs:           make(map[string]*config.DraftConfig),
 		workflowTemplates: workflowTemplates,
 	}
@@ -188,17 +188,15 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.D
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
+
 	srcDir := path.Join(parentDirName, val.Name())
 	log.Debugf("source directory for workflow template: %s", srcDir)
 
-	valuesMap, err := draftConfig.VariableMap()
-	if err != nil {
+	if err := draftConfig.ApplyDefaultVariables(); err != nil {
 		return fmt.Errorf("create workflow files: %w", err)
 	}
 
-	draftConfig.ApplyDefaultVariables(valuesMap)
-
-	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, draftConfig, valuesMap, templateWriter); err != nil {
+	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.Dest, draftConfig, templateWriter); err != nil {
 		return err
 	}
 
@@ -250,29 +248,6 @@ func (w *Workflows) CreateFlags(f *pflag.FlagSet) error {
 				f.StringVar(&variable.Value, flagName, emptyDefaultFlagValue, flagInfo.description)
 			} else {
 				f.StringVar(&variable.Value, flagName, emptyDefaultFlagValue, fmt.Sprintf("%s (%s)", flagInfo.description, deploymentType))
-			}
-		}
-	}
-
-	return nil
-}
-
-func (w *Workflows) HandleFlagVariables(flagValuesMap map[string]string, deploymentType string) error {
-	for flagVarName, flagVarValue := range flagValuesMap {
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-		switch flagVarName {
-		case "destination":
-			w.dest = flagVarValue
-		case "deploy-type":
-			continue
-		default:
-			// handles flags that are meant to represent environment arguments
-			envArg := strings.ToUpper(flagVarName)
-
-			if variable, err := w.configs[deploymentType].GetVariable(envArg); err != nil {
-				return fmt.Errorf("flag variable name %s not valid", flagVarName)
-			} else {
-				variable.Value = flagVarValue
 			}
 		}
 	}

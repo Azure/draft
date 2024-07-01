@@ -35,7 +35,7 @@ func (d *Deployments) DeployTypes() []string {
 	return names
 }
 
-func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+func (d *Deployments) CopyDeploymentFiles(deployType string, deployConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := d.deploys[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
@@ -43,14 +43,11 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 
 	srcDir := path.Join(parentDirName, val.Name())
 
-	deployConfig, ok := d.configs[deployType]
-	if !ok {
-		deployConfig = nil
-	} else {
-		deployConfig.ApplyDefaultVariables(customInputs)
+	if err := deployConfig.ApplyDefaultVariables(); err != nil {
+		return fmt.Errorf("create deployment files for deployment type: %w", err)
 	}
 
-	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, templateWriter); err != nil {
 		return err
 	}
 

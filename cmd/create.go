@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
-	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/reporeader"
@@ -114,14 +114,7 @@ func (cc *createCmd) initConfig() error {
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
 
-	for _, flagVar := range cc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		flagVariablesMap[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-	}
+	flagVariablesMap := FlagVariablesToMap(cc.flagVariables)
 
 	var dryRunRecorder *dryrunpkg.DryRunRecorder
 	if dryRun {
@@ -137,6 +130,8 @@ func (cc *createCmd) run() error {
 	if err != nil {
 		return err
 	}
+
+	cc.handleFlagVariables(flagVariablesMap, detectedLangDraftConfig)
 
 	err = cc.createFiles(detectedLangDraftConfig, languageName)
 	if dryRun {
@@ -274,7 +269,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 			}
 		}
 		if !variableExists {
-			langConfig.Variables = append(langConfig.Variables, config.BuilderVar{
+			langConfig.Variables = append(langConfig.Variables, &config.BuilderVar{
 				Name: k,
 				Default: config.BuilderVarDefault{
 					Value: v,
@@ -288,21 +283,19 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 			return err
 		}
 	} else {
-		inputs, err = validateConfigInputsToPrompts(langConfig, cc.createConfig.LanguageVariables)
+		err = validateConfigInputsToPrompts(langConfig, cc.createConfig.LanguageVariables)
 		if err != nil {
 			return err
 		}
 	}
 
 	if cc.templateVariableRecorder != nil {
-		for k, v := range inputs {
-			cc.templateVariableRecorder.Record(k, v)
+		for _, variable := range langConfig.Variables {
+			cc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
-	maps.Copy(inputs, flagVariablesMap)
-
-	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs, cc.templateWriter); err != nil {
+	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, langConfig, cc.templateWriter); err != nil {
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
 
@@ -314,7 +307,7 @@ func (cc *createCmd) createDeployment() error {
 	log.Info("--- Deployment File Creation ---")
 	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, cc.dest)
 	var deployType string
-	var customInputs map[string]string
+	var deployConfig *config.DraftConfig
 	var err error
 
 	if cc.createConfig.DeployType != "" {
@@ -326,7 +319,7 @@ func (cc *createCmd) createDeployment() error {
 		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(deployConfig, cc.createConfig.DeployVariables)
+		err = validateConfigInputsToPrompts(deployConfig, cc.createConfig.DeployVariables)
 		if err != nil {
 			return err
 		}
@@ -350,23 +343,21 @@ func (cc *createCmd) createDeployment() error {
 		if err != nil {
 			return err
 		}
-		customInputs, err = prompts.RunPromptsFromConfigWithSkips(deployConfig, maps.Keys(flagVariablesMap))
+		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
 		if err != nil {
 			return err
 		}
 	}
 
-	maps.Copy(customInputs, flagVariablesMap)
-
 	if cc.templateVariableRecorder != nil {
-		for k, v := range customInputs {
-			cc.templateVariableRecorder.Record(k, v)
+		for _, variable := range deployConfig.Variables {
+			cc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
 	log.Infof("--> Creating %s Kubernetes resources...\n", deployType)
 
-	return d.CopyDeploymentFiles(deployType, customInputs, cc.templateWriter)
+	return d.CopyDeploymentFiles(deployType, deployConfig, cc.templateWriter)
 }
 
 func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang string) error {
@@ -470,30 +461,47 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 		variable.Value = providedVar.Value
 	}
 
-	if err := draftConfig.ApplyDefaultVariables(customInputs); err != nil {
-		return nil, fmt.Errorf("validate config inputs to prompts: %w", err)
-	}
-
-	for _, variable := range draftConfig.Variables {
-		value, ok := customInputs[variable.Name]
-		if !ok {
-			return nil, fmt.Errorf("config missing required variable: %s with description: %s", variable.Name, variable.Description)
-		} else if value == "" {
-			return nil, fmt.Errorf("value for variable %s is empty", variable.Name)
-		}
-	}
-
-	return customInputs, nil
+	return nil
 }
 
-func FlagVariablesToMap(flagVariables []string) map[string]string {
-	flagValuesMap := make(map[string]string)
-	for _, flagVar := range flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			log.Fatalf("invalid variable format: %s", flagVar)
+func (cc *createCmd) handleFlagVariables(flagVariablesMap map[string]string, detectedLangDraftConfig *config.DraftConfig) error {
+	var err error
+
+	for flagName, flagValue := range flagVariablesMap {
+		log.Debugf("flag variable %s=%s", flagName, flagValue)
+		switch flagName {
+		case "create-config":
+			cc.createConfigPath = flagValue
+		case "language":
+			cc.lang = flagValue
+		case "destination":
+			cc.dest = flagValue
+		case "deploy-type":
+			cc.deployType = flagValue
+		case "dockerfile-only":
+			cc.dockerfileOnly, err = strconv.ParseBool(flagValue)
+			if err != nil {
+				return fmt.Errorf("handle flag variables: %w", err)
+			}
+		case "deployment-only":
+			cc.deploymentOnly, err = strconv.ParseBool(flagValue)
+			if err != nil {
+				return fmt.Errorf("handle flag variables: %w", err)
+			}
+		case "skip-file-detection":
+			cc.skipFileDetection, err = strconv.ParseBool(flagValue)
+			if err != nil {
+				return fmt.Errorf("handle flag variables: %w", err)
+			}
+		default:
+			// handles flags that are meant to represent environment arguments
+			if variable, err := detectedLangDraftConfig.GetVariable(flagName); err != nil {
+				return fmt.Errorf("flag variable name %s not a valid environment argument", flagName)
+			} else {
+				variable.Value = flagValue
+			}
 		}
-		flagValuesMap[flagVarName] = flagVarValue
 	}
-	return flagValuesMap
+
+	return nil
 }

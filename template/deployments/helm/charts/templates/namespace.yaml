@@ -1,3 +1,4 @@
+{{- if ne .Values.namespace "default" }}
 kind: Namespace
 apiVersion: v1
 metadata:
@@ -7,3 +8,4 @@ metadata:
     openservicemesh.io/monitored-by: osm
   annotations:
     openservicemesh.io/sidecar-injection: enabled
+  {{- end }}

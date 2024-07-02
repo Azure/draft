@@ -54,10 +54,10 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, deployConfig *confi
 	return nil
 }
 
-func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
-	val, ok := d.deploys[lang]
+func (d *Deployments) loadConfig(deployType string) (*config.DraftConfig, error) {
+	val, ok := d.deploys[deployType]
 	if !ok {
-		return nil, fmt.Errorf("language %s unsupported", lang)
+		return nil, fmt.Errorf("deployment type %s unsupported", deployType)
 	}
 
 	configPath := path.Join(parentDirName, val.Name(), configFileName)
@@ -69,6 +69,10 @@ func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
 	var draftConfig config.DraftConfig
 	if err = yaml.Unmarshal(configBytes, &draftConfig); err != nil {
 		return nil, err
+	}
+
+	for _, variable := range draftConfig.Variables {
+		fmt.Printf("Name %s, Value %s\n", variable.Name, variable.Value)
 	}
 
 	return &draftConfig, nil
@@ -86,7 +90,7 @@ func (d *Deployments) PopulateConfigs() {
 	for deployType := range d.deploys {
 		draftConfig, err := d.loadConfig(deployType)
 		if err != nil {
-			log.Debugf("no draftConfig found for language %s", deployType)
+			log.Debugf("no draftConfig found for deployment type %s", deployType)
 			draftConfig = &config.DraftConfig{}
 		}
 		d.configs[deployType] = draftConfig

@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
@@ -16,7 +15,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
@@ -34,15 +32,10 @@ type Workflows struct {
 type DeploymentType string
 
 const (
-	parentDirName                          = "workflows"
-	configFileName                         = "/draft.yaml"
-	emptyDefaultFlagValue                  = ""
-	helmDeploymentType      DeploymentType = "helm"
-	kustomizeDeploymentType DeploymentType = "kustomize"
-	manifestsDeploymentType DeploymentType = "manifests"
+	parentDirName         = "workflows"
+	configFileName        = "/draft.yaml"
+	emptyDefaultFlagValue = ""
 )
-
-var allDeploymentTypes = []DeploymentType{helmDeploymentType, kustomizeDeploymentType, manifestsDeploymentType}
 
 func UpdateProductionDeployments(deployType, dest string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
 	acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY")
@@ -198,58 +191,6 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.D
 
 	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.Dest, draftConfig, templateWriter); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (w *Workflows) CreateFlags(f *pflag.FlagSet) error {
-	type FlagInfo struct {
-		description     string
-		deploymentTypes []DeploymentType
-		isEnvArgCommon  bool
-	}
-
-	flags := make(map[string]FlagInfo)
-	configs := make(map[DeploymentType]*config.DraftConfig)
-
-	for _, deploymentType := range allDeploymentTypes {
-		draftConfig, err := w.GetConfig(string(deploymentType))
-		if err != nil {
-			return fmt.Errorf("get config: %w", err)
-		} else {
-			configs[deploymentType] = draftConfig
-
-			for _, variable := range draftConfig.Variables {
-				if flag, ok := flags[variable.Name]; ok {
-					flag.deploymentTypes = append(flag.deploymentTypes, deploymentType)
-					flag.isEnvArgCommon = true
-				} else {
-					flags[variable.Name] = FlagInfo{
-						description:     variable.Description,
-						deploymentTypes: []DeploymentType{deploymentType},
-						isEnvArgCommon:  false,
-					}
-				}
-			}
-		}
-	}
-
-	for varName, flagInfo := range flags {
-		flagName := strings.ToLower(varName)
-
-		for _, deploymentType := range flagInfo.deploymentTypes {
-			variable, err := configs[deploymentType].GetVariable(varName)
-			if err != nil {
-				return fmt.Errorf("get variable: %w", err)
-			}
-
-			if flagInfo.isEnvArgCommon {
-				f.StringVar(&variable.Value, flagName, emptyDefaultFlagValue, flagInfo.description)
-			} else {
-				f.StringVar(&variable.Value, flagName, emptyDefaultFlagValue, fmt.Sprintf("%s (%s)", flagInfo.description, deploymentType))
-			}
-		}
 	}
 
 	return nil

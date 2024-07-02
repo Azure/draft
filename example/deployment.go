@@ -3,6 +3,7 @@ package example
 import (
 	"fmt"
 
+	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/deployments"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
@@ -10,10 +11,10 @@ import (
 )
 
 // WriteDeploymentFiles generates Deployment Files using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file in templates/deployments/[deployType] for the template inputs.
-func WriteDeploymentFiles(w templatewriter.TemplateWriter, deploymentOutputPath string, deploymentInputs map[string]string, deploymentType string) error {
+func WriteDeploymentFiles(w templatewriter.TemplateWriter, deploymentOutputPath string, deployConfig *config.DraftConfig, deploymentType string) error {
 	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, deploymentOutputPath)
 
-	err := d.CopyDeploymentFiles(deploymentType, deploymentInputs, w)
+	err := d.CopyDeploymentFiles(deploymentType, deployConfig, w)
 	if err != nil {
 		return fmt.Errorf("failed to generate manifest: %e", err)
 	}
@@ -33,21 +34,41 @@ func WriteDeploymentFilesExample() error {
 	// Select the deployment type to generate the files for (must correspond to a directory in the template/deployments directory)
 	deploymentType := "manifests"
 
-	// Create a map of inputs to the template (must correspond to the inputs in the template/deployments/<deploymentType>/draft.yaml file)
-	deploymentInputs := map[string]string{
-		"PORT":        "8080",
-		"APPNAME":     "example-app",
-		"SERVICEPORT": "8080",
-		"NAMESPACE":   "example-namespace",
-		"IMAGENAME":   "example-image",
-		"IMAGETAG":    "latest",
+	// Create a DraftConfig of inputs to the template (must correspond to the inputs in the template/deployments/<deploymentType>/draft.yaml file)
+	deployConfig := &config.DraftConfig{
+		Variables: []*config.BuilderVar{
+			{
+				Name:  "PORT",
+				Value: "8080",
+			},
+			{
+				Name:  "APPNAME",
+				Value: "example-app",
+			},
+			{
+				Name:  "SERVICEPORT",
+				Value: "8080",
+			},
+			{
+				Name:  "NAMESPACE",
+				Value: "example-namespace",
+			},
+			{
+				Name:  "IMAGENAME",
+				Value: "example-image",
+			},
+			{
+				Name:  "IMAGETAG",
+				Value: "latest",
+			},
+		},
 	}
 
 	// Set the output path for the deployment files
 	outputPath := "./"
 
 	// Write the deployment files
-	err := WriteDeploymentFiles(&w, outputPath, deploymentInputs, deploymentType)
+	err := WriteDeploymentFiles(&w, outputPath, deployConfig, deploymentType)
 	if err != nil {
 		return err
 	}

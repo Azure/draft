@@ -61,6 +61,7 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 
 			stringInput, err := RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout)
 			if err != nil {
+				fmt.Println(err)
 				return err
 			}
 			variable.Value = stringInput
@@ -187,6 +188,7 @@ func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.Builde
 
 	input, err := prompt.Run()
 	if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 

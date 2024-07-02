@@ -17,7 +17,6 @@ import (
 )
 
 type generateWorkflowCmd struct {
-	workflow       *workflows.Workflows
 	dest           string
 	deployType     string
 	flagVariables  []string
@@ -46,13 +45,10 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	}
 
 	f := cmd.Flags()
-	gwCmd.workflow = workflows.CreateWorkflowsFromEmbedFS(template.Workflows, ".")
-	if err := gwCmd.workflow.CreateFlags(f); err != nil {
-		log.Fatalf("create flags: %v", err)
-	}
+
 	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVarP(&gwCmd.deployType, "deploy-type", "", "", "specify the k8s deployment type (helm, kustomize, manifests)")
-	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
+	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass environment arguments (e.g. --variable CLUSTERNAME=testCluster --variable DOCKERFILE=./Dockerfile)")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }
@@ -64,7 +60,7 @@ func init() {
 func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	var err error
 
-	flagValuesMap := FlagVariablesToMap(gwc.flagVariables)
+	flagValuesMap := flagVariablesToMap(gwc.flagVariables)
 
 	if gwc.deployType == "" {
 		if flagValue := flagValuesMap["deploy-type"]; flagValue == "helm" || flagValue == "kustomize" || flagValue == "manifests" {
@@ -88,7 +84,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return fmt.Errorf("get config: %w", err)
 	}
 
-	if err := gwc.handleFlagVariables(flagValuesMap, draftConfig); err != nil {
+	if err := handleFlagVariables(flagValuesMap, draftConfig, gwc.deployType); err != nil {
 		return fmt.Errorf("handle flag variables: %w", err)
 	}
 
@@ -103,35 +99,29 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
 }
 
-func (gwc *generateWorkflowCmd) handleFlagVariables(flagVariablesMap map[string]string, drafConfig *config.DraftConfig) error {
+func handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig, infoType string) error {
 	for flagName, flagValue := range flagVariablesMap {
 		log.Debugf("flag variable %s=%s", flagName, flagValue)
-		switch flagName {
-		case "destination":
-			gwc.workflow.Dest = flagValue
-		case "deploy-type":
+		// handles flags that are meant to represent environment arguments
+		if variable, err := draftConfig.GetVariable(flagName); err != nil {
+			log.Debugf("flag variable name %s not a valid environment argument for %s", flagName, infoType)
 			continue
-		default:
-			// handles flags that are meant to represent environment arguments
-			if variable, err := drafConfig.GetVariable(flagName); err != nil {
-				return fmt.Errorf("flag variable name %s not a valid environment argument", flagName)
-			} else {
-				variable.Value = flagValue
-			}
+		} else {
+			variable.Value = flagValue
 		}
 	}
 
 	return nil
 }
 
-func FlagVariablesToMap(flagVariables []string) map[string]string {
-	flagValuesMap := make(map[string]string)
+func flagVariablesToMap(flagVariables []string) map[string]string {
+	flagVariablesMap := make(map[string]string)
 	for _, flagVar := range flagVariables {
 		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
 		if !ok {
 			log.Fatalf("invalid variable format: %s", flagVar)
 		}
-		flagValuesMap[flagVarName] = flagVarValue
+		flagVariablesMap[flagVarName] = flagVarValue
 	}
-	return flagValuesMap
+	return flagVariablesMap
 }

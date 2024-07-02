@@ -49,7 +49,7 @@ func newUpdateCmd() *cobra.Command {
 	f.StringVarP(&uc.dest, "destination", "d", ".", "specify the path to the project directory")
 	f.StringVarP(&uc.provider, "provider", "p", "azure", "cloud provider")
 	f.StringVarP(&uc.addon, "addon", "a", "", "addon name")
-	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass a variable non-interactively (ex: --variable foo=bar)")
+	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass environment arguments (e.g. --variable ingress-tls-cert-keyvault-uri=test.uri ingress-host=host)")
 
 	uc.templateWriter = &writers.LocalFSWriter{}
 
@@ -57,7 +57,7 @@ func newUpdateCmd() *cobra.Command {
 }
 
 func (uc *updateCmd) run() error {
-	flagVariablesMap := FlagVariablesToMap(uc.flagVariables)
+	flagVariablesMap := flagVariablesToMap(uc.flagVariables)
 
 	if uc.addon == "" {
 		addon, err := addons.PromptAddon(template.Addons, uc.provider)
@@ -72,7 +72,7 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	uc.handleFlagVariables(flagVariablesMap, addonConfig.DraftConfig)
+	handleFlagVariables(flagVariablesMap, addonConfig.DraftConfig, "ingress")
 
 	err = addons.PromptAddonValues(uc.dest, &addonConfig)
 	if err != nil {
@@ -109,27 +109,4 @@ func (uc *updateCmd) run() error {
 
 func init() {
 	rootCmd.AddCommand(newUpdateCmd())
-}
-
-func (uc *updateCmd) handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig) error {
-	for flagName, flagValue := range flagVariablesMap {
-		log.Debugf("flag variable %s=%s", flagName, flagValue)
-		switch flagName {
-		case "destination":
-			uc.dest = flagValue
-		case "provider":
-			uc.provider = flagValue
-		case "addon":
-			uc.addon = flagValue
-		default:
-			// handles flags that are meant to represent environment arguments
-			if variable, err := draftConfig.GetVariable(flagName); err != nil {
-				return fmt.Errorf("flag variable name %s not a valid environment argument", flagName)
-			} else {
-				variable.Value = flagValue
-			}
-		}
-	}
-
-	return nil
 }

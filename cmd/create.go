@@ -84,7 +84,7 @@ func newCreateCmd() *cobra.Command {
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
-	f.StringArrayVarP(&cc.flagVariables, "variable", "", []string{}, "pass additional variables using repeated --variable flag")
+	f.StringArrayVarP(&cc.flagVariables, "variable", "", []string{}, "pass environment arguments (e.g. --variable PORT=8080 --variable APPNAME=test)")
 
 	return cmd
 }
@@ -114,7 +114,7 @@ func (cc *createCmd) initConfig() error {
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
 
-	flagVariablesMap := FlagVariablesToMap(cc.flagVariables)
+	flagVariablesMap = flagVariablesToMap(cc.flagVariables)
 
 	var dryRunRecorder *dryrunpkg.DryRunRecorder
 	if dryRun {
@@ -279,6 +279,11 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	if cc.createConfig.LanguageVariables == nil {
+		err = handleFlagVariables(flagVariablesMap, langConfig, lowerLang)
+		if err != nil {
+			return fmt.Errorf("generate dockerfile: %w", err)
+		}
+
 		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
 			return err
 		}
@@ -300,7 +305,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	log.Info("--> Creating Dockerfile...\n")
-	return err
+	return nil
 }
 
 func (cc *createCmd) createDeployment() error {
@@ -312,7 +317,7 @@ func (cc *createCmd) createDeployment() error {
 
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
-		deployConfig, err := d.GetConfig(deployType)
+		deployConfig, err = d.GetConfig(deployType)
 		if err != nil {
 			return err
 		}
@@ -323,7 +328,6 @@ func (cc *createCmd) createDeployment() error {
 		if err != nil {
 			return err
 		}
-
 	} else {
 		if cc.deployType == "" {
 			selection := &promptui.Select{
@@ -339,10 +343,19 @@ func (cc *createCmd) createDeployment() error {
 			deployType = cc.deployType
 		}
 
-		deployConfig, err := d.GetConfig(deployType)
+		deployConfig, err = d.GetConfig(deployType)
 		if err != nil {
 			return err
 		}
+		for _, variable := range deployConfig.Variables {
+			fmt.Printf("Name %s, Value %s\n", variable.Name, variable.Value)
+		}
+
+		err = handleFlagVariables(flagVariablesMap, deployConfig, deployType)
+		if err != nil {
+			return fmt.Errorf("create deployment: %w", err)
+		}
+
 		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
 		if err != nil {
 			return err
@@ -456,7 +469,7 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 	for _, providedVar := range provided {
 		variable, err := draftConfig.GetVariable(providedVar.Name)
 		if err != nil {
-			return fmt.Errorf("validate config inputs to prompts: %w", providedVar.Name, err)
+			return fmt.Errorf("validate config inputs to prompts: %w", err)
 		}
 		variable.Value = providedVar.Value
 	}

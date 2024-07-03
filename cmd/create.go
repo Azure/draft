@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -472,48 +471,6 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 			return fmt.Errorf("validate config inputs to prompts: %w", err)
 		}
 		variable.Value = providedVar.Value
-	}
-
-	return nil
-}
-
-func (cc *createCmd) handleFlagVariables(flagVariablesMap map[string]string, detectedLangDraftConfig *config.DraftConfig) error {
-	var err error
-
-	for flagName, flagValue := range flagVariablesMap {
-		log.Debugf("flag variable %s=%s", flagName, flagValue)
-		switch flagName {
-		case "create-config":
-			cc.createConfigPath = flagValue
-		case "language":
-			cc.lang = flagValue
-		case "destination":
-			cc.dest = flagValue
-		case "deploy-type":
-			cc.deployType = flagValue
-		case "dockerfile-only":
-			cc.dockerfileOnly, err = strconv.ParseBool(flagValue)
-			if err != nil {
-				return fmt.Errorf("handle flag variables: %w", err)
-			}
-		case "deployment-only":
-			cc.deploymentOnly, err = strconv.ParseBool(flagValue)
-			if err != nil {
-				return fmt.Errorf("handle flag variables: %w", err)
-			}
-		case "skip-file-detection":
-			cc.skipFileDetection, err = strconv.ParseBool(flagValue)
-			if err != nil {
-				return fmt.Errorf("handle flag variables: %w", err)
-			}
-		default:
-			// handles flags that are meant to represent environment arguments
-			if variable, err := detectedLangDraftConfig.GetVariable(flagName); err != nil {
-				return fmt.Errorf("flag variable name %s not a valid environment argument", flagName)
-			} else {
-				variable.Value = flagValue
-			}
-		}
 	}
 
 	return nil

@@ -6,10 +6,11 @@ import (
 
 func TestApplyDefaultVariables(t *testing.T) {
 	tests := []struct {
-		testName    string
-		draftConfig DraftConfig
-		want        map[string]string
-		wantErr     bool
+		testName     string
+		draftConfig  DraftConfig
+		customInputs map[string]string
+		want         map[string]string
+		wantErrMsg   string
 	}{
 		{
 			testName: "keepAllCustomInputs",
@@ -95,8 +96,8 @@ func TestApplyDefaultVariables(t *testing.T) {
 					},
 				},
 			},
-			want:    map[string]string{},
-			wantErr: true,
+			want:       map[string]string{},
+			wantErrMsg: "variable var1 has no default value",
 		},
 		{
 			testName: "getDefaultFromReferenceVarCustomInputs",
@@ -173,13 +174,13 @@ func TestApplyDefaultVariables(t *testing.T) {
 					},
 				},
 			},
-			want:    map[string]string{},
-			wantErr: true,
+			want:       map[string]string{},
+			wantErrMsg: "apply default variables: cyclical reference detected",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			if err := tt.draftConfig.ApplyDefaultVariables(); (err != nil) != tt.wantErr {
+			if err := tt.draftConfig.ApplyDefaultVariables(); err != nil && err.Error() != tt.wantErrMsg {
 				t.Error(err)
 			} else {
 				for k, v := range tt.want {

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: subchart1
+description: Subchart 1 for mainchart
+version: 0.1.0
+dependencies:
+  - name: subchart2
+    version: 0.1.0
+    repository: "file://../subchart2"  # Relative path to subchart2 directory

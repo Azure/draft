@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: {{ .Chart.Name | quote }}
   labels:
-    {{- toYaml .Values.commonLabels | nindent 4 }}
+    app.kubernetes.io/managed-by: "Helm"
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -15,4 +15,5 @@ spec:
       protocol: TCP
       name: svchttp
   selector:
-    {{- toYaml .Values.selectorLabels | nindent 6 }}
+    app.kubernetes.io/name: "{{ .Chart.Name }}"
+    app.kubernetes.io/instance: "{{ .Release.Name }}"

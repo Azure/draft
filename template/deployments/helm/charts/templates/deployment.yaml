@@ -3,19 +3,21 @@ kind: Deployment
 metadata:
   name: {{ .Chart.Name | quote }}
   labels:
-    {{- toYaml .Values.commonLabels | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+    app.kubernetes.io/managed-by: "Helm"
+  namespace: {{ .Release.Namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- toYaml .Values.selectorLabels | nindent 6 }}
+      app.kubernetes.io/name: "{{ .Chart.Name }}"
+      app.kubernetes.io/instance: "{{ .Release.Name }}"
   template:
     metadata:
       labels:
-        {{- toYaml .Values.selectorLabels | nindent 8 }}
+        app.kubernetes.io/name: "{{ .Chart.Name }}"
+        app.kubernetes.io/instance: "{{ .Release.Name }}"
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}

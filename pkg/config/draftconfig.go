@@ -74,6 +74,8 @@ func (d *DraftConfig) AddVariable(name, value string) {
 		Name:  name,
 		Value: value,
 	})
+
+	d.varIdxMap[name] = len(d.Variables) - 1
 }
 
 func initVarIdxMap(variables []*BuilderVar) map[string]int {

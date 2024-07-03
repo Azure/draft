@@ -72,7 +72,7 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	handleFlagVariables(flagVariablesMap, addonConfig.DraftConfig, "ingress")
+	handleFlagVariables(flagVariablesMap, addonConfig.DraftConfig)
 
 	err = addons.PromptAddonValues(uc.dest, &addonConfig)
 	if err != nil {

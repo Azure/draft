@@ -84,7 +84,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return fmt.Errorf("get config: %w", err)
 	}
 
-	handleFlagVariables(flagVariablesMap, draftConfig, gwc.deployType)
+	handleFlagVariables(flagVariablesMap, draftConfig)
 
 	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig); err != nil {
 		return err
@@ -97,13 +97,13 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
 }
 
-func handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig, infoType string) {
+func handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig) {
 	for flagName, flagValue := range flagVariablesMap {
 		log.Debugf("flag variable %s=%s", flagName, flagValue)
 		// handles flags that are meant to represent environment arguments
 		if variable, err := draftConfig.GetVariable(flagName); err != nil {
-			log.Debugf("flag variable name %s not a valid environment argument for %s", flagName, infoType)
-			continue
+			log.Infof("adding new environment argument %s", flagName)
+			draftConfig.AddVariable(flagName, flagValue)
 		} else {
 			variable.Value = flagValue
 		}

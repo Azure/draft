@@ -276,7 +276,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	if cc.createConfig.LanguageVariables == nil {
-		handleFlagVariables(flagVariablesMap, langConfig, lowerLang)
+		handleFlagVariables(flagVariablesMap, langConfig)
 
 		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
 			return err
@@ -345,7 +345,7 @@ func (cc *createCmd) createDeployment() error {
 			fmt.Printf("Name %s, Value %s\n", variable.Name, variable.Value)
 		}
 
-		handleFlagVariables(flagVariablesMap, deployConfig, deployType)
+		handleFlagVariables(flagVariablesMap, deployConfig)
 
 		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
 		if err != nil {
@@ -460,7 +460,8 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 	for _, providedVar := range provided {
 		variable, err := draftConfig.GetVariable(providedVar.Name)
 		if err != nil {
-			return fmt.Errorf("validate config inputs to prompts: %w", err)
+			log.Infof("adding new environment argument %s", providedVar.Name)
+			draftConfig.AddVariable(providedVar.Name, providedVar.Value)
 		}
 		variable.Value = providedVar.Value
 	}

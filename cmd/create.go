@@ -130,8 +130,6 @@ func (cc *createCmd) run() error {
 		return err
 	}
 
-	cc.handleFlagVariables(flagVariablesMap, detectedLangDraftConfig)
-
 	err = cc.createFiles(detectedLangDraftConfig, languageName)
 	if dryRun {
 		cc.templateVariableRecorder.Record(LANGUAGE_VARIABLE, languageName)
@@ -278,10 +276,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	if cc.createConfig.LanguageVariables == nil {
-		err = handleFlagVariables(flagVariablesMap, langConfig, lowerLang)
-		if err != nil {
-			return fmt.Errorf("generate dockerfile: %w", err)
-		}
+		handleFlagVariables(flagVariablesMap, langConfig, lowerLang)
 
 		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
 			return err
@@ -350,10 +345,7 @@ func (cc *createCmd) createDeployment() error {
 			fmt.Printf("Name %s, Value %s\n", variable.Name, variable.Value)
 		}
 
-		err = handleFlagVariables(flagVariablesMap, deployConfig, deployType)
-		if err != nil {
-			return fmt.Errorf("create deployment: %w", err)
-		}
+		handleFlagVariables(flagVariablesMap, deployConfig, deployType)
 
 		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
 		if err != nil {

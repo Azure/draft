@@ -31,11 +31,8 @@ func TestRun(t *testing.T) {
 	deployTypes := []string{"helm", "kustomize", "manifests"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
-	fmt.Print("******35******")
+
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
-	for _, variable := range detectedLang.Variables {
-		fmt.Printf("Name: %s, Value: %s\n", variable.Name, variable.Value)
-	}
 	assert.NotNil(t, detectedLang)
 	assert.False(t, lowerLang == "")
 	assert.Nil(t, err)
@@ -213,11 +210,7 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 			mcc.createConfig.LanguageType = mcc.lang
 		} else {
 			langs, err = linguist.ProcessDir(mcc.dest)
-			fmt.Printf("linguist.ProcessDir(%v) result:\n", mcc.dest)
-			for _, lang := range langs {
-				fmt.Printf("%s:\t%f (%s)\n", lang.Language, lang.Percent, lang.Color)
-			}
-			fmt.Printf("Error: %v\n", err)
+			log.Debugf("linguist.ProcessDir(%v) result:\n", mcc.dest)
 			if err != nil {
 				return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
 			}
@@ -249,7 +242,7 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 
 	for _, lang := range langs {
 		detectedLang := linguist.Alias(lang)
-		fmt.Printf("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
+		log.Infof("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
 		lowerLang := strings.ToLower(detectedLang.Language)
 
 		if mcc.supportedLangs.ContainsLanguage(lowerLang) {

@@ -57,7 +57,7 @@ func newUpdateCmd() *cobra.Command {
 }
 
 func (uc *updateCmd) run() error {
-	flagVariablesMap := flagVariablesToMap(uc.flagVariables)
+	flagVariablesMap = flagVariablesToMap(uc.flagVariables)
 
 	if uc.addon == "" {
 		addon, err := addons.PromptAddon(template.Addons, uc.provider)

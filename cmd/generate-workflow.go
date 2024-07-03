@@ -60,11 +60,11 @@ func init() {
 func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	var err error
 
-	flagValuesMap := flagVariablesToMap(gwc.flagVariables)
+	flagVariablesMap = flagVariablesToMap(gwc.flagVariables)
 
 	if gwc.deployType == "" {
-		if flagValue := flagValuesMap["deploy-type"]; flagValue == "helm" || flagValue == "kustomize" || flagValue == "manifests" {
-			gwc.deployType = flagValuesMap["deploy-type"]
+		if flagValue := flagVariablesMap["deploy-type"]; flagValue == "helm" || flagValue == "kustomize" || flagValue == "manifests" {
+			gwc.deployType = flagVariablesMap["deploy-type"]
 		} else {
 			selection := &promptui.Select{
 				Label: "Select k8s Deployment Type",
@@ -84,9 +84,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return fmt.Errorf("get config: %w", err)
 	}
 
-	if err := handleFlagVariables(flagValuesMap, draftConfig, gwc.deployType); err != nil {
-		return fmt.Errorf("handle flag variables: %w", err)
-	}
+	handleFlagVariables(flagVariablesMap, draftConfig, gwc.deployType)
 
 	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig); err != nil {
 		return err
@@ -99,7 +97,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
 }
 
-func handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig, infoType string) error {
+func handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig, infoType string) {
 	for flagName, flagValue := range flagVariablesMap {
 		log.Debugf("flag variable %s=%s", flagName, flagValue)
 		// handles flags that are meant to represent environment arguments
@@ -110,8 +108,6 @@ func handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config
 			variable.Value = flagValue
 		}
 	}
-
-	return nil
 }
 
 func flagVariablesToMap(flagVariables []string) map[string]string {

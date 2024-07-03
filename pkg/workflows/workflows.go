@@ -29,8 +29,6 @@ type Workflows struct {
 	workflowTemplates fs.FS
 }
 
-type DeploymentType string
-
 const (
 	parentDirName         = "workflows"
 	configFileName        = "/draft.yaml"

@@ -462,6 +462,13 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 		if err != nil {
 			log.Infof("adding new environment argument %s", providedVar.Name)
 			draftConfig.AddVariable(providedVar.Name, providedVar.Value)
+			variable, err = draftConfig.GetVariable(providedVar.Name)
+			if err != nil {
+				return err
+			}
+		}
+		if variable == nil {
+			return fmt.Errorf("variable %s not found", providedVar.Name)
 		}
 		variable.Value = providedVar.Value
 	}

@@ -71,10 +71,6 @@ func (d *Deployments) loadConfig(deployType string) (*config.DraftConfig, error)
 		return nil, err
 	}
 
-	for _, variable := range draftConfig.Variables {
-		fmt.Printf("Name %s, Value %s\n", variable.Name, variable.Value)
-	}
-
 	return &draftConfig, nil
 }
 

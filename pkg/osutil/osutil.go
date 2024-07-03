@@ -106,12 +106,12 @@ func CopyDir(
 				return err
 			}
 		} else {
-			fileContent, err := ReplaceTemplateVariables(fileSys, srcPath, draftConfig)
+			fileContent, err := replaceTemplateVariables(fileSys, srcPath, draftConfig)
 			if err != nil {
 				return err
 			}
 
-			if err = CheckAllVariablesSubstituted(string(fileContent)); err != nil {
+			if err = checkAllVariablesSubstituted(string(fileContent)); err != nil {
 				return fmt.Errorf("error substituting file %s: %w", srcPath, err)
 			}
 
@@ -130,7 +130,7 @@ If any draft variables are found, an error is returned.
 Draft variables are defined as a string of non-whitespace characters starting with a non-period character wrapped in double curly braces.
 The non-period first character constraint is used to avoid matching helm template functions.
 */
-func CheckAllVariablesSubstituted(fileContent string) error {
+func checkAllVariablesSubstituted(fileContent string) error {
 	if unsubstitutedVars := draftVariableRegex.FindAllString(fileContent, -1); len(unsubstitutedVars) > 0 {
 		unsubstitutedVarsString := strings.Join(unsubstitutedVars, ", ")
 		return fmt.Errorf("unsubstituted variable: %s", unsubstitutedVarsString)
@@ -138,7 +138,7 @@ func CheckAllVariablesSubstituted(fileContent string) error {
 	return nil
 }
 
-func ReplaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config.DraftConfig) ([]byte, error) {
+func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config.DraftConfig) ([]byte, error) {
 	file, err := fs.ReadFile(fileSys, srcPath)
 	if err != nil {
 		return nil, err

@@ -70,10 +70,12 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 }
 
 func (d *DraftConfig) AddVariable(name, value string) {
+	fmt.Printf("about to add variable %s", name)
 	d.Variables = append(d.Variables, &BuilderVar{
 		Name:  name,
 		Value: value,
 	})
+	fmt.Printf("variable %s added", name)
 }
 
 func initVarIdxMap(variables []*BuilderVar) map[string]int {

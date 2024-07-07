@@ -4,8 +4,9 @@ apiVersion: v1
 metadata:
   name: {{ .Values.namespace }}
   labels:
-    {{- toYaml .Values.commonLabels | nindent 4 }}
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
     openservicemesh.io/monitored-by: osm
+    kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
   annotations:
     openservicemesh.io/sidecar-injection: enabled
   {{- end }}

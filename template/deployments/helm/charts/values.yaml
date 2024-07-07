@@ -4,13 +4,13 @@
 
 replicaCount: 1
 
-namespace: default
+namespace: {{NAMESPACE}}
 
-containerPort: 80
+containerPort: {{PORT}}
 
 image:
-  repository: my-app
-  tag: latest
+  repository: {{IMAGENAME}}
+  tag: {{IMAGETAG}}
   pullPolicy: Always
 
 
@@ -33,7 +33,7 @@ securityContext: {}
 service:
   annotations: {}
   type: LoadBalancer
-  port: 80
+  port: {{SERVICEPORT}}
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -60,6 +60,5 @@ tolerations: []
 
 affinity: {}
 
-generatorlabel: draft
+generatorlabel: {{GENERATORLABEL}}
 
-serviceport: 80

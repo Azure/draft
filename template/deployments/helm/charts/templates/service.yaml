@@ -3,10 +3,11 @@ kind: Service
 metadata:
   name: {{ .Chart.Name | quote }}
   labels:
-    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.namespace }}
 spec:
   type: {{ .Values.service.type }}
   ports:

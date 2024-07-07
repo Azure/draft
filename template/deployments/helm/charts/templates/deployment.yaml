@@ -3,8 +3,9 @@ kind: Deployment
 metadata:
   name: {{ .Chart.Name | quote }}
   labels:
-    app.kubernetes.io/managed-by: "Helm"
-  namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
+  namespace: {{ .Values.namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-main
+  labels:
+    app: mainchart
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: mainchart
+  template:
+    metadata:
+      labels:
+        app: mainchart
+    spec:
+      containers:
+        - name: mainchart
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}

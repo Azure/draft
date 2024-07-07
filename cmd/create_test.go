@@ -142,14 +142,16 @@ func TestInitConfig(t *testing.T) {
 }
 
 func TestValidateConfigInputsToPromptsPass(t *testing.T) {
-	required := []config.BuilderVar{
-		{
-			Name: "REQUIRED_PROVIDED",
-		},
-		{
-			Name: "REQUIRED_DEFAULTED",
-			Default: config.BuilderVarDefault{
-				Value: "DEFAULT_VALUE",
+	required := config.DraftConfig{
+		Variables: []config.BuilderVar{
+			{
+				Name: "REQUIRED_PROVIDED",
+			},
+			{
+				Name: "REQUIRED_DEFAULTED",
+				Default: config.BuilderVarDefault{
+					Value: "DEFAULT_VALUE",
+				},
 			},
 		},
 	}
@@ -157,25 +159,27 @@ func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 		{Name: "REQUIRED_PROVIDED", Value: "PROVIDED_VALUE"},
 	}
 
-	vars, err := validateConfigInputsToPrompts(required, provided)
+	vars, err := validateConfigInputsToPrompts(&required, provided)
 	assert.True(t, err == nil)
 	assert.Equal(t, vars["REQUIRED_DEFAULTED"], "DEFAULT_VALUE")
 }
 
 func TestValidateConfigInputsToPromptsMissing(t *testing.T) {
-	required := []config.BuilderVar{
-		{
-			Name: "REQUIRED_PROVIDED",
-		},
-		{
-			Name: "REQUIRED_MISSING",
+	required := config.DraftConfig{
+		Variables: []config.BuilderVar{
+			{
+				Name: "REQUIRED_PROVIDED",
+			},
+			{
+				Name: "REQUIRED_MISSING",
+			},
 		},
 	}
 	provided := []UserInputs{
 		{Name: "REQUIRED_PROVIDED"},
 	}
 
-	_, err := validateConfigInputsToPrompts(required, provided)
+	_, err := validateConfigInputsToPrompts(&required, provided)
 	assert.NotNil(t, err)
 }
 

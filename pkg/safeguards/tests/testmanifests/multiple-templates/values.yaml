@@ -1,0 +1,16 @@
+replicaCount: 1
+image:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+ingress:
+  enabled: true
+  hostname: example.com
+  annotations: {}
+  tls: false
+  tlsSecret: ""
+releaseName: test-release
+releaseNamespace: test-namespace

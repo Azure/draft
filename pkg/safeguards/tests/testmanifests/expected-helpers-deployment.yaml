@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-release-mychart
+  labels:
+    
+    helm.sh/chart: mychart-0.1.0
+    test-release-mychart: test-release
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: test-release
+    app.kubernetes.io/version: 1.16.0
+    app.kubernetes.io/component: mychart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-release-mychart
+  template:
+    metadata:
+      labels:
+        app: test-release-mychart
+    spec:
+      containers:
+        - name: nginx
+          image: "nginx:1.16.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            

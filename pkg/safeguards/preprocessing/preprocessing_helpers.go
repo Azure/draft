@@ -135,7 +135,7 @@ func RenderKustomizeManifest(dir string) error {
 
 	// Create a new Kustomize build options
 	options := &krusty.Options{
-		Reorder:           "",
+		Reorder:           "none",
 		AddManagedbyLabel: true,
 		LoadRestrictions:  types.LoadRestrictionsUnknown,
 		PluginConfig:      &types.PluginConfig{},
@@ -150,12 +150,39 @@ func RenderKustomizeManifest(dir string) error {
 		return fmt.Errorf("Error building manifests: %s\n", err.Error())
 	}
 
+	//var manifestFiles []safeguards.ManifestFile
+	//for chartPath, chart := range loadedCharts {
+	//	valuesPath := filepath.Join(chartPath, "values.yaml") // Enforce that values.yaml must be at same level as Chart.yaml
+	//	mergedValues, err := getValues(chart, valuesPath)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("failed to load values: %s", err)
+	//	}
+	//	e := engine.Engine{Strict: true}
+	//	renderedFiles, err := e.Render(chart, mergedValues)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("failed to render chart: %s", err)
+	//	}
+	//
+	//	// Write each rendered file to the output directory with the same name as in templates/
+	//	for filePath, content := range renderedFiles {
+	//		outputFilePath := filepath.Join(tempDir, filepath.Base(filePath))
+	//		if err := os.WriteFile(outputFilePath, []byte(content), 0644); err != nil {
+	//			return nil, fmt.Errorf("failed to write manifest file: %s", err)
+	//		}
+	//		manifestFiles = append(manifestFiles, safeguards.ManifestFile{Name: filepath.Base(filePath), Path: outputFilePath})
+	//	}
+	//}
+
 	// Output the manifests
 	for _, res := range resMap.Resources() {
 		yamlRes, err := res.AsYAML()
 		if err != nil {
 			return fmt.Errorf("Error converting resource to YAML: %s\n", err.Error())
 		}
+
+		//manifestFiles = append(manifestFiles, safeguards.ManifestFile{
+		//	Name: filepath.Base(dir),
+		//})
 
 		// write yamlRes to dir
 		err = os.WriteFile(res.GetName()+".yaml", yamlRes, 0644)

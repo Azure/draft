@@ -37,5 +37,4 @@ data:
       hostname: example.com
       annotations:
       tls: false
-      tlsSecret: 
-
+      tlsSecret:

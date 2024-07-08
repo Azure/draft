@@ -10,24 +10,24 @@ import (
 )
 
 const (
-	tempDir                 = "testdata" // Rendered files are stored here before they are read for comparison
-	chartPath               = "tests/testmanifests/validchart"
-	invalidChartPath        = "tests/testmanifests/invalidchart"
-	invalidValuesChart      = "tests/testmanifests/invalidvalues"
-	invalidDeploymentsChart = "tests/testmanifests/invaliddeployment"
-	invalidDeploymentSyntax = "tests/testmanifests/invaliddeployment-syntax"
-	invalidDeploymentValues = "tests/testmanifests/invaliddeployment-values"
-	folderwithHelpersTmpl   = "tests/testmanifests/different-structure"
-	multipleTemplateDirs    = "tests/testmanifests/multiple-templates"
-	multipleValuesFile      = "tests/testmanifests/multiple-values-files"
+	tempDir                 = "testdata/helm" // Rendered files are stored here before they are read for comparison
+	chartPath               = "../tests/testmanifests/validchart"
+	invalidChartPath        = "../tests/testmanifests/invalidchart"
+	invalidValuesChart      = "../tests/testmanifests/invalidvalues"
+	invalidDeploymentsChart = "../tests/testmanifests/invaliddeployment"
+	invalidDeploymentSyntax = "../tests/testmanifests/invaliddeployment-syntax"
+	invalidDeploymentValues = "../tests/testmanifests/invaliddeployment-values"
+	folderwithHelpersTmpl   = "../tests/testmanifests/different-structure"
+	multipleTemplateDirs    = "../tests/testmanifests/multiple-templates"
+	multipleValuesFile      = "../tests/testmanifests/multiple-values-files"
 
-	subcharts                  = "tests/testmanifests/multiple-charts"
-	subchartDir                = "tests/testmanifests/multiple-charts/charts/subchart2"
-	directPath_ToSubchartYaml  = "tests/testmanifests/multiple-charts/charts/subchart1/Chart.yaml"
-	directPath_ToMainChartYaml = "tests/testmanifests/multiple-charts/Chart.yaml"
+	subcharts                  = "../tests/testmanifests/multiple-charts"
+	subchartDir                = "../tests/testmanifests/multiple-charts/charts/subchart2"
+	directPath_ToSubchartYaml  = "../tests/testmanifests/multiple-charts/charts/subchart1/Chart.yaml"
+	directPath_ToMainChartYaml = "../tests/testmanifests/multiple-charts/Chart.yaml"
 
-	directPath_ToValidChart   = "tests/testmanifests/validchart/Chart.yaml"
-	directPath_ToInvalidChart = "tests/testmanifests/invalidchart/Chart.yaml"
+	directPath_ToValidChart   = "../tests/testmanifests/validchart/Chart.yaml"
+	directPath_ToInvalidChart = "../tests/testmanifests/invalidchart/Chart.yaml"
 )
 
 func makeTempDir(t *testing.T) {
@@ -46,9 +46,9 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 
 	// Check that the output directory exists and contains expected files
 	expectedFiles := make(map[string]string)
-	expectedFiles["deployment.yaml"] = getManifestAsString(t, "tests/testmanifests/expecteddeployment.yaml")
-	expectedFiles["service.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedservice.yaml")
-	expectedFiles["ingress.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedingress.yaml")
+	expectedFiles["deployment.yaml"] = getManifestAsString(t, "../tests/testmanifests/expecteddeployment.yaml")
+	expectedFiles["service.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedservice.yaml")
+	expectedFiles["ingress.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedingress.yaml")
 
 	for _, writtenFile := range manifestFiles {
 		expectedYaml := expectedFiles[writtenFile.Name]
@@ -83,9 +83,9 @@ func TestSubCharts(t *testing.T) {
 	assert.Equal(t, len(files), 3)
 
 	expectedFiles := make(map[string]string)
-	expectedFiles["maindeployment.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-mainchart.yaml")
-	expectedFiles["deployment1.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart1.yaml")
-	expectedFiles["deployment2.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart2.yaml")
+	expectedFiles["maindeployment.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-mainchart.yaml")
+	expectedFiles["deployment1.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-subchart1.yaml")
+	expectedFiles["deployment2.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-subchart2.yaml")
 
 	for _, writtenFile := range manifestFiles {
 		expectedYaml := expectedFiles[writtenFile.Name]
@@ -115,8 +115,8 @@ func TestSubCharts(t *testing.T) {
 	assert.Nil(t, err)
 
 	expectedFiles = make(map[string]string)
-	expectedFiles["deployment1.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart1.yaml")
-	expectedFiles["deployment2.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-subchart2.yaml")
+	expectedFiles["deployment1.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-subchart1.yaml")
+	expectedFiles["deployment2.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-subchart2.yaml")
 
 	for _, writtenFile := range manifestFiles {
 		expectedYaml := expectedFiles[writtenFile.Name]
@@ -176,8 +176,8 @@ func TestDifferentFolderStructures(t *testing.T) {
 	assert.Nil(t, err)
 
 	expectedFiles := make(map[string]string)
-	expectedFiles["deployment.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-helpers-deployment.yaml")
-	expectedFiles["service.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-helpers-service.yaml")
+	expectedFiles["deployment.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-helpers-deployment.yaml")
+	expectedFiles["service.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-helpers-service.yaml")
 	for _, writtenFile := range manifestFiles {
 		expectedYaml := expectedFiles[writtenFile.Name]
 		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
@@ -190,9 +190,9 @@ func TestDifferentFolderStructures(t *testing.T) {
 	assert.Nil(t, err)
 
 	expectedFiles = make(map[string]string)
-	expectedFiles["resources.yaml"] = getManifestAsString(t, "tests/testmanifests/expected-resources.yaml")
-	expectedFiles["service-1.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedservice.yaml")
-	expectedFiles["service-2.yaml"] = getManifestAsString(t, "tests/testmanifests/expectedservice2.yaml")
+	expectedFiles["resources.yaml"] = getManifestAsString(t, "../tests/testmanifests/expected-resources.yaml")
+	expectedFiles["service-1.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedservice.yaml")
+	expectedFiles["service-2.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedservice2.yaml")
 	for _, writtenFile := range manifestFiles {
 		expectedYaml := expectedFiles[writtenFile.Name]
 		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
@@ -224,4 +224,38 @@ func getManifestAsString(t *testing.T, filePath string) string {
 
 	yamlContentString := string(yamlFileContent)
 	return yamlContentString
+}
+
+// Test rendering a valid kustomize yaml
+func TestRenderKustomizeManifest_Valid(t *testing.T) {
+	makeTempDir(t)
+	t.Cleanup(func() { cleanupDir(t, tempDir) })
+
+	err := RenderKustomizeManifest(tempDir)
+	assert.Nil(t, err)
+
+	//// Check that the output directory exists and contains expected files
+	//expectedFiles := make(map[string]string)
+	//expectedFiles["deployment.yaml"] = getManifestAsString(t, "../tests/testmanifests/expecteddeployment.yaml")
+	//expectedFiles["service.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedservice.yaml")
+	//expectedFiles["ingress.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedingress.yaml")
+	//
+	//for _, writtenFile := range manifestFiles {
+	//	expectedYaml := expectedFiles[writtenFile.Name]
+	//	writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+	//	assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
+	//}
+	//
+	//cleanupDir(t, tempDir)
+	//makeTempDir(t)
+	//
+	//// Test by giving file directly
+	//manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
+	//assert.Nil(t, err)
+	//
+	//for _, writtenFile := range manifestFiles {
+	//	expectedYaml := expectedFiles[writtenFile.Name]
+	//	writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+	//	assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
+	//}
 }

@@ -131,7 +131,7 @@ func IsKustomize(p string) bool {
 func RenderKustomizeManifest(dir string) error {
 	log.Debugf("Rendering kustomization.yaml...")
 
-	kustomizeFS := filesys.MakeFsInMemory()
+	kustomizeFS := filesys.MakeFsOnDisk()
 
 	// Create a new Kustomize build options
 	options := &krusty.Options{
@@ -149,29 +149,6 @@ func RenderKustomizeManifest(dir string) error {
 	if err != nil {
 		return fmt.Errorf("Error building manifests: %s\n", err.Error())
 	}
-
-	//var manifestFiles []safeguards.ManifestFile
-	//for chartPath, chart := range loadedCharts {
-	//	valuesPath := filepath.Join(chartPath, "values.yaml") // Enforce that values.yaml must be at same level as Chart.yaml
-	//	mergedValues, err := getValues(chart, valuesPath)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("failed to load values: %s", err)
-	//	}
-	//	e := engine.Engine{Strict: true}
-	//	renderedFiles, err := e.Render(chart, mergedValues)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("failed to render chart: %s", err)
-	//	}
-	//
-	//	// Write each rendered file to the output directory with the same name as in templates/
-	//	for filePath, content := range renderedFiles {
-	//		outputFilePath := filepath.Join(tempDir, filepath.Base(filePath))
-	//		if err := os.WriteFile(outputFilePath, []byte(content), 0644); err != nil {
-	//			return nil, fmt.Errorf("failed to write manifest file: %s", err)
-	//		}
-	//		manifestFiles = append(manifestFiles, safeguards.ManifestFile{Name: filepath.Base(filePath), Path: outputFilePath})
-	//	}
-	//}
 
 	// Output the manifests
 	for _, res := range resMap.Resources() {

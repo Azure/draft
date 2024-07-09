@@ -28,6 +28,7 @@ const (
 
 	directPath_ToValidChart   = "../tests/testmanifests/validchart/Chart.yaml"
 	directPath_ToInvalidChart = "../tests/testmanifests/invalidchart/Chart.yaml"
+	kustomizeTempDir          = "testdata/kustomize"
 )
 
 func makeTempDir(t *testing.T) {
@@ -229,9 +230,9 @@ func getManifestAsString(t *testing.T, filePath string) string {
 // Test rendering a valid kustomize yaml
 func TestRenderKustomizeManifest_Valid(t *testing.T) {
 	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	t.Cleanup(func() { cleanupDir(t, kustomizeTempDir) })
 
-	err := RenderKustomizeManifest(tempDir)
+	err := RenderKustomizeManifest(kustomizeTempDir)
 	assert.Nil(t, err)
 
 	//// Check that the output directory exists and contains expected files

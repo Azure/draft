@@ -3,7 +3,11 @@ kind: Service
 metadata:
   name: {{ .Chart.Name | quote }}
   labels:
-    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
     kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
@@ -16,5 +20,5 @@ spec:
       protocol: TCP
       name: svchttp
   selector:
-    app.kubernetes.io/name: "{{ .Chart.Name }}"
-    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: mainchart
+description: A Helm chart with subcharts
+version: 0.1.0

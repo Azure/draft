@@ -1,12 +1,18 @@
 variables:
+  - name: "WORKFLOWNAME"
+    default:
+      value: "Build and deploy an app to AKS with Kustomize"
+    description: "the name of the workflow"
   - name: "BRANCHNAME"
     description: "the Github branch to automatically deploy from"
-  - name: "RESOURCEGROUP"
+  - name: "ACRRESOURCEGROUP"
     description: "the ACR resource group"
   - name: "AZURECONTAINERREGISTRY"
     description: "the Azure container registry name"
   - name: "CONTAINERNAME"
     description: "the container image name"
+  - name: "CLUSTERRESOURCEGROUP"
+    description: "the AKS cluster resource group"
   - name: "CLUSTERNAME"
     description: "the AKS cluster name"
   - name: "KUSTOMIZEPATH"
@@ -14,7 +20,20 @@ variables:
       disablePrompt: true
       value: "./overlays/production"
     description: "the path to the Kustomize directory"
+  - name: "DOCKERFILE"
+    default:
+      value: "./Dockerfile"
+    description: "the path to the Dockerfile"
   - name: "BUILDCONTEXTPATH"
     default: 
       value: "."
     description: "the path to the Docker build context"
+  - name: "NAMESPACE"
+    default:
+      value: "default"
+    description: "the Kubernetes namespace"
+  - name: "PRIVATECLUSTER"
+    default:
+      value: "false"
+    description: "true if the AKS cluster is private"
+    type: "bool"

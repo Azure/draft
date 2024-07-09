@@ -1,0 +1,22 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: "1.16.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+releaseName: test-release
+
+releaseNamespace: test-namespace
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

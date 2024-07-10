@@ -3,11 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Chart.Name | quote }}
   labels:
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/name: {{ .Chart.Name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "helper.labels" . | nindent 4 }}
     kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
   namespace: {{ .Values.namespace }}
 spec:
@@ -16,8 +12,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Chart.Name }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "helper.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -25,8 +20,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app.kubernetes.io/name: {{ .Chart.Name }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "helper.selectorLabels" . | nindent 8 }}
       namespace: {{ .Values.namespace }}
     spec:
       {{- with .Values.imagePullSecrets }}

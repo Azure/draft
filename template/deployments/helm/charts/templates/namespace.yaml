@@ -4,11 +4,7 @@ apiVersion: v1
 metadata:
   name: {{ .Values.namespace }}
   labels:
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/name: {{ .Chart.Name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "helper.labels" . | nindent 4 }}
     openservicemesh.io/monitored-by: osm
     kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
   annotations:

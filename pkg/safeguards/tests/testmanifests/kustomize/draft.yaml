@@ -1,0 +1,29 @@
+variables:
+  - name: "PORT"
+    default: 
+      value: 80
+    description: "the port exposed in the application"
+  - name: "APPNAME"
+    description: "the name of the application"
+  - name: "SERVICEPORT"
+    default:
+      referenceVar: "PORT"
+    description: "the port the service uses to make the application accessible from outside the cluster"
+  - name: "NAMESPACE"
+    default: 
+      value: default
+    description: " the namespace to place new resources in"
+  - name: "IMAGENAME"
+    default:
+      referenceVar: "APPNAME"
+    description: "the name of the image to use in the deployment"
+  - name: "IMAGETAG"
+    default:
+      disablePrompt: true 
+      value: "latest"
+    description: "the tag of the image to use in the deployment"
+  - name: "GENERATORLABEL"
+    default: 
+      disablePrompt: true
+      value: "draft"
+    description: "the label to identify who generated the resource"

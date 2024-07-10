@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	tempDir                 = "testdata/helm" // Rendered files are stored here before they are read for comparison
+	helmTempDir             = "testdata/helm" // Rendered files are stored here before they are read for comparison
 	chartPath               = "../tests/testmanifests/validchart"
 	invalidChartPath        = "../tests/testmanifests/invalidchart"
 	invalidValuesChart      = "../tests/testmanifests/invalidvalues"
@@ -29,20 +29,21 @@ const (
 	directPath_ToValidChart   = "../tests/testmanifests/validchart/Chart.yaml"
 	directPath_ToInvalidChart = "../tests/testmanifests/invalidchart/Chart.yaml"
 	kustomizeTempDir          = "testdata/kustomize"
+	kustomizePath             = "../tests/testmanifests/kustomize"
 )
 
-func makeTempDir(t *testing.T) {
-	if err := os.MkdirAll(tempDir, 0755); err != nil {
+func makeTempDir(t *testing.T, dir string) {
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		t.Fatalf("failed to create temporary output directory: %s", err)
 	}
 }
 
 // Test rendering a valid Helm chart with no subcharts and three templates
 func TestRenderHelmChart_Valid(t *testing.T) {
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	makeTempDir(t, helmTempDir)
+	t.Cleanup(func() { cleanupDir(t, helmTempDir) })
 
-	manifestFiles, err := RenderHelmChart(false, chartPath, tempDir)
+	manifestFiles, err := RenderHelmChart(false, chartPath, helmTempDir)
 	assert.Nil(t, err)
 
 	// Check that the output directory exists and contains expected files
@@ -57,11 +58,11 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
 	}
 
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
+	cleanupDir(t, helmTempDir)
+	makeTempDir(t, helmTempDir)
 
 	// Test by giving file directly
-	manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
+	manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, helmTempDir)
 	assert.Nil(t, err)
 
 	for _, writtenFile := range manifestFiles {
@@ -73,14 +74,14 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 
 // Should successfully render a Helm chart with sub charts and be able to render subchart separately within a helm chart
 func TestSubCharts(t *testing.T) {
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	makeTempDir(t, helmTempDir)
+	t.Cleanup(func() { cleanupDir(t, helmTempDir) })
 
-	manifestFiles, err := RenderHelmChart(false, subcharts, tempDir)
+	manifestFiles, err := RenderHelmChart(false, subcharts, helmTempDir)
 	assert.Nil(t, err)
 
 	// Assert that 3 files were created in temp dir: 1 from main chart, 2 from subcharts
-	files, _ := os.ReadDir(tempDir)
+	files, _ := os.ReadDir(helmTempDir)
 	assert.Equal(t, len(files), 3)
 
 	expectedFiles := make(map[string]string)
@@ -94,25 +95,25 @@ func TestSubCharts(t *testing.T) {
 		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
 	}
 
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
+	cleanupDir(t, helmTempDir)
+	makeTempDir(t, helmTempDir)
 
 	// Given a sub-chart dir, that specific sub chart only should be evaluated and rendered
-	_, err = RenderHelmChart(false, subchartDir, tempDir)
+	_, err = RenderHelmChart(false, subchartDir, helmTempDir)
 	assert.Nil(t, err)
 
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
+	cleanupDir(t, helmTempDir)
+	makeTempDir(t, helmTempDir)
 
 	// Given a Chart.yaml in the main directory, main chart and subcharts should be evaluated
-	_, err = RenderHelmChart(true, directPath_ToMainChartYaml, tempDir)
+	_, err = RenderHelmChart(true, directPath_ToMainChartYaml, helmTempDir)
 	assert.Nil(t, err)
 
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
+	cleanupDir(t, helmTempDir)
+	makeTempDir(t, helmTempDir)
 
-	// Given path to a sub- Chart.yaml with a dependency on another subchart, should render both subcharts, but not the main chart
-	manifestFiles, err = RenderHelmChart(true, directPath_ToSubchartYaml, tempDir)
+	// Given path to a sub-Chart.yaml with a dependency on another subchart, should render both subcharts, but not the main chart
+	manifestFiles, err = RenderHelmChart(true, directPath_ToSubchartYaml, helmTempDir)
 	assert.Nil(t, err)
 
 	expectedFiles = make(map[string]string)
@@ -126,7 +127,7 @@ func TestSubCharts(t *testing.T) {
 	}
 
 	//expect mainchart.yaml to not exist
-	outputFilePath := filepath.Join(tempDir, "maindeployment.yaml")
+	outputFilePath := filepath.Join(helmTempDir, "maindeployment.yaml")
 	assert.NoFileExists(t, outputFilePath, "Unexpected file was created: %s", outputFilePath)
 }
 
@@ -136,44 +137,44 @@ func TestSubCharts(t *testing.T) {
 
 // Should fail if the Chart.yaml is invalid
 func TestInvalidChartAndValues(t *testing.T) {
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	makeTempDir(t, helmTempDir)
+	t.Cleanup(func() { cleanupDir(t, helmTempDir) })
 
-	_, err := RenderHelmChart(false, invalidChartPath, tempDir)
+	_, err := RenderHelmChart(false, invalidChartPath, helmTempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to load main chart: validation: chart.metadata.name is required")
 
-	_, err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
+	_, err = RenderHelmChart(true, directPath_ToValidChart, helmTempDir)
 	assert.Nil(t, err)
 
 	// Should fail if values.yaml doesn't contain all values necessary for templating
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
+	cleanupDir(t, helmTempDir)
+	makeTempDir(t, helmTempDir)
 
-	_, err = RenderHelmChart(false, invalidValuesChart, tempDir)
+	_, err = RenderHelmChart(false, invalidValuesChart, helmTempDir)
 	assert.NotNil(t, err)
 }
 
 func TestInvalidDeployments(t *testing.T) {
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	makeTempDir(t, helmTempDir)
+	t.Cleanup(func() { cleanupDir(t, helmTempDir) })
 
-	_, err := RenderHelmChart(false, invalidDeploymentSyntax, tempDir)
+	_, err := RenderHelmChart(false, invalidDeploymentSyntax, helmTempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "parse error")
 	assert.Contains(t, err.Error(), "function \"selector\" not defined")
 
-	_, err = RenderHelmChart(false, invalidDeploymentValues, tempDir)
+	_, err = RenderHelmChart(false, invalidDeploymentValues, helmTempDir)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "map has no entry for key")
 }
 
 // Test different helm folder structures
 func TestDifferentFolderStructures(t *testing.T) {
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	makeTempDir(t, helmTempDir)
+	t.Cleanup(func() { cleanupDir(t, helmTempDir) })
 
-	manifestFiles, err := RenderHelmChart(false, folderwithHelpersTmpl, tempDir) // includes _helpers.tpl
+	manifestFiles, err := RenderHelmChart(false, folderwithHelpersTmpl, helmTempDir) // includes _helpers.tpl
 	assert.Nil(t, err)
 
 	expectedFiles := make(map[string]string)
@@ -184,10 +185,10 @@ func TestDifferentFolderStructures(t *testing.T) {
 		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
 		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
 	}
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
+	cleanupDir(t, helmTempDir)
+	makeTempDir(t, helmTempDir)
 
-	manifestFiles, err = RenderHelmChart(false, multipleTemplateDirs, tempDir) // all manifests defined in one file
+	manifestFiles, err = RenderHelmChart(false, multipleTemplateDirs, helmTempDir) // all manifests defined in one file
 	assert.Nil(t, err)
 
 	expectedFiles = make(map[string]string)
@@ -229,10 +230,10 @@ func getManifestAsString(t *testing.T, filePath string) string {
 
 // Test rendering a valid kustomize yaml
 func TestRenderKustomizeManifest_Valid(t *testing.T) {
-	makeTempDir(t)
+	makeTempDir(t, kustomizeTempDir)
 	t.Cleanup(func() { cleanupDir(t, kustomizeTempDir) })
 
-	err := RenderKustomizeManifest(kustomizeTempDir)
+	_, err := RenderKustomizeManifest(kustomizePath, kustomizeTempDir)
 	assert.Nil(t, err)
 
 	//// Check that the output directory exists and contains expected files
@@ -247,11 +248,11 @@ func TestRenderKustomizeManifest_Valid(t *testing.T) {
 	//	assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
 	//}
 	//
-	//cleanupDir(t, tempDir)
+	//cleanupDir(t, helmTempDir)
 	//makeTempDir(t)
 	//
 	//// Test by giving file directly
-	//manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, tempDir)
+	//manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, helmTempDir)
 	//assert.Nil(t, err)
 	//
 	//for _, writtenFile := range manifestFiles {

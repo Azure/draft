@@ -22,6 +22,7 @@ helm.sh/chart: {{ include "helper.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
 {{- end }}
 
 {{/*

@@ -1,10 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name | quote }}
+  name: {{ include "helper.name" . }}
   labels:
     {{- include "helper.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{ .Values.generatorlabel }}
   namespace: {{ .Values.namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}

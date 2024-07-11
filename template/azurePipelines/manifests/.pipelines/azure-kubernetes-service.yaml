@@ -2,21 +2,21 @@
 # Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service cluster
 
 variables:
-  armServiceConnection: {{ARM_SERVICE_CONNECTION}}
-  azureContainerRegistry: {{AZURE_CONTAINER_REGISTRY}}
-  containerName: {{CONTAINER_NAME}}
-  clusterRg: {{CLUSTER_RESOURCE_GROUP}}
-  acrRg: {{ACR_RESOURCE_GROUP}}
-  clusterName: {{CLUSTER_NAME}}
-  manifestPath: {{MANIFEST_PATH}}
+  armServiceConnection: {{ARMSERVICECONNECTION}}
+  azureContainerRegistry: {{AZURECONTAINERREGISTRY}}
+  containerName: {{CONTAINERNAME}}
+  clusterRg: {{CLUSTERRESOURCEGROUP}}
+  acrRg: {{ACRRESOURCEGROUP}}
+  clusterName: {{CLUSTERNAME}}
+  manifestPath: {{MANIFESTPATH}}
   namespace: {{NAMESPACE}}
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
 
-name: {{PIPELINE_NAME}}
+name: {{PIPELINENAME}}
 
 trigger:
-  - {{BRANCH_NAME}}
+  - {{BRANCHNAME}}
 
 stages:
   - stage: BuildAndPush

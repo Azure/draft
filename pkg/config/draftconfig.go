@@ -27,6 +27,7 @@ type BuilderVar struct {
 	Default       BuilderVarDefault `yaml:"default"`
 	Description   string            `yaml:"description"`
 	ExampleValues []string          `yaml:"exampleValues"`
+	Resource      string            `yaml:"resource"`
 	Type          string            `yaml:"type"`
 	Value         string            `yaml:"value"`
 }

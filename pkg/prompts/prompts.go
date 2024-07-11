@@ -9,10 +9,13 @@ import (
 	"strings"
 	"unicode"
 
+	git "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/providers"
 )
 
 const defaultAppName = "my-app"
@@ -50,21 +53,85 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 		}
 
 		log.Debugf("constructing prompt for: %s", variable.Name)
-		if variable.Type == "bool" {
-			input, err := RunBoolPrompt(variable, Stdin, Stdout)
-			if err != nil {
-				return err
+		switch variable.Resource {
+		case "ghBranch":
+			if input, err := promptGitHubBranch(); err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			} else {
+				variable.Value = input
 			}
-			variable.Value = input
-		} else {
-			defaultValue := GetVariableDefaultValue(draftConfig, variable)
+		case "azResourceGroup":
+			var input string
+			var err error
 
-			stringInput, err := RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout)
-			if err != nil {
-				fmt.Println(err)
-				return err
+			switch variable.Name {
+			case "ACRRESOURCEGROUP":
+				input, err = promptAzResourceGroup("Please select the resource group for your Azure container registry", "")
+			case "CLUSTERRESOURCEGROUP":
+				var acrResourceGroup *config.BuilderVar
+				acrResourceGroup, err = draftConfig.GetVariable("ACRRESOURCEGROUP")
+				if err != nil {
+					return fmt.Errorf("running prompts from config: %w", err)
+				}
+
+				input, err = promptAzResourceGroup("Please select the resource group for your cluster", acrResourceGroup.Value)
 			}
-			variable.Value = stringInput
+
+			if err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			} else {
+				variable.Value = input
+			}
+		case "azContainerRegistry":
+			acrResourceGroup, err := draftConfig.GetVariable("ACRRESOURCEGROUP")
+			if err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			}
+
+			if input, err := promptAzContainerRegistry(acrResourceGroup.Value); err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			} else {
+				variable.Value = input
+			}
+		case "containerName":
+			azContainerRegistry, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY")
+			if err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			}
+
+			if input, err := promptContainerName(azContainerRegistry.Value); err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			} else {
+				variable.Value = input
+			}
+		case "azClusterName":
+			clusterResourceGroup, err := draftConfig.GetVariable("CLUSTERRESOURCEGROUP")
+			if err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			}
+
+			if input, err := promptAzClusterName(clusterResourceGroup.Value); err != nil {
+				return fmt.Errorf("running prompts from config: %w", err)
+			} else {
+				variable.Value = input
+			}
+		default:
+			if variable.Type == "bool" {
+				input, err := RunBoolPrompt(variable, Stdin, Stdout)
+				if err != nil {
+					return err
+				}
+				variable.Value = input
+			} else {
+				defaultValue := GetVariableDefaultValue(draftConfig, variable)
+
+				stringInput, err := RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
+				variable.Value = stringInput
+			}
 		}
 	}
 
@@ -220,19 +287,17 @@ func GetInputFromPrompt(desiredInput string) string {
 type SelectOpt[T any] struct {
 	// Field returns the name to use for each select item.
 	Field func(t T) string
-	// Default is the default selection. If Field is used this should be the result of calling Field on the default.
+	// Default is the default selection. Don't provide this without a Field function.
 	Default *T
 }
 
 func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 	selections := make([]interface{}, len(items))
 	for i, item := range items {
-		selections[i] = item
-	}
-
-	if opt != nil && opt.Field != nil {
-		for i, item := range items {
+		if opt != nil && opt.Field != nil {
 			selections[i] = opt.Field(item)
+		} else {
+			selections[i] = item
 		}
 	}
 
@@ -315,4 +380,111 @@ func sanitizeAppName(name string) string {
 		sanitized = strings.Trim(sanitized, "-._")
 	}
 	return sanitized
+}
+
+func promptGitHubBranch() (string, error) {
+	repo, err := git.PlainOpen(".")
+	if err != nil {
+		return "", fmt.Errorf("prompting for github branch: %w", err)
+	}
+
+	currentBranch, err := repo.Head()
+	if err != nil {
+		return "", fmt.Errorf("prompting for github branch: %w", err)
+	}
+
+	currentBranchName := currentBranch.Name().Short()
+
+	branches, err := repo.Branches()
+	if err != nil {
+		return "", fmt.Errorf("prompting for github branch: %w", err)
+	}
+
+	var branchNames []string
+	err = branches.ForEach(func(branch *plumbing.Reference) error {
+		branchNames = append(branchNames, branch.Name().Short())
+		return nil
+	})
+	if err != nil {
+		return "", fmt.Errorf("prompting for github branch: %w", err)
+	}
+
+	branch, err := Select("Please select the branch for this workflow", branchNames, &SelectOpt[string]{
+		Field: func(branchName string) string {
+			return branchName
+		},
+		Default: &currentBranchName,
+	})
+	if err != nil {
+		return "", fmt.Errorf("prompting for github branch: %w", err)
+	}
+
+	return branch, nil
+}
+
+func promptAzResourceGroup(prompt string, currentResourceGroup string) (string, error) {
+	resourceGroups, err := providers.GetAzResourceGroups()
+	if err != nil {
+		return "", fmt.Errorf("prompting for azure resource group: %w", err)
+	}
+
+	var resourceGroup string
+
+	if currentResourceGroup == "" {
+		resourceGroup, err = Select(prompt, resourceGroups, nil)
+	} else {
+		resourceGroup, err = Select(prompt, resourceGroups, &SelectOpt[string]{
+			Field: func(resourceGroup string) string {
+				return resourceGroup
+			},
+			Default: &currentResourceGroup,
+		})
+	}
+	if err != nil {
+		return "", fmt.Errorf("prompting for azure resource group: %w", err)
+	}
+
+	return resourceGroup, nil
+}
+
+func promptAzContainerRegistry(resourceGroup string) (string, error) {
+	containerRegistries, err := providers.GetAzContainerRegistries(resourceGroup)
+	if err != nil {
+		return "", fmt.Errorf("prompting for azure container registry: %w", err)
+	}
+
+	containerRegistry, err := Select("Please select the container registry for this workflow", containerRegistries, nil)
+	if err != nil {
+		return "", fmt.Errorf("prompting for azure container registry: %w", err)
+	}
+
+	return containerRegistry, nil
+}
+
+func promptContainerName(containerRegistry string) (string, error) {
+	containerNames, err := providers.GetAzContainerNames(containerRegistry)
+	if err != nil {
+		return "", fmt.Errorf("prompting for container name: %w", err)
+	}
+
+	containerName, err := Select("Please select the container name for this workflow", containerNames, nil)
+	if err != nil {
+		return "", fmt.Errorf("prompting for container name: %w", err)
+	}
+
+	return containerName, nil
+}
+
+func promptAzClusterName(resourceGroup string) (string, error) {
+	clusters, err := providers.GetAzClusters(resourceGroup)
+	if err != nil {
+		return "", fmt.Errorf("prompting for azure cluster: %w", err)
+	}
+
+	cluster, err := Select("Please select the cluster for this workflow", clusters, nil)
+	if err != nil {
+		return "", fmt.Errorf("prompting for azure cluster: %w", err)
+	}
+
+	return cluster, nil
 }

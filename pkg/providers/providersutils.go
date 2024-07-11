@@ -304,7 +304,7 @@ func GetAzSubscriptionLabels() ([]SubLabel, error) {
 
 	out, err := getAccountCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("get azure subscription labels: %w", err)
 	}
 
 	var subLabels []SubLabel
@@ -315,4 +315,100 @@ func GetAzSubscriptionLabels() ([]SubLabel, error) {
 	}
 
 	return subLabels, nil
+}
+
+func GetAzResourceGroups() ([]string, error) {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			return nil, fmt.Errorf("failed to log in to Azure CLI: %v", err)
+		}
+	}
+
+	getResourceGroupsCmd := exec.Command("az", "group", "list", "--query", "[].name")
+	out, err := getResourceGroupsCmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("get azure resource groups: %w", err)
+	}
+
+	var resourceGroups []string
+	if err := json.Unmarshal(out, &resourceGroups); err != nil {
+		return nil, fmt.Errorf("get azure resource groups: %v", err)
+	} else if len(resourceGroups) == 0 {
+		return nil, errors.New("no resource groups found")
+	}
+
+	return resourceGroups, nil
+}
+
+func GetAzContainerRegistries(resourceGroup string) ([]string, error) {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			return nil, fmt.Errorf("failed to log in to Azure CLI: %v", err)
+		}
+	}
+
+	getAcrCmd := exec.Command("az", "acr", "list", "-g", resourceGroup, "--query", "[].name")
+	out, err := getAcrCmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("get azure container registries: %w", err)
+	}
+
+	var acrs []string
+	if err := json.Unmarshal(out, &acrs); err != nil {
+		return nil, fmt.Errorf("get azure container registries: %v", err)
+	} else if len(acrs) == 0 {
+		return nil, errors.New("no container registries found")
+	}
+
+	return acrs, nil
+}
+
+func GetAzContainerNames(containerRegistry string) ([]string, error) {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			return nil, fmt.Errorf("failed to log in to Azure CLI: %v", err)
+		}
+	}
+
+	getContainerNameCmd := exec.Command("az", "acr", "repository", "list", "-n", containerRegistry)
+	out, err := getContainerNameCmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("get azure container name: %w", err)
+	}
+
+	var containers []string
+	if err := json.Unmarshal(out, &containers); err != nil {
+		return nil, fmt.Errorf("get azure container name: %v", err)
+	} else if len(containers) == 0 {
+		return nil, errors.New("no containers found")
+	}
+
+	return containers, nil
+}
+
+func GetAzClusters(resourceGroup string) ([]string, error) {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			return nil, fmt.Errorf("failed to log in to Azure CLI: %v", err)
+		}
+	}
+
+	getClustersCmd := exec.Command("az", "aks", "list", "-g", resourceGroup, "--query", "[].name")
+	out, err := getClustersCmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("get azure clusters: %w", err)
+	}
+
+	var clusters []string
+	if err := json.Unmarshal(out, &clusters); err != nil {
+		return nil, fmt.Errorf("get azure clusters: %v", err)
+	} else if len(clusters) == 0 {
+		return nil, errors.New("no clusters found")
+	}
+
+	return clusters, nil
 }

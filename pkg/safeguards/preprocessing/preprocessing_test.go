@@ -181,11 +181,15 @@ func TestRenderKustomizeManifest_Valid(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+// TestIsKustomize checks whether the given path contains a kustomize project
 func TestIsKustomize(t *testing.T) {
+	// path contains a kustomization.yaml file
 	isKustomize := IsKustomize(kustomizationPath)
 	assert.True(t, isKustomize)
+	// path is a kustomization.yaml file
 	isKustomize = IsKustomize(kustomizationFilePath)
 	assert.True(t, isKustomize)
+	// not a kustomize project
 	isKustomize = IsKustomize(chartPath)
 	assert.False(t, isKustomize)
 }

@@ -100,8 +100,8 @@ func TestRunValidate(t *testing.T) {
 // TestRunValidate_Kustomize tests the run command for `draft validate` for proper returns when given a kustomize project
 func TestRunValidate_Kustomize(t *testing.T) {
 	ctx := context.TODO()
-	kustomizationPath, _ := filepath.Abs("../pkg/safeguards/tests/testmanifests/kustomize/overlays/production")
-	kustomizationFilePath, _ := filepath.Abs("../pkg/safeguards/tests/testmanifests/kustomize/overlays/production/kustomization.yaml")
+	kustomizationPath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production")
+	kustomizationFilePath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production/kustomization.yaml")
 
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })

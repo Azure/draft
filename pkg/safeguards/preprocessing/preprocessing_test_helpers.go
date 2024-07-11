@@ -27,7 +27,7 @@ const (
 	directPath_ToValidChart   = "../tests/testmanifests/validchart/Chart.yaml"
 	directPath_ToInvalidChart = "../tests/testmanifests/invalidchart/Chart.yaml"
 
-	kustomizationPath = "../tests/testmanifests/kustomize/overlays/production"
+	kustomizationPath = "../tests/kustomize/overlays/production"
 )
 
 func makeTempDir(t *testing.T) {

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: test-release-mychart
   labels:
-    
+
     helm.sh/chart: mychart-0.1.0
     test-release-mychart: test-release
     app.kubernetes.io/managed-by: Helm
@@ -27,4 +27,4 @@ spec:
           ports:
             - containerPort: 80
           resources:
-            
+            {}

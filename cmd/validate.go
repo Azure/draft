@@ -3,12 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/Azure/draft/pkg/safeguards"
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
-	"path"
 )
 
 type validateCmd struct {
@@ -45,6 +47,7 @@ func newValidateCmd() *cobra.Command {
 
 // run is our entry point to GetManifestResults
 func (vc *validateCmd) run(c *cobra.Command) error {
+	var err error
 	if vc.manifestPath == "" {
 		return fmt.Errorf("path to the manifests cannot be empty")
 	}
@@ -63,36 +66,43 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 	var manifestFiles []safeguards.ManifestFile
 	if isDir {
-		// kustomize pre-processing
-		//
-		// 1. check for k.yaml
 		var tempDir string
 		if preprocessing.IsKustomize(vc.manifestPath) {
-			// 2. create a temp dir (create tempdir func)
-			// os.MkdirTemp
 			tempDir = preprocessing.CreateTempDir(vc.manifestPath)
-			// defer cleanup()
-			defer os.RemoveAll(tempDir)
+			defer func() {
+				err = os.RemoveAll(tempDir)
+			}()
 
-			// 3. render kustomization.yaml into actual manifest file
-			// do not pollute user's fs with rendered files
-			err = preprocessing.RenderKustomizeManifest(tempDir)
+			manifestFiles, err = preprocessing.RenderKustomizeManifest(vc.manifestPath, tempDir)
 			if err != nil {
 				return err
 			}
 		} else {
 			tempDir = vc.manifestPath
+			manifestFiles, err = safeguards.GetManifestFiles(tempDir)
 		}
-		// 4. pass into safeguards.GetManifestFiles
-		manifestFiles, err = safeguards.GetManifestFiles(tempDir)
 		if err != nil {
 			return err
 		}
 	} else if safeguards.IsYAML(vc.manifestPath) {
-		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
-			Name: path.Base(vc.manifestPath),
-			Path: vc.manifestPath,
-		})
+		var tempDir string
+		if preprocessing.IsKustomize(vc.manifestPath) {
+			tempDir = preprocessing.CreateTempDir(vc.manifestPath)
+			defer func() {
+				err = os.RemoveAll(tempDir)
+			}()
+			
+			manifestFiles, err = preprocessing.RenderKustomizeManifest(vc.manifestPath, tempDir)
+			if err != nil {
+				return err
+			}
+		} else {
+			yamlFileName := strings.Split(path.Base(vc.manifestPath), ".")[0]
+			manifestFiles = append(manifestFiles, safeguards.ManifestFile{
+				Name: yamlFileName,
+				Path: vc.manifestPath,
+			})
+		}
 	} else {
 		return fmt.Errorf("expected at least one .yaml or .yml file within given path")
 	}
@@ -129,5 +139,6 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		log.Printf("✅ No violations found in \"%s\".", vc.manifestPath)
 	}
 
-	return nil
+	// should populate if cleanup errors
+	return err
 }

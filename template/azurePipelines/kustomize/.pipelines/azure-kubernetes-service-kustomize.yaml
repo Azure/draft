@@ -1,0 +1,68 @@
+# Deploy to Azure Kubernetes Service
+# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
+
+variables:
+  armServiceConnection: {{ARM_SERVICE_CONNECTION}}
+  azureContainerRegistry: {{AZURE_CONTAINER_REGISTRY}}
+  containerName: {{CONTAINER_NAME}}
+  acrRg: {{CLUSTER_RESOURCE_GROUP}}
+  clusterRg: {{ACR_RESOURCE_GROUP}}
+  clusterName: {{CLUSTER_NAME}}
+  kustomizePath: {{KUSTOMIZE_PATH}}
+  namespace: {{NAMESPACE}}
+  tag: "$(Build.BuildId)"
+  vmImageName: "ubuntu-latest"
+
+trigger:
+  - {{BRANCH_NAME}}
+
+name: {{PIPELINE_NAME}}
+
+stages:
+  - stage: BuildAndPush
+    displayName: Build stage
+    jobs:
+      - job: BuildAndPush
+        displayName: Build and push image
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: AzureCLI@2
+            displayName: Build and push image to Azure Container Registry
+            inputs:
+              azureSubscription: $(armServiceConnection)
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az acr build --image $1.azurecr.io/$2:$3 --registry $1 -g $4 .
+              arguments: "$(azureContainerRegistry) $(containerName) $(tag) $(acrRg)"
+
+  - stage: Deploy
+    displayName: Deploy stage
+    dependsOn: BuildAndPush
+    jobs:
+      - job: Deploy
+        displayName: Deploy to AKS using Kustomize
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: KubernetesManifest@1
+            displayName: Bake Kustomize manifests
+            inputs:
+              action: 'bake'
+              kustomizationPath: $(kustomizePath)
+              renderType: 'kustomize'
+            name: 'bake'
+
+          - task: KubernetesManifest@1
+            displayName: Deploy baked manifests to Kubernetes cluster
+            inputs:
+              action: 'deploy'
+              connectionType: 'azureResourceManager'
+              azureSubscriptionConnection: $(armServiceConnection)
+              azureResourceGroup: $(clusterRg)
+              kubernetesCluster: $(clusterName)
+              namespace: $(namespace)
+              manifests: $(bake.manifestsBundle)
+              containers: |
+                $(azureContainerRegistry).azurecr.io/$(containerName):$(tag)

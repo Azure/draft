@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"os"
 	"path"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -95,6 +95,9 @@ func IsKustomize(p string) bool {
 // Given a kustomization manifest file within kustomizationPath, RenderKustomizeManifest will render templates out to tempDir
 func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]safeguards.ManifestFile, error) {
 	log.Debugf("Rendering kustomization.yaml...")
+	if safeguards.IsYAML(kustomizationPath) {
+		kustomizationPath = filepath.Dir(kustomizationPath)
+	}
 
 	options := &krusty.Options{
 		Reorder:           "none",

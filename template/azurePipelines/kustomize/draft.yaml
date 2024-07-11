@@ -22,7 +22,7 @@ variables:
   - name: "KUSTOMIZE_PATH"
     default:
       disablePrompt: true
-      value: "./overlays/production"
+      value: "./overlays/production" // keeping this as default since draft generates the manifests in the overlays/production directory
     description: "the path to the Kustomize directory"
   - name: "NAMESPACE"
     default:

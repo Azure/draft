@@ -16,7 +16,7 @@ variables:
 name: {{PIPELINE_NAME}}
 
 trigger:
-  - main
+  - {{BRANCH_NAME}}
 
 stages:
   - stage: BuildAndPush

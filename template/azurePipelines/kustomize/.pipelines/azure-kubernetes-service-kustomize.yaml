@@ -1,5 +1,5 @@
-# Deploy to Azure Kubernetes Service
-# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
+# Azure Kubernetes Service (AKS) pipeline with Kustomize
+# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service cluster
 
 variables:
   armServiceConnection: {{ARM_SERVICE_CONNECTION}}

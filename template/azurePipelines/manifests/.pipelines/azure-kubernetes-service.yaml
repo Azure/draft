@@ -1,5 +1,5 @@
-# Deploy to Azure Kubernetes Service
-# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
+# Azure Kubernetes Service pipeline
+# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service cluster
 
 variables:
   armServiceConnection: {{ARM_SERVICE_CONNECTION}}

@@ -27,11 +27,12 @@ const (
 	directPath_ToValidChart   = "../tests/testmanifests/validchart/Chart.yaml"
 	directPath_ToInvalidChart = "../tests/testmanifests/invalidchart/Chart.yaml"
 
-	kustomizationPath = "../tests/kustomize/overlays/production"
+	kustomizationPath     = "../tests/kustomize/overlays/production"
+	kustomizationFilePath = "../tests/kustomize/overlays/production/kustomization.yaml"
 )
 
 func makeTempDir(t *testing.T) {
-	if err := os.MkdirAll(tempDir, 0755); err != nil {
+	if err := CreateTempDir(tempDir); err != nil {
 		t.Fatalf("failed to create temporary output directory: %s", err)
 	}
 }

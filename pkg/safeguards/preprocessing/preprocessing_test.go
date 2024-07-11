@@ -180,3 +180,12 @@ func TestRenderKustomizeManifest_Valid(t *testing.T) {
 	_, err := RenderKustomizeManifest(kustomizationPath, tempDir)
 	assert.Nil(t, err)
 }
+
+func TestIsKustomize(t *testing.T) {
+	isKustomize := IsKustomize(kustomizationPath)
+	assert.True(t, isKustomize)
+	isKustomize = IsKustomize(kustomizationFilePath)
+	assert.True(t, isKustomize)
+	isKustomize = IsKustomize(chartPath)
+	assert.False(t, isKustomize)
+}

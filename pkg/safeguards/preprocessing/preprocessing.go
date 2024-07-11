@@ -70,13 +70,13 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.M
 }
 
 // CreateTempDir creates a temporary directory on the user's file system for rendering templates
-func CreateTempDir(p string) string {
-	dir, err := os.MkdirTemp(p, "prefix")
+func CreateTempDir(p string) error {
+	err := os.MkdirAll(p, 0755)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return dir
+	return err
 }
 
 // IsKustomize checks whether a given path should be treated as a kustomize project
@@ -100,10 +100,9 @@ func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]safeguards.Ma
 	}
 
 	options := &krusty.Options{
-		Reorder:           "none",
-		AddManagedbyLabel: true,
-		LoadRestrictions:  types.LoadRestrictionsRootOnly,
-		PluginConfig:      &types.PluginConfig{},
+		Reorder:          "none",
+		LoadRestrictions: types.LoadRestrictionsRootOnly,
+		PluginConfig:     &types.PluginConfig{},
 	}
 	k := krusty.MakeKustomizer(options)
 

@@ -1,0 +1,30 @@
+variables:
+  - name: "PIPELINENAME"
+    default:
+      value: "Build and deploy an app to AKS"
+    description: "the name of the azure pipeline"
+  - name: "BRANCHNAME"
+    default:
+      value: "main"
+    description: "the branch to trigger the pipeline"
+  - name: "ARMSERVICECONNECTION"
+    description: "the name of the Azure Resource Manager service connection"
+  - name: "AZURECONTAINERREGISTRY"
+    description: "the name of the Azure Container Registry"
+  - name: "CONTAINERNAME"
+    description: "the container image name"
+  - name: "CLUSTERRESOURCEGROUP"
+    description: "the AKS cluster resource group"
+  - name: "ACRRESOURCEGROUP"
+    description: "the ACR resource group"
+  - name: "CLUSTERNAME"
+    description: "the AKS cluster name"
+  - name: "MANIFESTPATH"
+    default:
+      disablePrompt: true
+      value: "./manifests"
+    description: "the path to the Kubernetes deployment manifest"
+  - name: "NAMESPACE"
+    default:
+      value: "default"
+    description: "the Kubernetes namespace"

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -94,4 +95,33 @@ func TestRunValidate(t *testing.T) {
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Greater(t, numViolations, 0)
+}
+
+// TestRunValidate_Kustomize tests the run command for `draft validate` for proper returns when given a kustomize project
+func TestRunValidate_Kustomize(t *testing.T) {
+	ctx := context.TODO()
+	kustomizationPath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production")
+	kustomizationFilePath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production/kustomization.yaml")
+
+	makeTempDir(t)
+	t.Cleanup(func() { cleanupDir(t, tempDir) })
+
+	var manifestFiles []safeguards.ManifestFile
+	var err error
+
+	// Scenario 1a: kustomizationPath leads to a directory containing kustomization.yaml - expect success
+	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationPath, tempDir)
+	assert.Nil(t, err)
+	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
+	assert.Nil(t, err)
+	numViolations := countTestViolations(v)
+	assert.Equal(t, numViolations, 1)
+
+	// Scenario 1b: kustomizationFilePath path leads to a specific kustomization.yaml - expect success
+	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationFilePath, tempDir)
+	assert.Nil(t, err)
+	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
+	assert.Nil(t, err)
+	numViolations = countTestViolations(v)
+	assert.Equal(t, numViolations, 1)
 }

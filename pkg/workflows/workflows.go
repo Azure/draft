@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"text/template"
 
 	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
@@ -18,7 +19,6 @@ import (
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
-	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/templatewriter"
 )
 
@@ -181,8 +181,24 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[stri
 		return fmt.Errorf("update production deployments: %w", err)
 	}
 
-	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, workflowConfig, customInputs, templateWriter); err != nil {
+	// Load and parse templates
+	tmpl, err := template.ParseFS(w.workflowTemplates, path.Join(srcDir, "*.tmpl"))
+	if err != nil {
 		return err
+	}
+
+	for _, tmplName := range tmpl.Templates() {
+		outputPath := path.Join(w.dest, tmplName.Name())
+		file, err := os.Create(outputPath)
+		if err != nil {
+			return err
+		}
+
+		defer file.Close()
+
+		if err := tmpl.ExecuteTemplate(file, tmplName.Name(), customInputs); err != nil {
+			return err
+		}
 	}
 
 	return nil

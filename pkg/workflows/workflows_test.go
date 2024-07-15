@@ -43,7 +43,7 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "CONTAINERNAME",
+				Name:  "REPOSITORYNAME",
 				Value: "testContainer",
 			},
 			{
@@ -111,7 +111,7 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "CONTAINERNAME",
+				Name:  "REPOSITORYNAME",
 				Value: "testContainer",
 			},
 			{
@@ -314,7 +314,7 @@ func TestUpdateProductionDeploymentsMissing(t *testing.T) {
 				Value: "testRegistry",
 			},
 			{
-				Name:  "CONTAINERNAME",
+				Name:  "REPOSITORYNAME",
 				Value: "testContainer",
 			},
 		},
@@ -394,7 +394,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "CONTAINERNAME",
+				Name:  "REPOSITORYNAME",
 				Value: "testContainer",
 			},
 			{
@@ -454,7 +454,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "CONTAINERNAME",
+				Name:  "REPOSITORYNAME",
 				Value: "testContainer",
 			},
 			{

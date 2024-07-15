@@ -38,7 +38,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 				return err
 			}
 
-			log.Info("Draft has successfully generated a Github workflow for your project 😃")
+			log.Info("Draft has successfully generated a Github workflow for your project under directory \".github/workflows/\" 😃")
 
 			return nil
 		},

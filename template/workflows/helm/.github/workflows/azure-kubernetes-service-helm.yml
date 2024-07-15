@@ -18,7 +18,7 @@
 #
 # 2. Set the following environment variables (or replace the values below):
 #    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
-#    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
+#    - REPOSITORY_NAME (name of the container image you would like to push up to your ACR)
 #    - RESOURCE_GROUP (where your cluster is deployed)
 #    - CLUSTER_NAME (name of your AKS cluster)
 #    - IMAGE_PULL_SECRET_NAME (name of the ImagePullSecret that will be created to pull your ACR image)
@@ -42,10 +42,10 @@ on:
 env:
   ACR_RESOURCE_GROUP: {{ACRRESOURCEGROUP}}
   AZURE_CONTAINER_REGISTRY: {{AZURECONTAINERREGISTRY}}
-  CONTAINER_NAME: {{CONTAINERNAME}}
+  REPOSITORY_NAME: {{REPOSITORYNAME}}
   CLUSTER_RESOURCE_GROUP: {{CLUSTERRESOURCEGROUP}}
   CLUSTER_NAME: {{CLUSTERNAME}}
-  DOCKER_FILE: {{DOCKERFILE}}
+  DOCKER_FILE_PATH: {{DOCKERFILEPATH}}
   BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
   CHART_PATH: {{CHARTPATH}}
   CHART_OVERRIDE_PATH: {{CHARTOVERRIDEPATH}}
@@ -73,7 +73,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.REPOSITORY_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE_PATH }} ${{ env.BUILD_CONTEXT_PATH }}
   deploy:
     permissions:
       actions: read
@@ -124,7 +124,7 @@ jobs:
         id: isPrivate
         run: |
           result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
-          echo "::set-output name=isPrivateCluster::$result"
+          echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
       # Deploys application based on manifest files from previous step
       - name: Deploy application
@@ -133,6 +133,6 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+            ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.REPOSITORY_NAME }}:${{ github.sha }}
           namespace: ${{ env.NAMESPACE }}
-          private-cluster: ${{ steps.isPrivate.outputs.isPrivateCluster }}
+          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}

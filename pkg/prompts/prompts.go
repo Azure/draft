@@ -292,10 +292,10 @@ func validateAzResourceGroup(resourceGroup string) error {
 	return nil
 }
 
-func validateAzRepositoryName(containerName string) error {
-	containerNameRegEx := regexp.MustCompile(`^[a-z0-9._/-]+$`)
+func validateAzRepositoryName(repositoryName string) error {
+	repositoryNameRegEx := regexp.MustCompile(`^[a-z0-9._/-]+$`)
 
-	if !containerNameRegEx.MatchString(containerName) {
+	if !repositoryNameRegEx.MatchString(repositoryName) {
 		return fmt.Errorf("invalid repository name:\nRepository names can only include lowercase alphanumeric characters, periods, hyphens, underscores, and forward slashes")
 	}
 

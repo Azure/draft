@@ -313,7 +313,9 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 		if _, ok := selections[0].(string); !ok {
 			return *new(T), errors.New("selections must be of type string or use opt.Field")
 		}
-	} else if len(selections) == 0 && opt.Create == nil {
+	}
+
+	if len(selections) == 0 && opt.Create == nil {
 		return *new(T), errors.New("no selection options and no create function")
 	}
 

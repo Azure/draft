@@ -80,7 +80,15 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 			} else {
 				defaultValue := GetVariableDefaultValue(draftConfig, variable)
 
-				if input, err = RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout); err != nil {
+				if variable.Name == "APPNAME" {
+					input, err = RunDefaultableStringPrompt(defaultValue, variable, appNameValidator, Stdin, Stdout)
+				} else if variable.Resource == "azRepositoryName" {
+					input, err = RunDefaultableStringPrompt(defaultValue, variable, validateAzRepositoryName, Stdin, Stdout)
+				} else {
+					input, err = RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout)
+				}
+
+				if err != nil {
 					return fmt.Errorf("failed to run defaultable string prompt: %w", err)
 				}
 			}
@@ -249,12 +257,6 @@ func validateAzNamespace(namespace string) error {
 
 // RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
 func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
-	if customPrompt.Name == "APPNAME" {
-		validate = appNameValidator
-	} else if customPrompt.Resource == "azRepositoryName" {
-		validate = validateAzRepositoryName
-	}
-
 	var prompt *promptui.Prompt
 
 	if defaultValue == "" {
@@ -270,7 +272,7 @@ func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.Builde
 		}
 	} else {
 		prompt = &promptui.Prompt{
-			Label:    "Please enter " + customPrompt.Description + " (default: " + defaultValue + ")",
+			Label:    "Please input " + customPrompt.Description + " (press enter to use the default selection: " + defaultValue + ")",
 			Validate: validate,
 			Stdin:    Stdin,
 			Stdout:   Stdout,

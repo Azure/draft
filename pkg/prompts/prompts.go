@@ -180,8 +180,16 @@ func appNameValidator(name string) error {
 func validateAzResourceGroup(resourceGroup string) error {
 	resourceGroupRegEx := regexp.MustCompile(`^[\p{L}\p{N}_\-\.\(\)]+$`)
 
-	if len(resourceGroup) < 1 || len(resourceGroup) > 90 || !resourceGroupRegEx.MatchString(resourceGroup) || resourceGroup[len(resourceGroup)-1] == '.' {
-		return fmt.Errorf("invalid resource group name:\n1. Between 1 and 90 characters long\n2. Only include alphanumeric characters, periods, underscores, hyphens, and parantheses\n3. Cannot end with a period")
+	if len(resourceGroup) == 0 || len(resourceGroup) > 90 {
+		return fmt.Errorf("resource group must be between 1 and 90 characters long")
+	}
+
+	if !resourceGroupRegEx.MatchString(resourceGroup) {
+		return fmt.Errorf("resource group names can only include alphanumeric characters, periods, underscores, hyphens, and parantheses")
+	}
+
+	if resourceGroup[len(resourceGroup)-1] == '.' {
+		return fmt.Errorf("resource group names can't end with a period")
 	}
 
 	return nil
@@ -190,8 +198,8 @@ func validateAzResourceGroup(resourceGroup string) error {
 func validateAzRepositoryName(repositoryName string) error {
 	repositoryNameRegEx := regexp.MustCompile(`^[a-z0-9._/-]+$`)
 
-	if !repositoryNameRegEx.MatchString(repositoryName) {
-		return fmt.Errorf("invalid repository name:\nRepository names can only include lowercase alphanumeric characters, periods, hyphens, underscores, and forward slashes")
+	if len(repositoryName) == 0 || !repositoryNameRegEx.MatchString(repositoryName) {
+		return fmt.Errorf("repository names can only include lowercase alphanumeric characters, periods, hyphens, underscores, and forward slashes")
 	}
 
 	return nil
@@ -200,8 +208,12 @@ func validateAzRepositoryName(repositoryName string) error {
 func validateAzContainerRegistry(containerRegistry string) error {
 	acrRegEx := regexp.MustCompile(`^[a-z0-9]+$`)
 
-	if len(containerRegistry) < 5 || len(containerRegistry) > 50 || !acrRegEx.MatchString(containerRegistry) {
-		return fmt.Errorf("invalid container registry name:\n1. Between 5 and 50 characters long\n2. Only include lowercase alphanumeric characters\n3. Can't end with a period")
+	if len(containerRegistry) < 5 || len(containerRegistry) > 50 {
+		return fmt.Errorf("container registry name must be between 5 and 50 characters long")
+	}
+
+	if !acrRegEx.MatchString(containerRegistry) {
+		return fmt.Errorf("container registry names can only include lowercase alphanumeric characters")
 	}
 
 	return nil
@@ -210,8 +222,12 @@ func validateAzContainerRegistry(containerRegistry string) error {
 func validateAzClusterName(clusterName string) error {
 	clusterNameRegEx := regexp.MustCompile(`^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$`)
 
-	if len(clusterName) > 253 || !clusterNameRegEx.MatchString(clusterName) {
-		return fmt.Errorf("invalid cluster name:\n1. Between 1 and 253 characters long\n2. Only include lowercase alphanumeric characters, periods, and hyphens\n3. Must start and end with a lowercase alphanumeric character")
+	if len(clusterName) == 0 || len(clusterName) > 253 {
+		return fmt.Errorf("cluster names must be between 1 and 253 characters long")
+	}
+
+	if !clusterNameRegEx.MatchString(clusterName) {
+		return fmt.Errorf("cluster names can only include lowercase alphanumeric characters, periods, and hyphens and must start and end with a lowercase alphanumeric")
 	}
 
 	return nil
@@ -220,8 +236,12 @@ func validateAzClusterName(clusterName string) error {
 func validateAzNamespace(namespace string) error {
 	namespaceRegEx := regexp.MustCompile(`^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`)
 
-	if len(namespace) > 63 || !namespaceRegEx.MatchString(namespace) {
-		return fmt.Errorf("invalid namespace name:\n1. Between 1 and 63 characters long\n2. Only include lowercase alphanumeric characters and hyphens\n3. Must start and end with a lowercase alphanumeric character")
+	if len(namespace) == 0 || len(namespace) > 63 {
+		return fmt.Errorf("namespaces must be between 1 and 63 characters long")
+	}
+
+	if !namespaceRegEx.MatchString(namespace) {
+		return fmt.Errorf("namespaces can only include lowercase alphanumeric characters and hyphens and must start and end with a lowercase alphanumeric")
 	}
 
 	return nil

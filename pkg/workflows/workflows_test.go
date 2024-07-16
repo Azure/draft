@@ -23,10 +23,9 @@ import (
 
 func TestCreateWorkflows(t *testing.T) {
 	dest := "."
-	deployType := "helm"
 	templatewriter := &writers.LocalFSWriter{}
-	flagValuesMap := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": ".", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
-	flagValuesMapNoRoot := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": "test", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
+	flagValuesMap := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": ".", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "CHARTOVERRIDES": "replicas:2", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
+	flagValuesMapNoRoot := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": "test", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "CHARTOVERRIDES": "replicas:2", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
 
 	tests := []struct {
 		name         string
@@ -47,8 +46,8 @@ func TestCreateWorkflows(t *testing.T) {
 			tempFileName: "charts/production.yaml",
 			tempPath:     "../../test/templates/helm/charts/production.yaml",
 			cleanUp: func() {
-				os.Remove(".charts")
-				os.Remove(".github")
+				os.RemoveAll("charts")
+				os.RemoveAll(".github")
 			},
 		},
 		{
@@ -60,8 +59,8 @@ func TestCreateWorkflows(t *testing.T) {
 			tempFileName: "overlays/production/deployment.yaml",
 			tempPath:     "../../test/templates/kustomize/overlays/production/deployment.yaml",
 			cleanUp: func() {
-				os.Remove(".overlays")
-				os.Remove(".github")
+				os.RemoveAll("overlays")
+				os.RemoveAll(".github")
 			},
 		},
 		{
@@ -73,8 +72,8 @@ func TestCreateWorkflows(t *testing.T) {
 			tempFileName: "manifests/deployment.yaml",
 			tempPath:     "../../test/templates/manifests/manifests/deployment.yaml",
 			cleanUp: func() {
-				os.Remove(".manifests")
-				os.Remove(".github")
+				os.RemoveAll("manifests")
+				os.RemoveAll(".github")
 			},
 		},
 		{
@@ -82,12 +81,12 @@ func TestCreateWorkflows(t *testing.T) {
 			deployType:   "manifests",
 			flagValues:   flagValuesMap,
 			shouldError:  true,
-			tempDirPath:  "manifests",
-			tempFileName: "manifests/deployment.yaml",
-			tempPath:     "../../test/templates/manifests/manifests/deployment.yaml",
+			tempDirPath:  "",
+			tempFileName: "",
+			tempPath:     "",
 			cleanUp: func() {
-				os.Remove(".manifests")
-				os.Remove(".github")
+				os.RemoveAll("manifests")
+				os.RemoveAll(".github")
 			},
 		},
 		{
@@ -95,26 +94,27 @@ func TestCreateWorkflows(t *testing.T) {
 			deployType:   "invalid",
 			flagValues:   flagValuesMap,
 			shouldError:  true,
-			tempDirPath:  "manifests",
-			tempFileName: "manifests/deployment.yaml",
-			tempPath:     "../../test/templates/manifests/manifests/deployment.yaml",
+			tempDirPath:  "",
+			tempFileName: "",
+			tempPath:     "",
 			cleanUp: func() {
 			},
 		},
 	}
 
 	for _, tt := range tests {
-
-		err := createTempDeploymentFile("charts", "charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
-		assert.Nil(t, err)
+		if tt.tempDirPath != "" && tt.tempFileName != "" && tt.tempPath != "" {
+			err := createTempDeploymentFile(tt.tempDirPath, tt.tempFileName, tt.tempPath)
+			assert.Nil(t, err)
+		}
 
 		workflows := CreateWorkflowsFromEmbedFS(template.Workflows, dest)
-		err = workflows.CreateWorkflowFiles(deployType, flagValuesMap, templatewriter)
-		if err != nil {
+		err := workflows.CreateWorkflowFiles(tt.deployType, tt.flagValues, templatewriter)
+		if (err != nil) != tt.shouldError {
 			t.Errorf("Default Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
 		}
-		err = workflows.CreateWorkflowFiles(deployType, flagValuesMapNoRoot, templatewriter)
-		if err != nil {
+		err = workflows.CreateWorkflowFiles(tt.deployType, flagValuesMapNoRoot, templatewriter)
+		if (err != nil) != tt.shouldError {
 			t.Errorf("Custom Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
 		}
 
@@ -127,7 +127,7 @@ func TestUpdateProductionDeploymentsValid(t *testing.T) {
 
 	//test for valid helm deployment file
 	helmFileName, _ := createTempManifest("../../test/templates/helm_prod_values.yaml")
-	defer os.Remove(helmFileName)
+	defer os.RemoveAll(helmFileName)
 
 	assert.Nil(t, setHelmContainerImage(helmFileName, "testImage", testTemplateWriter))
 
@@ -137,7 +137,7 @@ func TestUpdateProductionDeploymentsValid(t *testing.T) {
 
 	//test for valid deployment file
 	deploymentFileName, _ := createTempManifest("../../test/templates/deployment.yaml")
-	defer os.Remove(deploymentFileName)
+	defer os.RemoveAll(deploymentFileName)
 
 	assert.Nil(t, setDeploymentContainerImage(deploymentFileName, "testImage"))
 	decode := scheme.Codecs.UniversalDeserializer().Decode
@@ -158,7 +158,7 @@ func TestUpdateProductionDeploymentsInvalid(t *testing.T) {
 	//test for invalid helm deployment file
 	tempFile, err := ioutil.TempFile("", "*.yaml")
 	assert.Nil(t, err)
-	defer os.Remove(tempFile.Name())
+	defer os.RemoveAll(tempFile.Name())
 	yamlData := []byte(`not a valid yaml`)
 	_, err = tempFile.Write(yamlData)
 	assert.Nil(t, err)
@@ -175,7 +175,7 @@ func TestUpdateProductionDeploymentsInvalid(t *testing.T) {
 
 	//test for unsupported number of containers in the deployment spec
 	invalidDeploymentFile, _ = createTempManifest("../../test/templates/unsupported_no_of_containers.yaml")
-	defer os.Remove(invalidDeploymentFile)
+	defer os.RemoveAll(invalidDeploymentFile)
 	assert.Equal(t, errors.New("unsupported number of containers defined in the deployment spec"), setDeploymentContainerImage(invalidDeploymentFile, "testImage"))
 }
 
@@ -241,28 +241,47 @@ func TestCreateWorkflowFiles(t *testing.T) {
 	customInputsNoRoot := map[string]string{"WORKFLOWNAME": "testWorkflow", "BRANCHNAME": "testBranch", "ACRRESOURCEGROUP": "testAcrRG", "AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "CLUSTERRESOURCEGROUP": "testClusterRG", "CLUSTERNAME": "testCluster", "DOCKERFILE": "./Dockerfile", "BUILDCONTEXTPATH": ".", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "CHARTOVERRIDES": "replicas:2", "NAMESPACE": "default", "PRIVATECLUSTER": "false"}
 	badInputs := map[string]string{}
 
+	defer func() {
+		os.RemoveAll("./charts")
+		os.RemoveAll(".github")
+		os.RemoveAll("azure-kubernetes-service-helm.yml")
+	}()
+
 	workflowTemplate, err := createMockWorkflowTemplatesFS()
 	assert.Nil(t, err)
 
 	mockWF, err := createMockWorkflow("workflows", workflowTemplate)
 	assert.Nil(t, err)
 
+	// Create necessary directories and files for the test
+	err = createTempDeploymentFile("./charts", "./charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
+	assert.Nil(t, err)
+
 	mockWF.populateConfigs()
 
 	err = mockWF.CreateWorkflowFiles("fakeDeployType", customInputs, templatewriter)
 	assert.NotNil(t, err)
+	if err != nil {
+		t.Logf("Error with fakeDeployType: %v", err)
+	}
 
 	err = mockWF.CreateWorkflowFiles("helm", customInputs, templatewriter)
 	assert.Nil(t, err)
-	os.RemoveAll(".github")
+	if err != nil {
+		t.Logf("Error with helm customInputs: %v", err)
+	}
 
 	err = mockWF.CreateWorkflowFiles("helm", customInputsNoRoot, templatewriter)
 	assert.Nil(t, err)
-	os.RemoveAll(".github")
+	if err != nil {
+		t.Logf("Error with helm customInputsNoRoot: %v", err)
+	}
 
 	err = mockWF.CreateWorkflowFiles("helm", badInputs, templatewriter)
 	assert.NotNil(t, err)
-	os.RemoveAll(".github")
+	if err != nil {
+		t.Logf("Expected error with helm badInputs: %v", err)
+	}
 }
 
 type loadConfTestCase struct {
@@ -292,10 +311,19 @@ func createTempManifest(path string) (string, error) {
 }
 
 func createTempDeploymentFile(dirPath, fileName, path string) error {
+	if dirPath == "" {
+		return nil
+	}
+
 	err := os.MkdirAll(dirPath, 0755)
 	if err != nil {
 		return err
 	}
+
+	if fileName == "" || path == "" {
+		return nil
+	}
+
 	file, err := os.Create(fileName)
 	if err != nil {
 		return err

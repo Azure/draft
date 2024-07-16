@@ -88,20 +88,20 @@ func setDeploymentContainerImage(filePath, productionImage string) error {
 func setHelmContainerImage(filePath, productionImage string, templateWriter templatewriter.TemplateWriter) error {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error reading file: %v", err)
 	}
 
 	var deploy HelmProductionYaml
 	err = yaml.Unmarshal(file, &deploy)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error unmarshalling YAML: %v", err)
 	}
 
 	deploy.Image.Repository = productionImage
 
 	out, err := yaml.Marshal(deploy)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error marshalling YAML: %v", err)
 	}
 
 	return templateWriter.WriteFile(filePath, out)
@@ -164,11 +164,19 @@ func (w *Workflows) populateConfigs() {
 }
 
 func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+	// Validate required inputs
+	requiredFields := []string{"WORKFLOWNAME", "BRANCHNAME", "ACRRESOURCEGROUP", "AZURECONTAINERREGISTRY", "CONTAINERNAME", "CLUSTERRESOURCEGROUP", "CLUSTERNAME", "DOCKERFILE", "BUILDCONTEXTPATH", "CHARTPATH", "CHARTOVERRIDEPATH", "CHARTOVERRIDES", "NAMESPACE", "PRIVATECLUSTER"}
+	for _, field := range requiredFields {
+		if customInputs[field] == "" {
+			return fmt.Errorf("missing required field: %s", field)
+		}
+	}
+
 	val, ok := w.workflows[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
-	srcDir := path.Join(parentDirName, val.Name())
+	srcDir := path.Join(parentDirName, val.Name(), ".github", "workflows")
 	log.Debugf("source directory for workflow template: %s", srcDir)
 	workflowConfig, ok := w.configs[deployType]
 	if !ok {
@@ -182,22 +190,27 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[stri
 	}
 
 	// Load and parse templates
-	tmpl, err := template.ParseFS(w.workflowTemplates, path.Join(srcDir, "*.tmpl"))
+	tmpl, err := template.ParseFS(w.workflowTemplates, path.Join(srcDir, "*.yml"))
 	if err != nil {
-		return err
+		return fmt.Errorf("parse templates: %w", err)
 	}
 
 	for _, tmplName := range tmpl.Templates() {
 		outputPath := path.Join(w.dest, tmplName.Name())
 		file, err := os.Create(outputPath)
 		if err != nil {
-			return err
+			return fmt.Errorf("file creation: %w", err)
 		}
 
-		defer file.Close()
+		defer func(file *os.File) {
+			if err := file.Close(); err != nil {
+				log.Errorf("error closing file: %v", err)
+			}
+		}(file)
 
 		if err := tmpl.ExecuteTemplate(file, tmplName.Name(), customInputs); err != nil {
-			return err
+			log.Errorf("template execution error: %v", err)
+			return fmt.Errorf("template execution: %w", err)
 		}
 	}
 

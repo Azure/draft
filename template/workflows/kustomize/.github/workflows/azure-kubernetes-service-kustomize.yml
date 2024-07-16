@@ -122,7 +122,7 @@ jobs:
         uses: Azure/k8s-deploy@v4
         with:
           action: deploy
-          manifests: "{{ steps.bake.outputs.manifestsBundle }}"
+          manifests: "{{ .Steps.bake.outputs.manifestsBundle }}"
           images: |
             "{{ .Env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/{{ .Env.CONTAINER_NAME }}:{{ .Github.Sha }}"
           namespace: "{{ .Env.NAMESPACE }}"

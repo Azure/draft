@@ -49,7 +49,7 @@ func newUpdateCmd() *cobra.Command {
 	f.StringVarP(&uc.dest, "destination", "d", ".", "specify the path to the project directory")
 	f.StringVarP(&uc.provider, "provider", "p", "azure", "cloud provider")
 	f.StringVarP(&uc.addon, "addon", "a", "", "addon name")
-	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass environment arguments (e.g. --variable ingress-tls-cert-keyvault-uri=test.uri ingress-host=host)")
+	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable ingress-tls-cert-keyvault-uri=test.uri ingress-host=host)")
 
 	uc.templateWriter = &writers.LocalFSWriter{}
 
@@ -72,7 +72,7 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	handleFlagVariables(flagVariablesMap, addonConfig.DraftConfig)
+	flagsToDraftConfig(flagVariablesMap, addonConfig.DraftConfig)
 
 	err = addons.PromptAddonValues(uc.dest, &addonConfig)
 	if err != nil {

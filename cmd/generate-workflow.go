@@ -48,7 +48,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 
 	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVarP(&gwCmd.deployType, "deploy-type", "", "", "specify the k8s deployment type (helm, kustomize, manifests)")
-	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass environment arguments (e.g. --variable CLUSTERNAME=testCluster --variable DOCKERFILE=./Dockerfile)")
+	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable CLUSTERNAME=testCluster --variable DOCKERFILE=./Dockerfile)")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }
@@ -63,18 +63,14 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	flagVariablesMap = flagVariablesToMap(gwc.flagVariables)
 
 	if gwc.deployType == "" {
-		if flagValue := flagVariablesMap["deploy-type"]; flagValue == "helm" || flagValue == "kustomize" || flagValue == "manifests" {
-			gwc.deployType = flagVariablesMap["deploy-type"]
-		} else {
-			selection := &promptui.Select{
-				Label: "Select k8s Deployment Type",
-				Items: []string{"helm", "kustomize", "manifests"},
-			}
+		selection := &promptui.Select{
+			Label: "Select k8s Deployment Type",
+			Items: []string{"helm", "kustomize", "manifests"},
+		}
 
-			_, gwc.deployType, err = selection.Run()
-			if err != nil {
-				return err
-			}
+		_, gwc.deployType, err = selection.Run()
+		if err != nil {
+			return err
 		}
 	}
 
@@ -84,7 +80,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return fmt.Errorf("get config: %w", err)
 	}
 
-	handleFlagVariables(flagVariablesMap, draftConfig)
+	flagsToDraftConfig(flagVariablesMap, draftConfig)
 
 	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig); err != nil {
 		return err
@@ -97,16 +93,11 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
 }
 
-func handleFlagVariables(flagVariablesMap map[string]string, draftConfig *config.DraftConfig) {
+// handles flags that are meant to represent template variables
+func flagsToDraftConfig(flagVariablesMap map[string]string, draftConfig *config.DraftConfig) {
 	for flagName, flagValue := range flagVariablesMap {
 		log.Debugf("flag variable %s=%s", flagName, flagValue)
-		// handles flags that are meant to represent environment arguments
-		if variable, err := draftConfig.GetVariable(flagName); err != nil {
-			log.Infof("adding new environment argument %s", flagName)
-			draftConfig.AddVariable(flagName, flagValue)
-		} else {
-			variable.Value = flagValue
-		}
+		draftConfig.SetVariable(flagName, flagValue)
 	}
 }
 

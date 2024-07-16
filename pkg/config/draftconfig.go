@@ -13,7 +13,6 @@ type DraftConfig struct {
 	NameOverrides []FileNameOverride `yaml:"nameOverrides"`
 	Variables     []*BuilderVar      `yaml:"variables"`
 
-	varIdxMap       map[string]int
 	nameOverrideMap map[string]string
 }
 
@@ -69,34 +68,24 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 	return prefix
 }
 
-func (d *DraftConfig) AddVariable(name, value string) {
-	d.Variables = append(d.Variables, &BuilderVar{
-		Name:  name,
-		Value: value,
-	})
-
-	d.varIdxMap[name] = len(d.Variables) - 1
-}
-
-func initVarIdxMap(variables []*BuilderVar) map[string]int {
-	varIdxMap := make(map[string]int)
-
-	for i, variable := range variables {
-		varIdxMap[variable.Name] = i
-	}
-
-	return varIdxMap
-}
-
 func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {
-	if d.varIdxMap == nil {
-		d.varIdxMap = initVarIdxMap(d.Variables)
+	for _, variable := range d.Variables {
+		if variable.Name == name {
+			return variable, nil
+		}
 	}
 
-	if idx, ok := d.varIdxMap[name]; ok {
-		return d.Variables[idx], nil
+	return nil, fmt.Errorf("variable %s not found", name)
+}
+
+func (d *DraftConfig) SetVariable(name, value string) {
+	if variable, err := d.GetVariable(name); err != nil {
+		d.Variables = append(d.Variables, &BuilderVar{
+			Name:  name,
+			Value: value,
+		})
 	} else {
-		return nil, fmt.Errorf("variable %s not found", name)
+		variable.Value = value
 	}
 }
 

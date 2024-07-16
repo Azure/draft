@@ -83,7 +83,7 @@ func newCreateCmd() *cobra.Command {
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
-	f.StringArrayVarP(&cc.flagVariables, "variable", "", []string{}, "pass environment arguments (e.g. --variable PORT=8080 --variable APPNAME=test)")
+	f.StringArrayVarP(&cc.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable PORT=8080 --variable APPNAME=test)")
 
 	return cmd
 }
@@ -276,7 +276,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	if cc.createConfig.LanguageVariables == nil {
-		handleFlagVariables(flagVariablesMap, langConfig)
+		flagsToDraftConfig(flagVariablesMap, langConfig)
 
 		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
 			return err
@@ -341,11 +341,8 @@ func (cc *createCmd) createDeployment() error {
 		if err != nil {
 			return err
 		}
-		for _, variable := range deployConfig.Variables {
-			fmt.Printf("Name %s, Value %s\n", variable.Name, variable.Value)
-		}
 
-		handleFlagVariables(flagVariablesMap, deployConfig)
+		flagsToDraftConfig(flagVariablesMap, deployConfig)
 
 		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
 		if err != nil {
@@ -460,8 +457,8 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 	for _, providedVar := range provided {
 		variable, err := draftConfig.GetVariable(providedVar.Name)
 		if err != nil {
-			log.Infof("adding new environment argument %s", providedVar.Name)
-			draftConfig.AddVariable(providedVar.Name, providedVar.Value)
+			log.Infof("adding new template variable %s", providedVar.Name)
+			draftConfig.SetVariable(providedVar.Name, providedVar.Value)
 			variable, _ = draftConfig.GetVariable(providedVar.Name)
 		}
 

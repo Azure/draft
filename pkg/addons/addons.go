@@ -122,7 +122,7 @@ func PromptAddonValues(dest string, addOnConfig *AddonConfig) error {
 		if strings.Contains(strings.ToLower(refName), "namespace") && refVal == "" {
 			refVal = "default" //hack here to have explicit namespacing, probably a better way to do this
 		}
-		addOnConfig.DraftConfig.AddVariable(refName, refVal)
+		addOnConfig.DraftConfig.SetVariable(refName, refVal)
 	}
 
 	return nil

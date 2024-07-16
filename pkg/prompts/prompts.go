@@ -16,11 +16,21 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/providers"
 )
 
 const defaultAppName = "my-app"
+
+// map for resource types to their respective prompting functions
+type resourceFunc func(*config.DraftConfig, *config.BuilderVar) (string, error)
+
+var resourceFuncMap = map[string]resourceFunc{
+	"ghBranch":            promptGitHubBranch,
+	"azResourceGroup":     promptAzResourceGroup,
+	"azContainerRegistry": promptAzContainerRegistry,
+	"azClusterName":       promptAzClusterName,
+	"azNamespace":         promptAzNamespace,
+}
 
 // Function to get current directory name
 var getCurrentDirNameFunc = getCurrentDirName
@@ -37,8 +47,6 @@ func RunPromptsFromConfigWithSkips(draftConfig *config.DraftConfig) error {
 // skipping any variables in varsToSkip or where the BuilderVar.IsPromptDisabled is true.
 // If Stdin or Stdout are nil, the default values will be used.
 func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.ReadCloser, Stdout io.WriteCloser) error {
-	action := []string{"create", "existing"}
-
 	for _, variable := range draftConfig.Variables {
 		if variable.Value != "" {
 			log.Debugf("Skipping prompt for %s", variable.Name)
@@ -56,128 +64,15 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 			continue
 		}
 
-		var choice string
 		var input string
 		var err error
 
 		log.Debugf("constructing prompt for: %s", variable.Name)
-		switch variable.Resource {
-		case "ghBranch":
-			if choice, err = Select("Please choose if you'd like to create a new branch or use an existing branch", action, nil); err != nil {
-				return fmt.Errorf("failed to select an action: %w", err)
+		if resourceFunc, ok := resourceFuncMap[variable.Resource]; ok {
+			if input, err = resourceFunc(draftConfig, variable); err != nil {
+				return fmt.Errorf("failed to prompt for %s: %w", variable.Name, err)
 			}
-
-			switch choice {
-			case "create":
-				if input, err = createGitHubBranch(variable); err != nil {
-					return fmt.Errorf("failed to create GitHub branch: %w", err)
-				}
-			case "existing":
-				if input, err = promptGitHubBranch(); err != nil {
-					return fmt.Errorf("failed to prompt for GitHub branch: %w", err)
-				}
-			}
-		case "azResourceGroup":
-			switch variable.Name {
-			case "ACRRESOURCEGROUP":
-				if choice, err = Select("Please choose if you'd like to create a new resource group or use an existing resource group for your Azure container registry", action, nil); err != nil {
-					return fmt.Errorf("failed to select an action: %w", err)
-				}
-
-				switch choice {
-				case "create":
-					if input, err = createAzResourceGroup(variable); err != nil {
-						return fmt.Errorf("failed to create Azure resource group: %w", err)
-					}
-				case "existing":
-					if input, err = promptAzResourceGroup("Please select the resource group for your Azure container registry", ""); err != nil {
-						return fmt.Errorf("failed to prompt for Azure resource group: %w", err)
-					}
-				}
-			case "CLUSTERRESOURCEGROUP":
-				if choice, err = Select("Please choose if you'd like to create a new resource group or use an existing resource group for your Azure cluster", action, nil); err != nil {
-					return fmt.Errorf("failed to select an action: %w", err)
-				}
-
-				switch choice {
-				case "create":
-					if input, err = createAzResourceGroup(variable); err != nil {
-						return fmt.Errorf("failed to create Azure resource group: %w", err)
-					}
-				case "existing":
-					if acrResourceGroup, err := draftConfig.GetVariable("ACRRESOURCEGROUP"); err != nil {
-						return fmt.Errorf("failed to get variable: %w", err)
-					} else if input, err = promptAzResourceGroup("Please select the resource group for your cluster", acrResourceGroup.Value); err != nil {
-						return fmt.Errorf("failed to prompt for Azure resource group: %w", err)
-					}
-				}
-			}
-		case "azContainerRegistry":
-			if choice, err = Select("Please choose if you'd like to create a new Azure container registry or use an existing Azure container registry", action, nil); err != nil {
-				return fmt.Errorf("failed to select an action: %w", err)
-			}
-
-			acrResourceGroup, err := draftConfig.GetVariable("ACRRESOURCEGROUP")
-			if err != nil {
-				return fmt.Errorf("failed to get variable: %w", err)
-			}
-
-			switch choice {
-			case "create":
-				if input, err = createAzContainerRegistry(variable, acrResourceGroup.Value); err != nil {
-					return fmt.Errorf("failed to create Azure container registry: %w", err)
-				}
-			case "existing":
-				if input, err = promptAzContainerRegistry(acrResourceGroup.Value); err != nil {
-					return fmt.Errorf("failed to prompt for azure container registry: %w", err)
-				}
-			}
-		case "azClusterName":
-			if choice, err = Select("Please choose if you'd like to create a new Azure cluster or use an existing Azure cluster", action, nil); err != nil {
-				return fmt.Errorf("failed to select an action: %w", err)
-			}
-
-			clusterResourceGroup, err := draftConfig.GetVariable("CLUSTERRESOURCEGROUP")
-			if err != nil {
-				return fmt.Errorf("failed to get variable: %w", err)
-			}
-
-			switch choice {
-			case "create":
-				if input, err = createAzCluster(variable, clusterResourceGroup.Value); err != nil {
-					return fmt.Errorf("failed to create Azure cluster: %w", err)
-				}
-			case "existing":
-				if input, err = promptAzClusterName(clusterResourceGroup.Value); err != nil {
-					return fmt.Errorf("failed to prompt for Azure cluster name: %w", err)
-				}
-			}
-		case "azNamespace":
-			if choice, err = Select("Please choose if you'd like to create a new Azure namespace or use an existing Azure namespace", action, nil); err != nil {
-				return fmt.Errorf("failed to select an action: %w", err)
-			}
-
-			clusterResourceGroup, err := draftConfig.GetVariable("CLUSTERRESOURCEGROUP")
-			if err != nil {
-				return fmt.Errorf("failed to get variable: %w", err)
-			}
-
-			clusterName, err := draftConfig.GetVariable("CLUSTERNAME")
-			if err != nil {
-				return fmt.Errorf("failed to get variable: %w", err)
-			}
-
-			switch choice {
-			case "create":
-				if input, err = createAzNamespace(variable, clusterResourceGroup.Value, clusterName.Value); err != nil {
-					return fmt.Errorf("failed to create Azure namespace: %w", err)
-				}
-			case "existing":
-				if input, err = promptAzNamespace(clusterResourceGroup.Value, clusterName.Value); err != nil {
-					return fmt.Errorf("failed to prompt for Azure namespace: %w", err)
-				}
-			}
-		default:
+		} else {
 			if variable.Type == "bool" {
 				if input, err = RunBoolPrompt(variable, Stdin, Stdout); err != nil {
 					return fmt.Errorf("failed to run bool prompt: %w", err)
@@ -283,10 +178,10 @@ func appNameValidator(name string) error {
 }
 
 func validateAzResourceGroup(resourceGroup string) error {
-	resourceGroupRegEx := regexp.MustCompile(`^[a-z0-9._-]+$`)
+	resourceGroupRegEx := regexp.MustCompile(`^[\p{L}\p{N}_\-\.\(\)]+$`)
 
 	if len(resourceGroup) < 1 || len(resourceGroup) > 90 || !resourceGroupRegEx.MatchString(resourceGroup) || resourceGroup[len(resourceGroup)-1] == '.' {
-		return fmt.Errorf("invalid resource group name:\n1. Between 1 and 90 characters long\n2. Only include lowercase alphanumeric characters, periods, underscores, and hyphens\n3. Can't end with a period")
+		return fmt.Errorf("invalid resource group name:\n1. Between 1 and 90 characters long\n2. Only include alphanumeric characters, periods, underscores, hyphens, and parantheses\n3. Cannot end with a period")
 	}
 
 	return nil
@@ -334,64 +229,32 @@ func validateAzNamespace(namespace string) error {
 
 // RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
 func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
-	if validate == nil {
-		validate = NoBlankStringValidator
+	if customPrompt.Name == "APPNAME" {
+		validate = appNameValidator
+	} else if customPrompt.Resource == "azRepositoryName" {
+		validate = validateAzRepositoryName
 	}
 
-	validatorFunc := func(input string) error {
-		// Allow blank inputs because defaults are set later
-		if input == "" {
-			return nil
-		}
-		if customPrompt.Name == "APPNAME" {
-			if err := appNameValidator(input); err != nil {
-				return err
-			}
-		} else if customPrompt.Resource == "azResourceGroup" {
-			if err := validateAzResourceGroup(input); err != nil {
-				return err
-			}
-		} else if customPrompt.Resource == "azContainerRegistry" {
-			if err := validateAzContainerRegistry(input); err != nil {
-				return err
-			}
-		} else if customPrompt.Resource == "azRepositoryName" {
-			if err := validateAzRepositoryName(input); err != nil {
-				return err
-			}
-		} else if customPrompt.Resource == "azClusterName" {
-			if err := validateAzClusterName(input); err != nil {
-				return err
-			}
-		} else if customPrompt.Resource == "azNamespace" {
-			if err := validateAzNamespace(input); err != nil {
-				return err
-			}
-		} else if customPrompt.Resource == "path" {
-			if err := osutil.CheckPath(input); err != nil {
-				return err
-			}
-		} else {
-			if err := validate(input); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-
-	var promptLabel string
+	var prompt *promptui.Prompt
 
 	if defaultValue == "" {
-		promptLabel = "Please enter " + customPrompt.Description
-	} else {
-		promptLabel = "Please enter " + customPrompt.Description + " (default: " + defaultValue + ")"
-	}
+		if validate == nil {
+			validate = NoBlankStringValidator
+		}
 
-	prompt := &promptui.Prompt{
-		Label:    promptLabel,
-		Validate: validatorFunc,
-		Stdin:    Stdin,
-		Stdout:   Stdout,
+		prompt = &promptui.Prompt{
+			Label:    "Please enter " + customPrompt.Description,
+			Validate: validate,
+			Stdin:    Stdin,
+			Stdout:   Stdout,
+		}
+	} else {
+		prompt = &promptui.Prompt{
+			Label:    "Please enter " + customPrompt.Description + " (default: " + defaultValue + ")",
+			Validate: validate,
+			Stdin:    Stdin,
+			Stdout:   Stdout,
+		}
 	}
 
 	input, err := prompt.Run()
@@ -426,6 +289,10 @@ func GetInputFromPrompt(desiredInput string) string {
 }
 
 type SelectOpt[T any] struct {
+	DraftConfig *config.DraftConfig
+	BuilderVar  *config.BuilderVar
+	// Create is a function that will be called when the user selects the create option.
+	Create func(*config.DraftConfig, *config.BuilderVar) (T, error)
 	// Field returns the name to use for each select item.
 	Field func(t T) string
 	// Default is the default selection. Don't provide this without a Field function.
@@ -442,12 +309,12 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 		}
 	}
 
-	if len(selections) == 0 {
-		return *new(T), errors.New("no selection options")
-	}
-
-	if _, ok := selections[0].(string); !ok {
-		return *new(T), errors.New("selections must be of type string or use opt.Field")
+	if len(selections) > 0 {
+		if _, ok := selections[0].(string); !ok {
+			return *new(T), errors.New("selections must be of type string or use opt.Field")
+		}
+	} else if len(selections) == 0 && opt.Create == nil {
+		return *new(T), errors.New("no selection options and no create function")
 	}
 
 	searcher := func(search string, i int) bool {
@@ -471,10 +338,19 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 		}
 	}
 
+	startIdx := 0
+
+	if opt != nil && opt.Create != nil {
+		createOpt := []interface{}{"Create New Item"}
+		selections = append(createOpt, selections...)
+		startIdx = 1
+	}
+
 	p := promptui.Select{
-		Label:    label,
-		Items:    selections,
-		Searcher: searcher,
+		CursorPos: startIdx,
+		Label:     label,
+		Items:     selections,
+		Searcher:  searcher,
 	}
 
 	i, _, err := p.Run()
@@ -482,11 +358,24 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 		return *new(T), fmt.Errorf("running select: %w", err)
 	}
 
-	if i >= len(items) {
+	if i >= len(items) && opt.Create == nil {
 		return *new(T), errors.New("items index out of range")
 	}
 
-	return items[i], nil
+	if opt != nil && opt.Create != nil && i == 0 {
+		if opt.DraftConfig == nil {
+			return *new(T), errors.New("Create() provided but draft config is nil")
+		} else if opt.BuilderVar == nil {
+			return *new(T), errors.New("Create() provided but builder var is nil")
+		} else {
+			return opt.Create(opt.DraftConfig, opt.BuilderVar)
+		}
+	} else if opt != nil && opt.Create != nil {
+		// create option only exists in selections slice, not items slice
+		return items[i-1], nil
+	} else {
+		return items[i], nil
+	}
 }
 
 func getCurrentDirName() (string, error) {
@@ -523,7 +412,7 @@ func sanitizeAppName(name string) string {
 	return sanitized
 }
 
-func createGitHubBranch(branchVar *config.BuilderVar) (string, error) {
+func createGitHubBranch(draftConfig *config.DraftConfig, ghBranch *config.BuilderVar) (string, error) {
 	repo, err := git.PlainOpenWithOptions(".", &git.PlainOpenOptions{DetectDotGit: true})
 	if err != nil {
 		return "", fmt.Errorf("failed to open repository: %w", err)
@@ -534,7 +423,7 @@ func createGitHubBranch(branchVar *config.BuilderVar) (string, error) {
 		return "", fmt.Errorf("failed to get worktree: %w", err)
 	}
 
-	branchName, err := RunDefaultableStringPrompt("", branchVar, nil, nil, nil)
+	branchName, err := RunDefaultableStringPrompt("", ghBranch, nil, nil, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
 	}
@@ -551,71 +440,7 @@ func createGitHubBranch(branchVar *config.BuilderVar) (string, error) {
 	return branchName, nil
 }
 
-func createAzResourceGroup(azrgVar *config.BuilderVar) (string, error) {
-	resourceGroup, err := RunDefaultableStringPrompt("", azrgVar, nil, nil, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
-	}
-
-	if locations, err := providers.GetAzLocations(); err != nil {
-		return "", fmt.Errorf("failed to get Azure locations: %w", err)
-	} else if location, err := Select("Please select the location for this resource group", locations, nil); err != nil {
-		return "", fmt.Errorf("failed to select a location: %w", err)
-	} else if err := providers.CreateAzResourceGroup(resourceGroup, location); err != nil {
-		return "", fmt.Errorf("failed to create Azure resource group: %w", err)
-	}
-
-	return resourceGroup, nil
-}
-
-func createAzContainerRegistry(acr *config.BuilderVar, resourceGroup string) (string, error) {
-	containerRegistry, err := RunDefaultableStringPrompt("", acr, nil, nil, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
-	}
-
-	skus := []string{"Basic", "Standard", "Premium"}
-
-	if sku, err := Select("Please select the SKU for this Azure container registry", skus, nil); err != nil {
-		return "", fmt.Errorf("failed to select a SKU: %w", err)
-	} else if err := providers.CreateAzContainerRegistry(containerRegistry, resourceGroup, sku); err != nil {
-		return "", fmt.Errorf("failed to create Azure container registry: %w", err)
-	}
-
-	return containerRegistry, nil
-}
-
-func createAzCluster(azClusterVar *config.BuilderVar, clusterResourceGroup string) (string, error) {
-	clusterName, err := RunDefaultableStringPrompt("", azClusterVar, nil, nil, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
-	}
-
-	settings := []string{"public", "private"}
-
-	if setting, err := Select("Please select the privacy setting for this Azure cluster", settings, nil); err != nil {
-		return "", fmt.Errorf("failed to select a privacy setting: %w", err)
-	} else if err = providers.CreateAzCluster(clusterName, clusterResourceGroup, setting); err != nil {
-		return "", fmt.Errorf("failed to create Azure cluster: %w", err)
-	}
-
-	return clusterName, nil
-}
-
-func createAzNamespace(namespaceVar *config.BuilderVar, clusterResourceGroup, clusterName string) (string, error) {
-	namespace, err := RunDefaultableStringPrompt("", namespaceVar, nil, nil, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
-	}
-
-	if err := providers.CreateAzNamespace(namespace, clusterResourceGroup, clusterName); err != nil {
-		return "", fmt.Errorf("failed to create Azure namespace: %w", err)
-	}
-
-	return namespace, nil
-}
-
-func promptGitHubBranch() (string, error) {
+func promptGitHubBranch(draftConfig *config.DraftConfig, ghBranch *config.BuilderVar) (string, error) {
 	repo, err := git.PlainOpenWithOptions(".", &git.PlainOpenOptions{DetectDotGit: true})
 	if err != nil {
 		return "", fmt.Errorf("failed to open repository: %w", err)
@@ -643,6 +468,9 @@ func promptGitHubBranch() (string, error) {
 	}
 
 	branch, err := Select("Please select the branch for this workflow", branchNames, &SelectOpt[string]{
+		DraftConfig: draftConfig,
+		BuilderVar:  ghBranch,
+		Create:      createGitHubBranch,
 		Field: func(branchName string) string {
 			return branchName
 		},
@@ -652,21 +480,70 @@ func promptGitHubBranch() (string, error) {
 		return "", fmt.Errorf("failed to select a branch: %w", err)
 	}
 
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return "", fmt.Errorf("failed to get worktree: %w", err)
+	}
+
+	err = worktree.Checkout(&git.CheckoutOptions{
+		Branch: plumbing.NewBranchReferenceName(branch),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to checkout branch: %w", err)
+	}
+
 	return branch, nil
 }
 
-func promptAzResourceGroup(prompt string, currentResourceGroup string) (string, error) {
+func createAzResourceGroup(draftConfig *config.DraftConfig, resourceGroup *config.BuilderVar) (string, error) {
+	resourceGroupVal, err := RunDefaultableStringPrompt("", resourceGroup, validateAzResourceGroup, nil, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
+	}
+
+	if locations, err := providers.GetAzLocations(); err != nil {
+		return "", fmt.Errorf("failed to get Azure locations: %w", err)
+	} else if location, err := Select("Please select the location for this resource group", locations, nil); err != nil {
+		return "", fmt.Errorf("failed to select a location: %w", err)
+	} else if err := providers.CreateAzResourceGroup(resourceGroupVal, location); err != nil {
+		return "", fmt.Errorf("failed to create Azure resource group: %w", err)
+	}
+
+	return resourceGroupVal, nil
+}
+
+func promptAzResourceGroup(draftConfig *config.DraftConfig, resourceGroup *config.BuilderVar) (string, error) {
 	resourceGroups, err := providers.GetAzResourceGroups()
 	if err != nil {
 		return "", fmt.Errorf("failed to get Azure resource group: %w", err)
 	}
 
-	var resourceGroup string
+	var currentResourceGroup string
+
+	switch resourceGroup.Name {
+	case "ACRRESOURCEGROUP":
+		currentResourceGroup = ""
+	case "CLUSTERRESOURCEGROUP":
+		if acrResourceGroup, err := draftConfig.GetVariable("ACRRESOURCEGROUP"); err != nil {
+			return "", fmt.Errorf("failed to get variable: %w", err)
+		} else {
+			currentResourceGroup = acrResourceGroup.Value
+		}
+	}
+
+	var resourceGroupVal string
 
 	if currentResourceGroup == "" {
-		resourceGroup, err = Select(prompt, resourceGroups, nil)
+		resourceGroupVal, err = Select("Please select the resource group for your Azure container registry", resourceGroups, &SelectOpt[string]{
+			DraftConfig: draftConfig,
+			BuilderVar:  resourceGroup,
+			Create:      createAzResourceGroup,
+		})
 	} else {
-		resourceGroup, err = Select(prompt, resourceGroups, &SelectOpt[string]{
+		resourceGroupVal, err = Select("Please select the resource group for your cluster", resourceGroups, &SelectOpt[string]{
+			DraftConfig: draftConfig,
+			BuilderVar:  resourceGroup,
+			Create:      createAzResourceGroup,
 			Field: func(resourceGroup string) string {
 				return resourceGroup
 			},
@@ -677,16 +554,44 @@ func promptAzResourceGroup(prompt string, currentResourceGroup string) (string, 
 		return "", fmt.Errorf("failed to select a resource group: %w", err)
 	}
 
-	return resourceGroup, nil
+	return resourceGroupVal, nil
 }
 
-func promptAzContainerRegistry(resourceGroup string) (string, error) {
-	containerRegistries, err := providers.GetAzContainerRegistries(resourceGroup)
+func createAzContainerRegistry(draftConfig *config.DraftConfig, acr *config.BuilderVar) (string, error) {
+	containerRegistry, err := RunDefaultableStringPrompt("", acr, validateAzContainerRegistry, nil, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
+	}
+
+	skus := []string{"Basic", "Standard", "Premium"}
+
+	if sku, err := Select("Please select the SKU for this Azure container registry", skus, nil); err != nil {
+		return "", fmt.Errorf("failed to select a SKU: %w", err)
+	} else if resourceGroup, err := draftConfig.GetVariable("ACRRESOURCEGROUP"); err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	} else if err := providers.CreateAzContainerRegistry(containerRegistry, resourceGroup.Value, sku); err != nil {
+		return "", fmt.Errorf("failed to create Azure container registry: %w", err)
+	}
+
+	return containerRegistry, nil
+}
+
+func promptAzContainerRegistry(draftConfig *config.DraftConfig, acr *config.BuilderVar) (string, error) {
+	resourceGroup, err := draftConfig.GetVariable("ACRRESOURCEGROUP")
+	if err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	}
+
+	containerRegistries, err := providers.GetAzContainerRegistries(resourceGroup.Value)
 	if err != nil {
 		return "", fmt.Errorf("failed to get Azure container registries: %w", err)
 	}
 
-	containerRegistry, err := Select("Please select the container registry for this workflow", containerRegistries, nil)
+	containerRegistry, err := Select("Please select the container registry for this workflow", containerRegistries, &SelectOpt[string]{
+		DraftConfig: draftConfig,
+		BuilderVar:  acr,
+		Create:      createAzContainerRegistry,
+	})
 	if err != nil {
 		return "", fmt.Errorf("failed to select a container registry: %w", err)
 	}
@@ -694,13 +599,41 @@ func promptAzContainerRegistry(resourceGroup string) (string, error) {
 	return containerRegistry, nil
 }
 
-func promptAzClusterName(clusterResourceGroup string) (string, error) {
-	clusters, err := providers.GetAzClusters(clusterResourceGroup)
+func createAzCluster(draftConfig *config.DraftConfig, clusterName *config.BuilderVar) (string, error) {
+	clusterNameVal, err := RunDefaultableStringPrompt("", clusterName, validateAzClusterName, nil, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
+	}
+
+	settings := []string{"public", "private"}
+
+	if setting, err := Select("Please select the privacy setting for this Azure cluster", settings, nil); err != nil {
+		return "", fmt.Errorf("failed to select a privacy setting: %w", err)
+	} else if resourceGroup, err := draftConfig.GetVariable("CLUSTERRESOURCEGROUP"); err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	} else if err = providers.CreateAzCluster(clusterNameVal, resourceGroup.Value, setting); err != nil {
+		return "", fmt.Errorf("failed to create Azure cluster: %w", err)
+	}
+
+	return clusterNameVal, nil
+}
+
+func promptAzClusterName(draftConfig *config.DraftConfig, clusterName *config.BuilderVar) (string, error) {
+	resourceGroup, err := draftConfig.GetVariable("CLUSTERRESOURCEGROUP")
+	if err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	}
+
+	clusters, err := providers.GetAzClusters(resourceGroup.Value)
 	if err != nil {
 		return "", fmt.Errorf("failed to get Azure clusters: %w", err)
 	}
 
-	cluster, err := Select("Please select the cluster for this workflow", clusters, nil)
+	cluster, err := Select("Please select the cluster for this workflow", clusters, &SelectOpt[string]{
+		DraftConfig: draftConfig,
+		BuilderVar:  clusterName,
+		Create:      createAzCluster,
+	})
 	if err != nil {
 		return "", fmt.Errorf("failed to select a cluster: %w", err)
 	}
@@ -708,16 +641,53 @@ func promptAzClusterName(clusterResourceGroup string) (string, error) {
 	return cluster, nil
 }
 
-func promptAzNamespace(clusterResourceGroup string, clusterName string) (string, error) {
-	namespaces, err := providers.GetAzNamespaces(clusterResourceGroup, clusterName)
+func createAzNamespace(draftConfig *config.DraftConfig, namespaceVar *config.BuilderVar) (string, error) {
+	resourceGroup, err := draftConfig.GetVariable("CLUSTERRESOURCEGROUP")
+	if err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	}
+
+	clusterName, err := draftConfig.GetVariable("CLUSTERNAME")
+	if err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	}
+
+	namespace, err := RunDefaultableStringPrompt("", namespaceVar, validateAzNamespace, nil, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
+	}
+
+	if err := providers.CreateAzNamespace(namespace, resourceGroup.Value, clusterName.Value); err != nil {
+		return "", fmt.Errorf("failed to create Azure namespace: %w", err)
+	}
+
+	return namespace, nil
+}
+
+func promptAzNamespace(draftConfig *config.DraftConfig, namespace *config.BuilderVar) (string, error) {
+	resourceGroup, err := draftConfig.GetVariable("CLUSTERRESOURCEGROUP")
+	if err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	}
+
+	clusterName, err := draftConfig.GetVariable("CLUSTERNAME")
+	if err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	}
+
+	namespaces, err := providers.GetAzNamespaces(resourceGroup.Value, clusterName.Value)
 	if err != nil {
 		return "", fmt.Errorf("failed to get Azure namespaces: %w", err)
 	}
 
-	namespace, err := Select("Please select the namespace for this workflow", namespaces, nil)
+	namespaceVal, err := Select("Please select the namespace for this workflow", namespaces, &SelectOpt[string]{
+		DraftConfig: draftConfig,
+		BuilderVar:  namespace,
+		Create:      createAzNamespace,
+	})
 	if err != nil {
 		return "", fmt.Errorf("failed to select a namespace: %w", err)
 	}
 
-	return namespace, nil
+	return namespaceVal, nil
 }

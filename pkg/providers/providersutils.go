@@ -476,8 +476,6 @@ func GetAzResourceGroups() ([]string, error) {
 	var resourceGroups []string
 	if err := json.Unmarshal(out, &resourceGroups); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal resource groups: %w", err)
-	} else if len(resourceGroups) == 0 {
-		return nil, errors.New("no resource groups found")
 	}
 
 	return resourceGroups, nil
@@ -504,8 +502,6 @@ func GetAzContainerRegistries(resourceGroup string) ([]string, error) {
 	var acrs []string
 	if err := json.Unmarshal(out, &acrs); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal container registries: %w", err)
-	} else if len(acrs) == 0 {
-		return nil, errors.New("no container registries found")
 	}
 
 	return acrs, nil
@@ -532,8 +528,6 @@ func GetAzClusters(clusterResourceGroup string) ([]string, error) {
 	var clusters []string
 	if err := json.Unmarshal(out, &clusters); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal clusters: %w", err)
-	} else if len(clusters) == 0 {
-		return nil, errors.New("no clusters found")
 	}
 
 	return clusters, nil

@@ -3,6 +3,7 @@ package cmd
 import (
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -72,7 +73,11 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	flagsToDraftConfig(flagVariablesMap, addonConfig.DraftConfig)
+	if addonConfig.DraftConfig == nil {
+		return errors.New("DraftConfig is nil")
+	} else {
+		addonConfig.DraftConfig.VariableMapToDraftConfig(flagVariablesMap)
+	}
 
 	err = addons.PromptAddonValues(uc.dest, &addonConfig)
 	if err != nil {

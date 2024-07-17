@@ -32,6 +32,10 @@ func RunPromptsFromConfigWithSkips(draftConfig *config.DraftConfig) error {
 // skipping any variables in varsToSkip or where the BuilderVar.IsPromptDisabled is true.
 // If Stdin or Stdout are nil, the default values will be used.
 func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.ReadCloser, Stdout io.WriteCloser) error {
+	if draftConfig == nil {
+		return errors.New("draftConfig is nil")
+	}
+
 	for _, variable := range draftConfig.Variables {
 		if variable.Value != "" {
 			log.Debugf("Skipping prompt for %s", variable.Name)

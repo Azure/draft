@@ -276,7 +276,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	if cc.createConfig.LanguageVariables == nil {
-		flagsToDraftConfig(flagVariablesMap, langConfig)
+		langConfig.VariableMapToDraftConfig(flagVariablesMap)
 
 		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
 			return err
@@ -342,7 +342,7 @@ func (cc *createCmd) createDeployment() error {
 			return err
 		}
 
-		flagsToDraftConfig(flagVariablesMap, deployConfig)
+		deployConfig.VariableMapToDraftConfig(flagVariablesMap)
 
 		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
 		if err != nil {

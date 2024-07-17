@@ -8,7 +8,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
@@ -80,7 +79,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return fmt.Errorf("get config: %w", err)
 	}
 
-	flagsToDraftConfig(flagVariablesMap, draftConfig)
+	draftConfig.VariableMapToDraftConfig(flagVariablesMap)
 
 	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig); err != nil {
 		return err
@@ -91,14 +90,6 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	}
 
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
-}
-
-// handles flags that are meant to represent template variables
-func flagsToDraftConfig(flagVariablesMap map[string]string, draftConfig *config.DraftConfig) {
-	for flagName, flagValue := range flagVariablesMap {
-		log.Debugf("flag variable %s=%s", flagName, flagValue)
-		draftConfig.SetVariable(flagName, flagValue)
-	}
 }
 
 func flagVariablesToMap(flagVariables []string) map[string]string {

@@ -141,6 +141,14 @@ func (d *DraftConfig) recurseReferenceVars(referenceVar *BuilderVar, variableChe
 	return referenceVar.Default.Value, nil
 }
 
+// handles flags that are meant to represent template variables
+func (d *DraftConfig) VariableMapToDraftConfig(flagVariablesMap map[string]string) {
+	for flagName, flagValue := range flagVariablesMap {
+		log.Debugf("flag variable %s=%s", flagName, flagValue)
+		d.SetVariable(flagName, flagValue)
+	}
+}
+
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs
 type TemplateVariableRecorder interface {
 	Record(key, value string)

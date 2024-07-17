@@ -116,6 +116,23 @@ func TestGenerateKustomizeAddonSuccess(t *testing.T) {
 	assert.Nil(t, remove())
 }
 
+func TestNilDraftConfig(t *testing.T) {
+	templateWriter := &writers.LocalFSWriter{}
+	addonConfig := AddonConfig{}
+	dir, remove, err := setUpTempDir("helm")
+	assert.Nil(t, err)
+
+	err = GenerateAddon(template.Addons, "azure", "webapp_routing", dir, addonConfig, templateWriter)
+	assert.NotNil(t, err, "should fail with nil DraftConfig")
+	assert.Equal(t, "DraftConfig is nil", err.Error())
+
+	err = PromptAddonValues(dir, &addonConfig)
+	assert.NotNil(t, err, "should fail with nil DraftConfig")
+	assert.Equal(t, "draftConfig is nil", err.Error())
+
+	assert.Nil(t, remove())
+}
+
 func setUpTempDir(deploy string) (dir string, close func() error, err error) {
 	templateWriter := &writers.LocalFSWriter{}
 	addonConfig := AddonConfig{

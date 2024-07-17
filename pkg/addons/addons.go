@@ -34,7 +34,11 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, addonConfig Ad
 		return err
 	}
 
-	addonConfig.DraftConfig.ApplyDefaultVariables()
+	if addonConfig.DraftConfig == nil {
+		return errors.New("DraftConfig is nil")
+	} else {
+		addonConfig.DraftConfig.ApplyDefaultVariables()
+	}
 
 	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, addonConfig.DraftConfig, templateWriter); err != nil {
 		return err

@@ -3,9 +3,9 @@ package cmd
 import (
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -23,7 +23,6 @@ type updateCmd struct {
 	provider                 string
 	addon                    string
 	flagVariables            []string
-	userInputs               map[string]string
 	templateWriter           templatewriter.TemplateWriter
 	addonFS                  embed.FS
 	templateVariableRecorder config.TemplateVariableRecorder
@@ -51,7 +50,7 @@ func newUpdateCmd() *cobra.Command {
 	f.StringVarP(&uc.dest, "destination", "d", ".", "specify the path to the project directory")
 	f.StringVarP(&uc.provider, "provider", "p", "azure", "cloud provider")
 	f.StringVarP(&uc.addon, "addon", "a", "", "addon name")
-	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass a variable non-interactively (ex: --variable foo=bar)")
+	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable ingress-tls-cert-keyvault-uri=test.uri ingress-host=host)")
 
 	uc.templateWriter = &writers.LocalFSWriter{}
 
@@ -59,15 +58,7 @@ func newUpdateCmd() *cobra.Command {
 }
 
 func (uc *updateCmd) run() error {
-	flagVariablesMap := make(map[string]string)
-	for _, flagVar := range uc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		flagVariablesMap[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-	}
+	flagVariablesMap = flagVariablesToMap(uc.flagVariables)
 
 	if uc.addon == "" {
 		addon, err := addons.PromptAddon(template.Addons, uc.provider)
@@ -82,22 +73,27 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	uc.userInputs, err = addons.PromptAddonValues(uc.dest, flagVariablesMap, addonConfig)
+	if addonConfig.DraftConfig == nil {
+		return errors.New("DraftConfig is nil")
+	} else {
+		addonConfig.DraftConfig.VariableMapToDraftConfig(flagVariablesMap)
+	}
+
+	err = addons.PromptAddonValues(uc.dest, &addonConfig)
 	if err != nil {
 		return err
 	}
-	log.Debugf("addonInputs is: %s", uc.userInputs)
 
 	if dryRun {
 		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
 		uc.templateVariableRecorder = dryRunRecorder
 		uc.templateWriter = dryRunRecorder
-		for k, v := range uc.userInputs {
-			uc.templateVariableRecorder.Record(k, v)
+		for _, variable := range addonConfig.DraftConfig.Variables {
+			uc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
-	err = addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, uc.userInputs, uc.templateWriter)
+	err = addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, addonConfig, uc.templateWriter)
 
 	if dryRun {
 		dryRunText, err := json.MarshalIndent(dryRunRecorder.DryRunInfo, "", TWO_SPACES)

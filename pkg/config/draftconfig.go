@@ -11,7 +11,7 @@ import (
 type DraftConfig struct {
 	DisplayName   string             `yaml:"displayName"`
 	NameOverrides []FileNameOverride `yaml:"nameOverrides"`
-	Variables     []BuilderVar       `yaml:"variables"`
+	Variables     []*BuilderVar      `yaml:"variables"`
 
 	nameOverrideMap map[string]string
 }
@@ -68,28 +68,50 @@ func (d *DraftConfig) GetNameOverride(path string) string {
 	return prefix
 }
 
-// ApplyDefaultVariables will apply the defaults to variables that are not already set
-func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) error {
-	varIdxMap := VariableIdxMap(d.Variables)
-
+func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {
 	for _, variable := range d.Variables {
-		// handle where variable is not set or is set to an empty string from cli handling
-		if customInputs[variable.Name] == "" {
+		if variable.Name == name {
+			return variable, nil
+		}
+	}
+
+	return nil, fmt.Errorf("variable %s not found", name)
+}
+
+func (d *DraftConfig) SetVariable(name, value string) {
+	if variable, err := d.GetVariable(name); err != nil {
+		d.Variables = append(d.Variables, &BuilderVar{
+			Name:  name,
+			Value: value,
+		})
+	} else {
+		variable.Value = value
+	}
+}
+
+// ApplyDefaultVariables will apply the defaults to variables that are not already set
+func (d *DraftConfig) ApplyDefaultVariables() error {
+	for _, variable := range d.Variables {
+		if variable.Value == "" {
 			if variable.Default.ReferenceVar != "" {
-				defaultVal, err := recurseReferenceVars(d.Variables, d.Variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap, d.Variables[varIdxMap[variable.Default.ReferenceVar]], true)
+				referenceVar, err := d.GetVariable(variable.Default.ReferenceVar)
 				if err != nil {
 					return fmt.Errorf("apply default variables: %w", err)
 				}
-				log.Infof("Variable %s defaulting to value %s", variable.Name, customInputs[variable.Name])
-				customInputs[variable.Name] = defaultVal
+				defaultVal, err := d.recurseReferenceVars(referenceVar, referenceVar, true)
+				if err != nil {
+					return fmt.Errorf("apply default variables: %w", err)
+				}
+				log.Infof("Variable %s defaulting to value %s", variable.Name, defaultVal)
+				variable.Value = defaultVal
 			}
 
-			if customInputs[variable.Name] == "" {
+			if variable.Value == "" {
 				if variable.Default.Value != "" {
 					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
-					customInputs[variable.Name] = variable.Default.Value
+					variable.Value = variable.Default.Value
 				} else {
-					return fmt.Errorf("variable %s has no default value", variable.Name)
+					return errors.New("variable " + variable.Name + " has no default value")
 				}
 			}
 		}
@@ -99,56 +121,35 @@ func (d *DraftConfig) ApplyDefaultVariables(customInputs map[string]string) erro
 }
 
 // recurseReferenceVars recursively checks each variable's ReferenceVar if it doesn't have a custom input. If there's no more ReferenceVars, it will return the default value of the last ReferenceVar.
-func recurseReferenceVars(variables []BuilderVar, variable BuilderVar, customInputs map[string]string, varIdxMap map[string]int, variableCheck BuilderVar, isFirst bool) (string, error) {
-	if !isFirst && variable.Name == variableCheck.Name {
+func (d *DraftConfig) recurseReferenceVars(referenceVar *BuilderVar, variableCheck *BuilderVar, isFirst bool) (string, error) {
+	if !isFirst && referenceVar.Name == variableCheck.Name {
 		return "", errors.New("cyclical reference detected")
 	}
 
-	if customInputs[variable.Name] != "" {
-		return customInputs[variable.Name], nil
-	} else if variable.Default.ReferenceVar != "" {
-		return recurseReferenceVars(variables, variables[varIdxMap[variable.Default.ReferenceVar]], customInputs, varIdxMap, variableCheck, false)
+	// If referenceVar has a custom value, return it, else check its ReferenceVar, else return its default value
+	if referenceVar.Value != "" {
+		return referenceVar.Value, nil
+	} else if referenceVar.Default.ReferenceVar != "" {
+		referenceVar, err := d.GetVariable(referenceVar.Default.ReferenceVar)
+		if err != nil {
+			return "", fmt.Errorf("recurse reference vars: %w", err)
+		}
+
+		return d.recurseReferenceVars(referenceVar, variableCheck, false)
 	}
 
-	return variable.Default.Value, nil
+	return referenceVar.Default.Value, nil
 }
 
-func VariableIdxMap(variables []BuilderVar) map[string]int {
-	varIdxMap := make(map[string]int)
-
-	for i, variable := range variables {
-		varIdxMap[variable.Name] = i
+// handles flags that are meant to represent template variables
+func (d *DraftConfig) VariableMapToDraftConfig(flagVariablesMap map[string]string) {
+	for flagName, flagValue := range flagVariablesMap {
+		log.Debugf("flag variable %s=%s", flagName, flagValue)
+		d.SetVariable(flagName, flagValue)
 	}
-
-	return varIdxMap
 }
 
-func (d *DraftConfig) VariableMap() (map[string]string, error) {
-	envArgs := make(map[string]string)
-
-	for _, variable := range d.Variables {
-		envArgs[variable.Name] = variable.Value
-	}
-
-	err := d.ApplyDefaultVariables(envArgs)
-	if err != nil {
-		return nil, fmt.Errorf("creating variable map: %w", err)
-	}
-
-	return envArgs, nil
-}
-
-func (d *DraftConfig) VariableIdxMap() map[string]int {
-	varIdxMap := make(map[string]int)
-
-	for i, variable := range d.Variables {
-		varIdxMap[variable.Name] = i
-	}
-
-	return varIdxMap
-}
-
-// TemplateVariableRecorder is an interface for recording variables that are used read using draft configs
+// TemplateVariableRecorder is an interface for recording variables that are read using draft configs
 type TemplateVariableRecorder interface {
 	Record(key, value string)
 }

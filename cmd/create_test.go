@@ -23,29 +23,32 @@ import (
 func TestRun(t *testing.T) {
 	testCreateConfig := CreateConfig{LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}, DeployVariables: []UserInputs{{Name: "PORT", Value: "8080"}, {Name: "APPNAME", Value: "testingCreateCommand"}}}
 	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest"}
-	mockCC := createCmd{dest: "./..", createConfig: &testCreateConfig, templateWriter: &writers.LocalFSWriter{}}
+	mockCC := createCmd{
+		dest:           "./..",
+		createConfig:   &testCreateConfig,
+		templateWriter: &writers.LocalFSWriter{},
+	}
 	deployTypes := []string{"helm", "kustomize", "manifests"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
 
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
-
-	assert.False(t, detectedLang == nil)
+	assert.NotNil(t, detectedLang)
 	assert.False(t, lowerLang == "")
-	assert.True(t, err == nil)
+	assert.Nil(t, err)
 
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
-	assert.True(t, err == nil)
+	assert.Nil(t, err)
 
 	//when language variables are passed in --variable flag
 	mockCC.createConfig.LanguageVariables = nil
 	mockCC.lang = "go"
 	detectedLang, lowerLang, err = mockCC.mockDetectLanguage()
-	assert.False(t, detectedLang == nil)
+	assert.NotNil(t, detectedLang)
 	assert.False(t, lowerLang == "")
-	assert.True(t, err == nil)
+	assert.Nil(t, err)
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
-	assert.True(t, err == nil)
+	assert.Nil(t, err)
 
 	//Write back old Dockerfile
 	err = ioutil.WriteFile("./../Dockerfile", oldDockerfile, 0644)
@@ -62,13 +65,13 @@ func TestRun(t *testing.T) {
 		//deployment variables passed through --variable flag
 		mockCC.deployType = deployType
 		err = mockCC.createDeployment()
-		assert.True(t, err == nil)
+		assert.Nil(t, err)
 		//check if deployment files have been created
 		err, deploymentFiles := getAllDeploymentFiles(path.Join("../template/deployments", mockCC.deployType))
 		assert.Nil(t, err)
 		for _, fileName := range deploymentFiles {
 			_, err = os.Stat(fileName)
-			assert.True(t, err == nil)
+			assert.Nil(t, err)
 		}
 
 		os.RemoveAll("./../charts")
@@ -79,13 +82,13 @@ func TestRun(t *testing.T) {
 		//deployment variables passed through createConfig
 		mockCC.createConfig.DeployType = deployType
 		err = mockCC.createDeployment()
-		assert.True(t, err == nil)
+		assert.Nil(t, err)
 		//check if deployment files have been created
 		err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
 		assert.Nil(t, err)
 		for _, fileName := range deploymentFiles {
 			_, err = os.Stat(fileName)
-			assert.True(t, err == nil)
+			assert.Nil(t, err)
 		}
 		mockCC.createConfig.DeployType = ""
 
@@ -107,12 +110,12 @@ func TestRunCreateDockerfileWithRepoReader(t *testing.T) {
 	mockCC := createCmd{createConfig: &testCreateConfig, repoReader: testRepoReader, templateWriter: &writers.LocalFSWriter{}}
 
 	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
-	assert.False(t, detectedLang == nil)
+	assert.NotNil(t, detectedLang)
 	assert.True(t, lowerLang == "python")
 	assert.Nil(t, err)
 
 	err = mockCC.generateDockerfile(detectedLang, lowerLang)
-	assert.True(t, err == nil)
+	assert.Nil(t, err)
 
 	dockerFileContent, err := ioutil.ReadFile("Dockerfile")
 	if err != nil {
@@ -137,13 +140,13 @@ func TestInitConfig(t *testing.T) {
 	mockCC.createConfigPath = "./../test/templates/config.yaml"
 
 	err := mockCC.initConfig()
-	assert.True(t, err == nil)
-	assert.True(t, mockCC.createConfig != nil)
+	assert.Nil(t, err)
+	assert.NotNil(t, mockCC.createConfig)
 }
 
 func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 	required := config.DraftConfig{
-		Variables: []config.BuilderVar{
+		Variables: []*config.BuilderVar{
 			{
 				Name: "REQUIRED_PROVIDED",
 			},
@@ -159,14 +162,24 @@ func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 		{Name: "REQUIRED_PROVIDED", Value: "PROVIDED_VALUE"},
 	}
 
-	vars, err := validateConfigInputsToPrompts(&required, provided)
-	assert.True(t, err == nil)
-	assert.Equal(t, vars["REQUIRED_DEFAULTED"], "DEFAULT_VALUE")
+	err := validateConfigInputsToPrompts(&required, provided)
+	assert.Nil(t, err)
+
+	err = required.ApplyDefaultVariables()
+	assert.Nil(t, err)
+
+	var1, err := required.GetVariable("REQUIRED_PROVIDED")
+	assert.Nil(t, err)
+	assert.Equal(t, var1.Value, "PROVIDED_VALUE")
+
+	var2, err := required.GetVariable("REQUIRED_DEFAULTED")
+	assert.Nil(t, err)
+	assert.Equal(t, var2.Value, "DEFAULT_VALUE")
 }
 
 func TestValidateConfigInputsToPromptsMissing(t *testing.T) {
 	required := config.DraftConfig{
-		Variables: []config.BuilderVar{
+		Variables: []*config.BuilderVar{
 			{
 				Name: "REQUIRED_PROVIDED",
 			},
@@ -179,7 +192,10 @@ func TestValidateConfigInputsToPromptsMissing(t *testing.T) {
 		{Name: "REQUIRED_PROVIDED"},
 	}
 
-	_, err := validateConfigInputsToPrompts(&required, provided)
+	err := validateConfigInputsToPrompts(&required, provided)
+	assert.Nil(t, err)
+
+	err = required.ApplyDefaultVariables()
 	assert.NotNil(t, err)
 }
 

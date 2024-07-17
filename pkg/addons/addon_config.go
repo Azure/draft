@@ -21,7 +21,7 @@ import (
 // AddonConfig is a struct that extends the base DraftConfig to allow for the Referencing previously generated
 // k8s objects. This allows an addon creator to reference pre-entered data from the deployment files.
 type AddonConfig struct {
-	config.DraftConfig  `yaml:",inline"`
+	*config.DraftConfig `yaml:",inline"`
 	ReferenceComponents map[string][]referenceResource `yaml:"references"`
 
 	deployType string

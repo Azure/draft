@@ -34,7 +34,7 @@ func WriteDeploymentFilesExample() error {
 	// Select the deployment type to generate the files for (must correspond to a directory in the template/deployments directory)
 	deploymentType := "manifests"
 
-	// Create a DraftConfig of inputs to the template (must correspond to the inputs in the template/deployments/<deploymentType>/draft.yaml file)
+	// Create a DraftConfig of inputs to the template (must correspond to the inputs in the template/deployments/<deploymentType>/draft.yaml files)
 	deployConfig := &config.DraftConfig{
 		Variables: []*config.BuilderVar{
 			{

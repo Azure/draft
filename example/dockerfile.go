@@ -34,7 +34,7 @@ func WriteDockerfileExample() error {
 	// Select the language to generate the Dockerfile for (must correspond to a directory in the template/dockerfiles directory)
 	generationLanguage := "go"
 
-	// Create a DraftConfig of inputs to the template (must correspond to the inputs in the template/dockerfiles/<language>/draft.yaml file)
+	// Create a DraftConfig of inputs to the template (must correspond to the inputs in the template/dockerfiles/<language>/draft.yaml files)
 	langConfig := &config.DraftConfig{
 		Variables: []*config.BuilderVar{
 			{

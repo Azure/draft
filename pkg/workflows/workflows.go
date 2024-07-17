@@ -41,12 +41,20 @@ func UpdateProductionDeployments(deployType, dest string, draftConfig *config.Dr
 		return fmt.Errorf("get variable: %w", err)
 	}
 
+<<<<<<< HEAD
 	repositoryName, err := draftConfig.GetVariable("REPOSITORYNAME")
+=======
+	containerName, err := draftConfig.GetVariable("CONTAINERNAME")
+>>>>>>> main
 	if err != nil {
 		return fmt.Errorf("get variable: %w", err)
 	}
 
+<<<<<<< HEAD
 	productionImage := fmt.Sprintf("%s.azurecr.io/%s", acr.Value, repositoryName.Value)
+=======
+	productionImage := fmt.Sprintf("%s.azurecr.io/%s", acr.Value, containerName.Value)
+>>>>>>> main
 	switch deployType {
 	case "helm":
 		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)

@@ -44,7 +44,7 @@ func TestCreateWorkflows(t *testing.T) {
 			},
 			{
 				Name:  "REPOSITORYNAME",
-				Value: "testContainer",
+				Value: "testRepository",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",
@@ -112,7 +112,7 @@ func TestCreateWorkflows(t *testing.T) {
 			},
 			{
 				Name:  "REPOSITORYNAME",
-				Value: "testContainer",
+				Value: "testRepository",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",
@@ -315,7 +315,7 @@ func TestUpdateProductionDeploymentsMissing(t *testing.T) {
 			},
 			{
 				Name:  "REPOSITORYNAME",
-				Value: "testContainer",
+				Value: "testRepository",
 			},
 		},
 	}
@@ -395,7 +395,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 			},
 			{
 				Name:  "REPOSITORYNAME",
-				Value: "testContainer",
+				Value: "testRepository",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",
@@ -455,7 +455,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 			},
 			{
 				Name:  "REPOSITORYNAME",
-				Value: "testContainer",
+				Value: "testRepository",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",

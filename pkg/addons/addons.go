@@ -66,19 +66,19 @@ func GetAddonConfig(addons embed.FS, provider, addon string) (AddonConfig, error
 		return AddonConfig{}, err
 	}
 
-	addOnConfigPath := path.Join(selectedAddonPath, "draft.yaml")
-	log.Debugf("addOnConfig is: %s", addOnConfigPath)
+	addonConfigPath := path.Join(selectedAddonPath, "draft.yaml")
+	log.Debugf("addonConfig is: %s", addonConfigPath)
 
-	configBytes, err := fs.ReadFile(addons, addOnConfigPath)
+	configBytes, err := fs.ReadFile(addons, addonConfigPath)
 	if err != nil {
 		return AddonConfig{}, err
 	}
-	var addOnConfig AddonConfig
-	if err = yaml.Unmarshal(configBytes, &addOnConfig); err != nil {
+	var addonConfig AddonConfig
+	if err = yaml.Unmarshal(configBytes, &addonConfig); err != nil {
 		return AddonConfig{}, err
 	}
 
-	return addOnConfig, nil
+	return addonConfig, nil
 }
 
 func PromptAddon(addons embed.FS, provider string) (string, error) {
@@ -101,14 +101,14 @@ func PromptAddon(addons embed.FS, provider string) (string, error) {
 	return addon, nil
 }
 
-func PromptAddonValues(dest string, addOnConfig *AddonConfig) error {
-	err := prompts.RunPromptsFromConfigWithSkips(addOnConfig.DraftConfig)
+func PromptAddonValues(dest string, addonConfig *AddonConfig) error {
+	err := prompts.RunPromptsFromConfigWithSkips(addonConfig.DraftConfig)
 	if err != nil {
 		return err
 	}
 	log.Debug("got user inputs")
 
-	referenceMap, err := addOnConfig.GetReferenceValueMap(dest)
+	referenceMap, err := addonConfig.GetReferenceValueMap(dest)
 	if err != nil {
 		return err
 	}
@@ -116,13 +116,13 @@ func PromptAddonValues(dest string, addOnConfig *AddonConfig) error {
 	// merge maps
 	for refName, refVal := range referenceMap {
 		// check for key collision
-		if _, err := addOnConfig.DraftConfig.GetVariable(refName); err == nil {
+		if _, err := addonConfig.DraftConfig.GetVariable(refName); err == nil {
 			return errors.New("variable name collision between references and DraftConfig")
 		}
 		if strings.Contains(strings.ToLower(refName), "namespace") && refVal == "" {
 			refVal = "default" //hack here to have explicit namespacing, probably a better way to do this
 		}
-		addOnConfig.DraftConfig.SetVariable(refName, refVal)
+		addonConfig.DraftConfig.SetVariable(refName, refVal)
 	}
 
 	return nil

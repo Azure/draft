@@ -89,11 +89,9 @@ func GetVariableDefaultValue(draftConfig *config.DraftConfig, variable *config.B
 	if variable.Default.ReferenceVar != "" {
 		if referenceVar, err := draftConfig.GetVariable(variable.Default.ReferenceVar); err != nil {
 			log.Errorf("Error getting reference variable %s: %s", variable.Default.ReferenceVar, err)
-		} else {
-			if referenceVar.Value != "" {
-				defaultValue = referenceVar.Value
-				log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
-			}
+		} else if referenceVar.Value != "" {
+			defaultValue = referenceVar.Value
+			log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
 		}
 	}
 
@@ -187,7 +185,6 @@ func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.Builde
 
 	input, err := prompt.Run()
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 

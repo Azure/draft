@@ -455,14 +455,7 @@ func init() {
 func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []UserInputs) error {
 	// set inputs to provided values
 	for _, providedVar := range provided {
-		variable, err := draftConfig.GetVariable(providedVar.Name)
-		if err != nil {
-			log.Infof("adding new template variable %s", providedVar.Name)
-			draftConfig.SetVariable(providedVar.Name, providedVar.Value)
-			variable, _ = draftConfig.GetVariable(providedVar.Name)
-		}
-
-		variable.Value = providedVar.Value
+		draftConfig.SetVariable(providedVar.Name, providedVar.Value)
 	}
 
 	return nil

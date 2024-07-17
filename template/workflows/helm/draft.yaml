@@ -44,7 +44,7 @@ variables:
     description: "the Kubernetes namespace"
   - name: "PRIVATECLUSTER"
     default:
-      value: "false"
+      value: false
     description: "true if the AKS cluster is private"
     type: "bool"
   

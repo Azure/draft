@@ -20,39 +20,36 @@ const defaultAppName = "my-app"
 // Function to get current directory name
 var getCurrentDirNameFunc = getCurrentDirName
 
-func RunPromptsFromConfig(draftConfig *config.DraftConfig) (map[string]string, error) {
-	return RunPromptsFromConfigWithSkips(draftConfig, []string{})
+func RunPromptsFromConfig(draftConfig *config.DraftConfig) error {
+	return RunPromptsFromConfigWithSkips(draftConfig)
 }
 
-func RunPromptsFromConfigWithSkips(draftConfig *config.DraftConfig, varsToSkip []string) (map[string]string, error) {
-	return RunPromptsFromConfigWithSkipsIO(draftConfig, varsToSkip, nil, nil)
+func RunPromptsFromConfigWithSkips(draftConfig *config.DraftConfig) error {
+	return RunPromptsFromConfigWithSkipsIO(draftConfig, nil, nil)
 }
 
 // RunPromptsFromConfigWithSkipsIO runs the prompts for the given draftConfig
 // skipping any variables in varsToSkip or where the BuilderVar.IsPromptDisabled is true.
 // If Stdin or Stdout are nil, the default values will be used.
-func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, varsToSkip []string, Stdin io.ReadCloser, Stdout io.WriteCloser) (map[string]string, error) {
-	skipMap := make(map[string]interface{})
-	for _, v := range varsToSkip {
-		skipMap[v] = interface{}(nil)
+func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.ReadCloser, Stdout io.WriteCloser) error {
+	if draftConfig == nil {
+		return errors.New("draftConfig is nil")
 	}
 
-	inputs := make(map[string]string)
-
 	for _, variable := range draftConfig.Variables {
-		if val, ok := skipMap[variable.Name]; ok && val != "" {
+		if variable.Value != "" {
 			log.Debugf("Skipping prompt for %s", variable.Name)
 			continue
 		}
 
 		if variable.Default.IsPromptDisabled {
 			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", variable.Name)
-			noPromptDefaultValue := GetVariableDefaultValue(variable, inputs)
+			noPromptDefaultValue := GetVariableDefaultValue(draftConfig, variable)
 			if noPromptDefaultValue == "" {
-				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", variable.Name)
+				return fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", variable.Name)
 			}
 			log.Debugf("Using default value %s for %s", noPromptDefaultValue, variable.Name)
-			inputs[variable.Name] = noPromptDefaultValue
+			variable.Value = noPromptDefaultValue
 			continue
 		}
 
@@ -60,25 +57,25 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, varsToSkip
 		if variable.Type == "bool" {
 			input, err := RunBoolPrompt(variable, Stdin, Stdout)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			inputs[variable.Name] = input
+			variable.Value = input
 		} else {
-			defaultValue := GetVariableDefaultValue(variable, inputs)
+			defaultValue := GetVariableDefaultValue(draftConfig, variable)
 
 			stringInput, err := RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			inputs[variable.Name] = stringInput
+			variable.Value = stringInput
 		}
 	}
 
-	return inputs, nil
+	return nil
 }
 
 // GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal Variable.DefaultValue in that order.
-func GetVariableDefaultValue(variable config.BuilderVar, inputs map[string]string) string {
+func GetVariableDefaultValue(draftConfig *config.DraftConfig, variable *config.BuilderVar) string {
 	defaultValue := ""
 
 	if variable.Name == "APPNAME" {
@@ -93,15 +90,19 @@ func GetVariableDefaultValue(variable config.BuilderVar, inputs map[string]strin
 
 	defaultValue = variable.Default.Value
 	log.Debugf("setting default value for %s to %s from variable default rule", variable.Name, defaultValue)
-	if variable.Default.ReferenceVar != "" && inputs[variable.Default.ReferenceVar] != "" {
-		defaultValue = inputs[variable.Default.ReferenceVar]
-		log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
+	if variable.Default.ReferenceVar != "" {
+		if referenceVar, err := draftConfig.GetVariable(variable.Default.ReferenceVar); err != nil {
+			log.Errorf("Error getting reference variable %s: %s", variable.Default.ReferenceVar, err)
+		} else if referenceVar.Value != "" {
+			defaultValue = referenceVar.Value
+			log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
+		}
 	}
 
 	return defaultValue
 }
 
-func RunBoolPrompt(customPrompt config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+func RunBoolPrompt(customPrompt *config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
 	newSelect := &promptui.Select{
 		Label:  "Please select " + customPrompt.Description,
 		Items:  []bool{true, false},
@@ -157,7 +158,7 @@ func appNameValidator(name string) error {
 }
 
 // RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
-func RunDefaultableStringPrompt(defaultValue string, customPrompt config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
 	if validate == nil {
 		validate = NoBlankStringValidator
 	}

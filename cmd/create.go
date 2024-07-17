@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
 	"github.com/Azure/draft/pkg/reporeader"
@@ -41,7 +40,6 @@ const emptyDefaultFlagValue = ""
 const currentDirDefaultFlagValue = "."
 
 type createCmd struct {
-	appName    string
 	lang       string
 	dest       string
 	deployType string
@@ -79,14 +77,13 @@ func newCreateCmd() *cobra.Command {
 	f := cmd.Flags()
 
 	f.StringVarP(&cc.createConfigPath, "create-config", "c", emptyDefaultFlagValue, "specify the path to the configuration file")
-	f.StringVarP(&cc.appName, "app", "a", emptyDefaultFlagValue, "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", emptyDefaultFlagValue, "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
-	f.StringVarP(&cc.deployType, "deploy-type", "", emptyDefaultFlagValue, "specify deployement type (eg. helm, kustomize, manifests)")
+	f.StringVarP(&cc.deployType, "deploy-type", "", emptyDefaultFlagValue, "specify deployment type (eg. helm, kustomize, manifests)")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
-	f.StringArrayVarP(&cc.flagVariables, "variable", "", []string{}, "pass additional variables using repeated --variable flag")
+	f.StringArrayVarP(&cc.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable PORT=8080 --variable APPNAME=test)")
 
 	return cmd
 }
@@ -116,14 +113,7 @@ func (cc *createCmd) initConfig() error {
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
 
-	for _, flagVar := range cc.flagVariables {
-		flagVarName, flagVarValue, ok := strings.Cut(flagVar, "=")
-		if !ok {
-			return fmt.Errorf("invalid variable format: %s", flagVar)
-		}
-		flagVariablesMap[flagVarName] = flagVarValue
-		log.Debugf("flag variable %s=%s", flagVarName, flagVarValue)
-	}
+	flagVariablesMap = flagVariablesToMap(cc.flagVariables)
 
 	var dryRunRecorder *dryrunpkg.DryRunRecorder
 	if dryRun {
@@ -276,7 +266,7 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 			}
 		}
 		if !variableExists {
-			langConfig.Variables = append(langConfig.Variables, config.BuilderVar{
+			langConfig.Variables = append(langConfig.Variables, &config.BuilderVar{
 				Name: k,
 				Default: config.BuilderVarDefault{
 					Value: v,
@@ -285,56 +275,53 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 		}
 	}
 
-	var inputs map[string]string
 	if cc.createConfig.LanguageVariables == nil {
-		inputs, err = prompts.RunPromptsFromConfigWithSkips(langConfig, maps.Keys(flagVariablesMap))
-		if err != nil {
+		langConfig.VariableMapToDraftConfig(flagVariablesMap)
+
+		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
 			return err
 		}
 	} else {
-		inputs, err = validateConfigInputsToPrompts(langConfig, cc.createConfig.LanguageVariables)
+		err = validateConfigInputsToPrompts(langConfig, cc.createConfig.LanguageVariables)
 		if err != nil {
 			return err
 		}
 	}
 
 	if cc.templateVariableRecorder != nil {
-		for k, v := range inputs {
-			cc.templateVariableRecorder.Record(k, v)
+		for _, variable := range langConfig.Variables {
+			cc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
-	maps.Copy(inputs, flagVariablesMap)
-
-	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, inputs, cc.templateWriter); err != nil {
+	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, langConfig, cc.templateWriter); err != nil {
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
 
 	log.Info("--> Creating Dockerfile...\n")
-	return err
+	return nil
 }
 
 func (cc *createCmd) createDeployment() error {
 	log.Info("--- Deployment File Creation ---")
 	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, cc.dest)
 	var deployType string
-	var customInputs map[string]string
+	var deployConfig *config.DraftConfig
 	var err error
 
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
-		deployConfig, err := d.GetConfig(deployType)
+		deployConfig, err = d.GetConfig(deployType)
 		if err != nil {
 			return err
 		}
 		if deployConfig == nil {
 			return errors.New("invalid deployment type")
 		}
-		customInputs, err = validateConfigInputsToPrompts(deployConfig, cc.createConfig.DeployVariables)
+		err = validateConfigInputsToPrompts(deployConfig, cc.createConfig.DeployVariables)
 		if err != nil {
 			return err
 		}
-
 	} else {
 		if cc.deployType == "" {
 			selection := &promptui.Select{
@@ -350,27 +337,28 @@ func (cc *createCmd) createDeployment() error {
 			deployType = cc.deployType
 		}
 
-		deployConfig, err := d.GetConfig(deployType)
+		deployConfig, err = d.GetConfig(deployType)
 		if err != nil {
 			return err
 		}
-		customInputs, err = prompts.RunPromptsFromConfigWithSkips(deployConfig, maps.Keys(flagVariablesMap))
+
+		deployConfig.VariableMapToDraftConfig(flagVariablesMap)
+
+		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
 		if err != nil {
 			return err
 		}
 	}
 
-	maps.Copy(customInputs, flagVariablesMap)
-
 	if cc.templateVariableRecorder != nil {
-		for k, v := range customInputs {
-			cc.templateVariableRecorder.Record(k, v)
+		for _, variable := range deployConfig.Variables {
+			cc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
 	log.Infof("--> Creating %s Kubernetes resources...\n", deployType)
 
-	return d.CopyDeploymentFiles(deployType, customInputs, cc.templateWriter)
+	return d.CopyDeploymentFiles(deployType, deployConfig, cc.templateWriter)
 }
 
 func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang string) error {
@@ -464,26 +452,11 @@ func init() {
 	rootCmd.AddCommand(newCreateCmd())
 }
 
-func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []UserInputs) (map[string]string, error) {
-	customInputs := make(map[string]string)
-
+func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []UserInputs) error {
 	// set inputs to provided values
-	for _, variable := range provided {
-		customInputs[variable.Name] = variable.Value
+	for _, providedVar := range provided {
+		draftConfig.SetVariable(providedVar.Name, providedVar.Value)
 	}
 
-	if err := draftConfig.ApplyDefaultVariables(customInputs); err != nil {
-		return nil, fmt.Errorf("validate config inputs to prompts: %w", err)
-	}
-
-	for _, variable := range draftConfig.Variables {
-		value, ok := customInputs[variable.Name]
-		if !ok {
-			return nil, fmt.Errorf("config missing required variable: %s with description: %s", variable.Name, variable.Description)
-		} else if value == "" {
-			return nil, fmt.Errorf("value for variable %s is empty", variable.Name)
-		}
-	}
-
-	return customInputs, nil
+	return nil
 }

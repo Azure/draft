@@ -23,25 +23,24 @@ var (
 	parentDirName = "addons"
 )
 
-func GenerateAddon(addons embed.FS, provider, addon, dest string, userInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
-	addOnConfig, err := GetAddonConfig(addons, provider, addon)
-	if err != nil {
-		return err
-	}
-
+func GenerateAddon(addons embed.FS, provider, addon, dest string, addonConfig AddonConfig, templateWriter templatewriter.TemplateWriter) error {
 	selectedAddonPath, err := GetAddonPath(addons, provider, addon)
 	if err != nil {
 		return err
 	}
 
-	addonDestPath, err := addOnConfig.GetAddonDestPath(dest)
+	addonDestPath, err := addonConfig.GetAddonDestPath(dest)
 	if err != nil {
 		return err
 	}
 
-	addOnConfig.ApplyDefaultVariables(userInputs)
+	if addonConfig.DraftConfig == nil {
+		return errors.New("DraftConfig is nil")
+	} else {
+		addonConfig.DraftConfig.ApplyDefaultVariables()
+	}
 
-	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, &addOnConfig.DraftConfig, userInputs, templateWriter); err != nil {
+	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, addonConfig.DraftConfig, templateWriter); err != nil {
 		return err
 	}
 
@@ -71,19 +70,19 @@ func GetAddonConfig(addons embed.FS, provider, addon string) (AddonConfig, error
 		return AddonConfig{}, err
 	}
 
-	addOnConfigPath := path.Join(selectedAddonPath, "draft.yaml")
-	log.Debugf("addOnConfig is: %s", addOnConfigPath)
+	addonConfigPath := path.Join(selectedAddonPath, "draft.yaml")
+	log.Debugf("addonConfig is: %s", addonConfigPath)
 
-	configBytes, err := fs.ReadFile(addons, addOnConfigPath)
+	configBytes, err := fs.ReadFile(addons, addonConfigPath)
 	if err != nil {
 		return AddonConfig{}, err
 	}
-	var addOnConfig AddonConfig
-	if err = yaml.Unmarshal(configBytes, &addOnConfig); err != nil {
+	var addonConfig AddonConfig
+	if err = yaml.Unmarshal(configBytes, &addonConfig); err != nil {
 		return AddonConfig{}, err
 	}
 
-	return addOnConfig, nil
+	return addonConfig, nil
 }
 
 func PromptAddon(addons embed.FS, provider string) (string, error) {
@@ -106,38 +105,29 @@ func PromptAddon(addons embed.FS, provider string) (string, error) {
 	return addon, nil
 }
 
-func PromptAddonValues(dest string, userInputs map[string]string, addOnConfig AddonConfig) (map[string]string, error) {
-	log.Debugf("getAddonValues: %s", userInputs)
-	var err error
-
-	inputsToSkip := maps.Keys(userInputs)
-	log.Debugf("inputsToSkip: %s", inputsToSkip)
-	promptInputs, err := prompts.RunPromptsFromConfigWithSkips(&addOnConfig.DraftConfig, inputsToSkip)
+func PromptAddonValues(dest string, addonConfig *AddonConfig) error {
+	err := prompts.RunPromptsFromConfigWithSkips(addonConfig.DraftConfig)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	log.Debug("got user inputs")
-	for k, v := range promptInputs {
-		userInputs[k] = v
-	}
 
-	referenceMap, err := addOnConfig.GetReferenceValueMap(dest)
+	referenceMap, err := addonConfig.GetReferenceValueMap(dest)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	log.Debug("got reference map")
 	// merge maps
 	for refName, refVal := range referenceMap {
 		// check for key collision
-		if _, ok := userInputs[refName]; ok {
-			return nil, errors.New("variable name collision between references and userInputs")
+		if _, err := addonConfig.DraftConfig.GetVariable(refName); err == nil {
+			return errors.New("variable name collision between references and DraftConfig")
 		}
 		if strings.Contains(strings.ToLower(refName), "namespace") && refVal == "" {
 			refVal = "default" //hack here to have explicit namespacing, probably a better way to do this
 		}
-		userInputs[refName] = refVal
+		addonConfig.DraftConfig.SetVariable(refName, refVal)
 	}
 
-	log.Debugf("merged maps into: %s", userInputs)
-	return userInputs, nil
+	return nil
 }

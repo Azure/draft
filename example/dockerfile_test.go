@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 )
 
@@ -13,33 +14,87 @@ func TestWriteDockerfile(t *testing.T) {
 
 	testCases := []struct {
 		name               string
-		inputVariables     map[string]string
+		langConfig         *config.DraftConfig
 		generationLanguage string
 		expectError        bool
 	}{
 
 		{
 			name: "Test Valid Go Dockerfile Generation",
-			inputVariables: map[string]string{
-				"PORT":    "8080",
-				"VERSION": "1.20",
+			langConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{
+						Name: "PORT",
+						Default: config.BuilderVarDefault{
+							Value: "80",
+						},
+						Description: "the port exposed in the application",
+						Type:        "int",
+						Value:       "8080",
+					},
+					{
+						Name: "VERSION",
+						Default: config.BuilderVarDefault{
+							Value: "1.18",
+						},
+						Description:   "the version of go used by the application",
+						ExampleValues: []string{"1.16", "1.17", "1.18", "1.19"},
+						Value:         "1.20",
+					},
+				},
 			},
 			generationLanguage: "go",
 			expectError:        false,
 		},
 		{
-			name: "Test Valid Go Dockerfile Generation with deafult",
-			inputVariables: map[string]string{
-				"PORT": "8080",
+			name: "Test Valid Go Dockerfile Generation with default",
+			langConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{
+						Name: "PORT",
+						Default: config.BuilderVarDefault{
+							Value: "80",
+						},
+						Description: "the port exposed in the application",
+						Type:        "int",
+						Value:       "8080",
+					},
+					{
+						Name: "VERSION",
+						Default: config.BuilderVarDefault{
+							Value: "1.18",
+						},
+						Description:   "the version of go used by the application",
+						ExampleValues: []string{"1.16", "1.17", "1.18", "1.19"},
+					},
+				},
 			},
 			generationLanguage: "go",
 			expectError:        false,
 		},
 		{
 			name: "Test Invalid GenerationLanguage",
-			inputVariables: map[string]string{
-				"PORT":    "8080",
-				"VERSION": "1.20",
+			langConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{
+						Name: "PORT",
+						Default: config.BuilderVarDefault{
+							Value: "80",
+						},
+						Description: "the port exposed in the application",
+						Type:        "int",
+						Value:       "8080",
+					},
+					{
+						Name: "VERSION",
+						Default: config.BuilderVarDefault{
+							Value: "1.18",
+						},
+						Description:   "the version of go used by the application",
+						ExampleValues: []string{"1.16", "1.17", "1.18", "1.19"},
+						Value:         "1.20",
+					},
+				},
 			},
 			generationLanguage: "invalid",
 			expectError:        true,
@@ -48,7 +103,7 @@ func TestWriteDockerfile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := WriteDockerfile(&templateWriter, outputPath, tc.inputVariables, tc.generationLanguage)
+			err := WriteDockerfile(&templateWriter, outputPath, tc.langConfig, tc.generationLanguage)
 			errored := err != nil
 			if err != nil {
 				fmt.Printf("WriteDockerfile failed: %e\n", err)

@@ -81,8 +81,7 @@ func EnsureFile(file string) error {
 func CopyDir(
 	fileSys fs.FS,
 	src, dest string,
-	config *config.DraftConfig,
-	customInputs map[string]string,
+	draftConfig *config.DraftConfig,
 	templateWriter templatewriter.TemplateWriter) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {
@@ -103,16 +102,16 @@ func CopyDir(
 			if err = templateWriter.EnsureDirectory(destPath); err != nil {
 				return err
 			}
-			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs, templateWriter); err != nil {
+			if err = CopyDir(fileSys, srcPath, destPath, draftConfig, templateWriter); err != nil {
 				return err
 			}
 		} else {
-			fileContent, err := ReplaceTemplateVariables(fileSys, srcPath, customInputs)
+			fileContent, err := replaceTemplateVariables(fileSys, srcPath, draftConfig)
 			if err != nil {
 				return err
 			}
 
-			if err = CheckAllVariablesSubstituted(string(fileContent)); err != nil {
+			if err = checkAllVariablesSubstituted(string(fileContent)); err != nil {
 				return fmt.Errorf("error substituting file %s: %w", srcPath, err)
 			}
 
@@ -131,7 +130,7 @@ If any draft variables are found, an error is returned.
 Draft variables are defined as a string of non-whitespace characters starting with a non-period character wrapped in double curly braces.
 The non-period first character constraint is used to avoid matching helm template functions.
 */
-func CheckAllVariablesSubstituted(fileContent string) error {
+func checkAllVariablesSubstituted(fileContent string) error {
 	if unsubstitutedVars := draftVariableRegex.FindAllString(fileContent, -1); len(unsubstitutedVars) > 0 {
 		unsubstitutedVarsString := strings.Join(unsubstitutedVars, ", ")
 		return fmt.Errorf("unsubstituted variable: %s", unsubstitutedVarsString)
@@ -139,7 +138,7 @@ func CheckAllVariablesSubstituted(fileContent string) error {
 	return nil
 }
 
-func ReplaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[string]string) ([]byte, error) {
+func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config.DraftConfig) ([]byte, error) {
 	file, err := fs.ReadFile(fileSys, srcPath)
 	if err != nil {
 		return nil, err
@@ -147,9 +146,9 @@ func ReplaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[st
 
 	fileString := string(file)
 
-	for oldString, newString := range customInputs {
-		log.Debugf("replacing %s with %s", oldString, newString)
-		fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
+	for _, variable := range draftConfig.Variables {
+		log.Debugf("replacing %s with %s", variable.Name, variable.Value)
+		fileString = strings.ReplaceAll(fileString, "{{"+variable.Name+"}}", variable.Value)
 	}
 
 	return []byte(fileString), nil

@@ -1,0 +1,8 @@
+image:
+  repository: "test"
+  pullPolicy: Always
+  tag: "latest"
+service:
+  annotations: {}
+  type: LoadBalancer
+  port: 80

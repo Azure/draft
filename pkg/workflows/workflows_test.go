@@ -63,7 +63,7 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "./manifests",
 			},
 			{
-				Name:  "DOCKERFILE",
+				Name:  "DOCKERFILEPATH",
 				Value: "./Dockerfile",
 			},
 			{
@@ -131,7 +131,7 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "./manifests",
 			},
 			{
-				Name:  "DOCKERFILE",
+				Name:  "DOCKERFILEPATH",
 				Value: "./Dockerfile",
 			},
 			{
@@ -406,7 +406,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testCluster",
 			},
 			{
-				Name:  "DOCKERFILE",
+				Name:  "DOCKERFILEPATH",
 				Value: "./Dockerfile",
 			},
 			{
@@ -466,7 +466,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testCluster",
 			},
 			{
-				Name:  "DOCKERFILE",
+				Name:  "DOCKERFILEPATH",
 				Value: "./Dockerfile",
 			},
 			{

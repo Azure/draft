@@ -47,7 +47,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 
 	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVarP(&gwCmd.deployType, "deploy-type", "", "", "specify the k8s deployment type (helm, kustomize, manifests)")
-	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable CLUSTERNAME=testCluster --variable DOCKERFILE=./Dockerfile)")
+	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable CLUSTERNAME=testCluster --variable DOCKERFILEPATH=./Dockerfile)")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }

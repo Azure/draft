@@ -3,6 +3,7 @@ package preprocessing
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -16,8 +17,44 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 )
 
+// Given a path, will determine if it's Kustomize, Helm, a directory of manifests, or a single manifest
+func GetManifestFiles(manifestsPath string) ([]safeguards.ManifestFile, error) {
+
+	// if isDir()
+	// filepath merging Chart.yaml and pass to IsHelm(). Do the same with IsKustomize(). Call Is Helm(). if it is, return Helm
+
+	// else if isFile()
+	// call isHelm() again, call isKustomizeDir() or isKustomzeFile() and return kustomize
+
+	if IsHelm(manifestsPath) {
+		return RenderHelmChart(false, manifestsPath, tempDir)
+	} else if IsKustomize(manifestsPath) {
+		return RenderKustomizeManifest(manifestsPath, tempDir)
+	}
+
+	isDir, err := safeguards.IsDirectory(manifestsPath)
+	if err != nil {
+		return nil, fmt.Errorf("not a valid file or directory: %w", err)
+	}
+
+	var manifestFiles []safeguards.ManifestFile
+	// If it's not a Helm or Kustomize chart, it's a directory of manifests or single manifest
+	if isDir {
+		manifestFiles, err = safeguards.GetManifestFilesFromDir(manifestsPath)
+		return manifestFiles, err
+	} else if safeguards.IsYAML(manifestsPath) {
+		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
+			Name: path.Base(manifestsPath),
+			Path: manifestsPath,
+		})
+		return manifestFiles, nil
+	} else {
+		return nil, fmt.Errorf("expected at least one .yaml or .yml file within given path")
+	}
+}
+
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
-func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.ManifestFile, error) {
+func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.ManifestFile, error) { //TODO: remove tempdir from here, we write manifest files to memory
 	if isFile { // Get the directory that the Chart.yaml lives in
 		mainChartPath = filepath.Dir(mainChartPath)
 	}

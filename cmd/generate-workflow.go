@@ -86,7 +86,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	}
 
 	if err := workflows.UpdateProductionDeployments(gwc.deployType, gwc.dest, draftConfig, gwc.templateWriter); err != nil {
-		return fmt.Errorf("update production deployments: %w", err)
+		return fmt.Errorf("failed to update production deployments: %w", err)
 	}
 
 	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)

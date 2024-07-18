@@ -152,7 +152,7 @@ func TestValidateConfigInputsToPromptsPass(t *testing.T) {
 			},
 			{
 				Name: "REQUIRED_DEFAULTED",
-				Default: config.BuilderVarDefault{
+				Default: &config.BuilderVarDefault{
 					Value: "DEFAULT_VALUE",
 				},
 			},

@@ -41,3 +41,8 @@ variables:
       value: "default"
     description: "the Kubernetes namespace"
     resource: "azNamespace"
+  - name: "PRIVATECLUSTER"
+    default:
+      value: false
+    description: "true if the AKS cluster is private"
+    type: "bool"

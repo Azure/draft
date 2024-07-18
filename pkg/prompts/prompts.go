@@ -243,6 +243,10 @@ func validateAzClusterName(clusterName string) error {
 }
 
 func validatePath(path string) error {
+	if len(path) == 0 {
+		return nil
+	}
+
 	if err := osutil.CheckPath(path); err != nil {
 		return fmt.Errorf("path could not be found within the current directory")
 	}

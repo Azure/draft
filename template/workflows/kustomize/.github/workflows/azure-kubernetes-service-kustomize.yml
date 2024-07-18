@@ -48,7 +48,6 @@ env:
   DOCKER_FILE: {{DOCKERFILE}}
   BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
   NAMESPACE: {{NAMESPACE}}
-  PRIVATE_CLUSTER: {{PRIVATECLUSTER}}
 
 jobs:
   buildImage:
@@ -114,6 +113,13 @@ jobs:
           kustomizationPath: ${{ env.KUSTOMIZE_PATH }}
           kubectl-version: latest
         id: bake
+      
+      # Checks if the AKS cluster is private
+      - name: Is private cluster
+        id: isPrivate
+        run: |
+          result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
+          echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
       # Deploys application based on manifest files from previous step
       - name: Deploy application
@@ -124,4 +130,4 @@ jobs:
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
           namespace: ${{ env.NAMESPACE }}
-          private-cluster: ${{ env.PRIVATE_CLUSTER }}
+          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}

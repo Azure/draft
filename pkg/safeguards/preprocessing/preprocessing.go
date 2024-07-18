@@ -50,7 +50,6 @@ func GetManifestFiles(manifestsPath string) ([]safeguards.ManifestFile, error) {
 	} else {
 		return nil, fmt.Errorf("expected at least one .yaml or .yml file within given path")
 	}
-
 }
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory

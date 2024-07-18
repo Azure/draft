@@ -193,3 +193,21 @@ func TestIsKustomize(t *testing.T) {
 	isKustomize = IsKustomize(chartPath)
 	assert.False(t, isKustomize)
 }
+
+func TestIsHelm(t *testing.T) {
+	// path is a directory
+	isHelm := IsHelm(chartPath)
+	assert.True(t, isHelm)
+
+	// path is a Chart.yaml file
+	isHelm = IsHelm(directPath_ToValidChart)
+	assert.True(t, isHelm)
+
+	// Is a directory but does not contain Chart.yaml
+	isHelm = IsHelm(invalidNoChart)
+	assert.False(t, isHelm)
+
+	// invalid path
+	isHelm = IsHelm("invalid/path")
+	assert.False(t, isHelm)
+}

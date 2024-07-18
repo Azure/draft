@@ -19,38 +19,38 @@ import (
 
 // Given a path, will determine if it's Kustomize, Helm, a directory of manifests, or a single manifest
 func GetManifestFiles(manifestsPath string) ([]safeguards.ManifestFile, error) {
-
-	// if isDir()
-	// filepath merging Chart.yaml and pass to IsHelm(). Do the same with IsKustomize(). Call Is Helm(). if it is, return Helm
-
-	// else if isFile()
-	// call isHelm() again, call isKustomizeDir() or isKustomzeFile() and return kustomize
-
-	if IsHelm(manifestsPath) {
-		return RenderHelmChart(false, manifestsPath, tempDir)
-	} else if IsKustomize(manifestsPath) {
-		return RenderKustomizeManifest(manifestsPath, tempDir)
-	}
-
 	isDir, err := safeguards.IsDirectory(manifestsPath)
 	if err != nil {
 		return nil, fmt.Errorf("not a valid file or directory: %w", err)
 	}
 
 	var manifestFiles []safeguards.ManifestFile
-	// If it's not a Helm or Kustomize chart, it's a directory of manifests or single manifest
 	if isDir {
-		manifestFiles, err = safeguards.GetManifestFilesFromDir(manifestsPath)
-		return manifestFiles, err
-	} else if safeguards.IsYAML(manifestsPath) {
-		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
-			Name: path.Base(manifestsPath),
-			Path: manifestsPath,
-		})
+		// check if Helm or Kustomize dir
+		if isHelm(true, manifestsPath) {
+			return RenderHelmChart(false, manifestsPath, tempDir)
+		} else if isKustomize(true, manifestsPath) {
+			return RenderKustomizeManifest(manifestsPath, tempDir)
+		} else {
+			manifestFiles, err = safeguards.GetManifestFilesFromDir(manifestsPath)
+			return manifestFiles, err
+		}
+	} else if safeguards.IsYAML(manifestsPath) { // path points to a file
+		if isHelm(false, manifestsPath) {
+			return RenderHelmChart(true, manifestsPath, tempDir)
+		} else if isKustomize(false, manifestsPath) {
+			return RenderKustomizeManifest(manifestsPath, tempDir)
+		} else {
+			manifestFiles = append(manifestFiles, safeguards.ManifestFile{
+				Name: path.Base(manifestsPath),
+				Path: manifestsPath,
+			})
+		}
 		return manifestFiles, nil
 	} else {
 		return nil, fmt.Errorf("expected at least one .yaml or .yml file within given path")
 	}
+
 }
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
@@ -107,7 +107,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.M
 }
 
 // CreateTempDir creates a temporary directory on the user's file system for rendering templates
-func CreateTempDir(p string) error {
+func CreateTempDir(p string) error { //TODO: get rid of this entirely?
 	err := os.MkdirAll(p, 0755)
 	if err != nil {
 		log.Fatal(err)

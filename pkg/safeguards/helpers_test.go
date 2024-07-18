@@ -40,7 +40,7 @@ func validateOneTestManifestSuccess(ctx context.Context, t *testing.T, c *constr
 
 func validateAllTestManifestsFail(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
-		manifestFiles, err := GetManifestFiles(path)
+		manifestFiles, err := GetManifestFilesFromDir(path)
 		assert.Nil(t, err)
 
 		// error case - should throw error
@@ -54,7 +54,7 @@ func validateAllTestManifestsFail(ctx context.Context, t *testing.T, c *constrai
 
 func validateAllTestManifestsSuccess(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
-		manifestFiles, err := GetManifestFiles(path)
+		manifestFiles, err := GetManifestFilesFromDir(path)
 		assert.Nil(t, err)
 
 		// success case - should not throw error

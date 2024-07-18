@@ -79,19 +79,6 @@ func CreateTempDir(p string) error {
 	return err
 }
 
-// IsKustomize checks whether a given path should be treated as a kustomize project
-func IsKustomize(p string) bool {
-	var err error
-	if safeguards.IsYAML(p) {
-		return strings.Contains(p, "kustomization.yaml")
-	} else if _, err = os.Stat(filepath.Join(p, "kustomization.yaml")); err == nil {
-		return true
-	} else if _, err = os.Stat(filepath.Join(p, "kustomization.yml")); err == nil {
-		return true
-	}
-	return false
-}
-
 // Given a kustomization manifest file within kustomizationPath, RenderKustomizeManifest will render templates out to tempDir
 func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]safeguards.ManifestFile, error) {
 	log.Debugf("Rendering kustomization.yaml...")

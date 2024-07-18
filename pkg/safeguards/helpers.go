@@ -204,7 +204,7 @@ func IsYAML(path string) bool {
 }
 
 // GetManifestFiles uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
-func GetManifestFiles(p string) ([]ManifestFile, error) {
+func GetManifestFilesFromDir(p string) ([]ManifestFile, error) {
 	var manifestFiles []ManifestFile
 
 	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {

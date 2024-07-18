@@ -70,7 +70,6 @@ func isKustomize(isDir bool, p string) bool {
 	} else {
 		return strings.Contains(p, "kustomization.yaml")
 	}
-	return false
 }
 
 // Checks whether a given path is a helm directory or a path to a Helm Chart (contains/is Chart.yaml)

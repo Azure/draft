@@ -175,7 +175,7 @@ func TestApplyDefaultVariables(t *testing.T) {
 				},
 			},
 			want:       map[string]string{},
-			wantErrMsg: "apply default variables: cyclical reference detected",
+			wantErrMsg: "failed to recurse reference variables: cyclical reference detected",
 		},
 	}
 	for _, tt := range tests {

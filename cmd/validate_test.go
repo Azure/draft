@@ -43,11 +43,11 @@ func TestIsYAML(t *testing.T) {
 	assert.False(t, safeguards.IsYAML(fileNotYaml))
 	assert.True(t, safeguards.IsYAML(fileYaml))
 
-	manifestFiles, err := safeguards.GetManifestFiles(dirNotYaml)
+	manifestFiles, err := preprocessing.GetManifestFiles(dirNotYaml)
 	assert.Nil(t, manifestFiles)
 	assert.NotNil(t, err)
 
-	manifestFiles, err = safeguards.GetManifestFiles(dirYaml)
+	manifestFiles, err = preprocessing.GetManifestFiles(dirYaml)
 	assert.NotNil(t, manifestFiles)
 	assert.Nil(t, err)
 }
@@ -67,7 +67,7 @@ func TestRunValidate(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// Scenario 2a: manifest path leads to a directory of manifestFiles - expect success
-	manifestFiles, err = safeguards.GetManifestFiles(manifestPathDirectorySuccess)
+	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathDirectorySuccess)
 	assert.Nil(t, err)
 	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -75,7 +75,7 @@ func TestRunValidate(t *testing.T) {
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 2b: manifest path leads to a directory of manifestFiles - expect failure
-	manifestFiles, err = safeguards.GetManifestFiles(manifestPathDirectoryError)
+	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathDirectoryError)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -83,14 +83,14 @@ func TestRunValidate(t *testing.T) {
 	assert.Greater(t, numViolations, 0)
 
 	// Scenario 3a: manifest path leads to one manifest file - expect success
-	manifestFiles, err = safeguards.GetManifestFiles(manifestPathFileSuccess)
+	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathFileSuccess)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 3b: manifest path leads to one manifest file - expect failure
-	manifestFiles, err = safeguards.GetManifestFiles(manifestPathFileError)
+	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathFileError)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)

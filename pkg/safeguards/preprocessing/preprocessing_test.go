@@ -181,6 +181,10 @@ func TestRenderKustomizeManifest_Valid(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestGetManifestFiles(t *testing.T) {
+
+}
+
 // TestIsKustomize checks whether the given path contains a kustomize project
 func TestIsKustomize(t *testing.T) {
 	// path contains a kustomization.yaml file

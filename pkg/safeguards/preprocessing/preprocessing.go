@@ -50,6 +50,7 @@ func GetManifestFiles(manifestsPath string) ([]safeguards.ManifestFile, error) {
 	} else {
 		return nil, fmt.Errorf("expected at least one .yaml or .yml file within given path")
 	}
+
 }
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
@@ -106,7 +107,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.M
 }
 
 // CreateTempDir creates a temporary directory on the user's file system for rendering templates
-func CreateTempDir(p string) error {
+func CreateTempDir(p string) error { //TODO: get rid of this entirely?
 	err := os.MkdirAll(p, 0755)
 	if err != nil {
 		log.Fatal(err)

@@ -53,7 +53,7 @@ func GetManifestFiles(manifestsPath string) ([]safeguards.ManifestFile, error) {
 }
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
-func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.ManifestFile, error) {
+func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.ManifestFile, error) { //TODO: remove tempdir from here, we write manifest files to memory
 	if isFile { // Get the directory that the Chart.yaml lives in
 		mainChartPath = filepath.Dir(mainChartPath)
 	}

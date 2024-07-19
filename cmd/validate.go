@@ -6,7 +6,6 @@ import (
 	"path"
 
 	"github.com/Azure/draft/pkg/safeguards"
-	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -63,7 +62,7 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 	var manifestFiles []safeguards.ManifestFile
 	if isDir {
-		manifestFiles, err = preprocessing.GetManifestFiles(vc.manifestPath)
+		manifestFiles, err = safeguards.GetManifestFilesFromDir(vc.manifestPath)
 		if err != nil {
 			return err
 		}

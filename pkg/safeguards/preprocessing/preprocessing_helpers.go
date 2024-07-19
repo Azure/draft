@@ -78,6 +78,9 @@ func isHelm(isDir bool, path string) bool {
 	if isDir {
 		chartPath = filepath.Join(path, "Chart.yaml")
 	} else {
+		if filepath.Base(path) != "Chart.yaml" {
+			return false
+		}
 		chartPath = path
 	}
 

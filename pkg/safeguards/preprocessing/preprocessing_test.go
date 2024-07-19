@@ -189,7 +189,7 @@ func TestGetManifestFiles(t *testing.T) {
 	// Test Helm
 	_, err := GetManifestFiles(chartPath)
 	assert.Nil(t, err)
-	_, err = GetManifestFiles(invalidNoChart)
+	_, err = GetManifestFiles(kustomizationPath)
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)
@@ -235,7 +235,7 @@ func TestIsHelm(t *testing.T) {
 	assert.True(t, ishelm)
 
 	// Is a directory but does not contain Chart.yaml
-	ishelm = isHelm(true, invalidNoChart)
+	ishelm = isHelm(true, kustomizationPath)
 	assert.False(t, ishelm)
 
 	// Is a directory of manifest files, not a helm chart

@@ -10,6 +10,7 @@ import (
 const (
 	tempDir                 = "testdata" // Rendered files are stored here before they are read for comparison
 	chartPath               = "../tests/testmanifests/validchart"
+	invalidNoChart          = "../tests/testmanifests/nochart-invalid"
 	invalidChartPath        = "../tests/testmanifests/invalidchart"
 	invalidValuesChart      = "../tests/testmanifests/invalidvalues"
 	invalidDeploymentsChart = "../tests/testmanifests/invaliddeployment"

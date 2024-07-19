@@ -3,7 +3,10 @@ package preprocessing
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/Azure/draft/pkg/safeguards"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -51,4 +54,39 @@ func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}) (chartut
 	}
 
 	return mergedValues, nil
+}
+
+// IsKustomize checks whether a given path should be treated as a kustomize project
+func IsKustomize(p string) bool {
+	var err error
+	if safeguards.IsYAML(p) {
+		return strings.Contains(p, "kustomization.yaml")
+	} else if _, err = os.Stat(filepath.Join(p, "kustomization.yaml")); err == nil {
+		return true
+	} else if _, err = os.Stat(filepath.Join(p, "kustomization.yml")); err == nil {
+		return true
+	}
+	return false
+}
+
+// Checks whether a given path is a helm directory or a path to a Helm Chart (contains/is Chart.yaml)
+func IsHelm(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if os.IsNotExist(err) || err != nil {
+		return false
+	}
+
+	var chartPath string
+	if fileInfo.IsDir() {
+		chartPath = filepath.Join(path, "Chart.yaml")
+	} else {
+		chartPath = path
+	}
+
+	_, err = os.Stat(chartPath)
+	if err == nil && safeguards.IsYAML(chartPath) { // Couldn't find Chart.yaml in the directory
+		return true
+	}
+
+	return false
 }

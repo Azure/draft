@@ -305,7 +305,7 @@ languageVariables:
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
       - run: |
-          ./draft -v generate-workflow -d ./langtest/ --deploy-type helm -w someWorkflow -b main --acr-resource-group someAcrResourceGroup -r someRegistry --container-name someContainer -g someClusterResourceGroup -c someAksCluster --dockerfile ./Dockerfile --build-context-path . -n default --private-cluster false
+          ./draft -v generate-workflow -d ./langtest/ --deploy-type helm --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default --variable PRIVATECLUSTER=false
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
@@ -455,7 +455,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize -w someWorkflow -b main --acr-resource-group someAcrResourceGroup -r someRegistry --container-name someContainer -g someClusterResourceGroup -c someAksCluster --dockerfile ./Dockerfile --build-context-path . -n default --private-cluster false
+      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default --variable PRIVATECLUSTER=false
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1
@@ -596,7 +596,7 @@ languageVariables:
           echo 'Curling service IP'
           curl -m 3 \$SERVICEIP:$serviceport
           kill \$tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests -w someWorkflow -b main --acr-resource-group someAcrResourceGroup -r someRegistry --container-name someContainer -g someClusterResourceGroup -c someAksCluster --dockerfile ./Dockerfile --build-context-path . -n default --private-cluster false
+      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default --variable PRIVATECLUSTER=false
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1

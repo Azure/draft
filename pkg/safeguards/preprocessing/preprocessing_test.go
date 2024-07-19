@@ -211,6 +211,7 @@ func TestIsHelm(t *testing.T) {
 	ishelm = isHelm(true, invalidNoChart)
 	assert.False(t, ishelm)
 
+	//TODO: add test case for path to manifest: manifestPathFileSuccess in validate_test.go
 	// invalid path
 	ishelm = isHelm(false, "invalid/path")
 	assert.False(t, ishelm)

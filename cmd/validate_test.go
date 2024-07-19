@@ -84,6 +84,7 @@ func TestRunValidate(t *testing.T) {
 
 	// Scenario 3a: manifest path leads to one manifest file - expect success
 	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathFileSuccess)
+	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
@@ -91,6 +92,7 @@ func TestRunValidate(t *testing.T) {
 
 	// Scenario 3b: manifest path leads to one manifest file - expect failure
 	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathFileError)
+	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)

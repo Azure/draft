@@ -91,11 +91,6 @@ func (p *AzurePipelines) CreatePipelineFiles(deployType string, draftConfig *con
 	srcDir := path.Join(pipelineParentDirName, val.Name())
 	log.Debugf("source directory of pipeline template: %s", srcDir)
 
-	//draftConfig, ok := p.configs[deployType]
-	//if !ok {
-	//	return fmt.Errorf("no draftConfig found for pipeline of deploy type %s", deployType)
-	//}
-
 	if err := draftConfig.ApplyDefaultVariables(); err != nil {
 		return fmt.Errorf("error applying default variables: %w", err)
 	}

@@ -242,7 +242,10 @@ func TestIsHelm(t *testing.T) {
 	ishelm = isHelm(false, "../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
 	assert.False(t, ishelm)
 
-	//TODO: add test case for path to manifest: manifestPathFileSuccess in validate_test.go
+	// Is a directory of manifest files, not a helm chart
+	ishelm = isHelm(false, "../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
+	assert.False(t, ishelm)
+
 	// invalid path
 	ishelm = isHelm(false, "invalid/path")
 	assert.False(t, ishelm)

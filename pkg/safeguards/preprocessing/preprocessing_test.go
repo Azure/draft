@@ -190,6 +190,7 @@ func TestGetManifestFiles(t *testing.T) {
 	_, err := GetManifestFiles(chartPath)
 	assert.Nil(t, err)
 	_, err = GetManifestFiles(kustomizationPath)
+	_, err = GetManifestFiles(kustomizationPath)
 	assert.Nil(t, err)
 
 	cleanupDir(t, tempDir)

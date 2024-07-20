@@ -41,7 +41,7 @@ func UpdateProductionDeployments(deployType, dest string, draftConfig *config.Dr
 		return fmt.Errorf("failed to get variable: %w", err)
 	}
 
-	repositoryName, err := draftConfig.GetVariable("REPOSITORYNAME")
+	repositoryName, err := draftConfig.GetVariable("ACRREPOSITORYNAME")
 	if err != nil {
 		return fmt.Errorf("failed to get variable: %w", err)
 	}

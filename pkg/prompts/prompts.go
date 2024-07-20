@@ -30,7 +30,7 @@ var resourceFuncMap = map[string]resourceFunc{
 	"azClusterName":       promptAzClusterName,
 	"azContainerRegistry": promptAzContainerRegistry,
 	"azNamespace":         promptAzNamespace,
-	"azRepositoryName":    promptAzRepositoryName,
+	"azAcrRepositoryName": promptAzAcrRepositoryName,
 	"azResourceGroup":     promptAzResourceGroup,
 	"ghBranch":            promptGitHubBranch,
 	"path":                promptPath,
@@ -204,7 +204,7 @@ func validateAzResourceGroup(resourceGroup string) error {
 	return nil
 }
 
-func validateAzRepositoryName(repositoryName string) error {
+func validateAzAcrRepositoryName(repositoryName string) error {
 	repositoryNameRegEx := regexp.MustCompile(`^[a-z0-9._/-]+$`)
 
 	if len(repositoryName) == 0 || !repositoryNameRegEx.MatchString(repositoryName) {
@@ -656,8 +656,8 @@ func promptAzContainerRegistry(draftConfig *config.DraftConfig, acr *config.Buil
 	return containerRegistry, nil
 }
 
-func promptAzRepositoryName(draftConfig *config.DraftConfig, repositoryName *config.BuilderVar, defaultValue string) (string, error) {
-	repository, err := RunDefaultableStringPrompt(defaultValue, repositoryName, validateAzRepositoryName, nil, nil)
+func promptAzAcrRepositoryName(draftConfig *config.DraftConfig, repositoryName *config.BuilderVar, defaultValue string) (string, error) {
+	repository, err := RunDefaultableStringPrompt(defaultValue, repositoryName, validateAzAcrRepositoryName, nil, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to run defaultable string prompt: %w", err)
 	}

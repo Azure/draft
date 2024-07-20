@@ -101,7 +101,7 @@ var validatorFuncMap = map[string]ValidatorFunc{
 	"azClusterName":       validateAzClusterName,
 	"azContainerRegistry": validateAzContainerRegistry,
 	"azNamespace":         validateAzNamespace,
-	"azRepositoryName":    validateAzRepositoryName,
+	"azAcrRepositoryName": validateAzAcrRepositoryName,
 	"azResourceGroup":     validateAzResourceGroup,
 	"path":                validatePath,
 }
@@ -207,11 +207,11 @@ func TestRunStringPrompt(t *testing.T) {
 			mockDirNameValue: "",
 		},
 		{
-			testName: "invalidRepositoryName",
+			testName: "invalidAcrRepositoryName",
 			prompt: config.BuilderVar{
-				Name:        "REPOSITORYNAME",
+				Name:        "ACRREPOSITORYNAME",
 				Description: "the ACR repository's name for your container image",
-				Resource:    "azRepositoryName",
+				Resource:    "azAcrRepositoryName",
 			},
 			userInputs:       []string{"invalidrepositorynamE\n"},
 			defaultValue:     "",

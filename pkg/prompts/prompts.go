@@ -705,6 +705,12 @@ func promptAzClusterName(draftConfig *config.DraftConfig, clusterName *config.Bu
 		return "", fmt.Errorf("failed to select a cluster: %w", err)
 	}
 
+	if acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY"); err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	} else if err = providers.AttachAcrToCluster(cluster, resourceGroup.Value, acr.Value); err != nil {
+		return "", fmt.Errorf("failed to attach Azure container registry to cluster: %w", err)
+	}
+
 	return cluster, nil
 }
 

@@ -660,7 +660,7 @@ func CreateAzContainerRegistry(acr, resourceGroup, sku string) error {
 	return nil
 }
 
-func CreateAzCluster(clusterName, resourceGroup, privacySetting string) error {
+func CreateAzCluster(cluster, resourceGroup, privacySetting string) error {
 	CheckAzCliInstalled()
 	if !IsLoggedInToAz() {
 		if err := LogInToAz(); err != nil {
@@ -672,9 +672,9 @@ func CreateAzCluster(clusterName, resourceGroup, privacySetting string) error {
 
 	switch privacySetting {
 	case "public":
-		createClusterCmd = exec.Command("az", "aks", "create", "--name", clusterName, "--resource-group", resourceGroup)
+		createClusterCmd = exec.Command("az", "aks", "create", "--name", cluster, "--resource-group", resourceGroup)
 	case "private":
-		createClusterCmd = exec.Command("az", "aks", "create", "--name", clusterName, "--resource-group", resourceGroup, "--enable-private-cluster")
+		createClusterCmd = exec.Command("az", "aks", "create", "--name", cluster, "--resource-group", resourceGroup, "--enable-private-cluster")
 	}
 
 	loading := make(chan bool)
@@ -683,7 +683,28 @@ func CreateAzCluster(clusterName, resourceGroup, privacySetting string) error {
 	_, err := createClusterCmd.CombinedOutput()
 	loading <- true
 	if err != nil {
-		return fmt.Errorf("failed to create cluster %s: %w", clusterName, err)
+		return fmt.Errorf("failed to create cluster %s: %w", cluster, err)
+	}
+
+	return nil
+}
+
+func AttachAcrToCluster(cluster, resourceGroup, acr string) error {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			return fmt.Errorf("failed to log in to Azure CLI: %w", err)
+		}
+	}
+
+	attachAcrCmd := exec.Command("az", "aks", "update", "--name", cluster, "--resource-Group", resourceGroup, "--attach-acr", acr)
+	loading := make(chan bool)
+	go showLoader(loading)
+
+	_, err := attachAcrCmd.CombinedOutput()
+	loading <- true
+	if err != nil {
+		return fmt.Errorf("failed to attach acr %s to cluster %s: %w", acr, cluster, err)
 	}
 
 	return nil

@@ -43,8 +43,8 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "REPOSITORYNAME",
-				Value: "testRepository",
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",
@@ -63,7 +63,7 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "./manifests",
 			},
 			{
-				Name:  "DOCKERFILEPATH",
+				Name:  "DOCKERFILE",
 				Value: "./Dockerfile",
 			},
 			{
@@ -86,10 +86,6 @@ func TestCreateWorkflows(t *testing.T) {
 				Name:  "NAMESPACE",
 				Value: "default",
 			},
-			{
-				Name:  "PRIVATECLUSTER",
-				Value: "false",
-			},
 		},
 	}
 	draftConfigNoRoot := &config.DraftConfig{
@@ -111,8 +107,8 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "REPOSITORYNAME",
-				Value: "testRepository",
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",
@@ -131,7 +127,7 @@ func TestCreateWorkflows(t *testing.T) {
 				Value: "./manifests",
 			},
 			{
-				Name:  "DOCKERFILEPATH",
+				Name:  "DOCKERFILE",
 				Value: "./Dockerfile",
 			},
 			{
@@ -153,10 +149,6 @@ func TestCreateWorkflows(t *testing.T) {
 			{
 				Name:  "NAMESPACE",
 				Value: "default",
-			},
-			{
-				Name:  "PRIVATECLUSTER",
-				Value: "false",
 			},
 		},
 	}
@@ -314,8 +306,8 @@ func TestUpdateProductionDeploymentsMissing(t *testing.T) {
 				Value: "testRegistry",
 			},
 			{
-				Name:  "REPOSITORYNAME",
-				Value: "testRepository",
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
 			},
 		},
 	}
@@ -394,8 +386,8 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "REPOSITORYNAME",
-				Value: "testRepository",
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",
@@ -406,7 +398,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testCluster",
 			},
 			{
-				Name:  "DOCKERFILEPATH",
+				Name:  "DOCKERFILE",
 				Value: "./Dockerfile",
 			},
 			{
@@ -429,10 +421,6 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Name:  "NAMESPACE",
 				Value: "default",
 			},
-			{
-				Name:  "PRIVATECLUSTER",
-				Value: "false",
-			},
 		},
 	}
 	draftConfigNoRoot := &config.DraftConfig{
@@ -454,8 +442,8 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testAcr",
 			},
 			{
-				Name:  "REPOSITORYNAME",
-				Value: "testRepository",
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
 			},
 			{
 				Name:  "CLUSTERRESOURCEGROUP",
@@ -466,7 +454,7 @@ func TestCreateWorkflowFiles(t *testing.T) {
 				Value: "testCluster",
 			},
 			{
-				Name:  "DOCKERFILEPATH",
+				Name:  "DOCKERFILE",
 				Value: "./Dockerfile",
 			},
 			{
@@ -488,10 +476,6 @@ func TestCreateWorkflowFiles(t *testing.T) {
 			{
 				Name:  "NAMESPACE",
 				Value: "default",
-			},
-			{
-				Name:  "PRIVATECLUSTER",
-				Value: "false",
 			},
 		},
 	}

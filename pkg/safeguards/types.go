@@ -14,8 +14,8 @@ type Safeguard struct {
 }
 
 type ManifestFile struct {
-	Name string
-	Path string
+	Name            string
+	ManifestContent []byte
 }
 
 type ManifestResult struct {

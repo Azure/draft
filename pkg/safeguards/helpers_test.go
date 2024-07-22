@@ -2,6 +2,7 @@ package safeguards
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
@@ -10,7 +11,10 @@ import (
 
 func validateOneTestManifestFail(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
-		errManifests, err := testFc.ReadManifests(path)
+		byteContent, err := os.ReadFile(path)
+		assert.Nil(t, err)
+
+		errManifests, err := testFc.ReadManifests(byteContent)
 		assert.Nil(t, err)
 
 		err = loadManifestObjects(ctx, c, errManifests)
@@ -25,7 +29,10 @@ func validateOneTestManifestFail(ctx context.Context, t *testing.T, c *constrain
 
 func validateOneTestManifestSuccess(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
-		successManifests, err := testFc.ReadManifests(path)
+		byteContent, err := os.ReadFile(path)
+		assert.Nil(t, err)
+
+		successManifests, err := testFc.ReadManifests(byteContent)
 		assert.Nil(t, err)
 
 		err = loadManifestObjects(ctx, c, successManifests)
@@ -38,7 +45,7 @@ func validateOneTestManifestSuccess(ctx context.Context, t *testing.T, c *constr
 	}
 }
 
-func validateAllTestManifestsFail(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
+func validateAllTestManifestsFail(ctx context.Context, t *testing.T, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
 		manifestFiles, err := GetManifestFilesFromDir(path)
 		assert.Nil(t, err)
@@ -52,7 +59,7 @@ func validateAllTestManifestsFail(ctx context.Context, t *testing.T, c *constrai
 	}
 }
 
-func validateAllTestManifestsSuccess(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc FileCrawler, testManifestPaths []string) {
+func validateAllTestManifestsSuccess(ctx context.Context, t *testing.T, testManifestPaths []string) {
 	for _, path := range testManifestPaths {
 		manifestFiles, err := GetManifestFilesFromDir(path)
 		assert.Nil(t, err)

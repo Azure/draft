@@ -235,6 +235,6 @@ func TestValidateDeployment_All(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateAllTestManifestsFail(ctx, t, c, testFc, testManifest_all.ErrorPaths)
-	validateAllTestManifestsSuccess(ctx, t, c, testFc, testManifest_all.SuccessPaths)
+	validateAllTestManifestsFail(ctx, t, testManifest_all.ErrorPaths)
+	validateAllTestManifestsSuccess(ctx, t, testManifest_all.SuccessPaths)
 }

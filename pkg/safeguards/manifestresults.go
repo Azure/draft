@@ -66,7 +66,7 @@ func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]Ma
 	// aggregate of every manifest object into one list
 	allManifestObjects := []*unstructured.Unstructured{}
 	for _, m := range manifestFiles {
-		manifestObjects, err := fc.ReadManifests(m.Path) // read all the objects stored in a single file
+		manifestObjects, err := fc.ReadManifests(m.ManifestContent) // read all the objects stored in a single file
 		if err != nil {
 			log.Errorf("reading objects %s", err.Error())
 			return manifestResults, err
@@ -78,6 +78,11 @@ func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]Ma
 
 	if len(allManifestObjects) > 0 {
 		err = loadManifestObjects(ctx, c, allManifestObjects)
+		if err != nil {
+			log.Errorf("error loading manifest objects: %s", err.Error())
+			return nil, err
+
+		}
 	}
 
 	for _, m := range manifestFiles {

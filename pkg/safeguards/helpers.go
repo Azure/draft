@@ -2,6 +2,7 @@ package safeguards
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io/fs"
@@ -55,16 +56,14 @@ func AddSafeguardCRIP() {
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadManifests(path string) ([]*unstructured.Unstructured, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("opening file %q: %w", path, err)
-	}
-	defer file.Close()
+func (fc FileCrawler) ReadManifests(manifestBytes []byte) ([]*unstructured.Unstructured, error) {
+	// Create a new bytes.Reader from the byte slice
+	bufReader := bufio.NewReader(bytes.NewReader(manifestBytes))
 
-	manifests, err := reader.ReadK8sResources(bufio.NewReader(file))
+	// Read the Kubernetes resources using the reader
+	manifests, err := reader.ReadK8sResources(bufReader)
 	if err != nil {
-		return nil, fmt.Errorf("reading file %q: %w", path, err)
+		return nil, fmt.Errorf("reading manifests: %w", err)
 	}
 
 	return manifests, nil
@@ -219,10 +218,15 @@ func GetManifestFilesFromDir(p string) ([]ManifestFile, error) {
 		}
 
 		if !info.IsDir() && info.Name() != "" && IsYAML(walkPath) {
-			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
+			log.Debugf("%s is not a directory, reading manifest content and appending to manifestFiles", info.Name())
 
+			byteContent, err := os.ReadFile(walkPath)
+			if err != nil {
+				return fmt.Errorf("could not read file %s: %v", walkPath, err)
+			}
 			manifest.Name = info.Name()
-			manifest.Path = walkPath
+			manifest.ManifestContent = byteContent
+			//manifest.Path = walkPath
 			manifestFiles = append(manifestFiles, manifest)
 		} else if !IsYAML(p) {
 			log.Debugf("%s is not a manifest file, skipping...", info.Name())

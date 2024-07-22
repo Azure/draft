@@ -2,9 +2,9 @@ package preprocessing
 
 import (
 	"os"
+	"regexp"
+	"strings"
 	"testing"
-
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -31,34 +31,34 @@ const (
 	kustomizationFilePath = "../tests/kustomize/overlays/production/kustomization.yaml"
 )
 
-func makeTempDir(t *testing.T) {
-	if err := CreateTempDir(tempDir); err != nil {
-		t.Fatalf("failed to create temporary output directory: %s", err)
-	}
-}
-
-func cleanupDir(t *testing.T, dir string) {
-	err := os.RemoveAll(dir)
-	if err != nil {
-		t.Fatalf("Failed to clean directory: %s", err)
-	}
-}
-
-func parseYAML(t *testing.T, content string) map[string]interface{} {
-	var result map[string]interface{}
-	err := yaml.Unmarshal([]byte(content), &result)
-	if err != nil {
-		t.Fatalf("Failed to parse YAML: %s", err)
-	}
-	return result
-}
-
-func getManifestAsString(t *testing.T, filePath string) string {
+func getManifestAsBytes(t *testing.T, filePath string) []byte {
 	yamlFileContent, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatalf("Failed to read YAML file: %s", err)
 	}
 
-	yamlContentString := string(yamlFileContent)
-	return yamlContentString
+	return yamlFileContent
+}
+
+// replace newlines with strings for easy .yaml byte comparison
+func normalizeNewlines(data []byte) []byte {
+	str := string(data)
+
+	// Replace newlines and carriage returns with a single newline
+	str = strings.ReplaceAll(str, "\r\n", "\n")
+	str = strings.ReplaceAll(str, "\r", "\n")
+
+	// Replace YAML block scalars' indicators with empty space
+	// Handles cases like "data: config.yaml: |"
+	re := regexp.MustCompile(`(\s*\|\s*)`)
+	str = re.ReplaceAllString(str, " ")
+
+	// Replace multiple spaces with a single space
+	str = strings.Join(strings.Fields(str), " ")
+
+	// Normalize empty mappings and fields
+	str = regexp.MustCompile(`(\{\s*\})`).ReplaceAllString(str, "{}")
+	str = regexp.MustCompile(`(\s*:\s*)`).ReplaceAllString(str, ": ")
+
+	return []byte(str)
 }

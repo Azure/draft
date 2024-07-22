@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/Azure/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
@@ -28,22 +27,26 @@ func GetManifestFiles(manifestsPath string) ([]safeguards.ManifestFile, error) {
 	if isDir {
 		// check if Helm or Kustomize dir
 		if isHelm(true, manifestsPath) {
-			return RenderHelmChart(false, manifestsPath, tempDir)
+			return RenderHelmChart(false, manifestsPath)
 		} else if isKustomize(true, manifestsPath) {
-			return RenderKustomizeManifest(manifestsPath, tempDir)
+			return RenderKustomizeManifest(manifestsPath)
 		} else {
 			manifestFiles, err = safeguards.GetManifestFilesFromDir(manifestsPath)
 			return manifestFiles, err
 		}
 	} else if safeguards.IsYAML(manifestsPath) { // path points to a file
 		if isHelm(false, manifestsPath) {
-			return RenderHelmChart(true, manifestsPath, tempDir)
+			return RenderHelmChart(true, manifestsPath)
 		} else if isKustomize(false, manifestsPath) {
-			return RenderKustomizeManifest(manifestsPath, tempDir)
+			return RenderKustomizeManifest(manifestsPath)
 		} else {
+			byteContent, err := os.ReadFile(manifestsPath)
+			if err != nil {
+				return nil, fmt.Errorf("could not read file %s: %v", manifestsPath, err)
+			}
 			manifestFiles = append(manifestFiles, safeguards.ManifestFile{
-				Name: path.Base(manifestsPath),
-				Path: manifestsPath,
+				Name:            path.Base(manifestsPath),
+				ManifestContent: byteContent,
 			})
 		}
 		return manifestFiles, nil
@@ -53,7 +56,7 @@ func GetManifestFiles(manifestsPath string) ([]safeguards.ManifestFile, error) {
 }
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
-func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.ManifestFile, error) {
+func RenderHelmChart(isFile bool, mainChartPath string) ([]safeguards.ManifestFile, error) {
 	if isFile { // Get the directory that the Chart.yaml lives in
 		mainChartPath = filepath.Dir(mainChartPath)
 	}
@@ -94,29 +97,16 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]safeguards.M
 
 		// Write each rendered file to the output directory with the same name as in templates/
 		for renderedPath, content := range renderedFiles {
-			outputFilePath := filepath.Join(tempDir, filepath.Base(renderedPath))
-			if err := os.WriteFile(outputFilePath, []byte(content), 0644); err != nil {
-				return nil, fmt.Errorf("failed to write manifest file: %s", err)
-			}
-			manifestFiles = append(manifestFiles, safeguards.ManifestFile{Name: filepath.Base(renderedPath), Path: outputFilePath})
+			byteContent := []byte(content)
+			manifestFiles = append(manifestFiles, safeguards.ManifestFile{Name: filepath.Base(renderedPath), ManifestContent: byteContent})
 		}
 	}
 
 	return manifestFiles, nil
 }
 
-// CreateTempDir creates a temporary directory on the user's file system for rendering templates
-func CreateTempDir(p string) error {
-	err := os.MkdirAll(p, 0755)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return err
-}
-
 // Given a kustomization manifest file within kustomizationPath, RenderKustomizeManifest will render templates out to tempDir
-func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]safeguards.ManifestFile, error) {
+func RenderKustomizeManifest(kustomizationPath string) ([]safeguards.ManifestFile, error) {
 	log.Debugf("Rendering kustomization.yaml...")
 	if safeguards.IsYAML(kustomizationPath) {
 		kustomizationPath = filepath.Dir(kustomizationPath)
@@ -133,31 +123,21 @@ func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]safeguards.Ma
 	kustomizeFS := filesys.MakeFsOnDisk()
 	resMap, err := k.Run(kustomizeFS, kustomizationPath)
 	if err != nil {
-		return nil, fmt.Errorf("Error building manifests: %s\n", err.Error())
+		return nil, fmt.Errorf("error building manifests: %s", err.Error())
 	}
 
 	// Output the manifests
 	var manifestFiles []safeguards.ManifestFile
-	kindMap := make(map[string]int)
 	for _, res := range resMap.Resources() {
 		yamlRes, err := res.AsYAML()
 		if err != nil {
-			return nil, fmt.Errorf("Error converting resource to YAML: %s\n", err.Error())
-		}
-
-		// index of every kind of manifest for outputRenderPath
-		kindMap[res.GetKind()] += 1
-		outputRenderPath := filepath.Join(tempDir, strings.ToLower(res.GetKind())) + fmt.Sprintf("-%d.yaml", kindMap[res.GetKind()])
-
-		err = kustomizeFS.WriteFile(outputRenderPath, yamlRes)
-		if err != nil {
-			return nil, fmt.Errorf("Error writing yaml resource: %s\n", err.Error())
+			return nil, fmt.Errorf("error converting resource to YAML: %s", err.Error())
 		}
 
 		// write yamlRes to dir
 		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
-			Name: res.GetName(),
-			Path: outputRenderPath,
+			Name:            res.GetName(),
+			ManifestContent: yamlRes,
 		})
 	}
 

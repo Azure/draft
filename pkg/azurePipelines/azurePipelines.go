@@ -17,6 +17,7 @@ import (
 const (
 	pipelineParentDirName = "azurePipelines"
 	configFileName        = "draft.yaml"
+	pipelineNameVar       = "PIPELINENAME"
 )
 
 type AzurePipelines struct {
@@ -83,6 +84,36 @@ func (p *AzurePipelines) loadConfig(deployType string) (*config.DraftConfig, err
 	return &draftConfig, nil
 }
 
+func (p *AzurePipelines) overrideFilename(draftConfig *config.DraftConfig, srcDir string) error {
+	if draftConfig.FileNameOverrideMap == nil {
+		draftConfig.FileNameOverrideMap = make(map[string]string)
+	}
+	pipelineVar, err := draftConfig.GetVariable(pipelineNameVar)
+	if err != nil {
+		return fmt.Errorf("error getting pipeline name variable: %w", err)
+	}
+
+	files, err := fs.ReadDir(p.pipelineTemplates, srcDir)
+	if err != nil {
+		return fmt.Errorf("error reading source directory: %w", err)
+	}
+
+	for _, f := range files {
+		if f.Name() == configFileName {
+			continue
+		}
+		if f.IsDir() {
+			if err := p.overrideFilename(draftConfig, path.Join(srcDir, f.Name())); err != nil {
+				return fmt.Errorf("error overriding filename: %w", err)
+			}
+			continue
+		}
+
+		draftConfig.FileNameOverrideMap[f.Name()] = pipelineVar.Value + ".yaml"
+	}
+	return nil
+}
+
 func (p *AzurePipelines) CreatePipelineFiles(deployType string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := p.pipelines[deployType]
 	if !ok {
@@ -90,6 +121,10 @@ func (p *AzurePipelines) CreatePipelineFiles(deployType string, draftConfig *con
 	}
 	srcDir := path.Join(pipelineParentDirName, val.Name())
 	log.Debugf("source directory of pipeline template: %s", srcDir)
+
+	if err := p.overrideFilename(draftConfig, srcDir); err != nil {
+		return fmt.Errorf("error overriding filename: %w", err)
+	}
 
 	if err := draftConfig.ApplyDefaultVariables(); err != nil {
 		return fmt.Errorf("error applying default variables: %w", err)

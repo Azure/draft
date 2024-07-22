@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	pipelineParentDirName = "azurePipelines"
-	configFileName        = "draft.yaml"
-	pipelineNameVar       = "PIPELINENAME"
+	pipelineParentDirName       = "azurePipelines"
+	aksPipelineTemplateFileName = "azure-kubernetes-service.yaml"
+	configFileName              = "draft.yaml"
+	pipelineNameVar             = "PIPELINENAME"
 )
 
 type AzurePipelines struct {
@@ -109,7 +110,9 @@ func (p *AzurePipelines) overrideFilename(draftConfig *config.DraftConfig, srcDi
 			continue
 		}
 
-		draftConfig.FileNameOverrideMap[f.Name()] = pipelineVar.Value + ".yaml"
+		if f.Name() == aksPipelineTemplateFileName {
+			draftConfig.FileNameOverrideMap[f.Name()] = pipelineVar.Value + ".yaml"
+		}
 	}
 	return nil
 }

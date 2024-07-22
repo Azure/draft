@@ -16,18 +16,16 @@ func TestCreatePipelines(t *testing.T) {
 	templateWriter := &writers.LocalFSWriter{}
 
 	tests := []struct {
-		name                    string
-		deployType              string
-		shouldError             bool
-		setConfig               func(dc *config.DraftConfig)
-		defaultPipelineFileName string
-		cleanUp                 func(tempDir string)
+		name        string
+		deployType  string
+		shouldError bool
+		setConfig   func(dc *config.DraftConfig)
+		cleanUp     func(tempDir string)
 	}{
 		{
-			name:                    "kustomize_default_path",
-			deployType:              "kustomize",
-			shouldError:             false,
-			defaultPipelineFileName: "azure-kubernetes-service-kustomize.yaml",
+			name:        "kustomize_default_path",
+			deployType:  "kustomize",
+			shouldError: false,
 		},
 		{
 			name:        "kustomize_given_path",
@@ -36,7 +34,6 @@ func TestCreatePipelines(t *testing.T) {
 			setConfig: func(dc *config.DraftConfig) {
 				dc.SetVariable("KUSTOMIZEPATH", "test/kustomize/overlays/production")
 			},
-			defaultPipelineFileName: "azure-kubernetes-service-kustomize.yaml",
 		},
 		{
 			name:        "manifests_default_path",
@@ -45,7 +42,6 @@ func TestCreatePipelines(t *testing.T) {
 			setConfig: func(dc *config.DraftConfig) {
 				dc.SetVariable("PIPELINENAME", "some-other-name")
 			},
-			defaultPipelineFileName: "azure-kubernetes-service.yaml",
 		},
 		{
 			name:        "manifests_custom_path",
@@ -54,13 +50,11 @@ func TestCreatePipelines(t *testing.T) {
 			setConfig: func(dc *config.DraftConfig) {
 				dc.SetVariable("MANIFESTPATH", "test/manifests")
 			},
-			defaultPipelineFileName: "azure-kubernetes-service.yaml",
 		},
 		{
-			name:                    "invalid",
-			deployType:              "invalid",
-			shouldError:             true,
-			defaultPipelineFileName: "azure-kubernetes-service.yaml",
+			name:        "invalid",
+			deployType:  "invalid",
+			shouldError: true,
 		},
 		{
 			name:        "missing_config",
@@ -70,7 +64,6 @@ func TestCreatePipelines(t *testing.T) {
 				// removing the last variable from draftConfig
 				dc.Variables = dc.Variables[:len(dc.Variables)-1]
 			},
-			defaultPipelineFileName: "azure-kubernetes-service-kustomize.yaml",
 		},
 	}
 
@@ -89,8 +82,8 @@ func TestCreatePipelines(t *testing.T) {
 
 		err = pipelines.CreatePipelineFiles(tt.deployType, draftConfig, templateWriter)
 
-		pipelineFilePath = fmt.Sprintf("%s/.pipelines/%s", tempDir, tt.defaultPipelineFileName)
-		if val, ok := draftConfig.FileNameOverrideMap[tt.defaultPipelineFileName]; ok {
+		pipelineFilePath = fmt.Sprintf("%s/.pipelines/%s", tempDir, aksPipelineTemplateFileName)
+		if val, ok := draftConfig.FileNameOverrideMap[aksPipelineTemplateFileName]; ok {
 			pipelineFilePath = fmt.Sprintf("%s/.pipelines/%s", tempDir, val)
 		}
 

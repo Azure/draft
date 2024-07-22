@@ -94,26 +94,18 @@ func (p *AzurePipelines) overrideFilename(draftConfig *config.DraftConfig, srcDi
 		return fmt.Errorf("error getting pipeline name variable: %w", err)
 	}
 
-	files, err := fs.ReadDir(p.pipelineTemplates, srcDir)
-	if err != nil {
-		return fmt.Errorf("error reading source directory: %w", err)
+	if err = fs.WalkDir(p.pipelineTemplates, srcDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.Name() == aksPipelineTemplateFileName {
+			draftConfig.FileNameOverrideMap[d.Name()] = pipelineVar.Value + ".yaml"
+		}
+		return nil
+	}); err != nil {
+		return fmt.Errorf("error walking through source directory: %w", err)
 	}
 
-	for _, f := range files {
-		if f.Name() == configFileName {
-			continue
-		}
-		if f.IsDir() {
-			if err := p.overrideFilename(draftConfig, path.Join(srcDir, f.Name())); err != nil {
-				return fmt.Errorf("error overriding filename: %w", err)
-			}
-			continue
-		}
-
-		if f.Name() == aksPipelineTemplateFileName {
-			draftConfig.FileNameOverrideMap[f.Name()] = pipelineVar.Value + ".yaml"
-		}
-	}
 	return nil
 }
 

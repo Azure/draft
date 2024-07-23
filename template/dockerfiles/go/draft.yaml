@@ -1,8 +1,5 @@
 language: go
 displayName: Go
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

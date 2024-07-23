@@ -1,8 +1,5 @@
 language: swift
 displayName: Swift
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

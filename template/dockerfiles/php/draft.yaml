@@ -1,8 +1,5 @@
 language: php
 displayName: PHP
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

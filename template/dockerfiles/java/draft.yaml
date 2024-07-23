@@ -1,8 +1,5 @@
 language: java
 displayName: Java
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

@@ -13,7 +13,7 @@
 
 ### Fixed
 
-- Workflows are now generated fully from a draftConfig
+- [#320](https://github.com/Azure/draft/pull/320) Workflows are now generated fully from a draftConfig
 
 ## [0.0.35] - 2024-05-21
 

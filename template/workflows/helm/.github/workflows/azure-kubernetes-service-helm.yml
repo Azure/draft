@@ -42,7 +42,6 @@ env:
   CHART_OVERRIDE_PATH: {{CHARTOVERRIDEPATH}}
   CHART_OVERRIDES: {{CHARTOVERRIDES}}
   NAMESPACE: {{NAMESPACE}}
-  PRIVATE_CLUSTER: {{PRIVATECLUSTER}}
   
 jobs:
   buildImage:
@@ -110,6 +109,13 @@ jobs:
           overrides: ${{ env.CHART_OVERRIDES }}
           helm-version: "latest"
         id: bake
+
+      # Checks if the AKS cluster is private
+      - name: Is private cluster
+        id: isPrivate
+        run: |
+          result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
+          echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
       # Deploys application based on manifest files from previous step
       - name: Deploy application

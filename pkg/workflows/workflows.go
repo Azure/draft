@@ -17,9 +17,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/deployments"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/Azure/draft/template"
 )
 
 type Workflows struct {
@@ -36,6 +40,13 @@ const (
 )
 
 func UpdateProductionDeployments(deployType, dest string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
+	deployment := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, dest)
+	var deployConfig *config.DraftConfig
+	deployConfig, err := deployment.GetConfig(deployType)
+	if err != nil {
+		return fmt.Errorf("get config: %w", err)
+	}
+
 	acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY")
 	if err != nil {
 		return fmt.Errorf("failed to get variable: %w", err)
@@ -47,14 +58,31 @@ func UpdateProductionDeployments(deployType, dest string, draftConfig *config.Dr
 	}
 
 	productionImage := fmt.Sprintf("%s.azurecr.io/%s", acr.Value, repositoryName.Value)
-	switch deployType {
-	case "helm":
-		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
-	case "kustomize":
-		return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
-	case "manifests":
-		return setDeploymentContainerImage(dest+"/manifests/deployment.yaml", productionImage)
+
+	namespace, err := draftConfig.GetVariable("NAMESPACE")
+	if err != nil {
+		return fmt.Errorf("failed to get variable: %w", err)
 	}
+
+	deployConfig.SetVariable("IMAGENAME", productionImage)
+	deployConfig.SetVariable("NAMESPACE", namespace.Value)
+
+	if err = prompts.RunPromptsFromConfigWithSkips(deployConfig); err != nil {
+		return fmt.Errorf("failed to run prompts from config with skips: %w", err)
+	}
+
+	if err = deployment.CopyDeploymentFiles(deployType, deployConfig, &writers.LocalFSWriter{}); err != nil {
+		return fmt.Errorf("failed to copy deployment files: %w", err)
+	}
+
+	// switch deployType {
+	// case "helm":
+	// 	return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
+	// case "kustomize":
+	// 	return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
+	// case "manifests":
+	// 	return setDeploymentContainerImage(dest+"/manifests/deployment.yaml", productionImage)
+	// }
 	return nil
 }
 

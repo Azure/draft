@@ -4,6 +4,7 @@
 
 ### Added
 
+- [#342](https://github.com/Azure/draft/pull/342) Added k8s/deploy Inputs for Private Cluster Support
 - [#337](https://github.com/Azure/draft/pull/337) azure pipelines generation support
 - [#334](https://github.com/Azure/draft/pull/334) template support for private clusters
 - [#324](https://github.com/Azure/draft/pull/324) workflow template enhancements

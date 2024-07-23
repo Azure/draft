@@ -1,5 +1,19 @@
 # Change Log
 
+## [0.0.36] - 2024-07-23
+
+### Added
+
+- [#337](https://github.com/Azure/draft/pull/337) azure pipelines generation support
+- [#334](https://github.com/Azure/draft/pull/334) template support for private clusters
+- [#324](https://github.com/Azure/draft/pull/324) workflow template enhancements
+- [#321](https://github.com/Azure/draft/pull/321) add helm rendering function
+- [#315](https://github.com/Azure/draft/pull/315) adding logic for generating default app name
+
+### Fixed
+
+- Workflows are now generated fully from a draftConfig
+
 ## [0.0.35] - 2024-05-21
 
 ### Added
@@ -21,7 +35,6 @@
 - [#269](https://github.com/Azure/draft/pull/269) yaml file extension validation
 - [#262](https://github.com/Azure/draft/pull/262) sdk calls for getTenantID
 - [#242](https://github.com/Azure/draft/pull/242) changes in correlation with new GH action permission changes
-
 
 ## [0.0.33] - 2023-08-07
 
@@ -51,7 +64,7 @@
 - [#196](https://github.com/Azure/draft/pull/196) Update deprecated node12 actions
 - [#207](https://github.com/Azure/draft/pull/207) Default deploy variable fixed
 
-### Changed 
+### Changed
 
 - [#194](https://github.com/Azure/draft/pull/194) Move generate workflow templates to embedded file system
 
@@ -69,11 +82,12 @@
 
 ### Changed
 
-- [#187](https://github.com/Azure/draft/pull/187) OpenJDK Docker image has been deprecated and doesnt have JRE images for  Java 11+. This change moves our Java images to Eclipse-Temurin.
+- [#187](https://github.com/Azure/draft/pull/187) OpenJDK Docker image has been deprecated and doesnt have JRE images for Java 11+. This change moves our Java images to Eclipse-Temurin.
 
 ## [0.0.29] - 2023-02-16
 
 ### Fixed
+
 - [#183](https://github.com/Azure/draft/pull/183) Bug fix for helm deployments where namespace was created but not respected at the deployment level
 
 ## [0.0.28] - 2023-02-13
@@ -81,8 +95,9 @@
 **BREAKING** changes to `IMAGE` variable
 
 ### Added
+
 - New, optional `disablePrompt` property on Builder Variables in draft config [#180](https://github.com/Azure/draft/pull/180):
-  - Default Value: `false` 
+  - Default Value: `false`
   - Variables with `disablePrompt: true` will not be prompted for when running `draft interactive commands`
   - Variables with `disablePrompt: true` can still be supplied via flags (`draft create --var TAG=latest`) or draft config files
   - Example Usage:
@@ -93,10 +108,11 @@
         description: "the tag of the image to be built"
         disablePrompt: true #  New optional field that is used to disable the prompt for this variable
       ...
-      ```
+    ```
 - For all draft substitutions, draft will now error if unsubstituted variables are found in the final output [#175](https://github.com/Azure/draft/pull/175)
 
 ### Changed
+
 - **BREAKING** the `IMAGE` variable no longer can include an image tag. The `TAG` variable should be used instead [#176](https://github.com/Azure/draft/pull/176)
 - **BREAKING** the `imageKey` variable on the `helm` deployment type has been renamed to `image` to be consistent with the supplied starter workflows (#176)
   - Re-running `draft create` will update existing files to follow the new convention
@@ -104,19 +120,20 @@
 ## [0.0.27] - 2022-12-9
 
 ### Added
+
 - New `displayName` and `variables.exampeValues` properties in draft.yaml
   ```yaml
-    # draft.yaml
-    language: swift
-    displayName: Swift # Add a display name for the selected resource (language/deploymentType/addon)
-    variables:
+  # draft.yaml
+  language: swift
+  displayName: Swift # Add a display name for the selected resource (language/deploymentType/addon)
+  variables:
     - name: "VERSION"
       description: "the version of swift used by the application"
-      exampleValues: ["5.5","5.4"] #  New optional field that is used to populate draft info, and which could be used in the cli for suggestions in the future.
+      exampleValues: ["5.5", "5.4"] #  New optional field that is used to populate draft info, and which could be used in the cli for suggestions in the future.
       variableDefaults:
     - name: "VERSION"
       value: 5.5
-    ```
+  ```
 - Added `--dry-run` and `--dry-run-file` flags to `create` command
   - `--dry-run` enables dry run mode in which no files are written to disk, prints the dry run summary to stdout
   - `--dry-run-file` specifies a file to write the dry run summary in json format (requires `--dry-run` flag)
@@ -147,37 +164,37 @@
     ]
   }
   ```
-  
+
 ### Changed
 
 - **BREAKING** - `info` command output format includes additional information for supported languages with the following format changes:
-    - keys are now camelCase
-    - `supportedLanguages` is now an array of objects, enriched with `displayName` and `exampleValues`
-    ```json
-    # Example of the new info command output format
-    {
-      # keys are now camelCase, so supported_languages is now supportedLanguages
-      "supportedLanguages": [
-        {
-          "name": "javascript",
-          "displayName": "JavaScript", # new field
-          "exampleValues": {           # new field
-            "VERSION": [
-              "14.0",
-              "16.0"
-            ]
-          }
-        },
-        ...
-      ],
-     # keys are now camelCase, so supported_deployment_types is now supportedDeploymentTypes
-     "supportedDeploymentTypes": [
-        "helm",
-        ...
-      ]
-    }
-    ```
-  
+  - keys are now camelCase
+  - `supportedLanguages` is now an array of objects, enriched with `displayName` and `exampleValues`
+  ```json
+  # Example of the new info command output format
+  {
+    # keys are now camelCase, so supported_languages is now supportedLanguages
+    "supportedLanguages": [
+      {
+        "name": "javascript",
+        "displayName": "JavaScript", # new field
+        "exampleValues": {           # new field
+          "VERSION": [
+            "14.0",
+            "16.0"
+          ]
+        }
+      },
+      ...
+    ],
+   # keys are now camelCase, so supported_deployment_types is now supportedDeploymentTypes
+   "supportedDeploymentTypes": [
+      "helm",
+      ...
+    ]
+  }
+  ```
+
 ## [0.0.26] - 2022-11-16
 
 ### Added

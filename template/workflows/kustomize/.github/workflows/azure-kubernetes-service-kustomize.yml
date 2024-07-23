@@ -121,5 +121,7 @@ jobs:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.ACR_REPOSITORY_NAME }}:${{ github.sha }}
-          namespace: ${{ env.NAMESPACE }}
+          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+          name: ${{ env.CLUSTER_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
+          namespace: ${{ env.NAMESPACE }}

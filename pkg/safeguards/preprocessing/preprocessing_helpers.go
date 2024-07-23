@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Azure/draft/pkg/safeguards"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -85,9 +84,5 @@ func isHelm(isDir bool, path string) bool {
 	}
 
 	_, err := os.Stat(chartPath)
-	if err == nil && safeguards.IsYAML(chartPath) { // Couldn't find Chart.yaml in the directory
-		return true
-	}
-
-	return false
+	return err == nil
 }

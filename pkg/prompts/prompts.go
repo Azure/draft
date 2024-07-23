@@ -705,11 +705,11 @@ func promptAzClusterName(draftConfig *config.DraftConfig, clusterName *config.Bu
 		return "", fmt.Errorf("failed to select a cluster: %w", err)
 	}
 
-	// if acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY"); err != nil {
-	// 	return "", fmt.Errorf("failed to get variable: %w", err)
-	// } else if err = providers.AttachAcrToCluster(cluster, resourceGroup.Value, acr.Value); err != nil {
-	// 	return "", fmt.Errorf("failed to attach Azure container registry to cluster: %w", err)
-	// }
+	if acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY"); err != nil {
+		return "", fmt.Errorf("failed to get variable: %w", err)
+	} else if err = providers.AttachAcrToCluster(cluster, resourceGroup.Value, acr.Value); err != nil {
+		return "", fmt.Errorf("failed to attach Azure container registry to cluster: %w", err)
+	}
 
 	return cluster, nil
 }
@@ -762,7 +762,7 @@ func promptAzNamespace(draftConfig *config.DraftConfig, namespace *config.Builde
 		return "", fmt.Errorf("failed to get Azure namespaces: %w", err)
 	}
 
-	namespaceVal, err := Select("Please select the namespace for this workflow", namespaces, &SelectOpt[string]{
+	namespaceVal, err := Select("Please select the namespace for this workflow (must match deployment namespace)", namespaces, &SelectOpt[string]{
 		DraftConfig:  draftConfig,
 		BuilderVar:   namespace,
 		DefaultValue: defaultValue,

@@ -108,5 +108,5 @@ jobs:
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.ACR_REPOSITORY_NAME }}:${{ github.sha }}
           namespace: ${{ env.NAMESPACE }}
-          private-cluster: ${{ env.PRIVATE_CLUSTER }}
+          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
           

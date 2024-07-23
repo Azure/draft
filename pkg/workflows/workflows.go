@@ -2,24 +2,22 @@ package workflows
 
 import (
 	"embed"
-	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
-	"os"
 	"path"
 
 	"gopkg.in/yaml.v3"
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/cli-runtime/pkg/printers"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/deployments"
 	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
+	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/Azure/draft/template"
 )
 
 type Workflows struct {
@@ -36,6 +34,13 @@ const (
 )
 
 func UpdateProductionDeployments(deployType, dest string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
+	deployment := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, dest)
+	var deployConfig *config.DraftConfig
+	deployConfig, err := deployment.GetConfig(deployType)
+	if err != nil {
+		return fmt.Errorf("get config: %w", err)
+	}
+
 	acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY")
 	if err != nil {
 		return fmt.Errorf("get variable: %w", err)
@@ -47,75 +52,24 @@ func UpdateProductionDeployments(deployType, dest string, draftConfig *config.Dr
 	}
 
 	productionImage := fmt.Sprintf("%s.azurecr.io/%s", acr.Value, containerName.Value)
-	switch deployType {
-	case "helm":
-		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
-	case "kustomize":
-		return setDeploymentContainerImage(dest+"/overlays/production/deployment.yaml", productionImage)
-	case "manifests":
-		return setDeploymentContainerImage(dest+"/manifests/deployment.yaml", productionImage)
+
+	namespace, err := draftConfig.GetVariable("NAMESPACE")
+	if err != nil {
+		return fmt.Errorf("failed to get variable: %w", err)
 	}
+
+	deployConfig.SetVariable("IMAGENAME", productionImage)
+	deployConfig.SetVariable("NAMESPACE", namespace.Value)
+
+	if err = prompts.RunPromptsFromConfigWithSkips(deployConfig); err != nil {
+		return fmt.Errorf("failed to run prompts from config with skips: %w", err)
+	}
+
+	if err = deployment.CopyDeploymentFiles(deployType, deployConfig, &writers.LocalFSWriter{}); err != nil {
+		return fmt.Errorf("failed to copy deployment files: %w", err)
+	}
+
 	return nil
-}
-
-func setDeploymentContainerImage(filePath, productionImage string) error {
-
-	decode := scheme.Codecs.UniversalDeserializer().Decode
-	file, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	k8sObj, _, err := decode(file, nil, nil)
-	if err != nil {
-		return err
-	}
-	deploy, ok := k8sObj.(*appsv1.Deployment)
-	if !ok {
-		return errors.New("could not decode kubernetes deployment")
-	}
-
-	if len(deploy.Spec.Template.Spec.Containers) != 1 {
-		return errors.New("unsupported number of containers defined in the deployment spec")
-	}
-
-	deploy.Spec.Template.Spec.Containers[0].Image = productionImage
-
-	printer := printers.YAMLPrinter{}
-
-	out, err := os.OpenFile(filePath, os.O_RDWR, 0755)
-	if err != nil {
-		return nil
-	}
-	defer func() {
-		if err := out.Close(); err != nil {
-			log.Errorf("error closing file: %v", err)
-		}
-	}()
-
-	return printer.PrintObj(deploy, out)
-}
-
-func setHelmContainerImage(filePath, productionImage string, templateWriter templatewriter.TemplateWriter) error {
-	file, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	var deploy HelmProductionYaml
-	err = yaml.Unmarshal(file, &deploy)
-	if err != nil {
-		return err
-	}
-
-	deploy.Image.Repository = productionImage
-
-	out, err := yaml.Marshal(deploy)
-	if err != nil {
-		return err
-	}
-
-	return templateWriter.WriteFile(filePath, out)
 }
 
 func (w *Workflows) loadConfig(deployType string) (*config.DraftConfig, error) {

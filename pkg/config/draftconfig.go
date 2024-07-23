@@ -9,9 +9,10 @@ import (
 
 // TODO: remove Name Overrides since we don't need them anymore
 type DraftConfig struct {
-	DisplayName   string             `yaml:"displayName"`
-	NameOverrides []FileNameOverride `yaml:"nameOverrides"`
-	Variables     []*BuilderVar      `yaml:"variables"`
+	DisplayName         string             `yaml:"displayName"`
+	NameOverrides       []FileNameOverride `yaml:"nameOverrides"`
+	Variables           []*BuilderVar      `yaml:"variables"`
+	FileNameOverrideMap map[string]string  `yaml:"filenameOverrideMap"`
 
 	nameOverrideMap map[string]string
 }

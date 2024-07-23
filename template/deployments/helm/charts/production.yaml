@@ -1,5 +1,5 @@
 image:
-  repository: "{{IMAGENAME}}"
+  repository: "{{APPNAME}}"
   pullPolicy: Always
   tag: "latest"
 service:

@@ -39,5 +39,5 @@ variables:
   - name: "NAMESPACE"
     default:
       value: "default"
-    description: "the Kubernetes namespace"
+    description: "the Kubernetes namespace, must match deployment namespace"
     resource: "azNamespace"

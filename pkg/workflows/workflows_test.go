@@ -23,7 +23,7 @@ import (
 
 func TestCreateWorkflows(t *testing.T) {
 	dest := "."
-	templatewriter := &writers.LocalFSWriter{}
+	templateWriter := &writers.LocalFSWriter{}
 	draftConfig := &config.DraftConfig{
 		Variables: []*config.BuilderVar{
 			{
@@ -236,11 +236,11 @@ func TestCreateWorkflows(t *testing.T) {
 		assert.Nil(t, err)
 
 		workflows := CreateWorkflowsFromEmbedFS(template.Workflows, dest)
-		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfig, templatewriter)
+		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfig, templateWriter)
 		if err != nil && tt.shouldError == false {
 			t.Errorf("Default Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
 		}
-		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfigNoRoot, templatewriter)
+		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfigNoRoot, templateWriter)
 		if err != nil && tt.shouldError == false {
 			t.Errorf("Custom Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
 		}
@@ -374,7 +374,7 @@ func TestPopulateConfigs(t *testing.T) {
 }
 
 func TestCreateWorkflowFiles(t *testing.T) {
-	templatewriter := &writers.LocalFSWriter{}
+	templateWriter := &writers.LocalFSWriter{}
 	draftConfig := &config.DraftConfig{
 		Variables: []*config.BuilderVar{
 			{
@@ -505,18 +505,18 @@ func TestCreateWorkflowFiles(t *testing.T) {
 
 	mockWF.populateConfigs()
 
-	err = mockWF.CreateWorkflowFiles("fakeDeployType", draftConfig, templatewriter)
+	err = mockWF.CreateWorkflowFiles("fakeDeployType", draftConfig, templateWriter)
 	assert.NotNil(t, err)
 
-	err = mockWF.CreateWorkflowFiles("helm", draftConfig, templatewriter)
+	err = mockWF.CreateWorkflowFiles("helm", draftConfig, templateWriter)
 	assert.Nil(t, err)
 	os.RemoveAll(".github")
 
-	err = mockWF.CreateWorkflowFiles("helm", draftConfigNoRoot, templatewriter)
+	err = mockWF.CreateWorkflowFiles("helm", draftConfigNoRoot, templateWriter)
 	assert.Nil(t, err)
 	os.RemoveAll(".github")
 
-	err = mockWF.CreateWorkflowFiles("helm", badDraftConfig, templatewriter)
+	err = mockWF.CreateWorkflowFiles("helm", badDraftConfig, templateWriter)
 	assert.NotNil(t, err)
 	os.RemoveAll(".github")
 }

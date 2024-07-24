@@ -157,3 +157,66 @@ func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config
 
 	return []byte(fileString), nil
 }
+
+// CopyDirWithTemplates - Handles Gotemplate processing and writing
+func CopyDirWithTemplates(
+	fileSys fs.FS,
+	src, dest string,
+	variableMap map[string]string,
+	templateWriter templatewriter.TemplateWriter) error {
+
+	files, err := fs.ReadDir(fileSys, src)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+
+		if f.Name() == "draft.yaml" {
+			continue
+		}
+
+		srcPath := path.Join(src, f.Name())
+		destPath := path.Join(dest, f.Name())
+		log.Debugf("Source path: %s Dest path: %s", srcPath, destPath)
+
+		if f.IsDir() {
+			if err = templateWriter.EnsureDirectory(destPath); err != nil {
+				return err
+			}
+			if err = CopyDirWithTemplates(fileSys, srcPath, destPath, variableMap, templateWriter); err != nil {
+				return err
+			}
+		} else {
+			fileContent, err := replaceGoTemplateVariables(fileSys, srcPath, variableMap)
+			if err != nil {
+				return err
+			}
+
+			if err = checkAllVariablesSubstituted(string(fileContent)); err != nil {
+				return fmt.Errorf("error substituting file %s: %w", srcPath, err)
+			}
+
+			if err = templateWriter.WriteFile(destPath, fileContent); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func replaceGoTemplateVariables(fileSys fs.FS, srcPath string, variableMap map[string]string) ([]byte, error) {
+	file, err := fs.ReadFile(fileSys, srcPath)
+	if err != nil {
+		return nil, err
+	}
+
+	filrString := string(file)
+
+	for key, value := range variableMap {
+		log.Debugf("replacing %s with %s", key, value)
+		filrString = strings.ReplaceAll(filrString, "{{"+key+"}}", value)
+	}
+
+	return []byte(filrString), nil
+}

@@ -8,9 +8,9 @@ import (
 )
 
 type DraftConfig struct {
-	DisplayName         string             `yaml:"displayName"`
-	Variables           []*BuilderVar      `yaml:"variables"`
-	FileNameOverrideMap map[string]string  `yaml:"filenameOverrideMap"`
+	DisplayName         string            `yaml:"displayName"`
+	Variables           []*BuilderVar     `yaml:"variables"`
+	FileNameOverrideMap map[string]string `yaml:"filenameOverrideMap"`
 }
 
 type BuilderVar struct {
@@ -37,6 +37,15 @@ func (d *DraftConfig) GetVariableExampleValues() map[string][]string {
 	}
 
 	return variableExampleValues
+}
+
+// Returns a map of variable names to values used in Gotemplate
+func (d *DraftConfig) GetVariableMap() map[string]string {
+	variableMap := make(map[string]string)
+	for _, variable := range d.Variables {
+		variableMap[variable.Name] = variable.Value
+	}
+	return variableMap
 }
 
 func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {

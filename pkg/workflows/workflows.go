@@ -187,7 +187,12 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.D
 		return fmt.Errorf("create workflow files: %w", err)
 	}
 
-	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.Dest, draftConfig, templateWriter); err != nil {
+	variableMap := draftConfig.GetVariableMap()
+	if len(variableMap) == 0 {
+		return fmt.Errorf("variable map is empty, unable to replace template variables")
+	}
+
+	if err := osutil.CopyDirWithTemplates(w.workflowTemplates, srcDir, w.Dest, variableMap, templateWriter); err != nil {
 		return err
 	}
 

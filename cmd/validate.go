@@ -3,9 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"path"
 
 	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/Azure/draft/pkg/safeguards/preprocessing"
+	h "github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -55,24 +56,11 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 	}
 
 	ctx := context.Background()
-	isDir, err := safeguards.IsDirectory(vc.manifestPath)
-	if err != nil {
-		return fmt.Errorf("not a valid file or directory: %w", err)
-	}
 
-	var manifestFiles []safeguards.ManifestFile
-	if isDir {
-		manifestFiles, err = safeguards.GetManifestFiles(vc.manifestPath)
-		if err != nil {
-			return err
-		}
-	} else if safeguards.IsYAML(vc.manifestPath) {
-		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
-			Name: path.Base(vc.manifestPath),
-			Path: vc.manifestPath,
-		})
-	} else {
-		return fmt.Errorf("expected at least one .yaml or .yml file within given path")
+	var manifestFiles []h.ManifestFile
+	manifestFiles, err := preprocessing.GetManifestFiles(vc.manifestPath)
+	if err != nil {
+		return fmt.Errorf("error retrieving manifest files: %w", err)
 	}
 
 	log.Debugf("validating manifests")

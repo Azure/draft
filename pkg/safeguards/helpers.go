@@ -1,7 +1,6 @@
 package safeguards
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"io/fs"
@@ -11,14 +10,13 @@ import (
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
-	api "github.com/open-policy-agent/gatekeeper/v3/apis"
-	"github.com/open-policy-agent/gatekeeper/v3/pkg/gator/reader"
+
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+
+	c "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 // retrieves the constraint client that does all rego code related operations
@@ -38,111 +36,20 @@ func getConstraintClient() (*constraintclient.Client, error) {
 
 // sorts the list of supported safeguards versions and returns the last item in the list
 func getLatestSafeguardsVersion() string {
-	semver.Sort(supportedVersions)
-	return supportedVersions[len(supportedVersions)-1]
+	semver.Sort(c.SupportedVersions)
+	return c.SupportedVersions[len(c.SupportedVersions)-1]
 }
 
-func updateSafeguardPaths(safeguardList *[]Safeguard) {
+func updateSafeguardPaths(safeguardList *[]c.Safeguard) {
 	for _, sg := range *safeguardList {
-		sg.templatePath = fmt.Sprintf("%s/%s/%s", selectedVersion, sg.name, templateFileName)
-		sg.constraintPath = fmt.Sprintf("%s/%s/%s", selectedVersion, sg.name, constraintFileName)
+		sg.TemplatePath = fmt.Sprintf("%s/%s/%s", c.SelectedVersion, sg.Name, c.TemplateFileName)
+		sg.ConstraintPath = fmt.Sprintf("%s/%s/%s", c.SelectedVersion, sg.Name, c.ConstraintFileName)
 	}
 }
 
 // adds Safeguard_CRIP to full list of Safeguards
 func AddSafeguardCRIP() {
-	fc.Safeguards = append(fc.Safeguards, Safeguard_CRIP)
-}
-
-// methods for retrieval of manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadManifests(path string) ([]*unstructured.Unstructured, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("opening file %q: %w", path, err)
-	}
-	defer file.Close()
-
-	manifests, err := reader.ReadK8sResources(bufio.NewReader(file))
-	if err != nil {
-		return nil, fmt.Errorf("reading file %q: %w", path, err)
-	}
-
-	return manifests, nil
-}
-
-func GetScheme() *runtime.Scheme {
-	var s = runtime.NewScheme()
-	_ = clientgoscheme.AddToScheme(s)
-	_ = api.AddToScheme(s)
-	return s
-}
-
-func (fc FileCrawler) ReadConstraintTemplates() ([]*templates.ConstraintTemplate, error) {
-	var constraintTemplates []*templates.ConstraintTemplate
-
-	for _, sg := range fc.Safeguards {
-		ct, err := reader.ReadTemplate(GetScheme(), fc.constraintFS, sg.templatePath)
-		if err != nil {
-			return nil, fmt.Errorf("reading template: %w", err)
-		}
-		constraintTemplates = append(constraintTemplates, ct)
-	}
-
-	return constraintTemplates, nil
-}
-
-func (fc FileCrawler) ReadConstraintTemplate(name string) (*templates.ConstraintTemplate, error) {
-	var constraintTemplate *templates.ConstraintTemplate
-
-	for _, sg := range fc.Safeguards {
-		if sg.name == name {
-			ct, err := reader.ReadTemplate(GetScheme(), fc.constraintFS, sg.templatePath)
-			if err != nil {
-				return nil, fmt.Errorf("could not read template: %w", err)
-			}
-			constraintTemplate = ct
-		}
-	}
-	if constraintTemplate == nil {
-		return nil, fmt.Errorf("no constraint template exists with name: %s", name)
-	}
-
-	return constraintTemplate, nil
-}
-
-func (fc FileCrawler) ReadConstraints() ([]*unstructured.Unstructured, error) {
-	var constraints []*unstructured.Unstructured
-
-	for _, sg := range fc.Safeguards {
-		u, err := reader.ReadConstraint(fc.constraintFS, sg.constraintPath)
-		if err != nil {
-			return nil, fmt.Errorf("could not add constraint: %w", err)
-		}
-
-		constraints = append(constraints, u)
-	}
-
-	return constraints, nil
-}
-
-func (fc FileCrawler) ReadConstraint(name string) (*unstructured.Unstructured, error) {
-	var constraint *unstructured.Unstructured
-
-	for _, sg := range fc.Safeguards {
-		if sg.name == name {
-			c, err := reader.ReadConstraint(fc.constraintFS, sg.constraintPath)
-			if err != nil {
-				return nil, fmt.Errorf("could not add constraint: %w", err)
-			}
-
-			constraint = c
-		}
-	}
-	if constraint == nil {
-		return nil, fmt.Errorf("no constraint exists with name: %s", name)
-	}
-
-	return constraint, nil
+	fc.Safeguards = append(fc.Safeguards, c.Safeguard_CRIP)
 }
 
 // loads constraint templates, constraints into constraint client
@@ -204,11 +111,11 @@ func IsYAML(path string) bool {
 }
 
 // GetManifestFiles uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
-func GetManifestFiles(p string) ([]ManifestFile, error) {
-	var manifestFiles []ManifestFile
+func GetManifestFiles(p string) ([]c.ManifestFile, error) {
+	var manifestFiles []c.ManifestFile
 
 	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
-		manifest := ManifestFile{}
+		manifest := c.ManifestFile{}
 		// skip when walkPath is just given path and also a directory
 		if p == walkPath && info.IsDir() {
 			return nil

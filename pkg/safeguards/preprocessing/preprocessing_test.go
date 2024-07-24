@@ -2,6 +2,7 @@ package preprocessing
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -181,7 +182,6 @@ func TestRenderKustomizeManifest_Valid(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// TODO: later update these tests to validate the file content returned in the ManifestFile struct
 func TestGetManifestFiles(t *testing.T) {
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
@@ -249,4 +249,43 @@ func TestIsHelm(t *testing.T) {
 	// invalid path
 	ishelm = isHelm(false, "invalid/path")
 	assert.False(t, ishelm)
+}
+
+// TestIsYAML tests the IsYAML function for proper returns
+func TestIsYAML(t *testing.T) {
+	dirNotYaml, _ := filepath.Abs("../tests/not-yaml")
+	dirYaml, _ := filepath.Abs("../tests/all/success")
+	fileNotYaml, _ := filepath.Abs("../tests/not-yaml/readme.md")
+	fileYaml, _ := filepath.Abs("/tests/all/success/all-success-manifest-1.yaml")
+
+	assert.False(t, IsYAML(fileNotYaml))
+	assert.True(t, IsYAML(fileYaml))
+
+	manifestFiles, err := GetManifestFiles(dirNotYaml)
+	assert.Nil(t, manifestFiles)
+	assert.NotNil(t, err)
+
+	manifestFiles, err = GetManifestFiles(dirYaml)
+	assert.NotNil(t, manifestFiles)
+	assert.Nil(t, err)
+}
+
+// TestIsDirectory tests the isDirectory function for proper returns
+func TestIsDirectory(t *testing.T) {
+	testWd, _ := os.Getwd()
+	pathTrue := testWd
+	pathFalse := path.Join(testWd, "preprocessing.go")
+	pathError := ""
+
+	isDir, err := IsDirectory(pathTrue)
+	assert.True(t, isDir)
+	assert.Nil(t, err)
+
+	isDir, err = IsDirectory(pathFalse)
+	assert.False(t, isDir)
+	assert.Nil(t, err)
+
+	isDir, err = IsDirectory(pathError)
+	assert.False(t, isDir)
+	assert.NotNil(t, err)
 }

@@ -73,16 +73,39 @@ func isKustomize(isDir bool, p string) bool {
 
 // Checks whether a given path is a helm directory or a path to a Helm Chart (contains/is Chart.yaml)
 func isHelm(isDir bool, path string) bool {
-	var chartPath string
+	var chartPaths []string // Used to define what a valid helm chart looks like. Currently, presence of Chart.yaml/.yml.
+
 	if isDir {
-		chartPath = filepath.Join(path, "Chart.yaml")
+		chartPaths = []string{filepath.Join(path, "Chart.yaml")}
+		chartPaths = append(chartPaths, filepath.Join(path, "Chart.yml"))
 	} else {
-		if filepath.Base(path) != "Chart.yaml" {
+		if filepath.Base(path) != "Chart.yaml" && filepath.Base(path) != "Chart.yml" {
 			return false
 		}
-		chartPath = path
+		chartPaths = []string{path}
 	}
 
-	_, err := os.Stat(chartPath)
-	return err == nil
+	for _, path := range chartPaths {
+		_, err := os.Stat(path)
+		if err == nil { //Found the file, it's a valid helm chart
+			return true
+		}
+	}
+
+	return false
+}
+
+// IsYAML determines if a file is of the YAML extension or not
+func IsYAML(path string) bool {
+	return filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml"
+}
+
+// IsDirectory determines if a file represented by path is a directory or not
+func IsDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	return fileInfo.IsDir(), nil
 }

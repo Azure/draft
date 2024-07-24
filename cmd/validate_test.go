@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"os"
-	"path"
 	"path/filepath"
 
 	"testing"
@@ -11,56 +9,19 @@ import (
 	"github.com/Azure/draft/pkg/safeguards"
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"github.com/stretchr/testify/assert"
+
+	h "github.com/Azure/draft/pkg/safeguards/helpers"
 )
-
-// TestIsDirectory tests the isDirectory function for proper returns
-func TestIsDirectory(t *testing.T) {
-	testWd, _ := os.Getwd()
-	pathTrue := testWd
-	pathFalse := path.Join(testWd, "validate.go")
-	pathError := ""
-
-	isDir, err := safeguards.IsDirectory(pathTrue)
-	assert.True(t, isDir)
-	assert.Nil(t, err)
-
-	isDir, err = safeguards.IsDirectory(pathFalse)
-	assert.False(t, isDir)
-	assert.Nil(t, err)
-
-	isDir, err = safeguards.IsDirectory(pathError)
-	assert.False(t, isDir)
-	assert.NotNil(t, err)
-}
-
-// TestIsYAML tests the isYAML function for proper returns
-func TestIsYAML(t *testing.T) {
-	dirNotYaml, _ := filepath.Abs("../pkg/safeguards/tests/not-yaml")
-	dirYaml, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
-	fileNotYaml, _ := filepath.Abs("../pkg/safeguards/tests/not-yaml/readme.md")
-	fileYaml, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
-
-	assert.False(t, safeguards.IsYAML(fileNotYaml))
-	assert.True(t, safeguards.IsYAML(fileYaml))
-
-	manifestFiles, err := preprocessing.GetManifestFiles(dirNotYaml)
-	assert.Nil(t, manifestFiles)
-	assert.NotNil(t, err)
-
-	manifestFiles, err = preprocessing.GetManifestFiles(dirYaml)
-	assert.NotNil(t, manifestFiles)
-	assert.Nil(t, err)
-}
 
 // TestRunValidate tests the run command for `draft validate` for proper returns
 func TestRunValidate(t *testing.T) {
 	ctx := context.TODO()
-	manifestFilesEmpty := []safeguards.ManifestFile{}
+	manifestFilesEmpty := []h.ManifestFile{}
 	manifestPathDirectorySuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
 	manifestPathDirectoryError, _ := filepath.Abs("../pkg/safeguards/tests/all/error")
 	manifestPathFileSuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
 	manifestPathFileError, _ := filepath.Abs("../pkg/safeguards/tests/all/error/all-error-manifest-1.yaml")
-	var manifestFiles []safeguards.ManifestFile
+	var manifestFiles []h.ManifestFile
 
 	// Scenario 1: empty manifest path should error
 	_, err := safeguards.GetManifestResults(ctx, manifestFilesEmpty)
@@ -108,7 +69,7 @@ func TestRunValidate_Kustomize(t *testing.T) {
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	var manifestFiles []safeguards.ManifestFile
+	var manifestFiles []h.ManifestFile
 	var err error
 
 	// Scenario 1a: kustomizationPath leads to a directory containing kustomization.yaml - expect success

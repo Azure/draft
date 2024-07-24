@@ -106,6 +106,18 @@ jobs:
           admin: 'false'
           use-kubelogin: 'true'
 
+      # Checks if the AKS cluster is private
+      - name: Is private cluster
+        id: isPrivate
+        run: |
+          result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
+          echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
+
       # Deploys application based on manifest files from previous step
-      - name: Deploy application
+      - name: Deploy application on private cluster
+        if: steps.isPrivate.outputs.PRIVATE_CLUSTER
         run: az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} automated-deployment ${{ env.CHART_PATH }}"
+      
+      - name: Deploy application on public cluster
+        if: ${{ !steps.isPrivate.outputs.PRIVATE_CLUSTER }}
+        run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} automated-deployment ${{ env.CHART_PATH }}

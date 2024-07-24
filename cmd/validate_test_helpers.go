@@ -10,6 +10,11 @@ import (
 
 var tempDir, _ = filepath.Abs("./testdata")
 
+const (
+	chartPath         = "../pkg/safeguards/tests/testmanifests/validchart"
+	kustomizationPath = "../pkg/safeguards/tests/kustomize/overlays/production"
+)
+
 func countTestViolations(results []h.ManifestResult) int {
 	numViolations := 0
 	for _, r := range results {

@@ -58,6 +58,25 @@ func TestRunValidate(t *testing.T) {
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Greater(t, numViolations, 0)
+
+	// Scenario 4: Test Helm
+	makeTempDir(t)
+	t.Cleanup(func() { cleanupDir(t, tempDir) })
+
+	manifestFiles, err = preprocessing.GetManifestFiles(chartPath)
+	assert.Nil(t, err)
+	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
+	assert.Nil(t, err)
+	numViolations = countTestViolations(v)
+	assert.Greater(t, numViolations, 0)
+
+	//Scenario 5: Test Kustomize
+	manifestFiles, err = preprocessing.GetManifestFiles(kustomizationPath)
+	assert.Nil(t, err)
+	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
+	assert.Nil(t, err)
+	numViolations = countTestViolations(v)
+	assert.Greater(t, numViolations, 0)
 }
 
 // TestRunValidate_Kustomize tests the run command for `draft validate` for proper returns when given a kustomize project

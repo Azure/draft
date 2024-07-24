@@ -41,7 +41,7 @@ func (l *Languages) ContainsLanguage(lang string) bool {
 	return ok
 }
 
-func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+func (l *Languages) CreateDockerfileForLanguage(lang string, langConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := l.langs[lang]
 	if !ok {
 		return fmt.Errorf("language %s is not supported", lang)
@@ -49,14 +49,11 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, customInputs map[st
 
 	srcDir := path.Join(parentDirName, val.Name())
 
-	draftConfig, ok := l.configs[lang]
-	if !ok {
-		draftConfig = nil
-	} else {
-		draftConfig.ApplyDefaultVariables(customInputs)
+	if err := langConfig.ApplyDefaultVariables(); err != nil {
+		return fmt.Errorf("create dockerfile for language: %w", err)
 	}
 
-	if err := osutil.CopyDir(l.dockerfileTemplates, srcDir, l.dest, draftConfig, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(l.dockerfileTemplates, srcDir, l.dest, langConfig, templateWriter); err != nil {
 		return err
 	}
 

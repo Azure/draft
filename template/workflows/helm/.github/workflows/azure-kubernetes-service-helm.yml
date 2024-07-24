@@ -32,7 +32,7 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: Build and deploy an app to AKS with Helm
+name: {{WORKFLOWNAME}}
 
 on:
   push:
@@ -40,14 +40,18 @@ on:
   workflow_dispatch:
 
 env:
+  ACR_RESOURCE_GROUP: {{ACRRESOURCEGROUP}}
   AZURE_CONTAINER_REGISTRY: {{AZURECONTAINERREGISTRY}}
   CONTAINER_NAME: {{CONTAINERNAME}}
-  RESOURCE_GROUP: {{RESOURCEGROUP}}
+  CLUSTER_RESOURCE_GROUP: {{CLUSTERRESOURCEGROUP}}
   CLUSTER_NAME: {{CLUSTERNAME}}
+  DOCKER_FILE: {{DOCKERFILE}}
+  BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
   CHART_PATH: {{CHARTPATH}}
   CHART_OVERRIDE_PATH: {{CHARTOVERRIDEPATH}}
-  BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
-
+  CHART_OVERRIDES: {{CHARTOVERRIDES}}
+  NAMESPACE: {{NAMESPACE}}
+  
 jobs:
   buildImage:
     permissions:
@@ -69,7 +73,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.RESOURCE_GROUP }} .
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
   deploy:
     permissions:
       actions: read
@@ -99,7 +103,7 @@ jobs:
       - name: Get K8s context
         uses: azure/aks-set-context@v3
         with:
-          resource-group: ${{ env.RESOURCE_GROUP }}
+          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
           admin: 'false'
           use-kubelogin: 'true'
@@ -111,10 +115,16 @@ jobs:
           renderEngine: "helm"
           helmChart: ${{ env.CHART_PATH }}
           overrideFiles: ${{ env.CHART_OVERRIDE_PATH }}
-          overrides: |
-            replicas:2
+          overrides: ${{ env.CHART_OVERRIDES }}
           helm-version: "latest"
         id: bake
+
+      # Checks if the AKS cluster is private
+      - name: Is private cluster
+        id: isPrivate
+        run: |
+          result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
+          echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
       # Deploys application based on manifest files from previous step
       - name: Deploy application
@@ -124,3 +134,5 @@ jobs:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+          namespace: ${{ env.NAMESPACE }}
+          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}

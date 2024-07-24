@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
@@ -12,96 +15,94 @@ import (
 	"github.com/Azure/draft/pkg/config"
 )
 
-func RunPromptsFromConfig(config *config.DraftConfig) (map[string]string, error) {
-	return RunPromptsFromConfigWithSkips(config, []string{})
+const defaultAppName = "my-app"
+
+// Function to get current directory name
+var getCurrentDirNameFunc = getCurrentDirName
+
+func RunPromptsFromConfig(draftConfig *config.DraftConfig) error {
+	return RunPromptsFromConfigWithSkips(draftConfig)
 }
 
-func RunPromptsFromConfigWithSkips(config *config.DraftConfig, varsToSkip []string) (map[string]string, error) {
-	return RunPromptsFromConfigWithSkipsIO(config, varsToSkip, nil, nil)
+func RunPromptsFromConfigWithSkips(draftConfig *config.DraftConfig) error {
+	return RunPromptsFromConfigWithSkipsIO(draftConfig, nil, nil)
 }
 
-// RunPromptsFromConfigWithSkipsIO runs the prompts for the given config
+// RunPromptsFromConfigWithSkipsIO runs the prompts for the given draftConfig
 // skipping any variables in varsToSkip or where the BuilderVar.IsPromptDisabled is true.
 // If Stdin or Stdout are nil, the default values will be used.
-func RunPromptsFromConfigWithSkipsIO(config *config.DraftConfig, varsToSkip []string, Stdin io.ReadCloser, Stdout io.WriteCloser) (map[string]string, error) {
-	skipMap := make(map[string]interface{})
-	for _, v := range varsToSkip {
-		skipMap[v] = interface{}(nil)
+func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.ReadCloser, Stdout io.WriteCloser) error {
+	if draftConfig == nil {
+		return errors.New("draftConfig is nil")
 	}
 
-	inputs := make(map[string]string)
-
-	for _, customPrompt := range config.Variables {
-		promptVariableName := customPrompt.Name
-		if _, ok := skipMap[promptVariableName]; ok {
-			log.Debugf("Skipping prompt for %s", promptVariableName)
+	for _, variable := range draftConfig.Variables {
+		if variable.Value != "" {
+			log.Debugf("Skipping prompt for %s", variable.Name)
 			continue
 		}
-		if GetIsPromptDisabled(customPrompt.Name, config.VariableDefaults) {
-			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", promptVariableName)
-			noPromptDefaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
+
+		if variable.Default.IsPromptDisabled {
+			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", variable.Name)
+			noPromptDefaultValue := GetVariableDefaultValue(draftConfig, variable)
 			if noPromptDefaultValue == "" {
-				return nil, fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", promptVariableName)
+				return fmt.Errorf("IsPromptDisabled is true for %s but no default value was found", variable.Name)
 			}
-			log.Debugf("Using default value %s for %s", noPromptDefaultValue, promptVariableName)
-			inputs[promptVariableName] = noPromptDefaultValue
+			log.Debugf("Using default value %s for %s", noPromptDefaultValue, variable.Name)
+			variable.Value = noPromptDefaultValue
 			continue
 		}
 
-		log.Debugf("constructing prompt for: %s", promptVariableName)
-		if customPrompt.VarType == "bool" {
-			input, err := RunBoolPrompt(customPrompt, Stdin, Stdout)
+		log.Debugf("constructing prompt for: %s", variable.Name)
+		if variable.Type == "bool" {
+			input, err := RunBoolPrompt(variable, Stdin, Stdout)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			inputs[promptVariableName] = input
+			variable.Value = input
 		} else {
-			defaultValue := GetVariableDefaultValue(promptVariableName, config.VariableDefaults, inputs)
+			defaultValue := GetVariableDefaultValue(draftConfig, variable)
 
-			stringInput, err := RunDefaultableStringPrompt(customPrompt, defaultValue, nil, Stdin, Stdout)
+			stringInput, err := RunDefaultableStringPrompt(defaultValue, variable, nil, Stdin, Stdout)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			inputs[promptVariableName] = stringInput
+			variable.Value = stringInput
 		}
 	}
 
-	// Substitute the default value for variables where the user didn't enter anything
-	for _, variableDefault := range config.VariableDefaults {
-		if inputs[variableDefault.Name] == "" {
-			inputs[variableDefault.Name] = variableDefault.Value
-		}
-	}
-
-	return inputs, nil
+	return nil
 }
 
-// GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal VariableDefault.Value in that order.
-func GetVariableDefaultValue(variableName string, variableDefaults []config.BuilderVarDefault, inputs map[string]string) string {
+// GetVariableDefaultValue returns the default value for a variable, if one is set in variableDefaults from a ReferenceVar or literal Variable.DefaultValue in that order.
+func GetVariableDefaultValue(draftConfig *config.DraftConfig, variable *config.BuilderVar) string {
 	defaultValue := ""
-	for _, variableDefault := range variableDefaults {
-		if variableDefault.Name == variableName {
-			defaultValue = variableDefault.Value
-			log.Debugf("setting default value for %s to %s from variable default rule", variableName, defaultValue)
-			if variableDefault.ReferenceVar != "" && inputs[variableDefault.ReferenceVar] != "" {
-				defaultValue = inputs[variableDefault.ReferenceVar]
-				log.Debugf("setting default value for %s to %s from referenceVar %s", variableName, defaultValue, variableDefault.ReferenceVar)
-			}
+
+	if variable.Name == "APPNAME" {
+		dirName, err := getCurrentDirNameFunc()
+		if err != nil {
+			log.Errorf("Error retrieving current directory name: %s", err)
+			return defaultAppName
+		}
+		defaultValue = sanitizeAppName(dirName)
+		return defaultValue
+	}
+
+	defaultValue = variable.Default.Value
+	log.Debugf("setting default value for %s to %s from variable default rule", variable.Name, defaultValue)
+	if variable.Default.ReferenceVar != "" {
+		if referenceVar, err := draftConfig.GetVariable(variable.Default.ReferenceVar); err != nil {
+			log.Errorf("Error getting reference variable %s: %s", variable.Default.ReferenceVar, err)
+		} else if referenceVar.Value != "" {
+			defaultValue = referenceVar.Value
+			log.Debugf("setting default value for %s to %s from referenceVar %s", variable.Name, defaultValue, variable.Default.ReferenceVar)
 		}
 	}
+
 	return defaultValue
 }
 
-func GetIsPromptDisabled(variableName string, variableDefaults []config.BuilderVarDefault) bool {
-	for _, variableDefault := range variableDefaults {
-		if variableDefault.Name == variableName {
-			return variableDefault.IsPromptDisabled
-		}
-	}
-	return false
-}
-
-func RunBoolPrompt(customPrompt config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+func RunBoolPrompt(customPrompt *config.BuilderVar, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
 	newSelect := &promptui.Select{
 		Label:  "Please select " + customPrompt.Description,
 		Items:  []bool{true, false},
@@ -129,21 +130,58 @@ func NoBlankStringValidator(s string) error {
 	return nil
 }
 
-// RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
-func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue string, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
-	var validatorFunc func(string) error
-	if validate == nil {
-		validatorFunc = NoBlankStringValidator
+// Validator for App name
+func appNameValidator(name string) error {
+	if name == "" {
+		return fmt.Errorf("application name cannot be empty")
 	}
 
-	defaultString := ""
-	if defaultValue != "" {
-		validatorFunc = AllowAllStringValidator
-		defaultString = " (default: " + defaultValue + ")"
+	if !unicode.IsLetter(rune(name[0])) && !unicode.IsDigit(rune(name[0])) {
+		return fmt.Errorf("application name must start with a letter or digit")
+	}
+
+	if name[len(name)-1] == '-' || name[len(name)-1] == '_' || name[len(name)-1] == '.' {
+		return fmt.Errorf("application name must end with a letter or digit")
+	}
+
+	for _, r := range name {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '-' && r != '_' && r != '.' {
+			return fmt.Errorf("application name can only contain letters, digits, '-', '_', and '.'")
+		}
+	}
+
+	if len(name) > 63 {
+		return fmt.Errorf("application name cannot be longer than 63 characters")
+	}
+
+	return nil
+}
+
+// RunDefaultableStringPrompt runs a prompt for a string variable, returning the user string input for the prompt
+func RunDefaultableStringPrompt(defaultValue string, customPrompt *config.BuilderVar, validate func(string) error, Stdin io.ReadCloser, Stdout io.WriteCloser) (string, error) {
+	if validate == nil {
+		validate = NoBlankStringValidator
+	}
+
+	validatorFunc := func(input string) error {
+		// Allow blank inputs because defaults are set later
+		if input == "" {
+			return nil
+		}
+		if customPrompt.Name == "APPNAME" {
+			if err := appNameValidator(input); err != nil {
+				return err
+			}
+		} else {
+			if err := validate(input); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	prompt := &promptui.Prompt{
-		Label:    "Please enter " + customPrompt.Description + defaultString,
+		Label:    "Please enter " + customPrompt.Description + " (default: " + defaultValue + ")",
 		Validate: validatorFunc,
 		Stdin:    Stdin,
 		Stdout:   Stdout,
@@ -153,8 +191,8 @@ func RunDefaultableStringPrompt(customPrompt config.BuilderVar, defaultValue str
 	if err != nil {
 		return "", err
 	}
-	// Variable-level substitution, we need to get defaults so later references can be resolved in this loop
-	if input == "" && defaultString != "" {
+
+	if input == "" && defaultValue != "" {
 		input = defaultValue
 	}
 	return input, nil
@@ -243,4 +281,38 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 	}
 
 	return items[i], nil
+}
+
+func getCurrentDirName() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("getting current directory: %v", err)
+	}
+	dirName := filepath.Base(dir)
+	return sanitizeAppName(dirName), nil
+}
+
+// Sanitize the directory name to comply with k8s label rules
+func sanitizeAppName(name string) string {
+	var builder strings.Builder
+
+	// Remove all characters except alphanumeric, '-', '_', '.'
+	for _, r := range name {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_' || r == '.' {
+			builder.WriteRune(r)
+		}
+	}
+
+	sanitized := builder.String()
+	if sanitized == "" {
+		sanitized = defaultAppName
+	} else {
+		// Ensure the length does not exceed 63 characters
+		if len(sanitized) > 63 {
+			sanitized = sanitized[:63]
+		}
+		// Trim leading and trailing '-', '_', '.'
+		sanitized = strings.Trim(sanitized, "-._")
+	}
+	return sanitized
 }

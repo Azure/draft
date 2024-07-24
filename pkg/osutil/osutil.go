@@ -81,8 +81,7 @@ func EnsureFile(file string) error {
 func CopyDir(
 	fileSys fs.FS,
 	src, dest string,
-	config *config.DraftConfig,
-	customInputs map[string]string,
+	draftConfig *config.DraftConfig,
 	templateWriter templatewriter.TemplateWriter) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {
@@ -95,19 +94,23 @@ func CopyDir(
 			continue
 		}
 
+		fileName := f.Name()
+		if overrideName, ok := draftConfig.FileNameOverrideMap[f.Name()]; ok {
+			fileName = overrideName
+		}
 		srcPath := path.Join(src, f.Name())
-		destPath := path.Join(dest, f.Name())
+		destPath := path.Join(dest, fileName)
 		log.Debugf("Source path: %s Dest path: %s", srcPath, destPath)
 
 		if f.IsDir() {
 			if err = templateWriter.EnsureDirectory(destPath); err != nil {
 				return err
 			}
-			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs, templateWriter); err != nil {
+			if err = CopyDir(fileSys, srcPath, destPath, draftConfig, templateWriter); err != nil {
 				return err
 			}
 		} else {
-			fileContent, err := replaceTemplateVariables(fileSys, srcPath, customInputs)
+			fileContent, err := replaceTemplateVariables(fileSys, srcPath, draftConfig)
 			if err != nil {
 				return err
 			}
@@ -139,7 +142,7 @@ func checkAllVariablesSubstituted(fileContent string) error {
 	return nil
 }
 
-func replaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[string]string) ([]byte, error) {
+func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config.DraftConfig) ([]byte, error) {
 	file, err := fs.ReadFile(fileSys, srcPath)
 	if err != nil {
 		return nil, err
@@ -147,9 +150,9 @@ func replaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[st
 
 	fileString := string(file)
 
-	for oldString, newString := range customInputs {
-		log.Debugf("replacing %s with %s", oldString, newString)
-		fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
+	for _, variable := range draftConfig.Variables {
+		log.Debugf("replacing %s with %s", variable.Name, variable.Value)
+		fileString = strings.ReplaceAll(fileString, "{{"+variable.Name+"}}", variable.Value)
 	}
 
 	return []byte(fileString), nil

@@ -22,20 +22,31 @@ import (
 	"github.com/Azure/draft/pkg/templatewriter"
 )
 
-const (
-	parentDirName  = "workflows"
-	configFileName = "/draft.yaml"
-)
-
 type Workflows struct {
 	workflows         map[string]fs.DirEntry
 	configs           map[string]*config.DraftConfig
-	dest              string
+	Dest              string
 	workflowTemplates fs.FS
 }
 
-func updateProductionDeployments(deployType, dest string, flagValuesMap map[string]string, templateWriter templatewriter.TemplateWriter) error {
-	productionImage := fmt.Sprintf("%s.azurecr.io/%s", flagValuesMap["AZURECONTAINERREGISTRY"], flagValuesMap["CONTAINERNAME"])
+const (
+	parentDirName         = "workflows"
+	configFileName        = "/draft.yaml"
+	emptyDefaultFlagValue = ""
+)
+
+func UpdateProductionDeployments(deployType, dest string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
+	acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY")
+	if err != nil {
+		return fmt.Errorf("get variable: %w", err)
+	}
+
+	containerName, err := draftConfig.GetVariable("CONTAINERNAME")
+	if err != nil {
+		return fmt.Errorf("get variable: %w", err)
+	}
+
+	productionImage := fmt.Sprintf("%s.azurecr.io/%s", acr.Value, containerName.Value)
 	switch deployType {
 	case "helm":
 		return setHelmContainerImage(dest+"/charts/production.yaml", productionImage, templateWriter)
@@ -143,7 +154,7 @@ func CreateWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workfl
 
 	w := &Workflows{
 		workflows:         deployMap,
-		dest:              dest,
+		Dest:              dest,
 		configs:           make(map[string]*config.DraftConfig),
 		workflowTemplates: workflowTemplates,
 	}
@@ -163,25 +174,20 @@ func (w *Workflows) populateConfigs() {
 	}
 }
 
-func (w *Workflows) CreateWorkflowFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := w.workflows[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
 	}
+
 	srcDir := path.Join(parentDirName, val.Name())
 	log.Debugf("source directory for workflow template: %s", srcDir)
-	workflowConfig, ok := w.configs[deployType]
-	if !ok {
-		workflowConfig = nil
-	} else {
-		workflowConfig.ApplyDefaultVariables(customInputs)
+
+	if err := draftConfig.ApplyDefaultVariables(); err != nil {
+		return fmt.Errorf("create workflow files: %w", err)
 	}
 
-	if err := updateProductionDeployments(deployType, w.dest, customInputs, templateWriter); err != nil {
-		return fmt.Errorf("update production deployments: %w", err)
-	}
-
-	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.dest, workflowConfig, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.Dest, draftConfig, templateWriter); err != nil {
 		return err
 	}
 

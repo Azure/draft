@@ -9,69 +9,85 @@ import (
 
 func TestGetVariableDefaultValue(t *testing.T) {
 	tests := []struct {
-		testName         string
-		variableName     string
-		variableDefaults []config.BuilderVarDefault
-		inputs           map[string]string
-		want             string
+		testName    string
+		draftConfig *config.DraftConfig
+		want        string
 	}{
 		{
-			testName:     "basicLiteralExtractDefault",
-			variableName: "var1",
-			variableDefaults: []config.BuilderVarDefault{
-				{
-					Name:  "var1",
-					Value: "default-value-1",
-				},
-				{
-					Name:  "var2",
-					Value: "default-value-2",
-				},
-			},
-			inputs: map[string]string{},
-			want:   "default-value-1",
-		},
-		{
-			testName:         "noDefaultIsEmptyString",
-			variableName:     "var1",
-			variableDefaults: []config.BuilderVarDefault{},
-			inputs:           map[string]string{},
-			want:             "",
-		},
-		{
-			testName:     "referenceTakesPrecedenceOverLiteral",
-			variableName: "var1",
-			variableDefaults: []config.BuilderVarDefault{
-				{
-					Name:         "var1",
-					Value:        "not-this-value",
-					ReferenceVar: "var2",
+			testName: "basicLiteralExtractDefault",
+			draftConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{
+						Name: "var1",
+						Default: config.BuilderVarDefault{
+							Value: "default-value-1",
+						},
+					},
+					{
+						Name: "var2",
+						Default: config.BuilderVarDefault{
+							Value: "default-value-2",
+						},
+					},
 				},
 			},
-			inputs: map[string]string{
-				"var2": "this-value",
+			want: "default-value-1",
+		},
+		{
+			testName: "noDefaultIsEmptyString",
+			draftConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{
+						Name: "var1",
+					},
+				},
+			},
+			want: "",
+		},
+		{
+			testName: "referenceTakesPrecedenceOverLiteral",
+			draftConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{
+						Name: "var1",
+						Default: config.BuilderVarDefault{
+							ReferenceVar: "var2",
+							Value:        "not-this-value",
+						},
+					},
+					{
+						Name:  "var2",
+						Value: "this-value",
+					},
+				},
 			},
 			want: "this-value",
-		}, {
-			testName:     "forwardReferencesAreIgnored",
-			variableName: "beforeVar",
-			variableDefaults: []config.BuilderVarDefault{
-				{
-					Name:         "beforeVar",
-					Value:        "before-default-value",
-					ReferenceVar: "afterVar",
-				}, {
-					Name:  "afterVar",
-					Value: "not-this-value",
+		},
+		{
+			testName: "forwardReferencesAreIgnored",
+			draftConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{
+						Name: "beforeVar",
+						Default: config.BuilderVarDefault{
+							ReferenceVar: "afterVar",
+							Value:        "before-default-value",
+						},
+					},
+					{
+						Name: "afterVar",
+						Default: config.BuilderVarDefault{
+							Value: "not-this-value",
+						},
+					},
 				},
 			},
-			inputs: map[string]string{},
-			want:   "before-default-value",
+			want: "before-default-value",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			if got := GetVariableDefaultValue(tt.variableName, tt.variableDefaults, tt.inputs); got != tt.want {
+			if got := GetVariableDefaultValue(tt.draftConfig, tt.draftConfig.Variables[0]); got != tt.want {
 				t.Errorf("GetVariableDefaultValue() = %v, want %v", got, tt.want)
 			}
 		})
@@ -80,38 +96,71 @@ func TestGetVariableDefaultValue(t *testing.T) {
 
 func TestRunStringPrompt(t *testing.T) {
 	tests := []struct {
-		testName     string
-		prompt       config.BuilderVar
-		userInputs   []string
-		defaultValue string
-		want         string
-		wantErr      bool
+		testName         string
+		prompt           config.BuilderVar
+		userInputs       []string
+		defaultValue     string
+		want             string
+		wantErr          bool
+		mockDirNameValue string
 	}{
 		{
 			testName: "basicPrompt",
 			prompt: config.BuilderVar{
-				Name:        "var1",
 				Description: "var1 description",
 			},
-			userInputs:   []string{"value-1\n"},
-			defaultValue: "input",
-			want:         "value-1",
-			wantErr:      false,
+			userInputs:       []string{"value-1\n"},
+			defaultValue:     "input",
+			want:             "value-1",
+			wantErr:          false,
+			mockDirNameValue: "",
 		},
 		{
 			testName: "promptWithDefault",
 			prompt: config.BuilderVar{
-				Name:        "var1",
 				Description: "var1 description",
 			},
-			userInputs:   []string{"\n"},
-			defaultValue: "defaultValue",
-			want:         "defaultValue",
-			wantErr:      false,
+			userInputs:       []string{"\n"},
+			defaultValue:     "defaultValue",
+			want:             "defaultValue",
+			wantErr:          false,
+			mockDirNameValue: "",
+		},
+		{
+			testName: "appNameUsesDirName",
+			prompt: config.BuilderVar{
+				Name:        "APPNAME",
+				Description: "app name",
+			},
+			userInputs:       []string{"\n"},
+			defaultValue:     "currentdir",
+			want:             "currentdir",
+			wantErr:          false,
+			mockDirNameValue: "currentdir",
+		},
+		{
+			testName: "invalidAppName",
+			prompt: config.BuilderVar{
+				Name:        "APPNAME",
+				Description: "app name",
+			},
+			userInputs:       []string{"--invalid-app-name\n"},
+			defaultValue:     "defaultApp",
+			want:             "",
+			wantErr:          true,
+			mockDirNameValue: "currentdir",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
+			// Mock the getCurrentDirNameFunc for testing
+			originalGetCurrentDirNameFunc := getCurrentDirNameFunc
+			defer func() { getCurrentDirNameFunc = originalGetCurrentDirNameFunc }()
+			getCurrentDirNameFunc = func() (string, error) {
+				return tt.mockDirNameValue, nil
+			}
+
 			inReader, inWriter := io.Pipe()
 
 			go func() {
@@ -126,7 +175,7 @@ func TestRunStringPrompt(t *testing.T) {
 					t.Errorf("Error closing inWriter: %v", err)
 				}
 			}()
-			got, err := RunDefaultableStringPrompt(tt.prompt, tt.defaultValue, nil, inReader, nil)
+			got, err := RunDefaultableStringPrompt(tt.defaultValue, &tt.prompt, nil, inReader, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunDefaultableStringPrompt() error = %v, wantErr %v", err, tt.wantErr)
@@ -138,10 +187,11 @@ func TestRunStringPrompt(t *testing.T) {
 		})
 	}
 }
+
 func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 	tests := []struct {
 		testName     string
-		config       config.DraftConfig
+		draftConfig  config.DraftConfig
 		userInputs   []string
 		defaultValue string
 		want         map[string]string
@@ -149,18 +199,15 @@ func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 	}{
 		{
 			testName: "onlyNoPrompt",
-			config: config.DraftConfig{
-				Variables: []config.BuilderVar{
+			draftConfig: config.DraftConfig{
+				Variables: []*config.BuilderVar{
 					{
-						Name:             "var1",
-						Description:      "var1 description",
-					},
-				},
-				VariableDefaults: []config.BuilderVarDefault{
-					{
-						Name:  "var1",
-						Value: "defaultValue",
-						IsPromptDisabled: true,
+						Name: "var1",
+						Default: config.BuilderVarDefault{
+							IsPromptDisabled: true,
+							Value:            "defaultValue",
+						},
+						Description: "var1 description",
 					},
 				},
 			},
@@ -171,37 +218,37 @@ func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 			wantErr: false,
 		}, {
 			testName: "twoPromptTwoNoPrompt",
-			config: config.DraftConfig{
-				Variables: []config.BuilderVar{
+			draftConfig: config.DraftConfig{
+				Variables: []*config.BuilderVar{
 					{
-						Name:             "var1-no-prompt",
-						Description:      "var1 has IsPromptDisabled and should skip prompt and use default value",
-					}, {
-						Name:        "var2-default",
-						Description: "var2 has a default value and will receive an empty value, so it should use the default value",
-					}, {
-						Name:             "var3-no-prompt",
-						Description:      "var3 has IsPromptDisabled and should skip prompt and use default value",
-					}, {
-						Name:        "var4",
-						Description: "var4 has a default value, but has a value entered, so it should use the entered value",
+						Name: "var1-no-prompt",
+						Default: config.BuilderVarDefault{
+							IsPromptDisabled: true,
+							Value:            "defaultValueNoPrompt1",
+						},
+						Description: "var1 has IsPromptDisabled and should skip prompt and use default value",
 					},
-				},
-				VariableDefaults: []config.BuilderVarDefault{
 					{
-						Name:  "var1-no-prompt",
-						Value: "defaultValueNoPrompt1",
-						IsPromptDisabled: true,
-					}, {
-						Name:  "var2-default",
-						Value: "defaultValue2",
-					}, {
-						Name:  "var3-no-prompt",
-						Value: "defaultValueNoPrompt3",
-						IsPromptDisabled: true,
-					}, {
-						Name:  "var4",
-						Value: "defaultValue4",
+						Name: "var2-default",
+						Default: config.BuilderVarDefault{
+							Value: "defaultValue2",
+						},
+						Description: "var2 has a default value and will receive an empty value, so it should use the default value",
+					},
+					{
+						Name: "var3-no-prompt",
+						Default: config.BuilderVarDefault{
+							IsPromptDisabled: true,
+							Value:            "defaultValueNoPrompt3",
+						},
+						Description: "var3 has IsPromptDisabled and should skip prompt and use default value",
+					},
+					{
+						Name: "var4",
+						Default: config.BuilderVarDefault{
+							Value: "defaultValue4",
+						},
+						Description: "var4 has a default value, but has a value entered, so it should use the entered value",
 					},
 				},
 			},
@@ -231,16 +278,15 @@ func TestRunPromptsFromConfigWithSkipsIO(t *testing.T) {
 					t.Errorf("Error closing inWriter: %v", err)
 				}
 			}()
-			got, err := RunPromptsFromConfigWithSkipsIO(&tt.config, nil, inReader, nil)
+			err := RunPromptsFromConfigWithSkipsIO(&tt.draftConfig, inReader, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TestRunPromptsFromConfigWithSkipsIO() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			for k, v := range got {
-				wantVal := tt.want[k]
-				if v != wantVal {
-					t.Errorf("TestRunPromptsFromConfigWithSkipsIO()  inputs [%s]=%s, want %s", k, v, wantVal)
+			for _, variable := range tt.draftConfig.Variables {
+				if got := variable.Value; got != tt.want[variable.Name] {
+					t.Errorf("TestRunPromptsFromConfigWithSkipsIO()  inputs [%s]=%s, want %s", variable.Name, got, tt.want[variable.Name])
 				}
 			}
 		})

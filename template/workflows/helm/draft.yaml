@@ -1,22 +1,44 @@
 variables:
+  - name: "WORKFLOWNAME"
+    default:
+      value: "Build and deploy an app to AKS with Helm"
+    description: "the name of the workflow"
+  - name: "BRANCHNAME"
+    description: "the Github branch to automatically deploy from"
+  - name: "ACRRESOURCEGROUP"
+    description: "the ACR resource group"
   - name: "AZURECONTAINERREGISTRY"
     description: "the Azure container registry name"
   - name: "CONTAINERNAME"
     description: "the container image name"
-  - name: "RESOURCEGROUP"
-    description: "the Azure resource group of your AKS cluster"
+  - name: "CLUSTERRESOURCEGROUP"
+    description: "the AKS cluster resource group"
   - name: "CLUSTERNAME"
     description: "the AKS cluster name"
-  - name: "BRANCHNAME"
-    description: "the Github branch to automatically deploy from"
+  - name: "DOCKERFILE"
+    default:
+      value: "./Dockerfile"
+    description: "the path to the Dockerfile"
   - name: "BUILDCONTEXTPATH"
+    default:
+      value: "."
     description: "the path to the Docker build context"
-variableDefaults:
   - name: "CHARTPATH"
-    value: "./charts"
-    disablePrompt: true
+    default: 
+      disablePrompt: true
+      value: "./charts"
+    description: "the path to the Helm chart"
   - name: "CHARTOVERRIDEPATH"
-    value: "./charts/production.yaml"
-    disablePrompt: true
-  - name: "BUILDCONTEXTPATH"
-    value: "."
+    default: 
+      disablePrompt: true
+      value: "./charts/production.yaml"
+    description: "the path to the Helm chart override file"
+  - name: "CHARTOVERRIDES"
+    default: 
+      disablePrompt: true
+      value: "replicas:2"
+    description: "the Helm chart overrides"
+  - name: "NAMESPACE"
+    default:
+      value: "default"
+    description: "the Kubernetes namespace"

@@ -23,15 +23,147 @@ import (
 
 func TestCreateWorkflows(t *testing.T) {
 	dest := "."
-	deployType := "helm"
 	templatewriter := &writers.LocalFSWriter{}
-	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "."}
-	flagValuesMapNoRoot := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "test"}
+	draftConfig := &config.DraftConfig{
+		Variables: []*config.BuilderVar{
+			{
+				Name:  "WORKFLOWNAME",
+				Value: "testWorkflow",
+			},
+			{
+				Name:  "BRANCHNAME",
+				Value: "testBranch",
+			},
+			{
+				Name:  "ACRRESOURCEGROUP",
+				Value: "testAcrRG",
+			},
+			{
+				Name:  "AZURECONTAINERREGISTRY",
+				Value: "testAcr",
+			},
+			{
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
+			},
+			{
+				Name:  "CLUSTERRESOURCEGROUP",
+				Value: "testClusterRG",
+			},
+			{
+				Name:  "CLUSTERNAME",
+				Value: "testCluster",
+			},
+			{
+				Name:  "KUSTOMIZEPATH",
+				Value: "./overlays/production",
+			},
+			{
+				Name:  "DEPLOYMENTMANIFESTPATH",
+				Value: "./manifests",
+			},
+			{
+				Name:  "DOCKERFILE",
+				Value: "./Dockerfile",
+			},
+			{
+				Name:  "BUILDCONTEXTPATH",
+				Value: ".",
+			},
+			{
+				Name:  "CHARTPATH",
+				Value: "testPath",
+			},
+			{
+				Name:  "CHARTOVERRIDEPATH",
+				Value: "testOverridePath",
+			},
+			{
+				Name:  "CHARTOVERRIDES",
+				Value: "replicas:2",
+			},
+			{
+				Name:  "NAMESPACE",
+				Value: "default",
+			},
+			{
+				Name:  "PRIVATECLUSTER",
+				Value: "false",
+			},
+		},
+	}
+	draftConfigNoRoot := &config.DraftConfig{
+		Variables: []*config.BuilderVar{
+			{
+				Name:  "WORKFLOWNAME",
+				Value: "testWorkflow",
+			},
+			{
+				Name:  "BRANCHNAME",
+				Value: "testBranch",
+			},
+			{
+				Name:  "ACRRESOURCEGROUP",
+				Value: "testAcrRG",
+			},
+			{
+				Name:  "AZURECONTAINERREGISTRY",
+				Value: "testAcr",
+			},
+			{
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
+			},
+			{
+				Name:  "CLUSTERRESOURCEGROUP",
+				Value: "testClusterRG",
+			},
+			{
+				Name:  "CLUSTERNAME",
+				Value: "testCluster",
+			},
+			{
+				Name:  "KUSTOMIZEPATH",
+				Value: "./overlays/production",
+			},
+			{
+				Name:  "DEPLOYMENTMANIFESTPATH",
+				Value: "./manifests",
+			},
+			{
+				Name:  "DOCKERFILE",
+				Value: "./Dockerfile",
+			},
+			{
+				Name:  "BUILDCONTEXTPATH",
+				Value: "test",
+			},
+			{
+				Name:  "CHARTPATH",
+				Value: "testPath",
+			},
+			{
+				Name:  "CHARTOVERRIDEPATH",
+				Value: "testOverridePath",
+			},
+			{
+				Name:  "CHARTOVERRIDES",
+				Value: "replicas:2",
+			},
+			{
+				Name:  "NAMESPACE",
+				Value: "default",
+			},
+			{
+				Name:  "PRIVATECLUSTER",
+				Value: "false",
+			},
+		},
+	}
 
 	tests := []struct {
 		name         string
 		deployType   string
-		flagValues   map[string]string
 		shouldError  bool
 		tempDirPath  string
 		tempFileName string
@@ -41,7 +173,6 @@ func TestCreateWorkflows(t *testing.T) {
 		{
 			name:         "helm",
 			deployType:   "helm",
-			flagValues:   flagValuesMap,
 			shouldError:  false,
 			tempDirPath:  "charts",
 			tempFileName: "charts/production.yaml",
@@ -54,7 +185,6 @@ func TestCreateWorkflows(t *testing.T) {
 		{
 			name:         "kustomize",
 			deployType:   "kustomize",
-			flagValues:   flagValuesMap,
 			shouldError:  false,
 			tempDirPath:  "overlays/production",
 			tempFileName: "overlays/production/deployment.yaml",
@@ -63,10 +193,10 @@ func TestCreateWorkflows(t *testing.T) {
 				os.Remove(".overlays")
 				os.Remove(".github")
 			},
-		}, {
+		},
+		{
 			name:         "manifests",
 			deployType:   "manifests",
-			flagValues:   flagValuesMap,
 			shouldError:  false,
 			tempDirPath:  "manifests",
 			tempFileName: "manifests/deployment.yaml",
@@ -79,7 +209,6 @@ func TestCreateWorkflows(t *testing.T) {
 		{
 			name:         "missing manifest",
 			deployType:   "manifests",
-			flagValues:   flagValuesMap,
 			shouldError:  true,
 			tempDirPath:  "manifests",
 			tempFileName: "manifests/deployment.yaml",
@@ -92,7 +221,6 @@ func TestCreateWorkflows(t *testing.T) {
 		{
 			name:         "invalid deploy type",
 			deployType:   "invalid",
-			flagValues:   flagValuesMap,
 			shouldError:  true,
 			tempDirPath:  "manifests",
 			tempFileName: "manifests/deployment.yaml",
@@ -108,12 +236,12 @@ func TestCreateWorkflows(t *testing.T) {
 		assert.Nil(t, err)
 
 		workflows := CreateWorkflowsFromEmbedFS(template.Workflows, dest)
-		err = workflows.CreateWorkflowFiles(deployType, flagValuesMap, templatewriter)
-		if err != nil {
+		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfig, templatewriter)
+		if err != nil && tt.shouldError == false {
 			t.Errorf("Default Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
 		}
-		err = workflows.CreateWorkflowFiles(deployType, flagValuesMapNoRoot, templatewriter)
-		if err != nil {
+		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfigNoRoot, templatewriter)
+		if err != nil && tt.shouldError == false {
 			t.Errorf("Custom Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
 		}
 
@@ -179,10 +307,21 @@ func TestUpdateProductionDeploymentsInvalid(t *testing.T) {
 }
 
 func TestUpdateProductionDeploymentsMissing(t *testing.T) {
-	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testRegistry", "CONTAINERNAME": "testContainer"}
+	draftConfig := &config.DraftConfig{
+		Variables: []*config.BuilderVar{
+			{
+				Name:  "AZURECONTAINERREGISTRY",
+				Value: "testRegistry",
+			},
+			{
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
+			},
+		},
+	}
 	testTemplateWriter := &writers.LocalFSWriter{}
 	//test for missing deploy type
-	assert.Nil(t, updateProductionDeployments("", ".", flagValuesMap, testTemplateWriter))
+	assert.Nil(t, UpdateProductionDeployments("", ".", draftConfig, testTemplateWriter))
 
 	//test for missing helm deployment file
 	assert.NotNil(t, setHelmContainerImage("", "testImage", testTemplateWriter))
@@ -236,9 +375,127 @@ func TestPopulateConfigs(t *testing.T) {
 
 func TestCreateWorkflowFiles(t *testing.T) {
 	templatewriter := &writers.LocalFSWriter{}
-	customInputs := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "BUILDCONTEXTPATH": "."}
-	customInputsNoRoot := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "BUILDCONTEXTPATH": "test"}
-	badInputs := map[string]string{}
+	draftConfig := &config.DraftConfig{
+		Variables: []*config.BuilderVar{
+			{
+				Name:  "WORKFLOWNAME",
+				Value: "testWorkflow",
+			},
+			{
+				Name:  "BRANCHNAME",
+				Value: "testBranch",
+			},
+			{
+				Name:  "ACRRESOURCEGROUP",
+				Value: "testAcrRG",
+			},
+			{
+				Name:  "AZURECONTAINERREGISTRY",
+				Value: "testAcr",
+			},
+			{
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
+			},
+			{
+				Name:  "CLUSTERRESOURCEGROUP",
+				Value: "testClusterRG",
+			},
+			{
+				Name:  "CLUSTERNAME",
+				Value: "testCluster",
+			},
+			{
+				Name:  "DOCKERFILE",
+				Value: "./Dockerfile",
+			},
+			{
+				Name:  "BUILDCONTEXTPATH",
+				Value: ".",
+			},
+			{
+				Name:  "CHARTPATH",
+				Value: "testPath",
+			},
+			{
+				Name:  "CHARTOVERRIDEPATH",
+				Value: "testOverridePath",
+			},
+			{
+				Name:  "CHARTOVERRIDES",
+				Value: "replicas:2",
+			},
+			{
+				Name:  "NAMESPACE",
+				Value: "default",
+			},
+			{
+				Name:  "PRIVATECLUSTER",
+				Value: "false",
+			},
+		},
+	}
+	draftConfigNoRoot := &config.DraftConfig{
+		Variables: []*config.BuilderVar{
+			{
+				Name:  "WORKFLOWNAME",
+				Value: "testWorkflow",
+			},
+			{
+				Name:  "BRANCHNAME",
+				Value: "testBranch",
+			},
+			{
+				Name:  "ACRRESOURCEGROUP",
+				Value: "testAcrRG",
+			},
+			{
+				Name:  "AZURECONTAINERREGISTRY",
+				Value: "testAcr",
+			},
+			{
+				Name:  "CONTAINERNAME",
+				Value: "testContainer",
+			},
+			{
+				Name:  "CLUSTERRESOURCEGROUP",
+				Value: "testClusterRG",
+			},
+			{
+				Name:  "CLUSTERNAME",
+				Value: "testCluster",
+			},
+			{
+				Name:  "DOCKERFILE",
+				Value: "./Dockerfile",
+			},
+			{
+				Name:  "BUILDCONTEXTPATH",
+				Value: "test",
+			},
+			{
+				Name:  "CHARTPATH",
+				Value: "testPath",
+			},
+			{
+				Name:  "CHARTOVERRIDEPATH",
+				Value: "testOverridePath",
+			},
+			{
+				Name:  "CHARTOVERRIDES",
+				Value: "replicas:2",
+			},
+			{
+				Name:  "NAMESPACE",
+				Value: "default",
+			},
+			{
+				Name:  "PRIVATECLUSTER",
+				Value: "false",
+			},
+		},
+	}
+	badDraftConfig := &config.DraftConfig{}
 
 	workflowTemplate, err := createMockWorkflowTemplatesFS()
 	assert.Nil(t, err)
@@ -248,18 +505,18 @@ func TestCreateWorkflowFiles(t *testing.T) {
 
 	mockWF.populateConfigs()
 
-	err = mockWF.CreateWorkflowFiles("fakeDeployType", customInputs, templatewriter)
+	err = mockWF.CreateWorkflowFiles("fakeDeployType", draftConfig, templatewriter)
 	assert.NotNil(t, err)
 
-	err = mockWF.CreateWorkflowFiles("helm", customInputs, templatewriter)
+	err = mockWF.CreateWorkflowFiles("helm", draftConfig, templatewriter)
 	assert.Nil(t, err)
 	os.RemoveAll(".github")
 
-	err = mockWF.CreateWorkflowFiles("helm", customInputsNoRoot, templatewriter)
+	err = mockWF.CreateWorkflowFiles("helm", draftConfigNoRoot, templatewriter)
 	assert.Nil(t, err)
 	os.RemoveAll(".github")
 
-	err = mockWF.CreateWorkflowFiles("helm", badInputs, templatewriter)
+	err = mockWF.CreateWorkflowFiles("helm", badDraftConfig, templatewriter)
 	assert.NotNil(t, err)
 	os.RemoveAll(".github")
 }
@@ -354,7 +611,7 @@ func createMockWorkflow(dirPath string, mockWorkflowTemplates fs.FS) (*Workflows
 
 	w := &Workflows{
 		workflows:         deployMap,
-		dest:              dest,
+		Dest:              dest,
 		configs:           make(map[string]*config.DraftConfig),
 		workflowTemplates: mockWorkflowTemplates,
 	}
@@ -372,7 +629,7 @@ func createTestWorkflowEmbed(dirPath string) (*Workflows, error) {
 
 	w := &Workflows{
 		workflows:         deployMap,
-		dest:              dest,
+		Dest:              dest,
 		configs:           make(map[string]*config.DraftConfig),
 		workflowTemplates: template.Workflows,
 	}

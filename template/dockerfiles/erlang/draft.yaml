@@ -1,8 +1,5 @@
 language: erlang
 displayName: Erlang
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

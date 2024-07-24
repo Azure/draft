@@ -157,14 +157,3 @@ func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config
 
 	return []byte(fileString), nil
 }
-
-func checkNameOverrides(fileName, srcPath, destPath string, config *config.DraftConfig) string {
-	if config != nil {
-		log.Debugf("checking name override for srcPath: %s, destPath: %s", srcPath, destPath)
-		if prefix := config.GetNameOverride(fileName); prefix != "" {
-			log.Debugf("overriding file: %s with prefix: %s", destPath, prefix)
-			fileName = fmt.Sprintf("%s%s", prefix, fileName)
-		}
-	}
-	return fileName
-}

@@ -1,8 +1,5 @@
 language: python
 displayName: Python
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

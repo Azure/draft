@@ -16,7 +16,7 @@ import (
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	c "github.com/Azure/draft/pkg/safeguards/helpers"
+	c "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 // retrieves the constraint client that does all rego code related operations

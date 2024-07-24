@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	h "github.com/Azure/draft/pkg/safeguards/helpers"
+	h "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 var tempDir, _ = filepath.Abs("./testdata")

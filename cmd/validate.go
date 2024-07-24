@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/Azure/draft/pkg/safeguards"
-	h "github.com/Azure/draft/pkg/safeguards/helpers"
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
+	h "github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

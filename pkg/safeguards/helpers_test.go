@@ -8,7 +8,7 @@ import (
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/stretchr/testify/assert"
 
-	c "github.com/Azure/draft/pkg/safeguards/helpers"
+	c "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 func validateOneTestManifestFail(ctx context.Context, t *testing.T, c *constraintclient.Client, testFc c.FileCrawler, testManifestPaths []string) {

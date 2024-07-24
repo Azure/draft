@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	h "github.com/Azure/draft/pkg/safeguards/helpers"
+	h "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 var ctx = context.Background()

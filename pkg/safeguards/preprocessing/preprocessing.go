@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	h "github.com/Azure/draft/pkg/safeguards/helpers"
+	h "github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"

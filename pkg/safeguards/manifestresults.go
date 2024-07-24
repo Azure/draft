@@ -7,7 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	h "github.com/Azure/draft/pkg/safeguards/helpers"
+	h "github.com/Azure/draft/pkg/safeguards/types"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 

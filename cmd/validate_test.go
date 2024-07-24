@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"github.com/stretchr/testify/assert"
 
-	h "github.com/Azure/draft/pkg/safeguards/helpers"
+	h "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 // TestRunValidate tests the run command for `draft validate` for proper returns

@@ -8,9 +8,9 @@ import (
 )
 
 type DraftConfig struct {
-	DisplayName         string            `yaml:"displayName"`
-	Variables           []*BuilderVar     `yaml:"variables"`
-	FileNameOverrideMap map[string]string `yaml:"filenameOverrideMap"`
+	DisplayName         string             `yaml:"displayName"`
+	Variables           []*BuilderVar      `yaml:"variables"`
+	FileNameOverrideMap map[string]string  `yaml:"filenameOverrideMap"`
 }
 
 type BuilderVar struct {

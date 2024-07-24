@@ -138,4 +138,3 @@ jobs:
           name: ${{ env.CLUSTER_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
           namespace: ${{ env.NAMESPACE }}
-          

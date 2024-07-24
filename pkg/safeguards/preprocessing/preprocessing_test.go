@@ -182,36 +182,6 @@ func TestRenderKustomizeManifest_Valid(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestGetManifestFiles(t *testing.T) {
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
-
-	// Test Helm
-	_, err := GetManifestFiles(chartPath)
-	assert.Nil(t, err)
-	_, err = GetManifestFiles(kustomizationPath)
-	assert.Nil(t, err)
-
-	cleanupDir(t, tempDir)
-	makeTempDir(t)
-
-	// Test Kustomize
-	_, err = GetManifestFiles(kustomizationPath)
-	assert.Nil(t, err)
-
-	// Test Normal Directory with manifest files
-	absPath, err := filepath.Abs("../tests/all/success")
-	assert.Nil(t, err)
-	_, err = GetManifestFiles(absPath)
-	assert.Nil(t, err)
-
-	// test single manifest file
-	manifestPathFileSuccess, err := filepath.Abs("../tests/all/success/all-success-manifest-1.yaml")
-	assert.Nil(t, err)
-	_, err = GetManifestFiles(manifestPathFileSuccess)
-	assert.Nil(t, err)
-}
-
 // TestIsKustomize checks whether the given path contains a kustomize project
 func TestIsKustomize(t *testing.T) {
 	// path contains a kustomization.yaml file

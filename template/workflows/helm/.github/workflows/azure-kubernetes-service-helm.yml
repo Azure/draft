@@ -119,5 +119,5 @@ jobs:
         run: az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} automated-deployment ${{ env.CHART_PATH }}"
       
       - name: Deploy application on public cluster
-        if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'false'}}
+        if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true'}}
         run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} automated-deployment ${{ env.CHART_PATH }}

@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
-	h "github.com/Azure/draft/pkg/safeguards/types"
+	sgTypes "github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -19,13 +18,13 @@ import (
 )
 
 // Given a path, will determine if it's Kustomize, Helm, a directory of manifests, or a single manifest
-func GetManifestFiles(manifestsPath string) ([]h.ManifestFile, error) {
+func GetManifestFiles(manifestsPath string) ([]sgTypes.ManifestFile, error) {
 	isDir, err := IsDirectory(manifestsPath)
 	if err != nil {
 		return nil, fmt.Errorf("not a valid file or directory: %w", err)
 	}
 
-	var manifestFiles []h.ManifestFile
+	var manifestFiles []sgTypes.ManifestFile
 	if isDir {
 		// check if Helm or Kustomize dir
 		if isHelm(true, manifestsPath) {
@@ -42,8 +41,8 @@ func GetManifestFiles(manifestsPath string) ([]h.ManifestFile, error) {
 		} else if isKustomize(false, manifestsPath) {
 			return RenderKustomizeManifest(manifestsPath, tempDir)
 		} else {
-			manifestFiles = append(manifestFiles, h.ManifestFile{
-				Name: path.Base(manifestsPath),
+			manifestFiles = append(manifestFiles, sgTypes.ManifestFile{
+				Name: filepath.Base(manifestsPath),
 				Path: manifestsPath,
 			})
 		}
@@ -54,11 +53,11 @@ func GetManifestFiles(manifestsPath string) ([]h.ManifestFile, error) {
 }
 
 // getManifestFiles uses filepath.Walk to retrieve a list of the manifest files within a directory of .yaml files
-func GetManifestFilesFromDir(p string) ([]h.ManifestFile, error) {
-	var manifestFiles []h.ManifestFile
+func GetManifestFilesFromDir(p string) ([]sgTypes.ManifestFile, error) {
+	var manifestFiles []sgTypes.ManifestFile
 
 	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
-		manifest := h.ManifestFile{}
+		manifest := sgTypes.ManifestFile{}
 		// skip when walkPath is just given path and also a directory
 		if p == walkPath && info.IsDir() {
 			return nil
@@ -93,7 +92,7 @@ func GetManifestFilesFromDir(p string) ([]h.ManifestFile, error) {
 }
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
-func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]h.ManifestFile, error) {
+func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]sgTypes.ManifestFile, error) {
 	if isFile { // Get the directory that the Chart.yaml lives in
 		mainChartPath = filepath.Dir(mainChartPath)
 	}
@@ -119,7 +118,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]h.ManifestFi
 		loadedCharts[chartPath] = subChart
 	}
 
-	var manifestFiles []h.ManifestFile
+	var manifestFiles []sgTypes.ManifestFile
 	for chartPath, chart := range loadedCharts {
 		valuesPath := filepath.Join(chartPath, "values.yaml") // Enforce that values.yaml must be at same level as Chart.yaml
 		mergedValues, err := getValues(chart, valuesPath)
@@ -138,7 +137,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]h.ManifestFi
 			if err := os.WriteFile(outputFilePath, []byte(content), 0644); err != nil {
 				return nil, fmt.Errorf("failed to write manifest file: %s", err)
 			}
-			manifestFiles = append(manifestFiles, h.ManifestFile{Name: filepath.Base(renderedPath), Path: outputFilePath})
+			manifestFiles = append(manifestFiles, sgTypes.ManifestFile{Name: filepath.Base(renderedPath), Path: outputFilePath})
 		}
 	}
 
@@ -156,7 +155,7 @@ func CreateTempDir(p string) error {
 }
 
 // Given a kustomization manifest file within kustomizationPath, RenderKustomizeManifest will render templates out to tempDir
-func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]h.ManifestFile, error) {
+func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]sgTypes.ManifestFile, error) {
 	log.Debugf("Rendering kustomization.yaml...")
 	if IsYAML(kustomizationPath) {
 		kustomizationPath = filepath.Dir(kustomizationPath)
@@ -177,7 +176,7 @@ func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]h.ManifestFil
 	}
 
 	// Output the manifests
-	var manifestFiles []h.ManifestFile
+	var manifestFiles []sgTypes.ManifestFile
 	kindMap := make(map[string]int)
 	for _, res := range resMap.Resources() {
 		yamlRes, err := res.AsYAML()
@@ -195,7 +194,7 @@ func RenderKustomizeManifest(kustomizationPath, tempDir string) ([]h.ManifestFil
 		}
 
 		// write yamlRes to dir
-		manifestFiles = append(manifestFiles, h.ManifestFile{
+		manifestFiles = append(manifestFiles, sgTypes.ManifestFile{
 			Name: res.GetName(),
 			Path: outputRenderPath,
 		})

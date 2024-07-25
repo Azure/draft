@@ -10,18 +10,18 @@ import (
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"github.com/stretchr/testify/assert"
 
-	h "github.com/Azure/draft/pkg/safeguards/types"
+	"github.com/Azure/draft/pkg/safeguards/types"
 )
 
 // TestRunValidate tests the run command for `draft validate` for proper returns
 func TestRunValidate(t *testing.T) {
 	ctx := context.TODO()
-	manifestFilesEmpty := []h.ManifestFile{}
+	manifestFilesEmpty := []types.ManifestFile{}
 	manifestPathDirectorySuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
 	manifestPathDirectoryError, _ := filepath.Abs("../pkg/safeguards/tests/all/error")
 	manifestPathFileSuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
 	manifestPathFileError, _ := filepath.Abs("../pkg/safeguards/tests/all/error/all-error-manifest-1.yaml")
-	var manifestFiles []h.ManifestFile
+	var manifestFiles []types.ManifestFile
 
 	// Scenario 1: empty manifest path should error
 	_, err := safeguards.GetManifestResults(ctx, manifestFilesEmpty)
@@ -88,7 +88,7 @@ func TestRunValidate_Kustomize(t *testing.T) {
 	makeTempDir(t)
 	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	var manifestFiles []h.ManifestFile
+	var manifestFiles []types.ManifestFile
 	var err error
 
 	// Scenario 1a: kustomizationPath leads to a directory containing kustomization.yaml - expect success

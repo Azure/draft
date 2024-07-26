@@ -705,6 +705,7 @@ func promptAzClusterName(draftConfig *config.DraftConfig, clusterName *config.Bu
 		return "", fmt.Errorf("failed to select a cluster: %w", err)
 	}
 
+	// Attach the ACR to the cluster
 	if acr, err := draftConfig.GetVariable("AZURECONTAINERREGISTRY"); err != nil {
 		return "", fmt.Errorf("failed to get variable: %w", err)
 	} else if err = providers.AttachAcrToCluster(cluster, resourceGroup.Value, acr.Value); err != nil {
@@ -757,7 +758,13 @@ func promptAzNamespace(draftConfig *config.DraftConfig, namespace *config.Builde
 		return "", fmt.Errorf("failed to get variable: %w", err)
 	}
 
-	namespaces, err := providers.GetAzNamespaces(resourceGroup.Value, clusterName.Value)
+	// Find out if the cluster is private
+	isPrivate, err := providers.IsPrivateCluster(resourceGroup.Value, clusterName.Value)
+	if err != nil {
+		return "", fmt.Errorf("failed to get cluster privacy setting: %w", err)
+	}
+
+	namespaces, err := providers.GetAzNamespaces(resourceGroup.Value, clusterName.Value, isPrivate)
 	if err != nil {
 		return "", fmt.Errorf("failed to get Azure namespaces: %w", err)
 	}

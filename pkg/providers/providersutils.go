@@ -97,26 +97,7 @@ func CheckAzCliInstalled() {
 	}
 }
 
-func checkKubectlVersion(clusterResourceGroup, clusterName string) error {
-	getKubectlVersionCmd := exec.Command("az", "aks", "command", "invoke", "-g", clusterResourceGroup, "-n", clusterName, "--command", "kubectl version -o json", "-o", "json")
-	loading := make(chan bool)
-	go showLoader(loading)
-
-	out, err := getKubectlVersionCmd.CombinedOutput()
-	loading <- true
-
-	if err != nil {
-		return fmt.Errorf("failed to obtain kubectl version: %w", err)
-	}
-
-	var jsonData struct {
-		LogData string `json:"logs"`
-	}
-
-	if err := json.Unmarshal(out, &jsonData); err != nil {
-		return fmt.Errorf("failed to unmarshal kubectl version: %w", err)
-	}
-
+func checkKubectlVersion(clusterResourceGroup, clusterName string, isPrivate bool) error {
 	type Version struct {
 		Major string `json:"major"`
 		Minor string `json:"minor"`
@@ -127,8 +108,52 @@ func checkKubectlVersion(clusterResourceGroup, clusterName string) error {
 		Server Version `json:"serverVersion"`
 	}
 
-	if err := json.Unmarshal([]byte(jsonData.LogData), &kubectlVersion); err != nil {
-		return fmt.Errorf("failed to unmarshal logs data: %w", err)
+	if isPrivate {
+		getKubectlVersionCmd := exec.Command("az", "aks", "command", "invoke", "-g", clusterResourceGroup, "-n", clusterName, "--command", "kubectl version -o json", "-o", "json")
+		loading := make(chan bool)
+		go showLoader(loading)
+
+		out, err := getKubectlVersionCmd.CombinedOutput()
+		loading <- true
+		if err != nil {
+			return fmt.Errorf("failed to obtain kubectl version: %w", err)
+		}
+
+		var jsonData struct {
+			LogData string `json:"logs"`
+		}
+
+		if err := json.Unmarshal(out, &jsonData); err != nil {
+			return fmt.Errorf("failed to unmarshal kubectl version: %w", err)
+		}
+
+		if err := json.Unmarshal([]byte(jsonData.LogData), &kubectlVersion); err != nil {
+			return fmt.Errorf("failed to unmarshal logs data: %w", err)
+		}
+	} else {
+		getCredentialsCmd := exec.Command("az", "aks", "get-credentials", "-g", clusterResourceGroup, "-n", clusterName)
+		loading1 := make(chan bool)
+		go showLoader(loading1)
+
+		_, err := getCredentialsCmd.CombinedOutput()
+		loading1 <- true
+		if err != nil {
+			return fmt.Errorf("failed to get credentials: %w", err)
+		}
+
+		getKubectlVersionCmd := exec.Command("kubectl", "version", "-o", "json")
+		loading2 := make(chan bool)
+		go showLoader(loading2)
+
+		out, err := getKubectlVersionCmd.CombinedOutput()
+		loading2 <- true
+		if err != nil {
+			return fmt.Errorf("failed to obtain kubectl version: %w", err)
+		}
+
+		if err := json.Unmarshal(out, &kubectlVersion); err != nil {
+			return fmt.Errorf("failed to unmarshal kubectl version: %w", err)
+		}
 	}
 
 	clientMajorVersion, err := strconv.ParseFloat(kubectlVersion.Client.Major, 64)
@@ -163,7 +188,7 @@ func checkKubectlVersion(clusterResourceGroup, clusterName string) error {
 	return nil
 }
 
-func checkKubectlInstalled(clusterResourceGroup, clusterName string) error {
+func checkKubectlInstalled(clusterResourceGroup, clusterName string, isPrivate bool) error {
 	log.Debug("Checking that kubectl is installed...")
 	kubectlCmd := exec.Command("kubectl")
 	loading1 := make(chan bool)
@@ -176,7 +201,7 @@ func checkKubectlInstalled(clusterResourceGroup, clusterName string) error {
 		return errors.New("kubectl not installed:\nFind installation instructions at this link: https://kubernetes.io/docs/tasks/tools/install-kubectl/")
 	}
 
-	return checkKubectlVersion(clusterResourceGroup, clusterName)
+	return checkKubectlVersion(clusterResourceGroup, clusterName, isPrivate)
 }
 
 func IsLoggedInToAz() bool {
@@ -533,7 +558,7 @@ func GetAzClusters(clusterResourceGroup string) ([]string, error) {
 	return clusters, nil
 }
 
-func GetAzNamespaces(clusterResourceGroup, clusterName string) ([]string, error) {
+func GetAzNamespaces(clusterResourceGroup, clusterName string, isPrivate bool) ([]string, error) {
 	CheckAzCliInstalled()
 	if !IsLoggedInToAz() {
 		if err := LogInToAz(); err != nil {
@@ -541,27 +566,9 @@ func GetAzNamespaces(clusterResourceGroup, clusterName string) ([]string, error)
 		}
 	}
 
-	err := checkKubectlInstalled(clusterResourceGroup, clusterName)
+	err := checkKubectlInstalled(clusterResourceGroup, clusterName, isPrivate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if kubectl is properly installed: %w", err)
-	}
-
-	getNamespacesCmd := exec.Command("az", "aks", "command", "invoke", "-g", clusterResourceGroup, "-n", clusterName, "--command", "kubectl get namespaces -o json", "-o", "json")
-	loading := make(chan bool)
-	go showLoader(loading)
-
-	out, err := getNamespacesCmd.CombinedOutput()
-	loading <- true
-	if err != nil {
-		return nil, fmt.Errorf("failed to get credentials: %w", err)
-	}
-
-	var jsonData struct {
-		LogData string `json:"logs"`
-	}
-
-	if err := json.Unmarshal(out, &jsonData); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal namespaces: %w", err)
 	}
 
 	type Metadata struct {
@@ -576,10 +583,57 @@ func GetAzNamespaces(clusterResourceGroup, clusterName string) ([]string, error)
 		Namespaces []Items `json:"items"`
 	}
 
-	if err := json.Unmarshal([]byte(jsonData.LogData), &log); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal logs data: %w", err)
-	} else if len(log.Namespaces) == 0 {
-		return nil, errors.New("no namespaces found")
+	if isPrivate {
+		getNamespacesCmd := exec.Command("az", "aks", "command", "invoke", "-g", clusterResourceGroup, "-n", clusterName, "--command", "kubectl get namespaces -o json", "-o", "json")
+		loading := make(chan bool)
+		go showLoader(loading)
+
+		out, err := getNamespacesCmd.CombinedOutput()
+		loading <- true
+		if err != nil {
+			return nil, fmt.Errorf("failed to get namespaces: %w", err)
+		}
+
+		var jsonData struct {
+			LogData string `json:"logs"`
+		}
+
+		if err := json.Unmarshal(out, &jsonData); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal namespaces: %w", err)
+		}
+
+		if err := json.Unmarshal([]byte(jsonData.LogData), &log); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal logs data: %w", err)
+		} else if len(log.Namespaces) == 0 {
+			return nil, errors.New("no namespaces found")
+		}
+
+	} else {
+		getCredentialsCmd := exec.Command("az", "aks", "get-credentials", "-g", clusterResourceGroup, "-n", clusterName)
+		loading1 := make(chan bool)
+		go showLoader(loading1)
+
+		_, err := getCredentialsCmd.CombinedOutput()
+		loading1 <- true
+		if err != nil {
+			return nil, fmt.Errorf("failed to get credentials: %w", err)
+		}
+
+		getNamespacesCmd := exec.Command("kubectl", "get", "namespaces", "-o", "json")
+		loading2 := make(chan bool)
+		go showLoader(loading2)
+
+		out, err := getNamespacesCmd.CombinedOutput()
+		loading2 <- true
+		if err != nil {
+			return nil, fmt.Errorf("failed to get namespaces: %w", err)
+		}
+
+		if err := json.Unmarshal(out, &log); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal namespaces: %w", err)
+		} else if len(log.Namespaces) == 0 {
+			return nil, errors.New("no namespaces found")
+		}
 	}
 
 	namespaces := make([]string, len(log.Namespaces))
@@ -729,6 +783,37 @@ func CreateAzNamespace(namespace, resourceGroup, clusterName string) error {
 	}
 
 	return nil
+}
+
+func IsPrivateCluster(clusterResourceGroup, clusterName string) (bool, error) {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			return false, fmt.Errorf("failed to log in to Azure CLI: %w", err)
+		}
+	}
+
+	getClusterCmd := exec.Command("az", "aks", "show", "-g", clusterResourceGroup, "-n", clusterName)
+	loading := make(chan bool)
+	go showLoader(loading)
+
+	out, err := getClusterCmd.CombinedOutput()
+	loading <- true
+	if err != nil {
+		return false, fmt.Errorf("failed to get cluster %s: %w", clusterName, err)
+	}
+
+	var clusterInfo struct {
+		apiServerAccessProfile struct {
+			enablePrivateCluster string `json:"enablePrivateCluster"`
+		} `json:"apiServerAccessProfile"`
+	}
+
+	if err := json.Unmarshal(out, &clusterInfo); err != nil {
+		return false, fmt.Errorf("failed to unmarshal cluster privacy setting: %w", err)
+	}
+
+	return clusterInfo.apiServerAccessProfile.enablePrivateCluster == "true", nil
 }
 
 func showLoader(loading chan bool) {

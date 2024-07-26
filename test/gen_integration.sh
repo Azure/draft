@@ -39,12 +39,12 @@ jobs:
           go-version: 1.22
       - name: make
         run: make
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: draft-binary
           path: ./draft
@@ -66,27 +66,27 @@ jobs:
           go-version: 1.22
       - name: make
         run: make
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: draft-binary
           path: ./draft.exe
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: check_windows_helm
           path: ./test/check_windows_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: check_windows_addon_helm
           path: ./test/check_windows_addon_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: check_windows_kustomize
           path: ./test/check_windows_kustomize.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: check_windows_addon_kustomize
           path: ./test/check_windows_addon_kustomize.ps1
@@ -607,10 +607,12 @@ languageVariables:
         run: |
           find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: $lang-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -690,10 +692,12 @@ languageVariables:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: $lang-helm-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
   $helm_update_win_jobname:
     needs: $lang-helm-create
     runs-on: windows-latest
@@ -742,10 +746,12 @@ languageVariables:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: $lang-kustomize-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
   $kustomize_win_workflow_name:
     needs: $lang-kustomize-create 
     runs-on: windows-latest

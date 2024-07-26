@@ -15,12 +15,12 @@ jobs:
           go-version: 1.22
       - name: make
         run: make
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: draft-binary
           path: ./draft
@@ -408,10 +408,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: gomodule-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -846,10 +848,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: go-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -1284,10 +1288,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: python-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -1722,10 +1728,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: rust-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -2160,10 +2168,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: javascript-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -2598,10 +2608,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ruby-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -3036,10 +3048,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: csharp-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -3474,10 +3488,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: java-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -3912,10 +3928,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: gradle-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -4350,10 +4368,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: swift-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -4788,10 +4808,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: erlang-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
@@ -5226,10 +5248,12 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: clojure-manifests-create
-          path: ./langtest
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6

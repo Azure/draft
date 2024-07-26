@@ -186,7 +186,7 @@ languageVariables:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -232,7 +232,7 @@ languageVariables:
     needs: $lang-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -343,7 +343,7 @@ languageVariables:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -389,7 +389,7 @@ languageVariables:
     needs: $lang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -491,7 +491,7 @@ languageVariables:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -537,7 +537,7 @@ languageVariables:
     needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -626,11 +626,11 @@ languageVariables:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: $lang-manifests-create
           path: ./langtest/
@@ -674,7 +674,7 @@ languageVariables:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
@@ -686,7 +686,7 @@ languageVariables:
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: check_windows_helm
           path: ./langtest/
@@ -703,16 +703,16 @@ languageVariables:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: $lang-helm-create
           path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: check_windows_addon_helm
           path: ./langtest/
@@ -728,7 +728,7 @@ languageVariables:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
@@ -740,7 +740,7 @@ languageVariables:
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: check_windows_kustomize
           path: ./langtest/
@@ -756,16 +756,16 @@ languageVariables:
     needs: $lang-kustomize-create 
     runs-on: windows-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: draft-binary
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: $lang-kustomize-create
           path: ./langtest
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: check_windows_addon_kustomize
           path: ./langtest/

@@ -1,6 +1,7 @@
 package osutil
 
 import (
+	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"text/template"
 
 	log "github.com/sirupsen/logrus"
 
@@ -149,12 +151,10 @@ func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config
 	}
 
 	fileString := string(file)
-
 	for _, variable := range draftConfig.Variables {
 		log.Debugf("replacing %s with %s", variable.Name, variable.Value)
 		fileString = strings.ReplaceAll(fileString, "{{"+variable.Name+"}}", variable.Value)
 	}
-
 	return []byte(fileString), nil
 }
 
@@ -211,12 +211,18 @@ func replaceGoTemplateVariables(fileSys fs.FS, srcPath string, variableMap map[s
 		return nil, err
 	}
 
-	filrString := string(file)
-
-	for key, value := range variableMap {
-		log.Debugf("replacing %s with %s", key, value)
-		filrString = strings.ReplaceAll(filrString, "{{"+key+"}}", value)
+	// Parse the template file
+	tmpl, err := template.New("template").Parse(string(file))
+	if err != nil {
+		return nil, err
 	}
 
-	return []byte(filrString), nil
+	// Execute the template with variableMap
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, variableMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }

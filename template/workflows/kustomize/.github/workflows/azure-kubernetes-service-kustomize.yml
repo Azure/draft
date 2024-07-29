@@ -50,8 +50,8 @@ env:
   NAMESPACE: {{.NAMESPACE}}
   PRIVATE_CLUSTER: {{.PRIVATECLUSTER}}
 
-jobs:
-  {{` buildImage:
+{{`jobs:
+   buildImage:
     permissions:
       contents: read
       id-token: write

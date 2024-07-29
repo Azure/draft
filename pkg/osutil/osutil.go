@@ -198,10 +198,6 @@ func CopyDirWithTemplates(
 				return err
 			}
 
-			if err = checkAllVariablesSubstituted(string(fileContent)); err != nil {
-				return fmt.Errorf("error substituting file %s: %w", srcPath, err)
-			}
-
 			if err = templateWriter.WriteFile(destPath, fileContent); err != nil {
 				return err
 			}
@@ -216,8 +212,8 @@ func replaceGoTemplateVariables(fileSys fs.FS, srcPath string, variableMap map[s
 		return nil, err
 	}
 
-	// Parse the template file
-	tmpl, err := template.New("template").Parse(string(file))
+	// Parse the template file, missingkey=error ensures an error will be returned if any variable is missing during template execution.
+	tmpl, err := template.New("template").Option("missingkey=error").Parse(string(file))
 	if err != nil {
 		return nil, err
 	}

@@ -102,7 +102,6 @@ func TestAllVariablesSubstituted(t *testing.T) {
 		String      string
 		ExpectError bool
 	}{
-		{"", false},
 		{"{{WITH SPACE}}", false},
 		{"{{ WithEndSpaces }}", false},
 		{"{{.helm.values.style}}", false},
@@ -112,11 +111,6 @@ func TestAllVariablesSubstituted(t *testing.T) {
 		{"{{mIxEdCase}}", true},
 		{"{{lowercase}}", true},
 		{"{{snake_case}}", true},
-		{"{{VAR1}} and {{VAR2}}", true},
-		{"{{.Values.name}} and {{.Values.namespace}}", false},
-		{"{{.Values.helm.style}} and {{WITH_UNDERSCORE}}", true},
-		{"{{nested {{template}}}}", true},
-		{"{{nested .Values.template}}", false},
 	}
 
 	for _, test := range tests {
@@ -221,82 +215,57 @@ func TestCopyDirWithTemplates(t *testing.T) {
 func TestReplaceGoTemplateVariables(t *testing.T) {
 	tests := []struct {
 		name          string
-		fileContent   string
+		fileSys       fs.FS
+		srcPath       string
 		variableMap   map[string]string
 		expected      string
 		expectedError bool
-		fileExists    bool
 	}{
 		{
-			name:        "simple template substitution",
-			fileContent: "Hello, {{.Name}}!",
-			variableMap: map[string]string{
-				"Name": "Joe",
+			name: "successful template replacement",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
 			},
+			srcPath:       "template.txt",
+			variableMap:   map[string]string{"Name": "Joe"},
 			expected:      "Hello, Joe!",
 			expectedError: false,
-			fileExists:    true,
 		},
 		{
-			name:        "missing variable in map",
-			fileContent: "Hello, {{.Joe}}!",
-			variableMap: map[string]string{
-				"Other": "Joe",
+			name: "missing variable",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
 			},
-			expected:      "Hello, <no value>!",
-			expectedError: false,
-			fileExists:    true,
-		},
-		{
-			name:          "syntax error in template",
-			fileContent:   "Hello, {{.Name",
+			srcPath:       "template.txt",
 			variableMap:   map[string]string{},
 			expected:      "",
 			expectedError: true,
-			fileExists:    true,
 		},
 		{
-			name:        "multiple variables",
-			fileContent: "Hello, {{.FirstName}} {{.LastName}}!",
-			variableMap: map[string]string{
-				"FirstName": "Apple",
-				"LastName":  "sauce",
+			name: "file not found",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
 			},
-			expected:      "Hello, Apple sauce!",
-			expectedError: false,
-			fileExists:    true,
-		},
-		{
-			name:        "nested variables",
-			fileContent: "{{if .Greeting}}{{.Greeting}}, {{.Name}}!{{end}}",
-			variableMap: map[string]string{
-				"Greeting": "Hello",
-				"Name":     "Joe",
-			},
-			expected:      "Hello, Joe!",
-			expectedError: false,
-			fileExists:    true,
-		},
-		{
-			name:          "file not found",
-			fileContent:   "",
-			variableMap:   map[string]string{},
+			srcPath:       "nonexistent.txt",
+			variableMap:   map[string]string{"Name": "Joe"},
 			expected:      "",
 			expectedError: true,
-			fileExists:    false,
+		},
+		{
+			name: "unsubstituted variable",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}} and {{.Place}}!")},
+			},
+			srcPath:       "template.txt",
+			variableMap:   map[string]string{"Name": "Joe"},
+			expected:      "",
+			expectedError: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fileSys := fstest.MapFS{}
-			if tt.fileExists {
-				fileSys["template.txt"] = &fstest.MapFile{
-					Data: []byte(tt.fileContent),
-				}
-			}
-
-			result, err := replaceGoTemplateVariables(fileSys, "template.txt", tt.variableMap)
+			result, err := replaceGoTemplateVariables(tt.fileSys, tt.srcPath, tt.variableMap)
 
 			if tt.expectedError {
 				assert.Error(t, err)

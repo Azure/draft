@@ -162,7 +162,7 @@ func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config
 func CopyDirWithTemplates(
 	fileSys fs.FS,
 	src, dest string,
-	variableMap map[string]string,
+	draftConfig *config.DraftConfig,
 	templateWriter templatewriter.TemplateWriter) error {
 
 	files, err := fs.ReadDir(fileSys, src)
@@ -180,11 +180,16 @@ func CopyDirWithTemplates(
 		destPath := path.Join(dest, f.Name())
 		log.Debugf("Source path: %s Dest path: %s", srcPath, destPath)
 
+		variableMap := draftConfig.GetVariableMap()
+		if len(variableMap) == 0 {
+			return fmt.Errorf("variable map is empty, unable to replace template variables")
+		}
+
 		if f.IsDir() {
 			if err = templateWriter.EnsureDirectory(destPath); err != nil {
 				return err
 			}
-			if err = CopyDirWithTemplates(fileSys, srcPath, destPath, variableMap, templateWriter); err != nil {
+			if err = CopyDirWithTemplates(fileSys, srcPath, destPath, draftConfig, templateWriter); err != nil {
 				return err
 			}
 		} else {

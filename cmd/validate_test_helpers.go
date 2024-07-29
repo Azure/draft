@@ -5,12 +5,17 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Azure/draft/pkg/safeguards"
+	types "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 var tempDir, _ = filepath.Abs("./testdata")
 
-func countTestViolations(results []safeguards.ManifestResult) int {
+const (
+	chartPath         = "../pkg/safeguards/tests/testmanifests/validchart"
+	kustomizationPath = "../pkg/safeguards/tests/kustomize/overlays/production"
+)
+
+func countTestViolations(results []types.ManifestResult) int {
 	numViolations := 0
 	for _, r := range results {
 		numViolations += len(r.ObjectViolations)

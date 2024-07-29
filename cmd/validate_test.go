@@ -60,8 +60,6 @@ func TestRunValidate(t *testing.T) {
 	assert.Greater(t, numViolations, 0)
 
 	// Scenario 4: Test Helm
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
 	manifestFiles, err = preprocessing.GetManifestFiles(chartPath)
 	assert.Nil(t, err)
@@ -85,14 +83,11 @@ func TestRunValidate_Kustomize(t *testing.T) {
 	kustomizationPath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production")
 	kustomizationFilePath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production/kustomization.yaml")
 
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
-
 	var manifestFiles []types.ManifestFile
 	var err error
 
 	// Scenario 1a: kustomizationPath leads to a directory containing kustomization.yaml - expect success
-	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationPath, tempDir)
+	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationPath)
 	assert.Nil(t, err)
 	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -100,7 +95,7 @@ func TestRunValidate_Kustomize(t *testing.T) {
 	assert.Equal(t, numViolations, 1)
 
 	// Scenario 1b: kustomizationFilePath path leads to a specific kustomization.yaml - expect success
-	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationFilePath, tempDir)
+	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationFilePath)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)

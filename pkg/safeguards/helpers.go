@@ -7,16 +7,15 @@ import (
 	"os"
 	"path/filepath"
 
+	c "github.com/Azure/draft/pkg/safeguards/types"
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
-
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
 	log "github.com/sirupsen/logrus"
+
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
-	c "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 // retrieves the constraint client that does all rego code related operations

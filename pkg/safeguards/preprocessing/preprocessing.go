@@ -2,7 +2,6 @@ package preprocessing
 
 import (
 	"fmt"
-	"helm.sh/helm/v3/pkg/chartutil"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -10,8 +9,10 @@ import (
 
 	sgTypes "github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
+
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/types"

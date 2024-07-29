@@ -2,16 +2,15 @@ package cmd
 
 import (
 	"context"
-	"helm.sh/helm/v3/pkg/chartutil"
 	"path/filepath"
-
 	"testing"
 
 	"github.com/Azure/draft/pkg/safeguards"
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
+	"github.com/Azure/draft/pkg/safeguards/types"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Azure/draft/pkg/safeguards/types"
+	"helm.sh/helm/v3/pkg/chartutil"
 )
 
 // TestRunValidate tests the run command for `draft validate` for proper returns

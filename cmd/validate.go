@@ -3,13 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"helm.sh/helm/v3/pkg/chartutil"
 
 	"github.com/Azure/draft/pkg/safeguards"
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"helm.sh/helm/v3/pkg/chartutil"
 )
 
 type validateCmd struct {

@@ -12,8 +12,10 @@ import (
 )
 
 type validateCmd struct {
-	manifestPath    string
-	imagePullSecret bool
+	manifestPath     string
+	imagePullSecret  bool
+	releaseName      string
+	releaseNamespace string
 }
 
 func init() {
@@ -39,6 +41,8 @@ func newValidateCmd() *cobra.Command {
 
 	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the manifest")
 	f.BoolVarP(&vc.imagePullSecret, "imagePullSecret", "s", false, "'imagePullSecret' enables the Safeguard that checks for usage of an image pull secret within the manifest(s)")
+	f.StringVarP(&vc.releaseName, "releaseName", "rn", "", "'releaseName' asks for the Helm release name to use for rendering Helm projects in Draft")
+	f.StringVarP(&vc.releaseNamespace, "releaseNamespace", "rns", "", "'releaseNamespace' asks for the Helm release namespace to use for rendering Helm projects in Draft")
 
 	return cmd
 }

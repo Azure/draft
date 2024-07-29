@@ -2,6 +2,7 @@ package preprocessing
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -184,30 +185,77 @@ func TestRenderKustomizeManifest_Valid(t *testing.T) {
 // TestIsKustomize checks whether the given path contains a kustomize project
 func TestIsKustomize(t *testing.T) {
 	// path contains a kustomization.yaml file
-	isKustomize := IsKustomize(kustomizationPath)
-	assert.True(t, isKustomize)
+	iskustomize := isKustomize(true, kustomizationPath)
+	assert.True(t, iskustomize)
 	// path is a kustomization.yaml file
-	isKustomize = IsKustomize(kustomizationFilePath)
-	assert.True(t, isKustomize)
+	iskustomize = isKustomize(false, kustomizationFilePath)
+	assert.True(t, iskustomize)
 	// not a kustomize project
-	isKustomize = IsKustomize(chartPath)
-	assert.False(t, isKustomize)
+	iskustomize = isKustomize(true, chartPath)
+	assert.False(t, iskustomize)
 }
 
 func TestIsHelm(t *testing.T) {
 	// path is a directory
-	isHelm := IsHelm(chartPath)
-	assert.True(t, isHelm)
+	ishelm := isHelm(true, chartPath)
+	assert.True(t, ishelm)
 
 	// path is a Chart.yaml file
-	isHelm = IsHelm(directPath_ToValidChart)
-	assert.True(t, isHelm)
+	ishelm = isHelm(false, directPath_ToValidChart)
+	assert.True(t, ishelm)
 
 	// Is a directory but does not contain Chart.yaml
-	isHelm = IsHelm(invalidNoChart)
-	assert.False(t, isHelm)
+	ishelm = isHelm(true, kustomizationPath)
+	assert.False(t, ishelm)
+
+	// Is a directory of manifest files, not a helm chart
+	ishelm = isHelm(false, "../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
+	assert.False(t, ishelm)
+
+	// Is a directory of manifest files, not a helm chart
+	ishelm = isHelm(false, "../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
+	assert.False(t, ishelm)
 
 	// invalid path
-	isHelm = IsHelm("invalid/path")
-	assert.False(t, isHelm)
+	ishelm = isHelm(false, "invalid/path")
+	assert.False(t, ishelm)
+}
+
+// TestIsYAML tests the IsYAML function for proper returns
+func TestIsYAML(t *testing.T) {
+	dirNotYaml, _ := filepath.Abs("../tests/not-yaml")
+	dirYaml, _ := filepath.Abs("../tests/all/success")
+	fileNotYaml, _ := filepath.Abs("../tests/not-yaml/readme.md")
+	fileYaml, _ := filepath.Abs("/tests/all/success/all-success-manifest-1.yaml")
+
+	assert.False(t, IsYAML(fileNotYaml))
+	assert.True(t, IsYAML(fileYaml))
+
+	manifestFiles, err := GetManifestFiles(dirNotYaml)
+	assert.Nil(t, manifestFiles)
+	assert.NotNil(t, err)
+
+	manifestFiles, err = GetManifestFiles(dirYaml)
+	assert.NotNil(t, manifestFiles)
+	assert.Nil(t, err)
+}
+
+// TestIsDirectory tests the isDirectory function for proper returns
+func TestIsDirectory(t *testing.T) {
+	testWd, _ := os.Getwd()
+	pathTrue := testWd
+	pathFalse := path.Join(testWd, "preprocessing.go")
+	pathError := ""
+
+	isDir, err := IsDirectory(pathTrue)
+	assert.True(t, isDir)
+	assert.Nil(t, err)
+
+	isDir, err = IsDirectory(pathFalse)
+	assert.False(t, isDir)
+	assert.Nil(t, err)
+
+	isDir, err = IsDirectory(pathError)
+	assert.False(t, isDir)
+	assert.NotNil(t, err)
 }

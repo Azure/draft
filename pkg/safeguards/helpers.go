@@ -125,7 +125,6 @@ func GetManifestFiles(p string) ([]c.ManifestFile, error) {
 			return fmt.Errorf("error walking path %s with error: %w", walkPath, err)
 		}
 
-		fmt.Println("walkPath: ", walkPath)
 		if !info.IsDir() && info.Name() != "" && IsYAML(walkPath) {
 			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
 			byteContent, err := os.ReadFile(p)
@@ -153,7 +152,7 @@ func GetManifestFiles(p string) ([]c.ManifestFile, error) {
 	return manifestFiles, nil
 }
 
-// getManifestFiles uses filepath.Walk to retrieve a list of the manifest files within a directory of .yaml files
+// GetManifestFilesFromDir uses filepath.Walk to retrieve a list of the manifest files within a directory of .yaml files
 func GetManifestFilesFromDir(p string) ([]c.ManifestFile, error) {
 	var manifestFiles []c.ManifestFile
 
@@ -173,7 +172,7 @@ func GetManifestFilesFromDir(p string) ([]c.ManifestFile, error) {
 
 			byteContent, err := os.ReadFile(walkPath)
 			if err != nil {
-				return fmt.Errorf("could not read file %s: %v", walkPath, err)
+				return fmt.Errorf("could not read file %s: %s", walkPath, err)
 			}
 			manifest.Name = info.Name()
 			manifest.ManifestContent = byteContent

@@ -43,7 +43,7 @@ func GetManifestFiles(manifestsPath string) ([]sgTypes.ManifestFile, error) {
 		} else {
 			byteContent, err := os.ReadFile(manifestsPath)
 			if err != nil {
-				return nil, fmt.Errorf("could not read file %s: %v", manifestsPath, err)
+				return nil, fmt.Errorf("could not read file %s: %s", manifestsPath, err)
 			}
 			manifestFiles = append(manifestFiles, sgTypes.ManifestFile{
 				Name:            path.Base(manifestsPath),

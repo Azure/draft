@@ -7,23 +7,23 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	h "github.com/Azure/draft/pkg/safeguards/types"
+	"github.com/Azure/draft/pkg/safeguards/types"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 //go:embed lib
 var embedFS embed.FS
 
-var fc h.FileCrawler
+var fc types.FileCrawler
 
 // primes the scheme to be able to interpret beta templates
 func init() {
 
-	h.SelectedVersion = getLatestSafeguardsVersion()
-	updateSafeguardPaths(&h.Safeguards)
+	types.SelectedVersion = getLatestSafeguardsVersion()
+	updateSafeguardPaths(&types.Safeguards)
 
-	fc = h.FileCrawler{
-		Safeguards:   h.Safeguards,
+	fc = types.FileCrawler{
+		Safeguards:   types.Safeguards,
 		ConstraintFS: embedFS,
 	}
 }
@@ -35,12 +35,12 @@ type ManifestResult struct {
 }
 
 // GetManifestResults takes in a list of manifest files and returns a slice of ManifestViolation structs
-func GetManifestResults(ctx context.Context, manifestFiles []h.ManifestFile) ([]h.ManifestResult, error) {
+func GetManifestResults(ctx context.Context, manifestFiles []types.ManifestFile) ([]types.ManifestResult, error) {
 	if len(manifestFiles) == 0 {
 		return nil, fmt.Errorf("path cannot be empty")
 	}
 
-	manifestResults := make([]h.ManifestResult, 0)
+	manifestResults := make([]types.ManifestResult, 0)
 
 	// constraint client instantiation
 	c, err := getConstraintClient()
@@ -100,7 +100,7 @@ func GetManifestResults(ctx context.Context, manifestFiles []h.ManifestFile) ([]
 			return manifestResults, err
 		}
 
-		manifestResults = append(manifestResults, h.ManifestResult{
+		manifestResults = append(manifestResults, types.ManifestResult{
 			Name:             m.Name,
 			ObjectViolations: objectViolations,
 			ViolationsCount:  len(objectViolations),

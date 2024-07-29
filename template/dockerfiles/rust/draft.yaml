@@ -1,8 +1,5 @@
 language: rust
 displayName: Rust
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

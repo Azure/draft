@@ -6,16 +6,14 @@ import (
 
 	"github.com/Azure/draft/pkg/safeguards"
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
-	h "github.com/Azure/draft/pkg/safeguards/types"
+	"github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 type validateCmd struct {
-	manifestPath     string
-	imagePullSecret  bool
-	releaseName      string
-	releaseNamespace string
+	manifestPath    string
+	imagePullSecret bool
 }
 
 func init() {
@@ -61,7 +59,7 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 
 	ctx := context.Background()
 
-	var manifestFiles []h.ManifestFile
+	var manifestFiles []types.ManifestFile
 	manifestFiles, err := preprocessing.GetManifestFiles(vc.manifestPath)
 	if err != nil {
 		return fmt.Errorf("error retrieving manifest files: %w", err)

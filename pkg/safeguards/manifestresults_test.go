@@ -8,18 +8,18 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	h "github.com/Azure/draft/pkg/safeguards/types"
+	"github.com/Azure/draft/pkg/safeguards/types"
 )
 
 var ctx = context.Background()
-var testFc h.FileCrawler
+var testFc types.FileCrawler
 
 func init() {
-	h.SelectedVersion = getLatestSafeguardsVersion()
-	updateSafeguardPaths(&h.SafeguardsTesting)
+	types.SelectedVersion = getLatestSafeguardsVersion()
+	updateSafeguardPaths(&types.SafeguardsTesting)
 
-	testFc = h.FileCrawler{
-		Safeguards:   h.SafeguardsTesting,
+	testFc = types.FileCrawler{
+		Safeguards:   types.SafeguardsTesting,
 		ConstraintFS: embedFS,
 	}
 }
@@ -31,9 +31,9 @@ func TestValidateDeployment_ContainerAllowedImages(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_CAI.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_CAI.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_CAI.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_CAI.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -45,7 +45,7 @@ func TestValidateDeployment_ContainerAllowedImages(t *testing.T) {
 	// validating deployment manifests
 	// tbarnes94: disabling failure case until we finalize logic on imageRegex for allowed images
 	//validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_CAI.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_CAI.SuccessPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_CAI.SuccessPaths)
 }
 
 // TestValidateDeployment_ContainerEnforceProbes tests our Container Enforce Probes manifest
@@ -55,9 +55,9 @@ func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_CEP.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_CEP.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_CEP.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_CEP.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -67,8 +67,8 @@ func TestValidateDeployment_ContainerEnforceProbes(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_CEP.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_CEP.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, types.TestManifest_CEP.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_CEP.SuccessPaths)
 }
 
 // TestValidateDeployment_ContainerResourceLimits tests our Container Resource Limits manifest
@@ -78,9 +78,9 @@ func TestValidateDeployment_ContainerResourceLimits(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_CL.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_CL.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_CL.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_CL.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -90,8 +90,8 @@ func TestValidateDeployment_ContainerResourceLimits(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_CL.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_CL.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, types.TestManifest_CL.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_CL.SuccessPaths)
 }
 
 // TestValidateDeployment_ContainerRestrictedImagePulls tests our Container Restricted Image Pulls manifest
@@ -101,9 +101,9 @@ func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_CRIP.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_CRIP.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_CRIP.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_CRIP.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -113,8 +113,8 @@ func TestValidateDeployment_ContainerRestrictedImagePulls(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_CRIP.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_CRIP.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, types.TestManifest_CRIP.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_CRIP.SuccessPaths)
 }
 
 // TestValidateDeployment_DisallowedBadPodDisruptionBudget tests our Disallowed Bad Pod Disruption Budget manifest
@@ -124,9 +124,9 @@ func TestValidateDeployment_DisallowedBadPodDisruptionBudget(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_DBPDB.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_DBPDB.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_DBPDB.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_DBPDB.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -136,8 +136,8 @@ func TestValidateDeployment_DisallowedBadPodDisruptionBudget(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_DBPDB.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_DBPDB.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, types.TestManifest_DBPDB.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_DBPDB.SuccessPaths)
 }
 
 // TestValidateDeployment_PodEnforceAntiaffinity tests our Pod Enforce Antiaffinity manifest
@@ -147,9 +147,9 @@ func TestValidateDeployment_PodEnforceAntiaffinity(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_PEA.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_PEA.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_PEA.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_PEA.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -159,8 +159,8 @@ func TestValidateDeployment_PodEnforceAntiaffinity(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_PEA.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_PEA.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, types.TestManifest_PEA.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_PEA.SuccessPaths)
 }
 
 // TestValidateDeployment_RestrictedTaints tests our Restricted Taints manifest
@@ -170,9 +170,9 @@ func TestValidateDeployment_RestrictedTaints(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_RT.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_RT.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_RT.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_RT.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -182,8 +182,8 @@ func TestValidateDeployment_RestrictedTaints(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_RT.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_RT.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, types.TestManifest_RT.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_RT.SuccessPaths)
 }
 
 // TestValidateDeployment_UniqueServiceSelectors tests our Unique Service Selectors manifest
@@ -193,9 +193,9 @@ func TestValidateDeployment_UniqueServiceSelectors(t *testing.T) {
 	assert.Nil(t, err)
 
 	// retrieving template, constraint, and deployments
-	constraintTemplate, err := testFc.ReadConstraintTemplate(h.TestManifest_USS.Name)
+	constraintTemplate, err := testFc.ReadConstraintTemplate(types.TestManifest_USS.Name)
 	assert.Nil(t, err)
-	constraint, err := testFc.ReadConstraint(h.TestManifest_USS.Name)
+	constraint, err := testFc.ReadConstraint(types.TestManifest_USS.Name)
 	assert.Nil(t, err)
 
 	// load template, constraint into constraint client
@@ -205,8 +205,8 @@ func TestValidateDeployment_UniqueServiceSelectors(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateOneTestManifestFail(ctx, t, c, testFc, h.TestManifest_USS.ErrorPaths)
-	validateOneTestManifestSuccess(ctx, t, c, testFc, h.TestManifest_USS.SuccessPaths)
+	validateOneTestManifestFail(ctx, t, c, testFc, types.TestManifest_USS.ErrorPaths)
+	validateOneTestManifestSuccess(ctx, t, c, testFc, types.TestManifest_USS.SuccessPaths)
 }
 
 // TestValidateDeployment_All tests all of our manifests in a few given manifest files
@@ -217,7 +217,7 @@ func TestValidateDeployment_All(t *testing.T) {
 
 	var testTemplates []*templates.ConstraintTemplate
 	var testConstraints []*unstructured.Unstructured
-	for _, sg := range h.Safeguards {
+	for _, sg := range types.Safeguards {
 		// retrieving template, constraint, and deployments
 		constraintTemplate, err := testFc.ReadConstraintTemplate(sg.Name)
 		assert.Nil(t, err)
@@ -236,6 +236,6 @@ func TestValidateDeployment_All(t *testing.T) {
 	assert.Nil(t, err)
 
 	// validating deployment manifests
-	validateAllTestManifestsFail(ctx, t, h.TestManifest_all.ErrorPaths)
-	validateAllTestManifestsSuccess(ctx, t, h.TestManifest_all.SuccessPaths)
+	validateAllTestManifestsFail(ctx, t, types.TestManifest_all.ErrorPaths)
+	validateAllTestManifestsSuccess(ctx, t, types.TestManifest_all.SuccessPaths)
 }

@@ -1,8 +1,5 @@
 language: javascript
 displayName: JavaScript
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

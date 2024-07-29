@@ -1,8 +1,5 @@
 language: gradle
 displayName: Gradle
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

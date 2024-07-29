@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"helm.sh/helm/v3/pkg/chartutil"
 
 	"github.com/Azure/draft/pkg/safeguards"
 	"github.com/Azure/draft/pkg/safeguards/preprocessing"
@@ -12,8 +13,10 @@ import (
 )
 
 type validateCmd struct {
-	manifestPath    string
-	imagePullSecret bool
+	manifestPath     string
+	imagePullSecret  bool
+	releaseName      string
+	releaseNamespace string
 }
 
 func init() {
@@ -57,10 +60,17 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		safeguards.AddSafeguardCRIP()
 	}
 
+	var opt chartutil.ReleaseOptions
+	if vc.releaseName != "" {
+		opt.Name = vc.releaseName
+	}
+	if vc.releaseNamespace != "" {
+		opt.Namespace = vc.releaseNamespace
+	}
 	ctx := context.Background()
 
 	var manifestFiles []types.ManifestFile
-	manifestFiles, err := preprocessing.GetManifestFiles(vc.manifestPath)
+	manifestFiles, err := preprocessing.GetManifestFiles(vc.manifestPath, opt)
 	if err != nil {
 		return fmt.Errorf("error retrieving manifest files: %w", err)
 	}

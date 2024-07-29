@@ -125,11 +125,58 @@ func GetManifestFiles(p string) ([]c.ManifestFile, error) {
 			return fmt.Errorf("error walking path %s with error: %w", walkPath, err)
 		}
 
+		fmt.Println("walkPath: ", walkPath)
+		if !info.IsDir() && info.Name() != "" && IsYAML(walkPath) {
+			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
+			byteContent, err := os.ReadFile(p)
+			if err != nil {
+				return fmt.Errorf("could not read file %s: %s", p, err)
+			}
+			manifest.Name = info.Name()
+			manifest.ManifestContent = byteContent
+			manifestFiles = append(manifestFiles, manifest)
+		} else if !IsYAML(p) {
+			log.Debugf("%s is not a manifest file, skipping...", info.Name())
+		} else {
+			log.Debugf("%s is a directory, skipping...", info.Name())
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not walk directory: %s", err)
+	}
+	if len(manifestFiles) == 0 {
+		return nil, fmt.Errorf(" found within given path")
+	}
+
+	return manifestFiles, nil
+}
+
+// getManifestFiles uses filepath.Walk to retrieve a list of the manifest files within a directory of .yaml files
+func GetManifestFilesFromDir(p string) ([]c.ManifestFile, error) {
+	var manifestFiles []c.ManifestFile
+
+	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
+		manifest := c.ManifestFile{}
+		// skip when walkPath is just given path and also a directory
+		if p == walkPath && info.IsDir() {
+			return nil
+		}
+
+		if err != nil {
+			return fmt.Errorf("error walking path %s with error: %w", walkPath, err)
+		}
+
 		if !info.IsDir() && info.Name() != "" && IsYAML(walkPath) {
 			log.Debugf("%s is not a directory, appending to manifestFiles", info.Name())
 
+			byteContent, err := os.ReadFile(walkPath)
+			if err != nil {
+				return fmt.Errorf("could not read file %s: %v", walkPath, err)
+			}
 			manifest.Name = info.Name()
-			manifest.Path = walkPath
+			manifest.ManifestContent = byteContent
 			manifestFiles = append(manifestFiles, manifest)
 		} else if !IsYAML(p) {
 			log.Debugf("%s is not a manifest file, skipping...", info.Name())

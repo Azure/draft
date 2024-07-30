@@ -123,7 +123,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string, opt chartutil.R
 	var manifestFiles []sgTypes.ManifestFile
 	for chartPath, chart := range loadedCharts {
 		valuesPath := filepath.Join(chartPath, "values.yaml") // Enforce that values.yaml must be at same level as Chart.yaml
-		mergedValues, err := getValues(chart, valuesPath, opt)
+		mergedValues, err := getValues(chart, valuesPath, opt, filepath.Base(chartPath))
 		if err != nil {
 			return nil, fmt.Errorf("failed to load values: %s", err)
 		}

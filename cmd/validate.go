@@ -43,8 +43,8 @@ func newValidateCmd() *cobra.Command {
 
 	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the manifest")
 	f.BoolVarP(&vc.imagePullSecret, "imagePullSecret", "s", false, "'imagePullSecret' enables the Safeguard that checks for usage of an image pull secret within the manifest(s)")
-	f.StringVarP(&vc.releaseName, "releaseName", "rn", "", "'releaseName' asks for a user-defined release name for the Helm package to use when rendering Helm projects in Draft")
-	f.StringVarP(&vc.releaseNamespace, "releaseNamespace", "rns", "", "'releaseNamespace' asks for a user-defined release namespace for the Helm package to use when rendering Helm projects in Draft")
+	f.StringVarP(&vc.releaseName, "releaseName", "n", "", "'releaseName' asks for a user-defined release name for the Helm package to use when rendering Helm projects in Draft")
+	f.StringVarP(&vc.releaseNamespace, "releaseNamespace", "m", "", "'releaseNamespace' asks for a user-defined release namespace for the Helm package to use when rendering Helm projects in Draft")
 
 	return cmd
 }

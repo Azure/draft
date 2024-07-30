@@ -44,9 +44,8 @@ env:
   DOCKER_FILE: {{.DOCKERFILE}}
   BUILD_CONTEXT_PATH: {{.BUILDCONTEXTPATH}}
   NAMESPACE: {{.NAMESPACE}}
-  PRIVATE_CLUSTER: {{.PRIVATECLUSTER}}
-
-{{`jobs:
+{{`
+jobs:
   buildImage:
     permissions:
       contents: read
@@ -120,4 +119,5 @@ env:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           name: ${{ env.CLUSTER_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
-          namespace: ${{ env.NAMESPACE }} `}}
+          namespace: ${{ env.NAMESPACE }}
+`}}

@@ -86,10 +86,6 @@ func TestCreateWorkflows(t *testing.T) {
 				Name:  "NAMESPACE",
 				Value: "default",
 			},
-			{
-				Name:  "PRIVATECLUSTER",
-				Value: "false",
-			},
 		},
 	}
 	draftConfigNoRoot := &config.DraftConfig{
@@ -153,10 +149,6 @@ func TestCreateWorkflows(t *testing.T) {
 			{
 				Name:  "NAMESPACE",
 				Value: "default",
-			},
-			{
-				Name:  "PRIVATECLUSTER",
-				Value: "false",
 			},
 		},
 	}
@@ -231,21 +223,22 @@ func TestCreateWorkflows(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := createTempDeploymentFile(tt.tempDirPath, tt.tempFileName, tt.tempPath)
+			assert.Nil(t, err)
 
-		err := createTempDeploymentFile("charts", "charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
-		assert.Nil(t, err)
+			workflows := CreateWorkflowsFromEmbedFS(template.Workflows, dest)
+			err = workflows.CreateWorkflowFiles(tt.deployType, draftConfig, templateWriter)
+			if err != nil && !tt.shouldError {
+				t.Errorf("Default Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
+			}
+			err = workflows.CreateWorkflowFiles(tt.deployType, draftConfigNoRoot, templateWriter)
+			if err != nil && !tt.shouldError {
+				t.Errorf("Custom Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
+			}
 
-		workflows := CreateWorkflowsFromEmbedFS(template.Workflows, dest)
-		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfig, templateWriter)
-		if err != nil && tt.shouldError == false {
-			t.Errorf("Default Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
-		}
-		err = workflows.CreateWorkflowFiles(tt.deployType, draftConfigNoRoot, templateWriter)
-		if err != nil && tt.shouldError == false {
-			t.Errorf("Custom Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
-		}
-
-		tt.cleanUp()
+			tt.cleanUp()
+		})
 	}
 }
 

@@ -30,6 +30,7 @@ const (
 	kustomizationFilePath = "../tests/kustomize/overlays/production/kustomization.yaml"
 )
 
+// Returns the content of a manifest file as bytes
 func getManifestAsBytes(t *testing.T, filePath string) []byte {
 	yamlFileContent, err := os.ReadFile(filePath)
 	if err != nil {
@@ -39,25 +40,21 @@ func getManifestAsBytes(t *testing.T, filePath string) []byte {
 	return yamlFileContent
 }
 
-// replace newlines with strings for easy .yaml byte comparison
+// Normalize returns, newlines, extra characters with strings for easy .yaml byte comparison
 func normalizeNewlines(data []byte) []byte {
 	str := string(data)
 
-	// Replace newlines and carriage returns with a single newline
+	// Replace various newline characters with a single newline
 	str = strings.ReplaceAll(str, "\r\n", "\n")
 	str = strings.ReplaceAll(str, "\r", "\n")
 
-	// Replace YAML block scalars' indicators with empty space
-	// Handles cases like "data: config.yaml: |"
-	re := regexp.MustCompile(`(\s*\|\s*)`)
-	str = re.ReplaceAllString(str, " ")
-
-	// Replace multiple spaces with a single space
+	// Replace YAML block scalars' indicators and multiple spaces
+	str = regexp.MustCompile(`(\s*\|\s*)`).ReplaceAllString(str, " ")
 	str = strings.Join(strings.Fields(str), " ")
 
 	// Normalize empty mappings and fields
-	str = regexp.MustCompile(`(\{\s*\})`).ReplaceAllString(str, "{}")
-	str = regexp.MustCompile(`(\s*:\s*)`).ReplaceAllString(str, ": ")
+	str = regexp.MustCompile(`\{\s*\}`).ReplaceAllString(str, "{}")
+	str = regexp.MustCompile(`\s*:\s*`).ReplaceAllString(str, ": ")
 
 	return []byte(str)
 }

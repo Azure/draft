@@ -178,8 +178,13 @@ func CopyDirWithTemplates(
 			continue
 		}
 
+		fileName := f.Name()
+		if overrideName, ok := draftConfig.FileNameOverrideMap[f.Name()]; ok {
+			fileName = overrideName
+		}
+
 		srcPath := path.Join(src, f.Name())
-		destPath := path.Join(dest, f.Name())
+		destPath := path.Join(dest, fileName)
 		log.Debugf("Source path: %s Dest path: %s", srcPath, destPath)
 
 		variableMap := draftConfig.GetVariableMap()

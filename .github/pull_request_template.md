@@ -13,16 +13,16 @@ Feature # (details)
 - [ ] This change requires a documentation update
 - [ ] Refactor
 
-# How Has This Been Tested?
+## How Has This Been Tested?
 
-Provide instructions so we can reproduce, and list any relevant details for your test configuration. Is it a breaking change which will impact consuming tool(s)?
+Provide instructions so we can reproduce, and list any relevant details for your test configuration. Mention if this is a breaking change which will impact consuming tool(s).
 
 - [ ] Unit Test:
 - [ ] E2E Test:
 - [ ] Other Test:
 
 
-# Checklist:
+## Checklist:
 
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my code

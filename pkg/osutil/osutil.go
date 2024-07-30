@@ -21,6 +21,8 @@ import (
 // A draft variable is defined as a string of non-whitespace characters wrapped in double curly braces.
 var draftVariableRegex = regexp.MustCompile("{{[^\\s.]+\\S*}}")
 
+const configFileName = "draft.yaml"
+
 // Exists returns whether the given file or directory exists or not.
 func Exists(path string) (bool, error) {
 	_, err := os.Stat(path)
@@ -92,7 +94,7 @@ func CopyDir(
 
 	for _, f := range files {
 
-		if f.Name() == "draft.yaml" {
+		if f.Name() == configFileName {
 			continue
 		}
 
@@ -172,7 +174,7 @@ func CopyDirWithTemplates(
 
 	for _, f := range files {
 
-		if f.Name() == "draft.yaml" {
+		if f.Name() == configFileName {
 			continue
 		}
 

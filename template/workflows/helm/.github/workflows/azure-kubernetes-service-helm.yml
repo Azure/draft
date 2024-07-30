@@ -53,7 +53,7 @@ env:
   NAMESPACE: {{.NAMESPACE}}
 {{`
 jobs:
-   buildImage:
+  buildImage:
     permissions:
       contents: read
       id-token: write
@@ -123,7 +123,7 @@ jobs:
       - name: Is private cluster
         id: isPrivate
         run: |
-          result= $(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
+          result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
           echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
       # Deploys application based on manifest files from previous step

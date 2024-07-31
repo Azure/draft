@@ -83,7 +83,6 @@ func TestRunValidate(t *testing.T) {
 	assert.Nil(t, err)
 	numViolations = countTestViolations(v)
 	assert.Greater(t, numViolations, 0)
-
 }
 
 // TestRunValidate_Kustomize tests the run command for `draft validate` for proper returns when given a kustomize project

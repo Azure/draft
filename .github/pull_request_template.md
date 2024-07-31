@@ -15,7 +15,7 @@ Feature # (details)
 
 ## How Has This Been Tested?
 
-Provide instructions so we can reproduce, and list any relevant details for your test configuration. Mention if this is a breaking change which will impact consuming tool(s).
+Provide instructions so we can reproduce, and list any relevant details for your test configuration. Please mention if this is a breaking change which will impact consuming tool(s).
 
 - [ ] Unit Test:
 - [ ] E2E Test:

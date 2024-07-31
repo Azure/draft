@@ -187,7 +187,7 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.D
 		return fmt.Errorf("create workflow files: %w", err)
 	}
 
-	if err := osutil.CopyDir(w.workflowTemplates, srcDir, w.Dest, draftConfig, templateWriter); err != nil {
+	if err := osutil.CopyDirWithTemplates(w.workflowTemplates, srcDir, w.Dest, draftConfig, templateWriter); err != nil {
 		return err
 	}
 

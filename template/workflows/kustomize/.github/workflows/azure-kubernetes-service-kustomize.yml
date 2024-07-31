@@ -31,24 +31,24 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: {{WORKFLOWNAME}}
+name: {{.WORKFLOWNAME}}
 
 on:
   push:
-    branches: [{{BRANCHNAME}}]
+    branches: [{{.BRANCHNAME}}]
   workflow_dispatch:
 
 env:
-  ACR_RESOURCE_GROUP: {{ACRRESOURCEGROUP}}
-  AZURE_CONTAINER_REGISTRY: {{AZURECONTAINERREGISTRY}}
-  CONTAINER_NAME: {{CONTAINERNAME}}
-  CLUSTER_RESOURCE_GROUP: {{CLUSTERRESOURCEGROUP}}
-  CLUSTER_NAME: {{CLUSTERNAME}}
-  KUSTOMIZE_PATH: {{KUSTOMIZEPATH}}
-  DOCKER_FILE: {{DOCKERFILE}}
-  BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
-  NAMESPACE: {{NAMESPACE}}
-
+  ACR_RESOURCE_GROUP: {{.ACRRESOURCEGROUP}}
+  AZURE_CONTAINER_REGISTRY: {{.AZURECONTAINERREGISTRY}}
+  CONTAINER_NAME: {{.CONTAINERNAME}}
+  CLUSTER_RESOURCE_GROUP: {{.CLUSTERRESOURCEGROUP}}
+  CLUSTER_NAME: {{.CLUSTERNAME}}
+  KUSTOMIZE_PATH: {{.KUSTOMIZEPATH}}
+  DOCKER_FILE: {{.DOCKERFILE}}
+  BUILD_CONTEXT_PATH: {{.BUILDCONTEXTPATH}}
+  NAMESPACE: {{.NAMESPACE}}
+{{`
 jobs:
   buildImage:
     permissions:
@@ -133,3 +133,4 @@ jobs:
           name: ${{ env.CLUSTER_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
           namespace: ${{ env.NAMESPACE }}
+`}}

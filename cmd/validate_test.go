@@ -61,6 +61,9 @@ func TestRunValidate(t *testing.T) {
 	assert.Greater(t, numViolations, 0)
 
 	//Scenario 4: Test Kustomize
+	makeTempDir(t)
+	t.Cleanup(func() { cleanupDir(t, tempDir) })
+
 	manifestFiles, err = preprocessing.GetManifestFiles(kustomizationPath, opt)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)

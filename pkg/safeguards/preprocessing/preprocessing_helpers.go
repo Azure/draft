@@ -12,7 +12,7 @@ import (
 )
 
 // Returns values from values.yaml and release options specified in values.yaml
-func getValues(chart *chart.Chart, valuesPath string, opt chartutil.ReleaseOptions, containingDir string) (chartutil.Values, error) {
+func getValues(chart *chart.Chart, valuesPath string, opt chartutil.ReleaseOptions, dirName string) (chartutil.Values, error) {
 	// Load values file
 	valuesFile, err := os.ReadFile(valuesPath)
 	if err != nil {
@@ -24,13 +24,12 @@ func getValues(chart *chart.Chart, valuesPath string, opt chartutil.ReleaseOptio
 		return nil, fmt.Errorf("failed to parse values.yaml: %s", err)
 	}
 
-	mergedValues, err := getReleaseOptions(chart, vals, opt, containingDir)
+	mergedValues, err := getReleaseOptions(chart, vals, opt, dirName)
 	return mergedValues, err
 }
 
-func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}, opt chartutil.ReleaseOptions, containingDir string) (chartutil.Values, error) {
+func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}, opt chartutil.ReleaseOptions, dirName string) (chartutil.Values, error) {
 	// Extract release options from values
-
 	var options chartutil.ReleaseOptions
 	if opt.Name != "" && opt.Namespace != "" {
 		options = opt
@@ -40,12 +39,22 @@ func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}, opt char
 		if opt.Name != "" {
 			releaseName = opt.Name
 		} else {
-			releaseName = containingDir
+			rName, ok := vals["releaseName"].(string)
+			if !ok || rName == "" {
+				releaseName = dirName
+			} else {
+				releaseName = rName
+			}
 		}
 		if opt.Namespace != "" {
 			releaseNamespace = opt.Namespace
 		} else {
-			releaseNamespace = containingDir
+			rNamespace, ok := vals["releaseNamespace"].(string)
+			if !ok || rNamespace == "" {
+				releaseNamespace = dirName
+			} else {
+				releaseNamespace = rNamespace
+			}
 		}
 
 		options = chartutil.ReleaseOptions{

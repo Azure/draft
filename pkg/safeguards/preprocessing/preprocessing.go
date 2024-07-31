@@ -9,8 +9,10 @@ import (
 
 	sgTypes "github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
+
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/types"
@@ -18,7 +20,7 @@ import (
 )
 
 // Given a path, will determine if it's Kustomize, Helm, a directory of manifests, or a single manifest
-func GetManifestFiles(manifestsPath string) ([]sgTypes.ManifestFile, error) {
+func GetManifestFiles(manifestsPath string, opt chartutil.ReleaseOptions) ([]sgTypes.ManifestFile, error) {
 	isDir, err := IsDirectory(manifestsPath)
 	if err != nil {
 		return nil, fmt.Errorf("not a valid file or directory: %w", err)
@@ -28,7 +30,7 @@ func GetManifestFiles(manifestsPath string) ([]sgTypes.ManifestFile, error) {
 	if isDir {
 		// check if Helm or Kustomize dir
 		if isHelm(true, manifestsPath) {
-			return RenderHelmChart(false, manifestsPath, tempDir)
+			return RenderHelmChart(false, manifestsPath, tempDir, opt)
 		} else if isKustomize(true, manifestsPath) {
 			return RenderKustomizeManifest(manifestsPath, tempDir)
 		} else {
@@ -37,7 +39,7 @@ func GetManifestFiles(manifestsPath string) ([]sgTypes.ManifestFile, error) {
 		}
 	} else if IsYAML(manifestsPath) { // path points to a file
 		if isHelm(false, manifestsPath) {
-			return RenderHelmChart(true, manifestsPath, tempDir)
+			return RenderHelmChart(true, manifestsPath, tempDir, opt)
 		} else if isKustomize(false, manifestsPath) {
 			return RenderKustomizeManifest(manifestsPath, tempDir)
 		} else {
@@ -92,7 +94,7 @@ func GetManifestFilesFromDir(p string) ([]sgTypes.ManifestFile, error) {
 }
 
 // Given a Helm chart directory or file, renders all templates and writes them to the specified directory
-func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]sgTypes.ManifestFile, error) {
+func RenderHelmChart(isFile bool, mainChartPath, tempDir string, opt chartutil.ReleaseOptions) ([]sgTypes.ManifestFile, error) {
 	if isFile { // Get the directory that the Chart.yaml lives in
 		mainChartPath = filepath.Dir(mainChartPath)
 	}
@@ -121,7 +123,7 @@ func RenderHelmChart(isFile bool, mainChartPath, tempDir string) ([]sgTypes.Mani
 	var manifestFiles []sgTypes.ManifestFile
 	for chartPath, chart := range loadedCharts {
 		valuesPath := filepath.Join(chartPath, "values.yaml") // Enforce that values.yaml must be at same level as Chart.yaml
-		mergedValues, err := getValues(chart, valuesPath)
+		mergedValues, err := getValues(chart, valuesPath, opt, filepath.Base(mainChartPath))
 		if err != nil {
 			return nil, fmt.Errorf("failed to load values: %s", err)
 		}

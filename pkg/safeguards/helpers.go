@@ -7,16 +7,15 @@ import (
 	"os"
 	"path/filepath"
 
+	sgTypes "github.com/Azure/draft/pkg/safeguards/types"
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
-
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/target"
 	log "github.com/sirupsen/logrus"
+
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
-	c "github.com/Azure/draft/pkg/safeguards/types"
 )
 
 // retrieves the constraint client that does all rego code related operations
@@ -36,20 +35,20 @@ func getConstraintClient() (*constraintclient.Client, error) {
 
 // sorts the list of supported safeguards versions and returns the last item in the list
 func getLatestSafeguardsVersion() string {
-	semver.Sort(c.SupportedVersions)
-	return c.SupportedVersions[len(c.SupportedVersions)-1]
+	semver.Sort(sgTypes.SupportedVersions)
+	return sgTypes.SupportedVersions[len(sgTypes.SupportedVersions)-1]
 }
 
-func updateSafeguardPaths(safeguardList *[]c.Safeguard) {
+func updateSafeguardPaths(safeguardList *[]sgTypes.Safeguard) {
 	for _, sg := range *safeguardList {
-		sg.TemplatePath = fmt.Sprintf("%s/%s/%s", c.SelectedVersion, sg.Name, c.TemplateFileName)
-		sg.ConstraintPath = fmt.Sprintf("%s/%s/%s", c.SelectedVersion, sg.Name, c.ConstraintFileName)
+		sg.TemplatePath = fmt.Sprintf("%s/%s/%s", sgTypes.SelectedVersion, sg.Name, sgTypes.TemplateFileName)
+		sg.ConstraintPath = fmt.Sprintf("%s/%s/%s", sgTypes.SelectedVersion, sg.Name, sgTypes.ConstraintFileName)
 	}
 }
 
 // adds Safeguard_CRIP to full list of Safeguards
 func AddSafeguardCRIP() {
-	fc.Safeguards = append(fc.Safeguards, c.Safeguard_CRIP)
+	fc.Safeguards = append(fc.Safeguards, sgTypes.Safeguard_CRIP)
 }
 
 // loads constraint templates, constraints into constraint client
@@ -111,11 +110,11 @@ func IsYAML(path string) bool {
 }
 
 // GetManifestFiles uses filepath.Walk to retrieve a list of the manifest files within the given manifest path
-func GetManifestFiles(p string) ([]c.ManifestFile, error) {
-	var manifestFiles []c.ManifestFile
+func GetManifestFiles(p string) ([]sgTypes.ManifestFile, error) {
+	var manifestFiles []sgTypes.ManifestFile
 
 	err := filepath.Walk(p, func(walkPath string, info fs.FileInfo, err error) error {
-		manifest := c.ManifestFile{}
+		manifest := sgTypes.ManifestFile{}
 		// skip when walkPath is just given path and also a directory
 		if p == walkPath && info.IsDir() {
 			return nil

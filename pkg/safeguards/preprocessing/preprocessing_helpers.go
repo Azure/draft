@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
@@ -71,46 +70,6 @@ func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}, opt char
 	}
 
 	return mergedValues, nil
-}
-
-// IsKustomize checks whether a given path should be treated as a kustomize project
-func isKustomize(isDir bool, p string) bool {
-	var err error
-	if isDir {
-		if _, err = os.Stat(filepath.Join(p, "kustomization.yaml")); err == nil {
-			return true
-		} else if _, err = os.Stat(filepath.Join(p, "kustomization.yml")); err == nil {
-			return true
-		} else {
-			return false
-		}
-	} else {
-		return strings.Contains(p, "kustomization.yaml")
-	}
-}
-
-// Checks whether a given path is a helm directory or a path to a Helm Chart (contains/is Chart.yaml)
-func isHelm(isDir bool, path string) bool {
-	var chartPaths []string // Used to define what a valid helm chart looks like. Currently, presence of Chart.yaml/.yml.
-
-	if isDir {
-		chartPaths = []string{filepath.Join(path, "Chart.yaml")}
-		chartPaths = append(chartPaths, filepath.Join(path, "Chart.yml"))
-	} else {
-		if filepath.Base(path) != "Chart.yaml" && filepath.Base(path) != "Chart.yml" {
-			return false
-		}
-		chartPaths = []string{path}
-	}
-
-	for _, path := range chartPaths {
-		_, err := os.Stat(path)
-		if err == nil { //Found the file, it's a valid helm chart
-			return true
-		}
-	}
-
-	return false
 }
 
 // IsYAML determines if a file is of the YAML extension or not

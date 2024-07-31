@@ -2,9 +2,9 @@ package types
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/fs"
-	"os"
 
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
 	api "github.com/open-policy-agent/gatekeeper/v3/apis"
@@ -26,8 +26,8 @@ type Safeguard struct {
 }
 
 type ManifestFile struct {
-	Name string
-	Path string
+	Name            string
+	ManifestContent []byte
 }
 
 type ManifestResult struct {
@@ -37,16 +37,14 @@ type ManifestResult struct {
 }
 
 // methods for retrieval of manifest, constraint templates, and constraints
-func (fc FileCrawler) ReadManifests(path string) ([]*unstructured.Unstructured, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("opening file %q: %w", path, err)
-	}
-	defer file.Close()
+func (fc FileCrawler) ReadManifests(manifestBytes []byte) ([]*unstructured.Unstructured, error) {
+	// Create a new bytes.Reader from the byte slice
+	bufReader := bufio.NewReader(bytes.NewReader(manifestBytes))
 
-	manifests, err := reader.ReadK8sResources(bufio.NewReader(file))
+	// Read the Kubernetes resources using the reader
+	manifests, err := reader.ReadK8sResources(bufReader)
 	if err != nil {
-		return nil, fmt.Errorf("reading file %q: %w", path, err)
+		return nil, fmt.Errorf("reading manifests: %w", err)
 	}
 
 	return manifests, nil

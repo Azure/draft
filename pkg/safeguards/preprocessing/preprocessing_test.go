@@ -46,6 +46,45 @@ func TestRenderHelmChart_Valid(t *testing.T) {
 	}
 }
 
+// Test rendering a valid Helm chart with no subcharts and three templates, using command line flags
+func TestRenderHelmChartWithFlags_Valid(t *testing.T) {
+	makeTempDir(t)
+	t.Cleanup(func() { cleanupDir(t, tempDir) })
+	// user defined release name and namespace from cli flags
+	opt := chartutil.ReleaseOptions{
+		Name:      "test-flags-name",
+		Namespace: "test-flags-namespace",
+	}
+
+	manifestFiles, err := RenderHelmChart(false, chartPath, tempDir, opt)
+	assert.Nil(t, err)
+
+	// Check that the output directory exists and contains expected files
+	expectedFiles := make(map[string]string)
+	expectedFiles["deployment.yaml"] = getManifestAsString(t, "../tests/testmanifests/expecteddeployment_flags.yaml")
+	expectedFiles["service.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedservice_flags.yaml")
+	expectedFiles["ingress.yaml"] = getManifestAsString(t, "../tests/testmanifests/expectedingress_flags.yaml")
+
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
+	}
+
+	cleanupDir(t, tempDir)
+	makeTempDir(t)
+
+	// Test by giving file directly
+	manifestFiles, err = RenderHelmChart(true, directPath_ToValidChart, tempDir, opt)
+	assert.Nil(t, err)
+
+	for _, writtenFile := range manifestFiles {
+		expectedYaml := expectedFiles[writtenFile.Name]
+		writtenYaml := parseYAML(t, getManifestAsString(t, writtenFile.Path))
+		assert.Equal(t, writtenYaml, parseYAML(t, expectedYaml))
+	}
+}
+
 // Should successfully render a Helm chart with sub charts and be able to render subchart separately within a helm chart
 func TestSubCharts(t *testing.T) {
 	makeTempDir(t)

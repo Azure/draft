@@ -1,8 +1,5 @@
 language: ruby
 displayName: Ruby
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
     default: 

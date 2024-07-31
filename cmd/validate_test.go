@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"path/filepath"
 	"testing"
 
 	"github.com/Azure/draft/pkg/safeguards"
@@ -13,14 +12,21 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 )
 
+const (
+	manifestPathDirectorySuccess = "../pkg/safeguards/tests/all/success"
+	manifestPathDirectoryError   = "../pkg/safeguards/tests/all/error"
+	manifestPathFileSuccess      = "../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml"
+	manifestPathFileError        = "../pkg/safeguards/tests/all/error/all-error-manifest-1.yaml"
+	kustomizationPath            = "../pkg/safeguards/tests/kustomize/overlays/production"
+	chartPath                    = "../pkg/safeguards/tests/testmanifests/validchart"
+	kustomizationFilePath        = "../pkg/safeguards/tests/kustomize/overlays/production/kustomization.yaml"
+)
+
 // TestRunValidate tests the run command for `draft validate` for proper returns
 func TestRunValidate(t *testing.T) {
 	ctx := context.TODO()
 	manifestFilesEmpty := []types.ManifestFile{}
-	manifestPathDirectorySuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success")
-	manifestPathDirectoryError, _ := filepath.Abs("../pkg/safeguards/tests/all/error")
-	manifestPathFileSuccess, _ := filepath.Abs("../pkg/safeguards/tests/all/success/all-success-manifest-1.yaml")
-	manifestPathFileError, _ := filepath.Abs("../pkg/safeguards/tests/all/error/all-error-manifest-1.yaml")
+
 	var manifestFiles []types.ManifestFile
 	var opt chartutil.ReleaseOptions
 
@@ -29,7 +35,7 @@ func TestRunValidate(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// Scenario 2a: manifest path leads to a directory of manifestFiles - expect success
-	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathDirectorySuccess, opt)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathDirectorySuccess, opt)
 	assert.Nil(t, err)
 	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -37,7 +43,7 @@ func TestRunValidate(t *testing.T) {
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 2b: manifest path leads to a directory of manifestFiles - expect failure
-	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathDirectoryError, opt)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathDirectoryError, opt)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -45,7 +51,7 @@ func TestRunValidate(t *testing.T) {
 	assert.Greater(t, numViolations, 0)
 
 	// Scenario 3a: manifest path leads to one manifest file - expect success
-	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathFileSuccess, opt)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathFileSuccess, opt)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -53,7 +59,7 @@ func TestRunValidate(t *testing.T) {
 	assert.Equal(t, numViolations, 0)
 
 	// Scenario 3b: manifest path leads to one manifest file - expect failure
-	manifestFiles, err = preprocessing.GetManifestFiles(manifestPathFileError, opt)
+	manifestFiles, err = safeguards.GetManifestFiles(manifestPathFileError, opt)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -61,10 +67,7 @@ func TestRunValidate(t *testing.T) {
 	assert.Greater(t, numViolations, 0)
 
 	//Scenario 4: Test Kustomize
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
-
-	manifestFiles, err = preprocessing.GetManifestFiles(kustomizationPath, opt)
+	manifestFiles, err = safeguards.GetManifestFiles(kustomizationPath, opt)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -74,10 +77,8 @@ func TestRunValidate(t *testing.T) {
 	// Scenario 5: Test Helm
 	opt.Name = "test-release-name"
 	opt.Namespace = "test-release-namespace"
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
 
-	manifestFiles, err = preprocessing.GetManifestFiles(chartPath, opt)
+	manifestFiles, err = safeguards.GetManifestFiles(chartPath, opt)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -88,17 +89,11 @@ func TestRunValidate(t *testing.T) {
 // TestRunValidate_Kustomize tests the run command for `draft validate` for proper returns when given a kustomize project
 func TestRunValidate_Kustomize(t *testing.T) {
 	ctx := context.TODO()
-	kustomizationPath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production")
-	kustomizationFilePath, _ := filepath.Abs("../pkg/safeguards/tests/kustomize/overlays/production/kustomization.yaml")
-
-	makeTempDir(t)
-	t.Cleanup(func() { cleanupDir(t, tempDir) })
-
 	var manifestFiles []types.ManifestFile
 	var err error
 
 	// Scenario 1a: kustomizationPath leads to a directory containing kustomization.yaml - expect success
-	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationPath, tempDir)
+	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationPath)
 	assert.Nil(t, err)
 	v, err := safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)
@@ -106,7 +101,7 @@ func TestRunValidate_Kustomize(t *testing.T) {
 	assert.Equal(t, numViolations, 1)
 
 	// Scenario 1b: kustomizationFilePath path leads to a specific kustomization.yaml - expect success
-	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationFilePath, tempDir)
+	manifestFiles, err = preprocessing.RenderKustomizeManifest(kustomizationFilePath)
 	assert.Nil(t, err)
 	v, err = safeguards.GetManifestResults(ctx, manifestFiles)
 	assert.Nil(t, err)

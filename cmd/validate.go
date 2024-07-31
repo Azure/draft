@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Azure/draft/pkg/safeguards"
-	"github.com/Azure/draft/pkg/safeguards/preprocessing"
 	"github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -71,7 +70,7 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 	ctx := context.Background()
 
 	var manifestFiles []types.ManifestFile
-	manifestFiles, err := preprocessing.GetManifestFiles(vc.manifestPath, opt)
+	manifestFiles, err := safeguards.GetManifestFiles(vc.manifestPath, opt)
 	if err != nil {
 		return fmt.Errorf("error retrieving manifest files: %w", err)
 	}

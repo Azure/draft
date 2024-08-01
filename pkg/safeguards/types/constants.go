@@ -33,16 +33,14 @@ const (
 	DirectPath_ToSubchartYaml = "../tests/testmanifests/multiple-charts/charts/subchart1/Chart.yaml"
 	irectPath_ToMainChartYaml = "../tests/testmanifests/multiple-charts/Chart.yaml"
 	directPath_ToInvalidChart = "../tests/testmanifests/invalidchart/Chart.yaml"
+
+	TemplateFileName   = "template.yaml"
+	ConstraintFileName = "constraint.yaml"
 )
 
 var SelectedVersion = "v1.0.0"
 
 var SupportedVersions = []string{SelectedVersion}
-
-const (
-	TemplateFileName   = "template.yaml"
-	ConstraintFileName = "constraint.yaml"
-)
 
 var Safeguard_CRIP = Safeguard{
 	Name:           Constraint_CRIP,

@@ -16,7 +16,6 @@ image:
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: ""
 
 podAnnotations: {}
 
@@ -60,3 +59,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+generatorlabel: {{GENERATORLABEL}}
+

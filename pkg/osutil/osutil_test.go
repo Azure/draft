@@ -1,12 +1,17 @@
 package osutil
 
 import (
+	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/fstest"
 
+	"github.com/Azure/draft/pkg/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestExists(t *testing.T) {
@@ -113,6 +118,161 @@ func TestAllVariablesSubstituted(t *testing.T) {
 			err := checkAllVariablesSubstituted(test.String)
 			didError := err != nil
 			assert.Equal(t, test.ExpectError, didError)
+		})
+	}
+}
+
+type MockTemplateWriter struct {
+	mock.Mock
+	directoriesCreated []string
+	filesWritten       map[string][]byte
+}
+
+func (m *MockTemplateWriter) EnsureDirectory(dirPath string) error {
+	m.directoriesCreated = append(m.directoriesCreated, dirPath)
+	args := m.Called(dirPath)
+	return args.Error(0)
+}
+
+func (m *MockTemplateWriter) WriteFile(filePath string, content []byte) error {
+	if m.filesWritten == nil {
+		m.filesWritten = make(map[string][]byte)
+	}
+	m.filesWritten[filePath] = content
+	args := m.Called(filePath, content)
+	return args.Error(0)
+}
+
+func TestCopyDirWithTemplates(t *testing.T) {
+	tests := []struct {
+		name          string
+		fileSys       fs.FS
+		src           string
+		dest          string
+		draftConfig   *config.DraftConfig
+		expectedFiles map[string]string
+		expectedError error
+	}{
+		{
+			name: "successful copy and template replacement",
+			fileSys: fstest.MapFS{
+				"src/file1.txt":        &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
+				"src/subdir/file2.txt": &fstest.MapFile{Data: []byte("Welcome to {{.Place}}.")},
+			},
+			src:  "src",
+			dest: "dest",
+			draftConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{
+					{Name: "Name", Value: "Joe"},
+					{Name: "Place", Value: "Paris"},
+				},
+			},
+			expectedFiles: map[string]string{
+				"dest/file1.txt":        "Hello, Joe!",
+				"dest/subdir/file2.txt": "Welcome to Paris.",
+			},
+			expectedError: nil,
+		},
+		{
+			name: "missing variable",
+			fileSys: fstest.MapFS{
+				"src/file1.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
+			},
+			src:  "src",
+			dest: "dest",
+			draftConfig: &config.DraftConfig{
+				Variables: []*config.BuilderVar{},
+			},
+			expectedFiles: nil,
+			expectedError: fmt.Errorf("variable map is empty, unable to replace template variables"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			templateWriter := new(MockTemplateWriter)
+			if tt.expectedError == nil {
+				for path, content := range tt.expectedFiles {
+					templateWriter.On("WriteFile", path, []byte(content)).Return(nil)
+				}
+				templateWriter.On("EnsureDirectory", mock.Anything).Return(nil)
+			}
+
+			err := CopyDirWithTemplates(tt.fileSys, tt.src, tt.dest, tt.draftConfig, templateWriter)
+
+			if tt.expectedError != nil {
+				assert.EqualError(t, err, tt.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+				for path, content := range tt.expectedFiles {
+					templateWriter.AssertCalled(t, "WriteFile", path, []byte(content))
+				}
+			}
+		})
+	}
+}
+
+func TestReplaceGoTemplateVariables(t *testing.T) {
+	tests := []struct {
+		name          string
+		fileSys       fs.FS
+		srcPath       string
+		variableMap   map[string]string
+		expected      string
+		expectedError bool
+	}{
+		{
+			name: "successful template replacement",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
+			},
+			srcPath:       "template.txt",
+			variableMap:   map[string]string{"Name": "Joe"},
+			expected:      "Hello, Joe!",
+			expectedError: false,
+		},
+		{
+			name: "missing variable",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
+			},
+			srcPath:       "template.txt",
+			variableMap:   map[string]string{},
+			expected:      "",
+			expectedError: true,
+		},
+		{
+			name: "file not found",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}}!")},
+			},
+			srcPath:       "nonexistent.txt",
+			variableMap:   map[string]string{"Name": "Joe"},
+			expected:      "",
+			expectedError: true,
+		},
+		{
+			name: "unsubstituted variable",
+			fileSys: fstest.MapFS{
+				"template.txt": &fstest.MapFile{Data: []byte("Hello, {{.Name}} and {{.Place}}!")},
+			},
+			srcPath:       "template.txt",
+			variableMap:   map[string]string{"Name": "Joe"},
+			expected:      "",
+			expectedError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := replaceGoTemplateVariables(tt.fileSys, tt.srcPath, tt.variableMap)
+
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, string(result))
+			}
 		})
 	}
 }

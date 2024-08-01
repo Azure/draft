@@ -96,7 +96,7 @@ func TestSubCharts(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Given a Chart.yaml in the main directory, main chart and subcharts should be evaluated
-	_, err = RenderHelmChart(true, consts.SubchartDir, opt)
+	_, err = RenderHelmChart(true, consts.DirectPath_ToMainChartYaml, opt)
 	assert.Nil(t, err)
 
 	// Given path to a sub-Chart.yaml with a dependency on another subchart, should render both subcharts, but not the main chart
@@ -129,6 +129,9 @@ func TestInvalidChartAndValues(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to load main chart: validation: chart.metadata.name is required")
 
 	_, err = RenderHelmChart(false, consts.InvalidValuesChart, opt)
+	assert.NotNil(t, err)
+
+	_, err = RenderHelmChart(false, consts.DirectPath_ToInvalidChart, opt)
 	assert.NotNil(t, err)
 }
 

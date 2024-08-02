@@ -27,6 +27,7 @@ func getValues(chart *chart.Chart, valuesPath string, opt chartutil.ReleaseOptio
 	return mergedValues, err
 }
 
+// Extracts release options from either CLI flags, values.yaml, or name of containing directory
 func getReleaseOptions(chart *chart.Chart, vals map[string]interface{}, opt chartutil.ReleaseOptions, dirName string) (chartutil.Values, error) {
 	// Extract release options from values
 	var options chartutil.ReleaseOptions

@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-const ()
-
 // Returns the content of a manifest file as bytes
 func getManifestAsBytes(t *testing.T, filePath string) []byte {
 	yamlFileContent, err := os.ReadFile(filePath)

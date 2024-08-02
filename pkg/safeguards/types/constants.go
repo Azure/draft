@@ -16,33 +16,29 @@ const (
 	Constraint_all   = "all"
 
 	KustomizationPath       = "../tests/kustomize/overlays/production"
-	KustomizationFilePath   = "../tests/kustomize/overlays/production/kustomization.yaml"
 	DirectPath_ToValidChart = "../tests/testmanifests/validchart/Chart.yaml"
 	ChartPath               = "../tests/testmanifests/validchart"
 	InvalidChartPath        = "../tests/testmanifests/invalidchart"
 	InvalidValuesChart      = "../tests/testmanifests/invalidvalues"
-	InvalidDeploymentsChart = "../tests/testmanifests/invaliddeployment"
 	InvalidDeploymentSyntax = "../tests/testmanifests/invaliddeployment-syntax"
 	InvalidDeploymentValues = "../tests/testmanifests/invaliddeployment-values"
 	FolderwithHelpersTmpl   = "../tests/testmanifests/different-structure"
 	MultipleTemplateDirs    = "../tests/testmanifests/multiple-templates"
 	MultipleValuesFile      = "../tests/testmanifests/multiple-values-files"
 
-	Subcharts                 = "../tests/testmanifests/multiple-charts"
-	SubchartDir               = "../tests/testmanifests/multiple-charts/charts/subchart2"
-	DirectPath_ToSubchartYaml = "../tests/testmanifests/multiple-charts/charts/subchart1/Chart.yaml"
-	irectPath_ToMainChartYaml = "../tests/testmanifests/multiple-charts/Chart.yaml"
-	directPath_ToInvalidChart = "../tests/testmanifests/invalidchart/Chart.yaml"
+	Subcharts                  = "../tests/testmanifests/multiple-charts"
+	SubchartDir                = "../tests/testmanifests/multiple-charts/charts/subchart2"
+	DirectPath_ToSubchartYaml  = "../tests/testmanifests/multiple-charts/charts/subchart1/Chart.yaml"
+	DirectPath_ToMainChartYaml = "../tests/testmanifests/multiple-charts/Chart.yaml"
+	DirectPath_ToInvalidChart  = "../tests/testmanifests/invalidchart/Chart.yaml"
+
+	TemplateFileName   = "template.yaml"
+	ConstraintFileName = "constraint.yaml"
 )
 
 var SelectedVersion = "v1.0.0"
 
 var SupportedVersions = []string{SelectedVersion}
-
-const (
-	TemplateFileName   = "template.yaml"
-	ConstraintFileName = "constraint.yaml"
-)
 
 var Safeguard_CRIP = Safeguard{
 	Name:           Constraint_CRIP,

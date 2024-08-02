@@ -2,7 +2,6 @@ package preprocessing
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	sgTypes "github.com/Azure/draft/pkg/safeguards/types"
@@ -65,16 +64,6 @@ func RenderHelmChart(isFile bool, mainChartPath string, opt chartutil.ReleaseOpt
 	}
 
 	return manifestFiles, nil
-}
-
-// CreateTempDir creates a temporary directory on the user's file system for rendering templates
-func CreateTempDir(p string) error {
-	err := os.MkdirAll(p, 0755)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return err
 }
 
 // Given a kustomization manifest file within kustomizationPath, RenderKustomizeManifest will return render templates

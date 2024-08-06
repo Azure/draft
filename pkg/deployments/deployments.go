@@ -17,7 +17,7 @@ import (
 	"github.com/Azure/draft/pkg/templatewriter"
 )
 
-var (
+const (
 	parentDirName  = "deployments"
 	configFileName = "draft.yaml"
 )
@@ -47,7 +47,7 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, deployConfig *confi
 		return fmt.Errorf("create deployment files for deployment type: %w", err)
 	}
 
-	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, templateWriter); err != nil {
+	if err := osutil.CopyDirWithTemplates(d.deploymentTemplates, srcDir, d.dest, deployConfig, templateWriter); err != nil {
 		return err
 	}
 
@@ -94,7 +94,7 @@ func (d *Deployments) PopulateConfigs() {
 }
 
 func CreateDeploymentsFromEmbedFS(deploymentTemplates embed.FS, dest string) *Deployments {
-	deployMap, err := embedutils.EmbedFStoMap(deploymentTemplates, "deployments")
+	deployMap, err := embedutils.EmbedFStoMap(deploymentTemplates, parentDirName)
 	if err != nil {
 		log.Fatal(err)
 	}

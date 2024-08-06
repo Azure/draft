@@ -1,6 +1,8 @@
+{{`
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: {{NAMESPACE}}
+  name: {{.NAMESPACE}}
   labels:
-    kubernetes.azure.com/generator: {{GENERATORLABEL}}
+    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
+`}}

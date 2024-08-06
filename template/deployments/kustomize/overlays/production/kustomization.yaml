@@ -1,3 +1,4 @@
+{{`
 namePrefix: production-
 namespace: {{NAMESPACE}}
 resources:
@@ -5,3 +6,4 @@ resources:
 patchesStrategicMerge:
   - deployment.yaml
   - service.yaml
+`}}

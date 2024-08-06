@@ -1,17 +1,19 @@
+{{`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{APPNAME}}
+  name: {{.APPNAME}}
   labels:
-    app: {{APPNAME}}
-    kubernetes.azure.com/generator: {{GENERATORLABEL}}
-  namespace: {{NAMESPACE}}
+    app: {{.APPNAME}}
+    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
+  namespace: {{.NAMESPACE}}
 spec:
   selector:
     matchLabels:
-      app: {{APPNAME}}
+      app: {{.APPNAME}}
   template:
     spec:
       containers:
-        - name: {{APPNAME}}
-          image: {{IMAGENAME}}:{{IMAGETAG}}
+        - name: {{.APPNAME}}
+          image: {{.IMAGENAME}}:{{.IMAGETAG}}
+`}}

@@ -1,7 +1,9 @@
+{{`
 namePrefix: production-
-namespace: {{NAMESPACE}}
+namespace: {{.NAMESPACE}}
 resources:
   - ../../base
 patchesStrategicMerge:
   - deployment.yaml
   - service.yaml
+`}}

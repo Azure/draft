@@ -31,7 +31,7 @@ type Workflows struct {
 
 const (
 	parentDirName         = "workflows"
-	configFileName        = "/draft.yaml"
+	configFileName        = "draft.yaml"
 	emptyDefaultFlagValue = ""
 )
 

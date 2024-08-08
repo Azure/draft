@@ -9,5 +9,5 @@ metadata:
     kubernetes.azure.com/generator: {{GENERATORLABEL}}
   annotations:
     openservicemesh.io/sidecar-injection: enabled
-{{-end }}
+{{- end }}
 

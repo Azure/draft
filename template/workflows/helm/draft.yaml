@@ -36,7 +36,7 @@ variables:
   - name: "CHARTOVERRIDES"
     default: 
       disablePrompt: true
-      value: "replicas:2"
+      value: "replicas=2,image.tag=${{ github.sha }}"
     description: "the Helm chart overrides"
   - name: "NAMESPACE"
     default:

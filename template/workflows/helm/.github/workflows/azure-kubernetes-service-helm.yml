@@ -17,16 +17,17 @@
 #    - AZURE_SUBSCRIPTION_ID
 #
 # 2. Set the following environment variables (or replace the values below):
+#    - ACR_RESOURCE_GROUP (resource group of your ACR)
 #    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
 #    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
-#    - RESOURCE_GROUP (where your cluster is deployed)
+#    - CLUSTER_RESOURCE_GROUP (where your cluster is deployed)
 #    - CLUSTER_NAME (name of your AKS cluster)
-#    - IMAGE_PULL_SECRET_NAME (name of the ImagePullSecret that will be created to pull your ACR image)
-#
-# 3. Choose the appropriate render engine for the bake step https://github.com/Azure/k8s-bake. The config below assumes Helm.
-#    Set your helmChart, overrideFiles, overrides, and helm-version to suit your configuration.
+#    - DOCKER_FILE (path to your Dockerfile)
+#    - BUILD_CONTEXT_PATH (path to the context of your Dockerfile)
 #    - CHART_PATH (path to your helm chart)
 #    - CHART_OVERRIDE_PATH (path to your helm chart with override values)
+#    - CHART_OVERRIDES (override values for your helm chart)
+#    - NAMESPACE (namespace to deploy your application)
 #
 # For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
@@ -73,7 +74,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
+          az acr build --image ${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
   deploy:
     permissions:
       actions: read
@@ -108,17 +109,6 @@ jobs:
           admin: 'false'
           use-kubelogin: 'true'
 
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2
-        with:
-          renderEngine: "helm"
-          helmChart: ${{ env.CHART_PATH }}
-          overrideFiles: ${{ env.CHART_OVERRIDE_PATH }}
-          overrides: ${{ env.CHART_OVERRIDES }}
-          helm-version: "latest"
-        id: bake
-
       # Checks if the AKS cluster is private
       - name: Is private cluster
         id: isPrivate
@@ -126,16 +116,20 @@ jobs:
           result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
           echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v4
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-          images: |
-            ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
-          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
-          name: ${{ env.CLUSTER_NAME }}
-          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
-          namespace: ${{ env.NAMESPACE }}
+      # Deploys application
+      - name: Deploy application on private cluster
+        if : steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true'
+        run: |
+          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{env.NAMESPACE}} --timeout 240s" --file . --query id -o tsv)
+          result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
+          echo "Helm upgrade result: $result"
+          exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
+          
+          if [ $exitCode -ne 0 ]; then
+            exit $exitCode
+          fi
+
+      - name: Deploy application on public cluster
+        if : steps.isPrivate.outputs.PRIVATE_CLUSTER == ''
+        run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
 `}}

@@ -51,6 +51,7 @@ env:
   CHART_PATH: {{.CHARTPATH}}
   CHART_OVERRIDE_PATH: {{.CHARTOVERRIDEPATH}}
   CHART_OVERRIDES: {{.CHARTOVERRIDES}}
+  IMAGE_TAG_OVERRIDE: image.tag=${{ github.sha }}
   NAMESPACE: {{.NAMESPACE}}
 {{`
 jobs:
@@ -120,7 +121,7 @@ jobs:
       - name: Deploy application on private cluster
         if : steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true'
         run: |
-          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{env.NAMESPACE}} --timeout 240s" --file . --query id -o tsv)
+          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set ${{ env.IMAGE_TAG_OVERRIDE }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{env.NAMESPACE}} --timeout 240s" --file . --query id -o tsv)
           result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
           echo "Helm upgrade result: $result"
           exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
@@ -131,5 +132,5 @@ jobs:
 
       - name: Deploy application on public cluster
         if : steps.isPrivate.outputs.PRIVATE_CLUSTER == ''
-        run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
+        run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set ${{ env.IMAGE_TAG_OVERRIDE }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
 `}}

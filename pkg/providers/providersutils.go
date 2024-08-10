@@ -12,6 +12,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type SubLabel struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func GetAzCliVersion() string {
 	azCmd := exec.Command("az", "version", "-o", "json")
 	out, err := azCmd.CombinedOutput()
@@ -263,22 +268,51 @@ func AzAksExists(aksName string, resourceGroup string) bool {
 	return true
 }
 
-func GetCurrentAzSubscriptionId() []string {
+func GetCurrentAzSubscriptionLabel() (SubLabel, error) {
 	CheckAzCliInstalled()
 	if !IsLoggedInToAz() {
 		if err := LogInToAz(); err != nil {
-			log.Fatal(err)
+			return SubLabel{}, fmt.Errorf("failed to log in to Azure CLI: %v", err)
 		}
 	}
 
-	getAccountCmd := exec.Command("az", "account", "show", "--query", "[id]")
+	getAccountCmd := exec.Command("az", "account", "show", "--query", "{id: id, name: name}")
 	out, err := getAccountCmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var ids []string
-	json.Unmarshal(out, &ids)
+	var currentSub SubLabel
+	if err := json.Unmarshal(out, &currentSub); err != nil {
+		return SubLabel{}, fmt.Errorf("failed to unmarshal JSON output: %v", err)
+	} else if currentSub.ID == "" {
+		return SubLabel{}, errors.New("no current subscription found")
+	}
 
-	return ids
+	return currentSub, nil
+}
+
+func GetAzSubscriptionLabels() ([]SubLabel, error) {
+	CheckAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			return nil, fmt.Errorf("failed to log in to Azure CLI: %v", err)
+		}
+	}
+
+	getAccountCmd := exec.Command("az", "account", "list", "--all", "--query", "[].{id: id, name: name}")
+
+	out, err := getAccountCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var subLabels []SubLabel
+	if err := json.Unmarshal(out, &subLabels); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON output: %v", err)
+	} else if len(subLabels) == 0 {
+		return nil, errors.New("no subscriptions found")
+	}
+
+	return subLabels, nil
 }

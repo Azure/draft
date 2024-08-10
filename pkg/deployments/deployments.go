@@ -35,7 +35,7 @@ func (d *Deployments) DeployTypes() []string {
 	return names
 }
 
-func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[string]string, templateWriter templatewriter.TemplateWriter) error {
+func (d *Deployments) CopyDeploymentFiles(deployType string, deployConfig *config.DraftConfig, templateWriter templatewriter.TemplateWriter) error {
 	val, ok := d.deploys[deployType]
 	if !ok {
 		return fmt.Errorf("deployment type: %s is not currently supported", deployType)
@@ -43,24 +43,21 @@ func (d *Deployments) CopyDeploymentFiles(deployType string, customInputs map[st
 
 	srcDir := path.Join(parentDirName, val.Name())
 
-	deployConfig, ok := d.configs[deployType]
-	if !ok {
-		deployConfig = nil
-	} else {
-		deployConfig.ApplyDefaultVariables(customInputs)
+	if err := deployConfig.ApplyDefaultVariables(); err != nil {
+		return fmt.Errorf("create deployment files for deployment type: %w", err)
 	}
 
-	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, customInputs, templateWriter); err != nil {
+	if err := osutil.CopyDir(d.deploymentTemplates, srcDir, d.dest, deployConfig, templateWriter); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (d *Deployments) loadConfig(lang string) (*config.DraftConfig, error) {
-	val, ok := d.deploys[lang]
+func (d *Deployments) loadConfig(deployType string) (*config.DraftConfig, error) {
+	val, ok := d.deploys[deployType]
 	if !ok {
-		return nil, fmt.Errorf("language %s unsupported", lang)
+		return nil, fmt.Errorf("deployment type %s unsupported", deployType)
 	}
 
 	configPath := path.Join(parentDirName, val.Name(), configFileName)
@@ -89,7 +86,7 @@ func (d *Deployments) PopulateConfigs() {
 	for deployType := range d.deploys {
 		draftConfig, err := d.loadConfig(deployType)
 		if err != nil {
-			log.Debugf("no draftConfig found for language %s", deployType)
+			log.Debugf("no draftConfig found for deployment type %s", deployType)
 			draftConfig = &config.DraftConfig{}
 		}
 		d.configs[deployType] = draftConfig

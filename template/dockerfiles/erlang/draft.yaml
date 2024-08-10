@@ -1,22 +1,19 @@
 language: erlang
 displayName: Erlang
-nameOverrides:
-  - path: "dockerignore"
-    prefix: "."
 variables:
   - name: "PORT"
+    default: 
+      value: "80"
     description: "the port exposed in the application"
     type: int
   - name: "BUILDERVERSION"
+    default: 
+      value: "24.2-alpine"
     description: "the version of erlang used during the builder stage to generate the executable"
     exampleValues: ["24.2-alpine"]
   - name: "VERSION"
+    default: 
+      value: "3.15"
     description: "the version of alpine used by the application"
     exampleValues: ["3.15"]
-variableDefaults:
-  - name: "BUILDERVERSION"
-    value: "24.2-alpine"
-  - name: "VERSION"
-    value: "3.15"
-  - name: "PORT"
-    value: "80"
+    

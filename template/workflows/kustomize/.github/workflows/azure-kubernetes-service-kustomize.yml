@@ -17,11 +17,14 @@
 #    - AZURE_SUBSCRIPTION_ID
 #
 # 2. Set the following environment variables (or replace the values below):
+#    - ACR_RESOURCE_GROUP (resource group of your ACR)
 #    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
 #    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
-#    - RESOURCE_GROUP (where your cluster is deployed)
+#    - CLUSTER_RESOURCE_GROUP (where your cluster is deployed)
 #    - CLUSTER_NAME (name of your AKS cluster)
-#    - IMAGE_PULL_SECRET_NAME (name of the ImagePullSecret that will be created to pull your ACR image)
+#    - DOCKER_FILE (path to your Dockerfile)
+#    - BUILD_CONTEXT_PATH (path to the context of your Dockerfile)
+#    - NAMESPACE (namespace to deploy your application)
 #
 # 3. Choose the appropriate render engine for the bake step https://github.com/Azure/k8s-bake. The config below assumes Kustomize.
 #    Set your kustomizationPath and kubectl-version to suit your configuration.
@@ -31,21 +34,24 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: Build and deploy an app to AKS with Kustomize
+name: {{.WORKFLOWNAME}}
 
 on:
   push:
-    branches: [{{BRANCHNAME}}]
+    branches: [{{.BRANCHNAME}}]
   workflow_dispatch:
 
 env:
-  AZURE_CONTAINER_REGISTRY: {{AZURECONTAINERREGISTRY}}
-  CONTAINER_NAME: {{CONTAINERNAME}}
-  RESOURCE_GROUP: {{RESOURCEGROUP}}
-  CLUSTER_NAME: {{CLUSTERNAME}}
-  KUSTOMIZE_PATH: {{KUSTOMIZEPATH}}
-  BUILD_CONTEXT_PATH: {{BUILDCONTEXTPATH}}
-
+  ACR_RESOURCE_GROUP: {{.ACRRESOURCEGROUP}}
+  AZURE_CONTAINER_REGISTRY: {{.AZURECONTAINERREGISTRY}}
+  CONTAINER_NAME: {{.CONTAINERNAME}}
+  CLUSTER_RESOURCE_GROUP: {{.CLUSTERRESOURCEGROUP}}
+  CLUSTER_NAME: {{.CLUSTERNAME}}
+  KUSTOMIZE_PATH: {{.KUSTOMIZEPATH}}
+  DOCKER_FILE: {{.DOCKERFILE}}
+  BUILD_CONTEXT_PATH: {{.BUILDCONTEXTPATH}}
+  NAMESPACE: {{.NAMESPACE}}
+{{`
 jobs:
   buildImage:
     permissions:
@@ -67,7 +73,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.RESOURCE_GROUP }} .
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
   deploy:
     permissions:
       actions: read
@@ -97,7 +103,7 @@ jobs:
       - name: Get K8s context
         uses: azure/aks-set-context@v3
         with:
-          resource-group: ${{ env.RESOURCE_GROUP }}
+          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
           admin: 'false'
           use-kubelogin: 'true'
@@ -110,6 +116,13 @@ jobs:
           kustomizationPath: ${{ env.KUSTOMIZE_PATH }}
           kubectl-version: latest
         id: bake
+      
+      # Checks if the AKS cluster is private
+      - name: Is private cluster
+        id: isPrivate
+        run: |
+          result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
+          echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
       # Deploys application based on manifest files from previous step
       - name: Deploy application
@@ -119,3 +132,8 @@ jobs:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+          name: ${{ env.CLUSTER_NAME }}
+          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
+          namespace: ${{ env.NAMESPACE }}
+`}}

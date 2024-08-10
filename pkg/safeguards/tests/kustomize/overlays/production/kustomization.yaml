@@ -1,0 +1,10 @@
+namePrefix: production-
+namespace: my-namespace
+resources:
+- ../../base
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+- path: deployment.yaml
+- path: service.yaml
+- path: namespace.yaml

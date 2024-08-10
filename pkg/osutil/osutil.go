@@ -1,6 +1,7 @@
 package osutil
 
 import (
+	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"text/template"
 
 	log "github.com/sirupsen/logrus"
 
@@ -18,6 +20,8 @@ import (
 
 // A draft variable is defined as a string of non-whitespace characters wrapped in double curly braces.
 var draftVariableRegex = regexp.MustCompile("{{[^\\s.]+\\S*}}")
+
+const configFileName = "draft.yaml"
 
 // Exists returns whether the given file or directory exists or not.
 func Exists(path string) (bool, error) {
@@ -81,8 +85,7 @@ func EnsureFile(file string) error {
 func CopyDir(
 	fileSys fs.FS,
 	src, dest string,
-	config *config.DraftConfig,
-	customInputs map[string]string,
+	draftConfig *config.DraftConfig,
 	templateWriter templatewriter.TemplateWriter) error {
 	files, err := fs.ReadDir(fileSys, src)
 	if err != nil {
@@ -91,23 +94,27 @@ func CopyDir(
 
 	for _, f := range files {
 
-		if f.Name() == "draft.yaml" {
+		if f.Name() == configFileName {
 			continue
 		}
 
+		fileName := f.Name()
+		if overrideName, ok := draftConfig.FileNameOverrideMap[f.Name()]; ok {
+			fileName = overrideName
+		}
 		srcPath := path.Join(src, f.Name())
-		destPath := path.Join(dest, f.Name())
+		destPath := path.Join(dest, fileName)
 		log.Debugf("Source path: %s Dest path: %s", srcPath, destPath)
 
 		if f.IsDir() {
 			if err = templateWriter.EnsureDirectory(destPath); err != nil {
 				return err
 			}
-			if err = CopyDir(fileSys, srcPath, destPath, config, customInputs, templateWriter); err != nil {
+			if err = CopyDir(fileSys, srcPath, destPath, draftConfig, templateWriter); err != nil {
 				return err
 			}
 		} else {
-			fileContent, err := replaceTemplateVariables(fileSys, srcPath, customInputs)
+			fileContent, err := replaceTemplateVariables(fileSys, srcPath, draftConfig)
 			if err != nil {
 				return err
 			}
@@ -139,29 +146,91 @@ func checkAllVariablesSubstituted(fileContent string) error {
 	return nil
 }
 
-func replaceTemplateVariables(fileSys fs.FS, srcPath string, customInputs map[string]string) ([]byte, error) {
+func replaceTemplateVariables(fileSys fs.FS, srcPath string, draftConfig *config.DraftConfig) ([]byte, error) {
 	file, err := fs.ReadFile(fileSys, srcPath)
 	if err != nil {
 		return nil, err
 	}
 
 	fileString := string(file)
-
-	for oldString, newString := range customInputs {
-		log.Debugf("replacing %s with %s", oldString, newString)
-		fileString = strings.ReplaceAll(fileString, "{{"+oldString+"}}", newString)
+	for _, variable := range draftConfig.Variables {
+		log.Debugf("replacing %s with %s", variable.Name, variable.Value)
+		fileString = strings.ReplaceAll(fileString, "{{"+variable.Name+"}}", variable.Value)
 	}
-
 	return []byte(fileString), nil
 }
 
-func checkNameOverrides(fileName, srcPath, destPath string, config *config.DraftConfig) string {
-	if config != nil {
-		log.Debugf("checking name override for srcPath: %s, destPath: %s", srcPath, destPath)
-		if prefix := config.GetNameOverride(fileName); prefix != "" {
-			log.Debugf("overriding file: %s with prefix: %s", destPath, prefix)
-			fileName = fmt.Sprintf("%s%s", prefix, fileName)
+// CopyDirWithTemplates - Handles Gotemplate processing and writing
+func CopyDirWithTemplates(
+	fileSys fs.FS,
+	src, dest string,
+	draftConfig *config.DraftConfig,
+	templateWriter templatewriter.TemplateWriter) error {
+
+	files, err := fs.ReadDir(fileSys, src)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+
+		if f.Name() == configFileName {
+			continue
+		}
+
+		fileName := f.Name()
+		if overrideName, ok := draftConfig.FileNameOverrideMap[f.Name()]; ok {
+			fileName = overrideName
+		}
+
+		srcPath := path.Join(src, f.Name())
+		destPath := path.Join(dest, fileName)
+		log.Debugf("Source path: %s Dest path: %s", srcPath, destPath)
+
+		variableMap := draftConfig.GetVariableMap()
+		if len(variableMap) == 0 {
+			return fmt.Errorf("variable map is empty, unable to replace template variables")
+		}
+
+		if f.IsDir() {
+			if err = templateWriter.EnsureDirectory(destPath); err != nil {
+				return err
+			}
+			if err = CopyDirWithTemplates(fileSys, srcPath, destPath, draftConfig, templateWriter); err != nil {
+				return err
+			}
+		} else {
+			fileContent, err := replaceGoTemplateVariables(fileSys, srcPath, variableMap)
+			if err != nil {
+				return err
+			}
+
+			if err = templateWriter.WriteFile(destPath, fileContent); err != nil {
+				return err
+			}
 		}
 	}
-	return fileName
+	return nil
+}
+
+func replaceGoTemplateVariables(fileSys fs.FS, srcPath string, variableMap map[string]string) ([]byte, error) {
+	file, err := fs.ReadFile(fileSys, srcPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the template file, missingkey=error ensures an error will be returned if any variable is missing during template execution.
+	tmpl, err := template.New("template").Option("missingkey=error").Parse(string(file))
+	if err != nil {
+		return nil, err
+	}
+
+	// Execute the template with variableMap
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, variableMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }

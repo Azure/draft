@@ -1,3 +1,4 @@
+{{- if ne .Values.namespace "default" }}
 kind: Namespace
 apiVersion: v1
 metadata:
@@ -8,4 +9,5 @@ metadata:
     kubernetes.azure.com/generator: {{GENERATORLABEL}}
   annotations:
     openservicemesh.io/sidecar-injection: enabled
+{{- end }}
 

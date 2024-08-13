@@ -1,6 +1,6 @@
 # Change Log
 
-## [0.0.37] - 2024-08-09
+## [0.0.37] - 2024-08-13
 
 ### Added
 
@@ -10,12 +10,14 @@
 - [#352](https://github.com/Azure/draft/pull/352) Adding CLI flags for user defined Helm release name and release namespace for rendering helm projects
 - [#355](https://github.com/Azure/draft/pull/355) Replacing ManifestFile Path property with yaml content as []byte
 - [#357](https://github.com/Azure/draft/pull/357) Cleanup for kustomize/helm feature
+- [#364](https://github.com/Azure/draft/pull/364) Adding new safeguards
 
 ### Fixed
 
 - [#344](https://github.com/Azure/draft/pull/344) Remove name overrides from draft config
 - [#356](https://github.com/Azure/draft/pull/356) Fixed workflow template for helm deployment
 - [#362](https://github.com/Azure/draft/pull/362) Fix for private cluster support for kube and kustomize deployments
+- [#365](https://github.com/Azure/draft/pull/365) Simplify namespace creation for helm deployment
 
 ## [0.0.36] - 2024-07-23
 

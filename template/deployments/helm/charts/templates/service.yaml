@@ -1,21 +1,13 @@
-{{`
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "{{.APPNAME}}.fullname" . }}
+  name: {{ printf "{{ include \"%s.fullname\" . }}" .APPNAME }}
   labels:
-    {{- include "{{.APPNAME}}.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
+    {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .APPNAME }}
+    kubernetes.azure.com/generator: {{print "{{ .Values.generatorLabel }}" }}
   annotations:
-    {{ toYaml .Values.service.annotations | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+    {{print "{{ toYaml .Values.service.annotations | nindent 4 }}\nnamespace: {{ .Values.namespace }}" }}
 spec:
-  type: {{ .Values.service.type }}
-  ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.containerPort }}
-      protocol: TCP
-      name: svchttp
+  {{ printf "spec:\n  type: {{ .Values.service.type }}\n  ports:\n    - port: {{ .Values.service.port }}\n      targetPort: {{ .Values.containerPort }}\n      protocol: TCP\n      name: svchttp" }}
   selector:
-    {{- include "{{.APPNAME}}.selectorLabels" . | nindent 4 }}
-`}}
+    {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}

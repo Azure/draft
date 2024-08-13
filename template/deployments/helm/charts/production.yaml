@@ -1,4 +1,3 @@
-{{`
 image:
   repository: "{{.APPNAME}}"
   pullPolicy: Always
@@ -7,4 +6,3 @@ service:
   annotations: {}
   type: LoadBalancer
   port: "{{.SERVICEPORT}}"
-`}}

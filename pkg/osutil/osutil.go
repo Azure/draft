@@ -3,6 +3,7 @@ package osutil
 import (
 	"bytes"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/fs"
 	"os"
 	"path"
@@ -11,8 +12,6 @@ import (
 	"strings"
 	"syscall"
 	"text/template"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/templatewriter"

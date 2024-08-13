@@ -1,44 +1,35 @@
-{{`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "{{.APPNAME}}.fullname" . }}
+  name: {{ printf "{{ include \"%s.fullname\" . }}" .APPNAME }}
   labels:
-    {{- include "{{.APPNAME}}.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
-  namespace: {{ .Values.namespace }}
+    {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .APPNAME }}
+    kubernetes.azure.com/generator: {{ print "{{ .Values.generatorLabel }}" }}
+  namespace: {{ print "{{ .Values.namespace }}" }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  {{print "{{- if not .Values.autoscaling.enabled }}\n replicas: {{ .Values.replicaCount }}\n {{- end }}" }}
   selector:
     matchLabels:
-      {{- include "{{.APPNAME}}.selectorLabels" . | nindent 6 }}
+      {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{ printf "{{- with .Values.podAnnotations }}\nannotations:\n{{- toYaml . | nindent 8 }}\n{{- end }}" }}
       labels:
-        {{- include "{{.APPNAME}}.selectorLabels" . | nindent 8 }}
-      namespace: {{ .Values.namespace }}
+        {{ printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" .APPNAME }}
+      namespace: {{ print "{{ .Values.namespace }}" }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{ printf "{{- with .Values.imagePullSecrets }}\nimagePullSecrets:\n{{- toYaml . | nindent 8 }}\n{{- end }}" }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{ print "{{- toYaml .Values.podSecurityContext | nindent 8 }}" }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ print "{{ .Chart.Name }}" }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{ print "{{- toYaml .Values.securityContext | nindent 12 }}" }}
+          image: {{ print "{{ .Values.image.repository }}:{{ .Values.image.tag }}" }}
+          imagePullPolicy: {{ print "{{ .Values.image.pullPolicy }}" }}
           ports:
             - name: http
-              containerPort: {{ .Values.containerPort }}
+              containerPort: {{ print "{{ .Values.containerPort }}" }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -49,17 +40,7 @@ spec:
               path: /
               port: http
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-`}}
+            {{ print "{{- toYaml .Values.resources | nindent 12 }}" }}
+      {{ print "{{- with .Values.nodeSelector }}\nnodeSelector:\n  {{- toYaml . | nindent 8 }}\n{{- end }}" }}
+      {{ print "{{- with .Values.affinity }}\naffinity:\n  {{- toYaml . | nindent 8 }}\n{{- end }}" }}
+      {{ print "{{- with .Values.tolerations }}\ntolerations:\n  {{- toYaml . | nindent 8 }}\n{{- end }}" }}

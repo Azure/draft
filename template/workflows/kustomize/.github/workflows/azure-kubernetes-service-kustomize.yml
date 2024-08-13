@@ -17,11 +17,14 @@
 #    - AZURE_SUBSCRIPTION_ID
 #
 # 2. Set the following environment variables (or replace the values below):
+#    - ACR_RESOURCE_GROUP (resource group of your ACR)
 #    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
 #    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
-#    - RESOURCE_GROUP (where your cluster is deployed)
+#    - CLUSTER_RESOURCE_GROUP (where your cluster is deployed)
 #    - CLUSTER_NAME (name of your AKS cluster)
-#    - IMAGE_PULL_SECRET_NAME (name of the ImagePullSecret that will be created to pull your ACR image)
+#    - DOCKER_FILE (path to your Dockerfile)
+#    - BUILD_CONTEXT_PATH (path to the context of your Dockerfile)
+#    - NAMESPACE (namespace to deploy your application)
 #
 # 3. Choose the appropriate render engine for the bake step https://github.com/Azure/k8s-bake. The config below assumes Kustomize.
 #    Set your kustomizationPath and kubectl-version to suit your configuration.
@@ -131,6 +134,6 @@ jobs:
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           name: ${{ env.CLUSTER_NAME }}
-          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER }}
+          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
           namespace: ${{ env.NAMESPACE }}
 `}}

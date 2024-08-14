@@ -2,7 +2,8 @@
 Expand the name of the chart.
 */}}
 {{ printf "{{- define \"%s.name\" -}}" .APPNAME }}
-{{ printf "{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix \"-\" }}\n{{- end }}" }}
+{{`{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}`}}
 
 {{/*
 Create a default fully qualified app name.
@@ -10,7 +11,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{ printf "{{- define \"%s.fullname\" -}}" .APPNAME }}
-{{` {{- if .Values.fullnameOverride }}
+{{`{{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
@@ -20,20 +21,26 @@ If release name contains chart name it will be used as a full name.
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
-{{- end }} `}}
+{{- end }}`}}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{ printf "{{- define \"%s.chart\" -}}" .APPNAME }}
-{{` {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }} `}}
+{{`{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}`}}
 
 {{/*
 Common labels
 */}}
 {{ printf "{{- define \"%s.labels\" -}}" .APPNAME }}
-{{ printf "helm.sh/chart: {{ include \"%s.chart\" . }}\n{{ include \"%s.selectorLabels\" . }}\n{{- if .Chart.AppVersion }}\napp.kubernetes.io/version: {{ .Chart.AppVersion | quote }}\n{{- end }}\napp.kubernetes.io/managed-by: {{ .Release.Service }}\n{{- end }}" .APPNAME .APPNAME }}
+helm.sh/chart: {{ printf "{{ include \"%s.chart\" . }}" .APPNAME }}
+{{ printf "{{ include \"%s.selectorLabels\" . }}" .APPNAME }}
+{{`{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}`}}
 
 {{/*
 Selector labels

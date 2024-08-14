@@ -13,12 +13,12 @@ spec:
       {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}
   template:
     metadata:
-      {{ printf "{{- with .Values.podAnnotations }}\nannotations:\n{{- toYaml . | nindent 8 }}\n{{- end }}" }}
+      {{ print "{{- with .Values.podAnnotations }}\nannotations:\n{{- toYaml . | nindent 8 }}\n{{- end }}" }}
       labels:
         {{ printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" .APPNAME }}
       namespace: {{ print "{{ .Values.namespace }}" }}
     spec:
-      {{ printf "{{- with .Values.imagePullSecrets }}\nimagePullSecrets:\n{{- toYaml . | nindent 8 }}\n{{- end }}" }}
+      {{ print "{{- with .Values.imagePullSecrets }}\nimagePullSecrets:\n{{- toYaml . | nindent 8 }}\n{{- end }}" }}
       securityContext:
         {{ print "{{- toYaml .Values.podSecurityContext | nindent 8 }}" }}
       containers:

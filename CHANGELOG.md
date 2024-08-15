@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.38] - 2024-08-13
+
+### Fixed
+
+New release to fix `checksum mismatch` issue in the previous release
+
 ## [0.0.37] - 2024-08-13
 
 ### Added

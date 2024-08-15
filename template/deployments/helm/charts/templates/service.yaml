@@ -4,16 +4,20 @@ metadata:
   name: {{ printf "{{ include \"%s.fullname\" . }}" .APPNAME }}
   labels:
     {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .APPNAME }}
-    {{`kubernetes.azure.com/generator: {{.Values.generatorLabel}}
+    {{- `
+    kubernetes.azure.com/generator: {{.Values.generatorLabel}}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
   namespace: {{ .Values.namespace }}
+` -}}
 spec:
+{{- `
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.containerPort }}
       protocol: TCP
-      name: svchttp `}}
+      name: svchttp
+  ` -}}
   selector:
     {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}

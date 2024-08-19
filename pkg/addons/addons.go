@@ -37,10 +37,13 @@ func GenerateAddon(addons embed.FS, provider, addon, dest string, addonConfig Ad
 	if addonConfig.DraftConfig == nil {
 		return errors.New("DraftConfig is nil")
 	} else {
-		addonConfig.DraftConfig.ApplyDefaultVariables()
+		err := addonConfig.DraftConfig.ApplyDefaultVariables()
+		if err != nil {
+			return err
+		}
 	}
 
-	if err = osutil.CopyDir(addons, selectedAddonPath, addonDestPath, addonConfig.DraftConfig, templateWriter); err != nil {
+	if err = osutil.CopyDirWithTemplates(addons, selectedAddonPath, addonDestPath, addonConfig.DraftConfig, templateWriter); err != nil {
 		return err
 	}
 

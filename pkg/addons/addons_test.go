@@ -46,7 +46,8 @@ func TestGenerateHelmAddonSuccess(t *testing.T) {
 					Value: "host",
 				},
 				{
-					Name: "GENERATORLABEL",
+					Name:  "GENERATORLABEL",
+					Value: "draft",
 				},
 				{
 					Name:  "service-namespace",
@@ -90,7 +91,8 @@ func TestGenerateKustomizeAddonSuccess(t *testing.T) {
 					Value: "host",
 				},
 				{
-					Name: "GENERATORLABEL",
+					Name:  "GENERATORLABEL",
+					Value: "draft",
 				},
 				{
 					Name:  "service-namespace",

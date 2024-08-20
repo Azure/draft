@@ -5,8 +5,8 @@ variables:
   armServiceConnection: {{ARMSERVICECONNECTION}}
   azureContainerRegistry: {{AZURECONTAINERREGISTRY}}
   containerName: {{CONTAINERNAME}}
-  acrRg: {{CLUSTERRESOURCEGROUP}}
-  clusterRg: {{ACRRESOURCEGROUP}}
+  acrRg: {{ACRRESOURCEGROUP}}
+  clusterRg: {{CLUSTERRESOURCEGROUP}}
   clusterName: {{CLUSTERNAME}}
   kustomizePath: {{KUSTOMIZEPATH}}
   namespace: {{NAMESPACE}}

@@ -1,16 +1,15 @@
-# Default values for {{APPNAME}}.
+# Default values for {{.APPNAME}}.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
 replicaCount: 1
 
-namespace: {{NAMESPACE}}
+namespace: {{.NAMESPACE}}
 
-containerPort: {{PORT}}
+containerPort: {{.PORT}}
 
 image:
-  repository: {{IMAGENAME}}
-  tag: {{IMAGETAG}}
+  repository: {{.IMAGENAME}}
+  tag: {{.IMAGETAG}}
   pullPolicy: Always
 
 
@@ -34,7 +33,7 @@ securityContext: {}
 service:
   annotations: {}
   type: LoadBalancer
-  port: {{SERVICEPORT}}
+  port: {{.SERVICEPORT}}
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -60,3 +59,5 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+generatorLabel: {{.GENERATORLABEL}}

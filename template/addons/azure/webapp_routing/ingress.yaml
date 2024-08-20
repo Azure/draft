@@ -1,8 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  annotations:
-    {{- `
+  annotations: {{`
     kubernetes.azure.com/tls-cert-keyvault-uri: "{{.ingress-tls-cert-keyvault-uri}}"
     kubernetes.azure.com/use-osm-mtls: "{{.ingress-use-osm-mtls}}"
     nginx.ingress.kubernetes.io/backend-protocol: HTTPS
@@ -32,4 +31,4 @@ spec:
   - hosts:
     - "{{.ingress-host}}"
     secretName: "keyvault-{{.service-name}}"
-  ` -}}
+  `}}

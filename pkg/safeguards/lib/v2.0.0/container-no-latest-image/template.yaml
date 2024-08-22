@@ -1,0 +1,47 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sazurev1containernolatestimage
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAzureV1ContainerNoLatestImage
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sazurev1containernolatestimage
+
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          not contains_no_tag(container)
+          msg := sprintf("Please specify an explicit version such as '1.0'. Using the latest tag for container %v in Kubernetes is a best practice to ensure reproducibility, prevent unintended updates, and facilitate easier debugging and rollbacks by using explicit and versioned container images.", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          contains_latestImageTag(container)
+          msg := sprintf("Avoiding the latest tag for container: %v in Kubernetes is a best practice to ensure reproducibility, prevent unintended updates, and facilitate easier debugging and rollbacks by using explicit and versioned container images. Consider using explicit versions such as '1.0'", [container.name])
+        }
+        
+        contains_no_tag(container) {
+          regex.match(".*[:].*", container.image)
+        }
+        
+        contains_latestImageTag(container) {
+          regex.match(".*\\b:latest?\\b.*", container.image) 
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.containers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.initContainers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.ephemeralContainers[_]
+        }
+
+

@@ -1,0 +1,60 @@
+# Azure Kubernetes Service pipeline
+# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service cluster
+
+variables:
+  armServiceConnection: testServiceConnection
+  azureContainerRegistry: testACR
+  containerName: testContainer
+  clusterRg: testRG
+  acrRg: testACRRG
+  clusterName: testCluster
+  manifestPath: test/manifests
+  namespace: testNamespace
+  tag: "$(Build.BuildId)"
+  vmImageName: "ubuntu-latest"
+
+name: testPipeline
+
+trigger:
+  - main
+
+stages:
+  - stage: BuildAndPush
+    displayName: Build stage
+    jobs:
+      - job: BuildAndPush
+        displayName: Build and push image
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: AzureCLI@2
+            displayName: Build and push image to Azure Container Registry
+            inputs:
+              azureSubscription: $(armServiceConnection)
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az acr build --image $1.azurecr.io/$2:$3 --registry $1 -g $4 .
+              arguments: "$(azureContainerRegistry) $(containerName) $(tag) $(acrRg)"
+
+  - stage: Deploy
+    displayName: Deploy stage
+    dependsOn: BuildAndPush
+    jobs:
+      - job: Deploy
+        displayName: Deploy to AKS
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: KubernetesManifest@1
+            displayName: Deploy to Kubernetes cluster
+            inputs:
+              action: "deploy"
+              connectionType: "azureResourceManager"
+              azureSubscriptionConnection: $(armServiceConnection)
+              azureResourceGroup: $(clusterRg)
+              kubernetesCluster: $(clusterName)
+              manifests: $(manifestPath)
+              namespace: $(namespace)
+              containers: |
+                $(azureContainerRegistry).azurecr.io/$(containerName):$(tag)

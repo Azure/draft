@@ -42,6 +42,9 @@ func (d *DraftConfig) GetVariableExampleValues() map[string][]string {
 // Returns a map of variable names to values used in Gotemplate
 func (d *DraftConfig) GetVariableMap() map[string]string {
 	variableMap := make(map[string]string)
+	for key, value := range variableMap {
+		log.Printf("---variableMap[%s] = %s\n", key, value)
+	}
 	for _, variable := range d.Variables {
 		variableMap[variable.Name] = variable.Value
 	}

@@ -1,17 +1,17 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "{{APPNAME}}.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
+{{ printf "{{- define \"%s.name\" -}}" .APPNAME }}
+{{`{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}`}}
 
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "{{APPNAME}}.fullname" -}}
-{{- if .Values.fullnameOverride }}
+{{ printf "{{- define \"%s.fullname\" -}}" .APPNAME }}
+{{`{{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
@@ -21,31 +21,29 @@ If release name contains chart name it will be used as a full name.
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
-{{- end }}
+{{- end }}`}}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "{{APPNAME}}.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
+{{ printf "{{- define \"%s.chart\" -}}" .APPNAME }}
+{{`{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}`}}
 
 {{/*
 Common labels
 */}}
-{{- define "{{APPNAME}}.labels" -}}
-helm.sh/chart: {{ include "{{APPNAME}}.chart" . }}
-{{ include "{{APPNAME}}.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
+{{ printf "{{- define \"%s.labels\" -}}" .APPNAME }}
+helm.sh/chart: {{ printf "{{ include \"%s.chart\" . }}" .APPNAME }}
+{{ printf "{{ include \"%s.selectorLabels\" . }}" .APPNAME }}
+{{`{{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
+{{- end }}`}}
 
 {{/*
 Selector labels
 */}}
-{{- define "{{APPNAME}}.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "{{APPNAME}}.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
+{{ printf "{{- define \"%s.selectorLabels\" -}}" .APPNAME }}
+{{ printf "app.kubernetes.io/name: {{ include \"%s.name\" . }}\napp.kubernetes.io/instance: {{ .Release.Name }}\n{{- end }}" .APPNAME }}

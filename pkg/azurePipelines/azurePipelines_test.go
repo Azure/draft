@@ -2,6 +2,7 @@ package azurePipelines
 
 import (
 	"fmt"
+	"github.com/Azure/draft/pkg/fixtures"
 	"os"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestCreatePipelines(t *testing.T) {
 			deployType:  "kustomize",
 			shouldError: false,
 			setConfig: func(dc *config.DraftConfig) {
-				dc.SetVariable("KUSTOMIZEPATH", "test/kustomize/overlays/production")
+				dc.SetVariable("KUSTOMIZEPATH", "kustomize/overlays/production")
 			},
 		},
 		{
@@ -40,7 +41,7 @@ func TestCreatePipelines(t *testing.T) {
 			deployType:  "manifests",
 			shouldError: false,
 			setConfig: func(dc *config.DraftConfig) {
-				dc.SetVariable("PIPELINENAME", "some-other-name")
+				dc.SetVariable("PIPELINENAME", "testPipeline")
 			},
 		},
 		{
@@ -95,6 +96,19 @@ func TestCreatePipelines(t *testing.T) {
 			assert.Nil(t, err)
 			_, err = os.Stat(pipelineFilePath)
 			assert.Nil(t, err)
+
+			// Read the generated content
+			generatedContent, err := os.ReadFile(pipelineFilePath)
+			assert.Nil(t, err)
+
+			// Validate against the fixture file
+			fixturePath := fmt.Sprintf("../fixtures/pipelines/%s.yaml", tt.deployType)
+			if _, err := os.Stat(fixturePath); os.IsNotExist(err) {
+				t.Fatalf("Fixture file does not exist at path: %s", fixturePath)
+			}
+
+			err = fixtures.ValidateContentAgainstFixture(generatedContent, fixturePath)
+			assert.Nil(t, err)
 		}
 
 		err = os.RemoveAll(tempDir)
@@ -148,7 +162,7 @@ func newDraftConfig() *config.DraftConfig {
 			{
 				Name: "MANIFESTPATH",
 				Default: config.BuilderVarDefault{
-					Value: "manifests",
+					Value: "test/manifests",
 				},
 			},
 			{

@@ -1,0 +1,12 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV1PrintMutationsAnnotations
+metadata:
+  name: v1-print-mutations-annotations
+spec:
+  enforcementAction: warn
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    messages: {{ .Values.messages }}

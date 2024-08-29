@@ -1,0 +1,12 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV3NoPrivilegeEscalation
+metadata:
+  name: v3-psp-no-privilege-escalation
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    excludedContainers: {{ .Values.excludedContainers }}
+    excludedImages: {{ .Values.excludedImages }}

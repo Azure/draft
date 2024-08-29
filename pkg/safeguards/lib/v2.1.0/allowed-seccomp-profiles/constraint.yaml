@@ -1,0 +1,13 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV3AllowedSeccomp
+metadata:
+  name: v3-psp-seccomp
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    allowedProfiles: {{ .Values.allowedProfiles }}
+    excludedContainers: {{ .Values.excludedContainers }}
+    excludedImages: {{ .Values.excludedImages }}

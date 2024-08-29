@@ -1,0 +1,44 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sazurev1containerenforceprestophook
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAzureV1ContainerEnforcePreStopHook
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sazurev1containerenforceprestophook
+
+        has_key(object, key) {
+          _ = object[key]
+        }
+
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          not includes_prestophook(container)
+          msg := sprintf("Container: %v does not include a Pre-stop hook. Neglecting to use Pre-stop hooks can lead to abrupt termination of processes, potentially causing data corruption, lost transactions, or degraded user experiences during pod shutdowns. Please use Pre-stop hooks in your manifests", [container.name])
+        }
+
+        includes_prestophook(container) {
+            has_key(container.lifecycle, "preStop")
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.containers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.initContainers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.containers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.initContainers[_]
+        }
+

@@ -1,0 +1,42 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sazurev1printmutationsannotations
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAzureV1PrintMutationsAnnotations
+      validation:
+        openAPIV3Schema:
+          properties:
+            messages:
+              type: object
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sazurev1printmutationsannotations
+
+        has_key(object, key) {
+          _ = object[key]
+        }
+
+        violation[{"msg": msg, "details": {}}] {
+            obj := input.review.object
+            annotations := split(obj.metadata.annotations["gatekeeper.sh/mutations"], ",")
+            annotation := trim(annotations[_], " ")
+            annotationlist := split(annotation, "/")
+            annotationlist2 := split(array.reverse(annotationlist)[0], ":")
+            annotationStr := annotationlist2[0]
+            msg := getMsg(annotationStr)
+        }
+
+        getMsg(annotation) = msg {
+            has_key(input.parameters.messages, annotation)
+            msg := input.parameters.messages[annotation]
+        }
+
+        getMsg(annotation) = msg {
+            not has_key(input.parameters.messages, annotation)
+            msg := sprintf("resource was mutated by %v mutation", [annotation])
+        }

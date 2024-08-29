@@ -1,0 +1,16 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV3AllowedUsersGroups
+metadata:
+  name: v3-psp-allowed-users-groups
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    runAsUser: {{ .Values.runAsUser }}
+    runAsGroup: {{ .Values.runAsGroup }}
+    supplementalGroups: {{ .Values.supplementalGroups }}
+    fsGroup: {{ .Values.fsGroup }}
+    excludedContainers: {{ .Values.excludedContainers }}
+    excludedImages: {{ .Values.excludedImages }}

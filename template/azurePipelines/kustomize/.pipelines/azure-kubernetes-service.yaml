@@ -2,22 +2,22 @@
 # Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service cluster
 
 variables:
-  armServiceConnection: {{ARMSERVICECONNECTION}}
-  azureContainerRegistry: {{AZURECONTAINERREGISTRY}}
-  containerName: {{CONTAINERNAME}}
-  acrRg: {{ACRRESOURCEGROUP}}
-  clusterRg: {{CLUSTERRESOURCEGROUP}}
-  clusterName: {{CLUSTERNAME}}
-  kustomizePath: {{KUSTOMIZEPATH}}
-  namespace: {{NAMESPACE}}
+  armServiceConnection: {{.ARMSERVICECONNECTION}}
+  azureContainerRegistry: {{.AZURECONTAINERREGISTRY}}
+  containerName: {{.CONTAINERNAME}}
+  acrRg: {{.ACRRESOURCEGROUP}}
+  clusterRg: {{.CLUSTERRESOURCEGROUP}}
+  clusterName: {{.CLUSTERNAME}}
+  kustomizePath: {{.KUSTOMIZEPATH}}
+  namespace: {{.NAMESPACE}}
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
 
 trigger:
-  - {{BRANCHNAME}}
+  - {{.BRANCHNAME}}
 
-name: {{PIPELINENAME}}
-
+name: {{.PIPELINENAME}}
+{{`
 stages:
   - stage: BuildAndPush
     displayName: Build stage
@@ -66,3 +66,4 @@ stages:
               manifests: $(bake.manifestsBundle)
               containers: |
                 $(azureContainerRegistry).azurecr.io/$(containerName):$(tag)
+`}}

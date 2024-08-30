@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:{{VERSION}} AS builder
+FROM mcr.microsoft.com/dotnet/sdk:{{.VERSION}} AS builder
 WORKDIR /app
 
 # caches restore result by copying csproj file separately
@@ -11,11 +11,11 @@ RUN sed -n 's:.*<AssemblyName>\(.*\)</AssemblyName>.*:\1:p' *.csproj > __assembl
 RUN if [ ! -s __assemblyname ]; then filename=$(ls *.csproj); echo ${filename%.*} > __assemblyname; fi
 
 # Stage 2
-FROM mcr.microsoft.com/dotnet/aspnet:{{VERSION}}
+FROM mcr.microsoft.com/dotnet/aspnet:{{.VERSION}}
 WORKDIR /app
 COPY --from=builder /app .
 
-ENV PORT {{PORT}}
-EXPOSE {{PORT}}
+ENV PORT {{.PORT}}
+EXPOSE {{.PORT}}
 
-ENTRYPOINT dotnet $(cat /app/__assemblyname).dll --urls "http://*:{{PORT}}"
+ENTRYPOINT dotnet $(cat /app/__assemblyname).dll --urls "http://*:{{.PORT}}"

@@ -1,4 +1,4 @@
-FROM erlang:{{BUILDERVERSION}} as builder
+FROM erlang:{{.BUILDERVERSION}} as builder
 
 RUN apk add --update tar curl git bash make libc-dev gcc g++ && \
     rm -rf /var/cache/apk/*
@@ -20,18 +20,18 @@ RUN tar -zxvf /usr/src/app/_build/prod/rel/*/*.tar.gz -C /opt/rel
 
 RUN relname=$(ls _build/prod/rel) ; echo $relname > /opt/rel/__relname
 
-FROM alpine:{{VERSION}}
+FROM alpine:{{.VERSION}}
 
 RUN apk add --no-cache openssl-dev ncurses libstdc++ libgcc
 
 WORKDIR /opt/rel
 
 ENV RELX_REPLACE_OS_VARS true
-ENV HTTP_PORT {{PORT}}
+ENV HTTP_PORT {{.PORT}}
 
 COPY --from=builder /opt/rel /opt/rel
 
-EXPOSE {{PORT}} {{PORT}}
+EXPOSE {{.PORT}} {{.PORT}}
 
 RUN ln -s /opt/rel/bin/$(cat /opt/rel/__relname) /opt/rel/bin/start_script
 ENTRYPOINT ["/opt/rel/bin/start_script"]

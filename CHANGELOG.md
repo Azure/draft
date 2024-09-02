@@ -2,7 +2,7 @@
 
 ## [0.0.39] - bfoley13 branch
 
-template versioning
+generic template versioning
 
 ## [0.0.38] - 2024-08-13
 

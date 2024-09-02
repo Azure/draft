@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Config.GetVariableValue "APPNAME"}}
+  namespace: {{ .Config.GetVariableValue "NAMESPACE"}}
+  labels:
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL"}}
+spec:
+  type: LoadBalancer
+  selector:
+    app: {{ .Config.GetVariableValue "APPNAME"}}
+  ports:
+    - protocol: TCP
+      port: {{ .Config.GetVariableValue "SERVICEPORT"}}
+      targetPort: {{ .Config.GetVariableValue "PORT"}}

@@ -3,11 +3,11 @@ package example
 import (
 	"fmt"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/deployments"
-	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/deployments"
+	"github.com/bfoley13/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/pkg/templatewriter/writers"
+	"github.com/bfoley13/draft/template"
 )
 
 // WriteDeploymentFiles generates Deployment Files using Draft, writing to a Draft TemplateWriter. See the corresponding draft.yaml file in templates/deployments/[deployType] for the template inputs.

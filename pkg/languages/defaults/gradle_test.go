@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/draft/pkg/reporeader"
+	"github.com/bfoley13/draft/pkg/reporeader"
 )
 
 func TestGradleExtractor_ReadDefaults(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/bfoley13/draft/pkg/safeguards"
 )
 
 var tempDir, _ = filepath.Abs("./testdata")

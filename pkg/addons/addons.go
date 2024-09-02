@@ -13,10 +13,10 @@ import (
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Azure/draft/pkg/embedutils"
-	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/pkg/prompts"
-	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/pkg/embedutils"
+	"github.com/bfoley13/draft/pkg/osutil"
+	"github.com/bfoley13/draft/pkg/prompts"
+	"github.com/bfoley13/draft/pkg/templatewriter"
 )
 
 var (

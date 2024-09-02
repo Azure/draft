@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/Azure/draft/cmd"
+import "github.com/bfoley13/draft/cmd"
 
 func main() {
 	cmd.Execute()

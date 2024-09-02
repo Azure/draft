@@ -15,10 +15,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/embedutils"
+	"github.com/bfoley13/draft/pkg/templatewriter/writers"
+	"github.com/bfoley13/draft/template"
 )
 
 func TestCreateWorkflows(t *testing.T) {

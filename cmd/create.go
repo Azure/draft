@@ -9,22 +9,22 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/Azure/draft/pkg/reporeader"
-	"github.com/Azure/draft/pkg/reporeader/readers"
+	"github.com/bfoley13/draft/pkg/reporeader"
+	"github.com/bfoley13/draft/pkg/reporeader/readers"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/deployments"
-	dryrunpkg "github.com/Azure/draft/pkg/dryrun"
-	"github.com/Azure/draft/pkg/filematches"
-	"github.com/Azure/draft/pkg/languages"
-	"github.com/Azure/draft/pkg/linguist"
-	"github.com/Azure/draft/pkg/prompts"
-	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/deployments"
+	dryrunpkg "github.com/bfoley13/draft/pkg/dryrun"
+	"github.com/bfoley13/draft/pkg/filematches"
+	"github.com/bfoley13/draft/pkg/languages"
+	"github.com/bfoley13/draft/pkg/linguist"
+	"github.com/bfoley13/draft/pkg/prompts"
+	"github.com/bfoley13/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/pkg/templatewriter/writers"
+	"github.com/bfoley13/draft/template"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source

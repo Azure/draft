@@ -11,10 +11,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
-	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/embedutils"
+	"github.com/bfoley13/draft/pkg/osutil"
+	"github.com/bfoley13/draft/pkg/templatewriter"
 )
 
 const (

@@ -117,7 +117,7 @@ download_draft_cli_stable_version(){
     DRAFT_CLI_VERSION=$(curl -L -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
   fi
   log INFO "Draft CLI Version $DRAFT_CLI_VERSION"
-  DRAFTCLIURL="https://github.com/Azure/draft/releases/download/$DRAFT_CLI_VERSION/$FILENAME"
+  DRAFTCLIURL="https://github.com/bfoley13/draft/releases/download/$DRAFT_CLI_VERSION/$FILENAME"
   curl -o /tmp/draftcli -fLO $DRAFTCLIURL
   chmod +x /tmp/draftcli
   log INFO "Finished Draft CLI download complete."
@@ -125,7 +125,7 @@ download_draft_cli_stable_version(){
 
 file_issue_prompt() {
   echo "If you wish us to support your platform, please file an issue"
-  echo "https://github.com/Azure/draft/issues/new/choose"
+  echo "https://github.com/bfoley13/draft/issues/new/choose"
   exit 1
 }
 

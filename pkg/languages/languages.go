@@ -9,14 +9,14 @@ import (
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Azure/draft/pkg/languages/defaults"
-	"github.com/Azure/draft/pkg/reporeader"
+	"github.com/bfoley13/draft/pkg/languages/defaults"
+	"github.com/bfoley13/draft/pkg/reporeader"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
-	"github.com/Azure/draft/pkg/osutil"
-	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/embedutils"
+	"github.com/bfoley13/draft/pkg/osutil"
+	"github.com/bfoley13/draft/pkg/templatewriter"
 )
 
 var (

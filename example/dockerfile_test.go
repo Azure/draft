@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/templatewriter/writers"
 )
 
 func TestWriteDockerfile(t *testing.T) {

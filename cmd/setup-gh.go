@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/Azure/draft/pkg/cred"
-	"github.com/Azure/draft/pkg/prompts"
+	"github.com/bfoley13/draft/pkg/cred"
+	"github.com/bfoley13/draft/pkg/prompts"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/providers"
-	"github.com/Azure/draft/pkg/spinner"
+	"github.com/bfoley13/draft/pkg/providers"
+	"github.com/bfoley13/draft/pkg/spinner"
 )
 
 func newSetUpCmd() *cobra.Command {

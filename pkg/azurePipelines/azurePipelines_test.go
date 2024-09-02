@@ -2,13 +2,14 @@ package azurePipelines
 
 import (
 	"fmt"
-	"github.com/Azure/draft/pkg/fixtures"
 	"os"
 	"testing"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/fixtures"
+
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/templatewriter/writers"
+	"github.com/bfoley13/draft/template"
 	"github.com/stretchr/testify/assert"
 )
 

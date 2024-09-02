@@ -12,7 +12,7 @@ import (
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Azure/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/config"
 )
 
 const defaultAppName = "my-app"

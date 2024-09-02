@@ -14,8 +14,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/templatewriter"
 )
 
 // A draft variable is defined as a string of non-whitespace characters wrapped in double curly braces.

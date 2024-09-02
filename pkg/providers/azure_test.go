@@ -3,13 +3,14 @@ package providers
 import (
 	"context"
 	"errors"
+	"strings"
+	"testing"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/tracing"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	mock_providers "github.com/Azure/draft/pkg/providers/mock"
+	mock_providers "github.com/bfoley13/draft/pkg/providers/mock"
 	"go.uber.org/mock/gomock"
-	"strings"
-	"testing"
 )
 
 func setupMockClientAndPager(ctrl *gomock.Controller, responses []armsubscription.TenantsClientListResponse) *mock_providers.MockazTenantClient {

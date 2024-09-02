@@ -8,11 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/prompts"
-	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/pkg/workflows"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/prompts"
+	"github.com/bfoley13/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/pkg/templatewriter/writers"
+	"github.com/bfoley13/draft/pkg/workflows"
+	"github.com/bfoley13/draft/template"
 )
 
 type generateWorkflowCmd struct {

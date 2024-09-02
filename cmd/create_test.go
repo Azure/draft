@@ -12,12 +12,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/languages"
-	"github.com/Azure/draft/pkg/linguist"
-	"github.com/Azure/draft/pkg/reporeader"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/languages"
+	"github.com/bfoley13/draft/pkg/linguist"
+	"github.com/bfoley13/draft/pkg/reporeader"
+	"github.com/bfoley13/draft/pkg/templatewriter/writers"
+	"github.com/bfoley13/draft/template"
 )
 
 func TestRun(t *testing.T) {

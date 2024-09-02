@@ -7,16 +7,16 @@
     A tool to help developers hit the ground running with Kubernetes.
     <br />
     <br />
-    <a href="https://github.com/Azure/draft/issues">Report Bug</a>
+    <a href="https://github.com/bfoley13/draft/issues">Report Bug</a>
     ·
-    <a href="https://github.com/Azure/draft/issues">Request Feature</a>
+    <a href="https://github.com/bfoley13/draft/issues">Request Feature</a>
   
-  [![Draft Unit Tests](https://github.com/Azure/draft/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/unit-tests.yml?query=branch:main)
-  [![GoDoc](https://godoc.org/github.com/Azure/draft?status.svg)](https://godoc.org/github.com/Azure/draft)
-  [![Go Report Card](https://goreportcard.com/badge/github.com/Azure/draft?branch=main)](https://goreportcard.com/report/github.com/Azure/draft)
-  [![CodeQL](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/codeql-analysis.yml?query=branch:main)
-  [![Draft Linux Integrations](https://github.com/Azure/draft/actions/workflows/integration-linux.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/integration-linux.yml?query=branch:main)
-  [![Draft Release & Publish](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml/badge.svg?branch=main)](https://github.com/Azure/draft/actions/workflows/release-and-publish.yml?query=branch:main)
+  [![Draft Unit Tests](https://github.com/bfoley13/draft/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/bfoley13/draft/actions/workflows/unit-tests.yml?query=branch:main)
+  [![GoDoc](https://godoc.org/github.com/bfoley13/draft?status.svg)](https://godoc.org/github.com/bfoley13/draft)
+  [![Go Report Card](https://goreportcard.com/badge/github.com/bfoley13/draft?branch=main)](https://goreportcard.com/report/github.com/bfoley13/draft)
+  [![CodeQL](https://github.com/bfoley13/draft/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/bfoley13/draft/actions/workflows/codeql-analysis.yml?query=branch:main)
+  [![Draft Linux Integrations](https://github.com/bfoley13/draft/actions/workflows/integration-linux.yml/badge.svg?branch=main)](https://github.com/bfoley13/draft/actions/workflows/integration-linux.yml?query=branch:main)
+  [![Draft Release & Publish](https://github.com/bfoley13/draft/actions/workflows/release-and-publish.yml/badge.svg?branch=main)](https://github.com/bfoley13/draft/actions/workflows/release-and-publish.yml?query=branch:main)
   </p>
 </div>
 
@@ -50,7 +50,7 @@ If you plan on deploying your application through your GitHub Action, commit all
 
 ### `draft validate`
 
-Draft validate scans your manifests and populates warnings messages in your code terminal if your manifests are not following best practices. All best practices are sourced from AKS’s deployment safeguards feature. To learn more about deployment safeguards, visit the [offical documentation](https://learn.microsoft.com/azure/aks/deployment-safeguards). To view the best practices that are used in Draft, view the [safeguards package](https://github.com/Azure/draft/tree/main/pkg/safeguards/lib/v1.0.0).
+Draft validate scans your manifests and populates warnings messages in your code terminal if your manifests are not following best practices. All best practices are sourced from AKS’s deployment safeguards feature. To learn more about deployment safeguards, visit the [offical documentation](https://learn.microsoft.com/azure/aks/deployment-safeguards). To view the best practices that are used in Draft, view the [safeguards package](https://github.com/bfoley13/draft/tree/main/pkg/safeguards/lib/v1.0.0).
 
 ![screenshot of draft-validate](./ghAssets/draft-validate.png)
 
@@ -144,7 +144,7 @@ go version
 1. Clone the repo
 
    ```sh
-   git clone https://github.com/Azure/draft.git
+   git clone https://github.com/bfoley13/draft.git
    ```
 
 2. Change to the `draft` directory and build the binary
@@ -185,9 +185,9 @@ If you are looking to leverage Draft's file generation capabilities and templati
 ### Importing Draft Go Packages
 This option will provide the cleanest integration, as it directly builds Draft into your project. However, it requires that your project is written in Go.
 
-Dockerfiles can be generated following the example in [examples/dockerfile.go](https://github.com/Azure/draft/blob/main/example/dockerfile.go) 
+Dockerfiles can be generated following the example in [examples/dockerfile.go](https://github.com/bfoley13/draft/blob/main/example/dockerfile.go) 
 
-Deployment files can be generated following the example in [examples/deployment.go](https://github.com/Azure/draft/blob/main/example/deployment.go)
+Deployment files can be generated following the example in [examples/deployment.go](https://github.com/bfoley13/draft/blob/main/example/deployment.go)
 
 ### Wrapping the Binary
 For projects written in languages other than Go, or for projects that prefer to not import the packages directly, you can wrap the Draft binary.
@@ -210,11 +210,11 @@ Draft is fully compatible with [Azure Kubernetes Service](https://docs.microsoft
 
 ## Issues/Discussions
 
-The Draft team will be monitoring both the [issues](https://github.com/Azure/draft/issues) and [discussions](https://github.com/Azure/draft/discussions) board. Please feel free to create issues for any problems you run into and the Draft team will be quick to respond. The discussions board will be used for community engagement. We look forward to see you there!
+The Draft team will be monitoring both the [issues](https://github.com/bfoley13/draft/issues) and [discussions](https://github.com/bfoley13/draft/discussions) board. Please feel free to create issues for any problems you run into and the Draft team will be quick to respond. The discussions board will be used for community engagement. We look forward to see you there!
 
 ## License
 
-Draft is under the MIT License. See [LICENSE](https://github.com/Azure/draft/blob/main/LICENSE) for more information.
+Draft is under the MIT License. See [LICENSE](https://github.com/bfoley13/draft/blob/main/LICENSE) for more information.
 
 ## Trademark Notice
 

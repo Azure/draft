@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Azure/draft/pkg/reporeader"
+	"github.com/bfoley13/draft/pkg/reporeader"
 )
 
 type LocalFSReader struct {

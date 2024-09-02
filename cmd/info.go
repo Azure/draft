@@ -7,9 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/deployments"
-	"github.com/Azure/draft/pkg/languages"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/deployments"
+	"github.com/bfoley13/draft/pkg/languages"
+	"github.com/bfoley13/draft/template"
 )
 
 type Format string

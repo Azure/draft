@@ -8,8 +8,8 @@ import (
 
 	"testing"
 
-	"github.com/Azure/draft/pkg/safeguards"
-	"github.com/Azure/draft/pkg/safeguards/preprocessing"
+	"github.com/bfoley13/draft/pkg/safeguards"
+	"github.com/bfoley13/draft/pkg/safeguards/preprocessing"
 	"github.com/stretchr/testify/assert"
 )
 

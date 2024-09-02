@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Azure/draft/pkg/providers"
-	"github.com/Azure/draft/pkg/spinner"
+	"github.com/bfoley13/draft/pkg/providers"
+	"github.com/bfoley13/draft/pkg/spinner"
 )
 
 func TestSetUpConfig(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/bfoley13/draft/pkg/safeguards"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

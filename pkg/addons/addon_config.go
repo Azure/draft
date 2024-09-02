@@ -13,9 +13,9 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/consts"
-	"github.com/Azure/draft/pkg/filematches"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/consts"
+	"github.com/bfoley13/draft/pkg/filematches"
 )
 
 // AddonConfig is a struct that extends the base DraftConfig to allow for the Referencing previously generated

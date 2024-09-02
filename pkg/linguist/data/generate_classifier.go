@@ -1,13 +1,14 @@
+//go:build ignore
 // +build ignore
 
 /*
-   This program trains a naive bayesian classifier
-   provided by https://github.com/jbrukh/bayesian
-   on a set of source code files
-   provided by https://github.com/github/linguist
+This program trains a naive bayesian classifier
+provided by https://github.com/jbrukh/bayesian
+on a set of source code files
+provided by https://github.com/github/linguist
 
-   This file is meant by run by go generate,
-   refer to generate.go for its intended invokation
+This file is meant by run by go generate,
+refer to generate.go for its intended invokation
 */
 package main
 
@@ -19,7 +20,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/Azure/draft/pkg/linguist/tokenizer"
+	"github.com/bfoley13/draft/pkg/linguist/tokenizer"
 	"github.com/jbrukh/bayesian"
 )
 

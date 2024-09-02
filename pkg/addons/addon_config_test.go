@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/template"
 )
 
 func TestGetHelmReferenceMap(t *testing.T) {

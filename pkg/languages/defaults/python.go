@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/Azure/draft/pkg/reporeader"
+	"github.com/bfoley13/draft/pkg/reporeader"
 )
 
 type PythonExtractor struct {

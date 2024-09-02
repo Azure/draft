@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/logger"
+	"github.com/bfoley13/draft/pkg/logger"
 )
 
 var cfgFile string
@@ -27,7 +27,7 @@ To start a k8s deployment with draft, run the 'draft create' command 🤩
 
 This will prompt you to create a Dockerfile and deployment files for your project ✨
 
-For more information, please visit the Draft Github page: https://github.com/Azure/draft.`,
+For more information, please visit the Draft Github page: https://github.com/bfoley13/draft.`,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {

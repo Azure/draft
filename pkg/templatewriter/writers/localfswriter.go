@@ -3,7 +3,7 @@ package writers
 import (
 	"os"
 
-	"github.com/Azure/draft/pkg/osutil"
+	"github.com/bfoley13/draft/pkg/osutil"
 )
 
 type LocalFSWriter struct {

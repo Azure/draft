@@ -9,9 +9,9 @@ import (
 	"strings"
 	tmpl "text/template"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/template"
+	"github.com/bfoley13/draft/pkg/config"
+	"github.com/bfoley13/draft/pkg/templatewriter"
+	"github.com/bfoley13/draft/template"
 	"github.com/blang/semver/v4"
 )
 
@@ -19,14 +19,13 @@ const draftConfigFile = "draft.yaml"
 
 var templateConfigs map[string]*Template
 
-
 type Template struct {
-	Config			*config.DraftConfig
-	src 			string
-	dest 			string
-	templateFiles	fs.FS
-	templateWriter 	templatewriter.TemplateWriter
-	version			string
+	Config         *config.DraftConfig
+	src            string
+	dest           string
+	templateFiles  fs.FS
+	templateWriter templatewriter.TemplateWriter
+	version        string
 }
 
 func init() {
@@ -43,7 +42,7 @@ func init() {
 
 		if !strings.EqualFold(d.Name(), draftConfigFile) {
 			return nil
-		} 
+		}
 
 		draftConfig, err := config.NewConfigFromFS(template.Templates, path)
 		if err != nil {
@@ -59,8 +58,8 @@ func init() {
 		}
 
 		newTemplate := &Template{
-			Config: draftConfig,
-			src: filepath.Dir(path),
+			Config:        draftConfig,
+			src:           filepath.Dir(path),
 			templateFiles: template.Templates,
 		}
 
@@ -136,7 +135,6 @@ func generateTemplate(template *Template) error {
 
 		return nil
 	})
-
 
 	return err
 }
@@ -216,11 +214,11 @@ func (t *Template) IncludeInTemplateVersion(versionRange string) bool {
 	if err != nil {
 		return false
 	}
-	
+
 	expectedRange, err := semver.ParseRange(versionRange)
 	if err != nil {
 		return false
 	}
 
-	return expectedRange(v) 
+	return expectedRange(v)
 }

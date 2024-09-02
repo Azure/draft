@@ -1,4 +1,4 @@
-module github.com/Azure/draft
+module github.com/bfoley13/draft
 
 go 1.22.0
 
@@ -6,6 +6,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.14.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.7.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v1.2.0
+	github.com/Azure/draft v0.0.0-00010101000000-000000000000
 	github.com/blang/semver/v4 v4.0.0
 	github.com/briandowns/spinner v1.23.1
 	github.com/cenkalti/backoff/v4 v4.3.0

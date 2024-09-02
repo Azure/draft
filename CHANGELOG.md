@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.39] - bfoley13 branch
+
+template versioning
+
 ## [0.0.38] - 2024-08-13
 
 ### Fixed

@@ -63,7 +63,6 @@ func TestCreateDeployments(t *testing.T) {
 			tempDirPath:  "test/templates/unsupported",
 			tempFileName: "test/templates/unsupported/deployment.yaml",
 			tempPath:     "test/templates/unsupported/deployment.yaml",
-			fixturePath:  "../fixtures/deployments/test/templates/unsupported/deployment.yaml",
 			cleanUp: func() {
 				os.Remove("deployments")
 			},
@@ -94,7 +93,7 @@ func TestCreateDeployments(t *testing.T) {
 				assert.Nil(t, err)
 			}
 
-			tt.cleanUp()
+			//tt.cleanUp()
 		})
 	}
 }

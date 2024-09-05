@@ -74,7 +74,7 @@
   {
     "language": "erlang",
     "version": "3.15",
-    "builderversion": "24.2-alpine",
+    "builderversion": "27.0-alpine",
     "port": "8080",
     "serviceport": 80,
     "repo": "bfoley13/ErlangExample"

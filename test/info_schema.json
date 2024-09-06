@@ -79,7 +79,7 @@
                   "type": "string",
                   "default": "",
                   "examples": [
-                    "3.15"
+                    "3.17"
                   ],
                   "pattern": "^.*$"
                 }

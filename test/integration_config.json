@@ -73,7 +73,7 @@
   },
   {
     "language": "erlang",
-    "version": "3.15",
+    "version": "3.17",
     "builderversion": "27.0-alpine",
     "port": "8080",
     "serviceport": 80,

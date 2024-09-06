@@ -13,7 +13,7 @@ variables:
     exampleValues: ["27.0-alpine"]
   - name: "VERSION"
     default: 
-      value: "3.15"
+      value: "3.17"
     description: "the version of alpine used by the application"
-    exampleValues: ["3.15"]
+    exampleValues: ["3.17"]
     

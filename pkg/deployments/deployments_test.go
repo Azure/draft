@@ -93,7 +93,7 @@ func TestCreateDeployments(t *testing.T) {
 				assert.Nil(t, err)
 			}
 
-			//tt.cleanUp()
+			tt.cleanUp()
 		})
 	}
 }

@@ -63,7 +63,7 @@
                   "type": "string",
                   "default": "",
                   "examples": [
-                    "24.2-alpine"
+                    "27.0-alpine"
                   ],
                   "pattern": "^.*$"
                 }

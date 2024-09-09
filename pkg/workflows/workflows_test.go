@@ -1,8 +1,11 @@
 package workflows
 
 import (
-	"errors"
 	"fmt"
+	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/embedutils"
+	"github.com/Azure/draft/pkg/fixtures"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -10,16 +13,11 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/Azure/draft/template"
 	"github.com/stretchr/testify/assert"
 
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
-	"github.com/Azure/draft/pkg/fixtures"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
 )
 
 func TestCreateWorkflows(t *testing.T) {

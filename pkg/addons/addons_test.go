@@ -1,6 +1,8 @@
 package addons
 
 import (
+	"fmt"
+	"github.com/Azure/draft/pkg/fixtures"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -70,6 +72,19 @@ func TestGenerateHelmAddonSuccess(t *testing.T) {
 	err = GenerateAddon(template.Addons, "azure", "webapp_routing", dir, addonConfig, templateWriter)
 	assert.Nil(t, err)
 
+	// Validate generated content against the fixture
+	generatedFilePath := fmt.Sprintf("%s/charts/templates/ingress.yaml", dir)
+	generatedContent, err := os.ReadFile(generatedFilePath)
+	assert.Nil(t, err)
+
+	fixturePath := "../fixtures/addons/helm/ingress.yaml"
+	if _, err := os.Stat(fixturePath); os.IsNotExist(err) {
+		t.Fatalf("Fixture file does not exist at path: %s", fixturePath)
+	}
+
+	err = fixtures.ValidateContentAgainstFixture(generatedContent, fixturePath)
+	assert.Nil(t, err)
+
 	assert.Nil(t, remove())
 }
 
@@ -113,6 +128,19 @@ func TestGenerateKustomizeAddonSuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	err = GenerateAddon(template.Addons, "azure", "webapp_routing", dir, addonConfig, templateWriter)
+	assert.Nil(t, err)
+
+	// Validate generated content against the fixture
+	generatedFilePath := fmt.Sprintf("%s/overlays/production/ingress.yaml", dir)
+	generatedContent, err := os.ReadFile(generatedFilePath)
+	assert.Nil(t, err)
+
+	fixturePath := "../fixtures/addons/kustomize/ingress.yaml"
+	if _, err := os.Stat(fixturePath); os.IsNotExist(err) {
+		t.Fatalf("Fixture file does not exist at path: %s", fixturePath)
+	}
+
+	err = fixtures.ValidateContentAgainstFixture(generatedContent, fixturePath)
 	assert.Nil(t, err)
 
 	assert.Nil(t, remove())

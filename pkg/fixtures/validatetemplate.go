@@ -12,6 +12,9 @@ import (
 //go:embed pipelines/*
 var pipelines embed.FS
 
+//go:embed deployments/*
+var deployments embed.FS
+
 func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) error {
 	fullFixturePath := fmt.Sprintf("%s", fixturePath)
 

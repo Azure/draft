@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
+	"github.com/Azure/draft/pkg/fixtures"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"io"
 	"io/fs"
@@ -40,6 +41,7 @@ func TestCreateDeployments(t *testing.T) {
 		tempDirPath  string
 		tempFileName string
 		tempPath     string
+		fixturePath  string
 		cleanUp      func()
 	}{
 		{
@@ -49,6 +51,7 @@ func TestCreateDeployments(t *testing.T) {
 			tempDirPath:  "charts/templates",
 			tempFileName: "charts/templates/deployment.yaml",
 			tempPath:     "../../test/templates/helm/charts/templates/deployment.yaml",
+			fixturePath:  "../fixtures/deployments/charts/templates/deployment.yaml",
 			cleanUp: func() {
 				os.Remove(".charts")
 			},
@@ -78,6 +81,16 @@ func TestCreateDeployments(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+
+				generatedContent, err := os.ReadFile(tt.tempFileName)
+				assert.Nil(t, err)
+
+				if _, err := os.Stat(tt.fixturePath); os.IsNotExist(err) {
+					t.Errorf("Fixture file does not exist at path: %s", tt.fixturePath)
+				}
+
+				err = fixtures.ValidateContentAgainstFixture(generatedContent, tt.fixturePath)
+				assert.Nil(t, err)
 			}
 
 			tt.cleanUp()

@@ -3,7 +3,6 @@ package workflows
 import (
 	"errors"
 	"fmt"
-	"github.com/Azure/draft/pkg/fixtures"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -11,13 +10,14 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/stretchr/testify/assert"
+
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/embedutils"
+	"github.com/Azure/draft/pkg/fixtures"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/template"
 )
@@ -522,15 +522,15 @@ func TestCreateWorkflowFiles(t *testing.T) {
 
 	err = mockWF.CreateWorkflowFiles("helm", draftConfig, templateWriter)
 	assert.Nil(t, err)
-	//os.RemoveAll(".github")
+	os.RemoveAll(".github")
 
 	err = mockWF.CreateWorkflowFiles("helm", draftConfigNoRoot, templateWriter)
 	assert.Nil(t, err)
-	//os.RemoveAll(".github")
+	os.RemoveAll(".github")
 
 	err = mockWF.CreateWorkflowFiles("helm", badDraftConfig, templateWriter)
 	assert.NotNil(t, err)
-	//os.RemoveAll(".github")
+	os.RemoveAll(".github")
 }
 
 type loadConfTestCase struct {

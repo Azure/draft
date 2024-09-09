@@ -1,6 +1,6 @@
-FROM golang:{{VERSION}} AS builder
-ENV PORT {{PORT}}
-EXPOSE {{PORT}}
+FROM golang:{{.VERSION}} AS builder
+ENV PORT {{.PORT}}
+EXPOSE {{.PORT}}
 
 WORKDIR /build
 COPY go.mod go.sum ./

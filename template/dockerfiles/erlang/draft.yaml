@@ -8,12 +8,12 @@ variables:
     type: int
   - name: "BUILDERVERSION"
     default: 
-      value: "24.2-alpine"
+      value: "27.0-alpine"
     description: "the version of erlang used during the builder stage to generate the executable"
-    exampleValues: ["24.2-alpine"]
+    exampleValues: ["27.0-alpine"]
   - name: "VERSION"
     default: 
-      value: "3.15"
+      value: "3.17"
     description: "the version of alpine used by the application"
-    exampleValues: ["3.15"]
+    exampleValues: ["3.17"]
     

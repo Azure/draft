@@ -1,8 +1,8 @@
-FROM composer:{{BUILDERVERSION}} AS build-env
+FROM composer:{{.BUILDERVERSION}} AS build-env
 COPY . /app
 RUN cd /app && composer install
 
-FROM php:{{VERSION}}
+FROM php:{{.VERSION}}
 ENV PORT 80
 EXPOSE 80
 COPY --from=build-env /app /var/www/html

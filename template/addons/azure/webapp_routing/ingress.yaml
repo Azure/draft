@@ -2,32 +2,32 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.azure.com/tls-cert-keyvault-uri: "{{ingress-tls-cert-keyvault-uri}}"
-    kubernetes.azure.com/use-osm-mtls: "{{ingress-use-osm-mtls}}"
+    kubernetes.azure.com/tls-cert-keyvault-uri: "{{index . "ingress-tls-cert-keyvault-uri"}}"
+    kubernetes.azure.com/use-osm-mtls: "{{index . "ingress-use-osm-mtls"}}"
     nginx.ingress.kubernetes.io/backend-protocol: HTTPS
     nginx.ingress.kubernetes.io/configuration-snippet: |2-
 
-      proxy_ssl_name "default.{{service-namespace}}.cluster.local";
+      proxy_ssl_name "default.{{index . "service-namespace"}}.cluster.local";
     nginx.ingress.kubernetes.io/proxy-ssl-secret: kube-system/osm-ingress-client-cert
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
-  name: {{service-name}}
-  namespace: {{service-namespace}}
+  name: "{{index . "service-name"}}"
+  namespace: "{{index . "service-namespace"}}"
   labels:
-    kubernetes.azure.com/generator: {{GENERATORLABEL}}
+    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
 spec:
   ingressClassName: webapprouting.kubernetes.azure.com
   rules:
-  - host: {{ingress-host}}
-    http:
-      paths:
-      - backend:
-          service:
-            name: {{service-name}}
-            port:
-              number: {{service-port}}
-        path: /
-        pathType: Prefix
+    - host: "{{index . "ingress-host"}}"
+      http:
+        paths:
+          - backend:
+              service:
+                name: "{{index . "service-name"}}"
+                port:
+                  number: {{index . "service-port"}}
+            path: /
+            pathType: Prefix
   tls:
-  - hosts:
-    - {{ingress-host}}
-    secretName: keyvault-{{service-name}}
+    - hosts:
+        - "{{index . "ingress-host"}}"
+      secretName: "keyvault-{{index . "service-name"}}"

@@ -3,4 +3,3 @@ kind: ConfigMap
 metadata:
   name: configmap
 data:
-  key: "exampleValue"

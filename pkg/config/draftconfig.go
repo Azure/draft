@@ -3,12 +3,21 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
+const draftConfigFile = "draft.yaml"
+
 type DraftConfig struct {
+	TemplateName        string            `yaml:"templateName"`
 	DisplayName         string            `yaml:"displayName"`
+	Description         string            `yaml:"description"`
+	Type                string            `yaml:"type"`
+	Versions            string            `yaml:"versions"`
+	DefaultVersion      string            `yaml:"defaultVersion"`
 	Variables           []*BuilderVar     `yaml:"variables"`
 	FileNameOverrideMap map[string]string `yaml:"filenameOverrideMap"`
 }
@@ -19,13 +28,29 @@ type BuilderVar struct {
 	Description   string            `yaml:"description"`
 	ExampleValues []string          `yaml:"exampleValues"`
 	Type          string            `yaml:"type"`
+	Kind          string            `yaml:"kind"`
 	Value         string            `yaml:"value"`
+	Versions      string            `yaml:"versions"`
 }
 
 type BuilderVarDefault struct {
 	IsPromptDisabled bool   `yaml:"disablePrompt"`
 	ReferenceVar     string `yaml:"referenceVar"`
 	Value            string `yaml:"value"`
+}
+
+func NewConfigFromFS(fileSys fs.FS, path string) (*DraftConfig, error) {
+	configBytes, err := fs.ReadFile(fileSys, path)
+	if err != nil {
+		return nil, err
+	}
+
+	var draftConfig DraftConfig
+	if err = yaml.Unmarshal(configBytes, &draftConfig); err != nil {
+		return nil, err
+	}
+
+	return &draftConfig, nil
 }
 
 func (d *DraftConfig) GetVariableExampleValues() map[string][]string {

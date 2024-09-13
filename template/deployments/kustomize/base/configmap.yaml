@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: configmap
+  name: envvars-configmap
 data:
+  {{ .ENVVARIABLES }}
 

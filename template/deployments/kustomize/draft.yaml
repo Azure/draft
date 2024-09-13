@@ -44,3 +44,9 @@ variables:
       disablePrompt: true
       value: "draft"
     description: "the label to identify who generated the resource"
+  - name: "ENVVARIABLES"
+    type: "map"
+    kind: "environmentVariables"
+    description: "environment variables for the application"
+    default:
+      value: key1=value1

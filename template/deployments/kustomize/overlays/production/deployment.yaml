@@ -17,4 +17,4 @@ spec:
           image: {{.IMAGENAME}}:{{.IMAGETAG}}
           envFrom:
             - configMapRef:
-                name: configmap
+                name: envvars-configmap

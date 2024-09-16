@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
  name: {{ .Config.GetVariableValue "APPNAME" }}
+ namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
  labels:
   app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
   app.kubernetes.io/part-of: {{ .Config.GetVariableValue "APPNAME" }}

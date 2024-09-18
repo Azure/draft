@@ -1,2 +1,7 @@
-Dockerfile
-charts/
+vendor/
+.idea/
+/pkg/deployments/deployTypes/
+/pkg/workflows/workflow/
+.DS_Store
+draft
+langtest

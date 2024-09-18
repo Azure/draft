@@ -48,5 +48,3 @@ variables:
     type: "map"
     kind: "environmentVariables"
     description: "environment variables for the application"
-    default:
-      value: key1=value1

@@ -3,4 +3,11 @@ kind: ConfigMap
 metadata:
   name: envvars-configmap
 data:
-  envVariables: {{ print "{{ .Values.envVariables }}" }}
+  {{- if .Values.envVariables }}
+    {{- range $key, $value := .Values.envVariables }}
+    - name: {{ $key }}
+      value: {{ $value | quote }}
+  {{- end }}
+  {{- else }}
+    # No environment variables provided
+  {{- end }}

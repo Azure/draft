@@ -63,4 +63,4 @@ affinity: {}
 generatorLabel: {{.GENERATORLABEL}}
 
 # environment variables will be read from the configmap.yaml
-envVariables:
+envVariables: {{.ENVVARIABLES}}

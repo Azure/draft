@@ -1,6 +1,6 @@
-FROM golang:{{VERSION}}
-ENV PORT {{PORT}}
-EXPOSE {{PORT}}
+FROM golang:{{.VERSION}}
+ENV PORT={{.PORT}}
+EXPOSE {{.PORT}}
 
 WORKDIR /go/src/app
 COPY . .

@@ -1,28 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "{{APPNAME}}.fullname" . }}
+  name: {{ printf "{{ include \"%s.fullname\" . }}" .APPNAME }}
   labels:
-    {{- include "{{APPNAME}}.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{GENERATORLABEL}}
+    {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .APPNAME }} 
+    {{- `
+    kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
   namespace: {{ .Values.namespace }}
+` -}}
 spec:
+{{- `
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  {{- end }} 
+  ` -}}
   selector:
     matchLabels:
-      {{- include "{{APPNAME}}.selectorLabels" . | nindent 6 }}
+      {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}
   template:
-    metadata:
+    metadata: 
+    {{- `
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- end }} 
+      ` -}}
       labels:
-        {{- include "{{APPNAME}}.selectorLabels" . | nindent 8 }}
-      namespace: {{ .Values.namespace }}
-    spec:
+        {{ printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" .APPNAME }}
+      namespace: {{ print "{{ .Values.namespace }}" }}
+    spec: 
+    {{- `
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -61,3 +68,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+` -}}

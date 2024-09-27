@@ -1,5 +1,5 @@
 FROM golang:{{.VERSION}}
-ENV PORT {{.PORT}}
+ENV PORT={{.PORT}}
 EXPOSE {{.PORT}}
 
 WORKDIR /go/src/app

@@ -21,12 +21,12 @@ type azTenantClient interface {
 func createRoleAssignmentClient(subscriptionId string) (*armauthorization.RoleAssignmentsClient, error) {
 	cred, err := cred.GetCred()
 	if err != nil {
-		return nil, fmt.Errorf("getting credentials: %w", err)
+		return nil, fmt.Errorf("failed to get credentials: %w", err)
 	}
 
 	client, err := armauthorization.NewRoleAssignmentsClient(subscriptionId, cred, nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating role assignment client: %w", err)
+		return nil, fmt.Errorf("failed to create role assignment client: %w", err)
 	}
 	return client, nil
 }

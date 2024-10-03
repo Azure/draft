@@ -7,6 +7,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+
+	"github.com/blang/semver/v4"
 )
 
 const draftConfigFile = "draft.yaml"
@@ -98,6 +100,51 @@ func (d *DraftConfig) SetVariable(name, value string) {
 func (d *DraftConfig) ApplyDefaultVariables() error {
 	for _, variable := range d.Variables {
 		if variable.Value == "" {
+			if variable.Default.ReferenceVar != "" {
+				referenceVar, err := d.GetVariable(variable.Default.ReferenceVar)
+				if err != nil {
+					return fmt.Errorf("apply default variables: %w", err)
+				}
+				defaultVal, err := d.recurseReferenceVars(referenceVar, referenceVar, true)
+				if err != nil {
+					return fmt.Errorf("apply default variables: %w", err)
+				}
+				log.Infof("Variable %s defaulting to value %s", variable.Name, defaultVal)
+				variable.Value = defaultVal
+			}
+
+			if variable.Value == "" {
+				if variable.Default.Value != "" {
+					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
+					variable.Value = variable.Default.Value
+				} else {
+					return errors.New("variable " + variable.Name + " has no default value")
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
+	v, err := semver.Parse(version)
+	if err != nil {
+		return fmt.Errorf("invalid version: %w", err)
+	}
+
+	for _, variable := range d.Variables {
+		if variable.Value == "" {
+			expectedRange, err := semver.ParseRange(variable.Versions)
+			if err != nil {
+				return fmt.Errorf("invalid variable versions: %w", err)
+			}
+
+			if !expectedRange(v) {
+				log.Infof("Variable %s versions %s is outside input version %s, skipping", variable.Name, variable.Versions, version)
+				continue
+			}
+
 			if variable.Default.ReferenceVar != "" {
 				referenceVar, err := d.GetVariable(variable.Default.ReferenceVar)
 				if err != nil {

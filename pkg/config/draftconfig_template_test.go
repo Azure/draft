@@ -88,7 +88,7 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has no template name", path)
 		}
 
-		if _, ok := allTemplates[currTemplate.TemplateName]; ok {
+		if _, ok := allTemplates[strings.ToLower(currTemplate.TemplateName)]; ok {
 			return fmt.Errorf("template %s has a duplicate template name", path)
 		}
 
@@ -109,6 +109,8 @@ func loadTemplatesWithValidation() error {
 				return fmt.Errorf("template %s has an invalid variable kind: %s", path, variable.Kind)
 			}
 		}
+
+		allTemplates[strings.ToLower(currTemplate.TemplateName)] = currTemplate
 		return nil
 	})
 }

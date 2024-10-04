@@ -1,28 +1,28 @@
 # Description
 
-Please include a summary of the changes and the related issue. Please also include relevant motivation and context. List any dependencies that are required for this change.
+Please include the related issue if relevant, and motivation/context. Please also list any dependencies required for this change.
 
 Fixes # (issue)
 Feature # (details)
 
 ## Type of change
 
-Please delete options that are not relevant.
-
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
+- [ ] Refactor
 
-# How Has This Been Tested?
+## How Has This Been Tested?
 
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration. Is it a  breaking change which will impact consuming tool(s).
+Provide instructions so we can reproduce, and list any relevant details for your test configuration. Please mention if this is a breaking change which will impact consuming tool(s).
 
-- [ ] Test A
-- [ ] Test B
+- [ ] Unit Test:
+- [ ] E2E Test:
+- [ ] Other Test:
 
 
-# Checklist:
+## Checklist:
 
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my code

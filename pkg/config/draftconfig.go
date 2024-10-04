@@ -133,6 +133,15 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 		return fmt.Errorf("invalid version: %w", err)
 	}
 
+	expectedConfigVersionRange, err := semver.ParseRange(d.Versions)
+	if err != nil {
+		return fmt.Errorf("invalid config version range: %w", err)
+	}
+
+	if !expectedConfigVersionRange(v) {
+		return fmt.Errorf("version %s is outside of config version range %s", version, d.Versions)
+	}
+
 	for _, variable := range d.Variables {
 		if variable.Value == "" {
 			expectedRange, err := semver.ParseRange(variable.Versions)
@@ -150,6 +159,7 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 				if err != nil {
 					return fmt.Errorf("apply default variables: %w", err)
 				}
+
 				defaultVal, err := d.recurseReferenceVars(referenceVar, referenceVar, true)
 				if err != nil {
 					return fmt.Errorf("apply default variables: %w", err)

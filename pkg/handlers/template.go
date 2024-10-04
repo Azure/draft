@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
-	"log"
 	"path/filepath"
 	"strings"
 	tmpl "text/template"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/templatewriter"
+	log "github.com/sirupsen/logrus"
 )
 
 type Template struct {

@@ -3,13 +3,13 @@ package handlers
 import (
 	"fmt"
 	"io/fs"
-	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/template"
 	"github.com/blang/semver/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 var templateConfigs map[string]*Template

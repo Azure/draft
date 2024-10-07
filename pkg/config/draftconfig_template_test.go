@@ -137,7 +137,7 @@ func loadTemplatesWithValidation() error {
 				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
 			}
 
-			if isCyclicalVariableReference(currVar, refVar, allVariables, true, map[string]bool{}) {
+			if isCyclicalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
 				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
 			}
 		}
@@ -147,8 +147,8 @@ func loadTemplatesWithValidation() error {
 	})
 }
 
-func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, isFirst bool, visited map[string]bool) bool {
-	if !isFirst && initialVar.Name == currRefVar.Name {
+func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
+	if initialVar.Name == currRefVar.Name {
 		return true
 	}
 

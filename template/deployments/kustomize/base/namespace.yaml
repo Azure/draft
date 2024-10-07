@@ -1,6 +1,6 @@
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: {{.NAMESPACE}}
+  name: {{.Config.GetVariableValue "NAMESPACE" }}
   labels:
-    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}

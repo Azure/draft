@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
+	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/templatewriter"
 )
@@ -24,7 +24,7 @@ const (
 
 type Deployments struct {
 	deploys             map[string]fs.DirEntry
-	configs             map[string]*config.DraftConfig
+	configs             map[string]*handlers.Template
 	dest                string
 	deploymentTemplates fs.FS
 }
@@ -94,18 +94,8 @@ func (d *Deployments) PopulateConfigs() {
 }
 
 func CreateDeploymentsFromEmbedFS(deploymentTemplates embed.FS, dest string) *Deployments {
-	deployMap, err := embedutils.EmbedFStoMap(deploymentTemplates, parentDirName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	d := &Deployments{
-		deploys:             deployMap,
+	return &Deployments{
 		dest:                dest,
-		configs:             make(map[string]*config.DraftConfig),
 		deploymentTemplates: deploymentTemplates,
 	}
-	d.PopulateConfigs()
-
-	return d
 }

@@ -9,6 +9,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/reporeader"
 	"github.com/Azure/draft/pkg/reporeader/readers"
 	"github.com/manifoldco/promptui"
@@ -16,7 +17,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/deployments"
 	dryrunpkg "github.com/Azure/draft/pkg/dryrun"
 	"github.com/Azure/draft/pkg/filematches"
 	"github.com/Azure/draft/pkg/languages"
@@ -304,21 +304,20 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 
 func (cc *createCmd) createDeployment() error {
 	log.Info("--- Deployment File Creation ---")
-	d := deployments.CreateDeploymentsFromEmbedFS(template.Deployments, cc.dest)
 	var deployType string
-	var deployConfig *config.DraftConfig
+	var deployTemplate *handlers.Template
 	var err error
 
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
-		deployConfig, err = d.GetConfig(deployType)
+		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployment-%s", template.Deployments, deployType), "", cc.dest, cc.templateWriter)
 		if err != nil {
 			return err
 		}
-		if deployConfig == nil {
+		if deployTemplate == nil || deployTemplate.Config == nil {
 			return errors.New("invalid deployment type")
 		}
-		err = validateConfigInputsToPrompts(deployConfig, cc.createConfig.DeployVariables)
+		err = validateConfigInputsToPrompts(deployTemplate.Config, cc.createConfig.DeployVariables)
 		if err != nil {
 			return err
 		}
@@ -337,28 +336,27 @@ func (cc *createCmd) createDeployment() error {
 			deployType = cc.deployType
 		}
 
-		deployConfig, err = d.GetConfig(deployType)
+		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployments-%s", template.Deployments, deployType), "", cc.dest, cc.templateWriter)
 		if err != nil {
 			return err
 		}
 
-		deployConfig.VariableMapToDraftConfig(flagVariablesMap)
+		deployTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
 
-		err = prompts.RunPromptsFromConfigWithSkips(deployConfig)
+		err = prompts.RunPromptsFromConfigWithSkips(deployTemplate.Config)
 		if err != nil {
 			return err
 		}
 	}
 
 	if cc.templateVariableRecorder != nil {
-		for _, variable := range deployConfig.Variables {
+		for _, variable := range deployTemplate.Config.Variables {
 			cc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
 	log.Infof("--> Creating %s Kubernetes resources...\n", deployType)
-
-	return d.CopyDeploymentFiles(deployType, deployConfig, cc.templateWriter)
+	return deployTemplate.Generate()
 }
 
 func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang string) error {

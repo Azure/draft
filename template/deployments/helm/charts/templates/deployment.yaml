@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "{{ include \"%s.fullname\" . }}" .APPNAME }}
+  name: {{ printf "{{ include \"%s.fullname\" . }}" .Config.GetVariableValue "APPNAME" }}
   labels:
-    {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .APPNAME }} 
+    {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .Config.GetVariableValue "APPNAME" }} 
     {{- `
     kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
   namespace: {{ .Values.namespace }}
@@ -16,7 +16,7 @@ spec:
   ` -}}
   selector:
     matchLabels:
-      {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}
+      {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .Config.GetVariableValue "APPNAME" }}
   template:
     metadata: 
     {{- `
@@ -26,7 +26,7 @@ spec:
       {{- end }} 
       ` -}}
       labels:
-        {{ printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" .APPNAME }}
+        {{ printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" .Config.GetVariableValue "APPNAME" }}
       namespace: {{ print "{{ .Values.namespace }}" }}
     spec: 
     {{- `

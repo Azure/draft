@@ -341,6 +341,10 @@ func (cc *createCmd) createDeployment() error {
 			return err
 		}
 
+		if deployTemplate == nil || deployTemplate.Config == nil {
+			return errors.New("invalid deployment type")
+		}
+
 		deployTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
 
 		err = prompts.RunPromptsFromConfigWithSkips(deployTemplate.Config)

@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	supportedDeploymentTypes = []string{"helm", "kustomize", "manifest"}
+	supportedDeploymentTypes = []string{"helm", "kustomize", "manifests"}
 )
 
 type infoCmd struct {

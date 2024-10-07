@@ -3,16 +3,20 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"path"
 
 	"github.com/Azure/draft/pkg/safeguards"
+	"github.com/Azure/draft/pkg/safeguards/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"helm.sh/helm/v3/pkg/chartutil"
 )
 
 type validateCmd struct {
-	manifestPath    string
-	imagePullSecret bool
+	manifestPath     string
+	imagePullSecret  bool
+	releaseName      string
+	releaseNamespace string
 }
 
 func init() {
@@ -38,6 +42,8 @@ func newValidateCmd() *cobra.Command {
 
 	f.StringVarP(&vc.manifestPath, "manifest", "m", "", "'manifest' asks for the path to the manifest")
 	f.BoolVarP(&vc.imagePullSecret, "imagePullSecret", "s", false, "'imagePullSecret' enables the Safeguard that checks for usage of an image pull secret within the manifest(s)")
+	f.StringVarP(&vc.releaseName, "releaseName", "n", "", "'releaseName' asks for a user-defined release name for the Helm package to use when rendering Helm projects in Draft")
+	f.StringVarP(&vc.releaseNamespace, "releaseNamespace", "e", "", "'releaseNamespace' asks for a user-defined release namespace for the Helm package to use when rendering Helm projects in Draft")
 
 	return cmd
 }
@@ -54,25 +60,19 @@ func (vc *validateCmd) run(c *cobra.Command) error {
 		safeguards.AddSafeguardCRIP()
 	}
 
-	ctx := context.Background()
-	isDir, err := safeguards.IsDirectory(vc.manifestPath)
-	if err != nil {
-		return fmt.Errorf("not a valid file or directory: %w", err)
+	var opt chartutil.ReleaseOptions
+	if vc.releaseName != "" {
+		opt.Name = vc.releaseName
 	}
+	if vc.releaseNamespace != "" {
+		opt.Namespace = vc.releaseNamespace
+	}
+	ctx := context.Background()
 
-	var manifestFiles []safeguards.ManifestFile
-	if isDir {
-		manifestFiles, err = safeguards.GetManifestFiles(vc.manifestPath)
-		if err != nil {
-			return err
-		}
-	} else if safeguards.IsYAML(vc.manifestPath) {
-		manifestFiles = append(manifestFiles, safeguards.ManifestFile{
-			Name: path.Base(vc.manifestPath),
-			Path: vc.manifestPath,
-		})
-	} else {
-		return fmt.Errorf("expected at least one .yaml or .yml file within given path")
+	var manifestFiles []types.ManifestFile
+	manifestFiles, err := safeguards.GetManifestFiles(vc.manifestPath, opt)
+	if err != nil {
+		return fmt.Errorf("error retrieving manifest files: %w", err)
 	}
 
 	log.Debugf("validating manifests")

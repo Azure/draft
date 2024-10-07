@@ -125,7 +125,7 @@ func (p *AzurePipelines) CreatePipelineFiles(deployType string, draftConfig *con
 		return fmt.Errorf("error applying default variables: %w", err)
 	}
 
-	if err := osutil.CopyDir(p.pipelineTemplates, srcDir, p.dest, draftConfig, templateWriter); err != nil {
+	if err := osutil.CopyDirWithTemplates(p.pipelineTemplates, srcDir, p.dest, draftConfig, templateWriter); err != nil {
 		return fmt.Errorf("error copying pipeline files: %w", err)
 	}
 

@@ -12,8 +12,8 @@ deployVariables:
     value: "host.minikube.internal:5001/testapp"
 languageVariables:
   - name: "VERSION"
-    value: "3.15"
+    value: "3.17"
   - name: "BUILDERVERSION"
-    value: "24.2-alpine"
+    value: "27.0-alpine"
   - name: "PORT"
     value: "8080"

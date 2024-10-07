@@ -53,7 +53,7 @@ func (l *Languages) CreateDockerfileForLanguage(lang string, langConfig *config.
 		return fmt.Errorf("create dockerfile for language: %w", err)
 	}
 
-	if err := osutil.CopyDir(l.dockerfileTemplates, srcDir, l.dest, langConfig, templateWriter); err != nil {
+	if err := osutil.CopyDirWithTemplates(l.dockerfileTemplates, srcDir, l.dest, langConfig, templateWriter); err != nil {
 		return err
 	}
 

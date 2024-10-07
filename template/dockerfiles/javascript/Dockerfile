@@ -1,6 +1,6 @@
-FROM node:{{VERSION}}
-ENV PORT {{PORT}}
-EXPOSE {{PORT}}
+FROM node:{{.VERSION}}
+ENV PORT {{.PORT}}
+EXPOSE {{.PORT}}
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

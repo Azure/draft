@@ -1,0 +1,7 @@
+namePrefix: production-
+namespace: default
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - deployment.yaml
+  - service.yaml

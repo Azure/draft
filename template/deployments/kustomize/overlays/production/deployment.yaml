@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Config.GetVariableValue "APPNAME"}}
+  name: {{ .Config.GetVariableValue "APPNAME" }}
   labels:
     app: {{ .Config.GetVariableValue "APPNAME" }}
     kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL"}}

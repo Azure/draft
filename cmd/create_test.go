@@ -28,7 +28,7 @@ func TestRun(t *testing.T) {
 		createConfig:   &testCreateConfig,
 		templateWriter: &writers.LocalFSWriter{},
 	}
-	deployTypes := []string{"helm", "kustomize", "manifests"}
+	deployTypes := []string{"helm", "kustomize", "manifest"}
 	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
 	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
 

@@ -1,0 +1,6 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: default
+  labels:
+    kubernetes.azure.com/generator: draft

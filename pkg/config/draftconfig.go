@@ -85,6 +85,19 @@ func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {
 	return nil, fmt.Errorf("variable %s not found", name)
 }
 
+func (d *DraftConfig) GetVariableValue(name string) (string, error) {
+	for _, variable := range d.Variables {
+		if variable.Name == name {
+			if variable.Value == "" {
+				return "", fmt.Errorf("variable %s has no value", name)
+			}
+			return variable.Value, nil
+		}
+	}
+
+	return "", fmt.Errorf("variable %s not found", name)
+}
+
 func (d *DraftConfig) SetVariable(name, value string) {
 	if variable, err := d.GetVariable(name); err != nil {
 		d.Variables = append(d.Variables, &BuilderVar{

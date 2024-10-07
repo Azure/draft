@@ -310,7 +310,7 @@ func (cc *createCmd) createDeployment() error {
 
 	if cc.createConfig.DeployType != "" {
 		deployType = strings.ToLower(cc.createConfig.DeployType)
-		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployment-%s", template.Deployments, deployType), "", cc.dest, cc.templateWriter)
+		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployment-%s", deployType), "", cc.dest, cc.templateWriter)
 		if err != nil {
 			return err
 		}
@@ -336,7 +336,7 @@ func (cc *createCmd) createDeployment() error {
 			deployType = cc.deployType
 		}
 
-		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployments-%s", template.Deployments, deployType), "", cc.dest, cc.templateWriter)
+		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployment-%s", deployType), "", cc.dest, cc.templateWriter)
 		if err != nil {
 			return err
 		}

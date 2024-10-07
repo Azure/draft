@@ -135,8 +135,7 @@ func writeTemplate(draftTemplate *Template, inputFile string) error {
 		return err
 	}
 
-	newFileDest := strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1)
-	if err = draftTemplate.templateWriter.WriteFile(newFileDest, buf.Bytes()); err != nil {
+	if err = draftTemplate.templateWriter.WriteFile(strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1), buf.Bytes()); err != nil {
 		return err
 	}
 

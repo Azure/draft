@@ -21,7 +21,7 @@ func TestManifestDeploymentValidation(t *testing.T) {
 	}{
 		{
 			name:            "valid manifest deployment",
-			templateName:    "deployment-manifest",
+			templateName:    "deployment-manifests",
 			fixturesBaseDir: "../fixtures/deployments/manifest",
 			version:         "0.0.1",
 			dest:            ".",

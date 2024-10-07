@@ -166,5 +166,5 @@ func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariable
 	}
 
 	visited[currRefVar.Name] = true
-	return isCyclicalVariableReference(initialVar, refVar, allVariables, false, visited)
+	return isCyclicalVariableReference(initialVar, refVar, allVariables, visited)
 }

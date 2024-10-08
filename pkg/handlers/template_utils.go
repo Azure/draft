@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/Azure/draft/pkg/config"
@@ -51,7 +52,7 @@ func loadTemplates() error {
 
 		newTemplate := &Template{
 			Config:        draftConfig,
-			src:           filepath.Dir(path),
+			src:           sanatizeTemplateSrcDir(path),
 			templateFiles: template.Templates,
 		}
 
@@ -73,4 +74,14 @@ func IsValidVersion(versionRange, version string) bool {
 	}
 
 	return expectedRange(v)
+}
+
+func sanatizeTemplateSrcDir(src string) string {
+	srcDir := filepath.Dir(src)
+
+	if runtime.GOOS == "windows" {
+		return strings.ReplaceAll(srcDir, "\\", "/")
+	}
+
+	return srcDir
 }

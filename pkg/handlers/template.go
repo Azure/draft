@@ -97,17 +97,7 @@ func (t *Template) validate() error {
 }
 
 func generateTemplate(template *Template) error {
-	fs.WalkDir(template.templateFiles, ".", func(path string, d fs.DirEntry, err error) error {
-		log.Printf("template path: %s | %v", path, d)
-		return nil
-	})
-
 	err := fs.WalkDir(template.templateFiles, template.src, func(path string, d fs.DirEntry, err error) error {
-		if d == nil {
-			log.Infof("dir is nil at path: %s", path)
-			return nil
-		}
-
 		if d.IsDir() {
 			return template.templateWriter.EnsureDirectory(strings.Replace(path, template.src, template.dest, 1))
 		}

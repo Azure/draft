@@ -228,9 +228,41 @@ func (d *DraftConfig) VariableMapToDraftConfig(flagVariablesMap map[string]strin
 // SetFileNameOverride sets the filename override for a specific file
 func (d *DraftConfig) SetFileNameOverride(input, override string) {
 	if d.FileNameOverrideMap == nil {
-		d.FileNameOverrideMap = map[string]string{}
+		d.FileNameOverrideMap = make(map[string]string)
 	}
 	d.FileNameOverrideMap[input] = override
+}
+
+func (d *DraftConfig) DeepCopy() *DraftConfig {
+	newConfig := &DraftConfig{}
+	newConfig.TemplateName = d.TemplateName
+	newConfig.DisplayName = d.DisplayName
+	newConfig.Description = d.Description
+	newConfig.Type = d.Type
+	newConfig.Versions = d.Versions
+	newConfig.DefaultVersion = d.DefaultVersion
+
+	newConfig.Variables = make([]*BuilderVar, len(d.Variables))
+	for i, variable := range d.Variables {
+		newConfig.Variables[i] = variable.DeepCopy()
+	}
+
+	return newConfig
+}
+
+func (bv *BuilderVar) DeepCopy() *BuilderVar {
+	newVar := &BuilderVar{}
+	newVar.Name = bv.Name
+	newVar.Default = bv.Default
+	newVar.Description = bv.Description
+	newVar.Type = bv.Type
+	newVar.Kind = bv.Kind
+	newVar.Value = bv.Value
+	newVar.Versions = bv.Versions
+
+	newVar.ExampleValues = make([]string, len(bv.ExampleValues))
+	copy(newVar.ExampleValues, bv.ExampleValues)
+	return newVar
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs

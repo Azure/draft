@@ -30,6 +30,8 @@ func GetTemplate(name, version, dest string, templateWriter templatewriter.Templ
 		return nil, fmt.Errorf("template not found: %s", name)
 	}
 
+	template = template.DeepCopy()
+
 	if version == "" {
 		version = template.Config.DefaultVersion
 		log.Println("version not provided, using default version: ", version)
@@ -94,6 +96,17 @@ func (t *Template) validate() error {
 	}
 
 	return nil
+}
+
+func (t *Template) DeepCopy() *Template {
+	newTemplate := &Template{}
+	newTemplate.Config = t.Config.DeepCopy()
+	newTemplate.templateFiles = t.templateFiles
+	newTemplate.templateWriter = t.templateWriter
+	newTemplate.src = t.src
+	newTemplate.dest = t.dest
+	newTemplate.version = t.version
+	return newTemplate
 }
 
 func generateTemplate(template *Template) error {

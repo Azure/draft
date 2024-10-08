@@ -21,6 +21,7 @@ func TestManifestDeploymentValidation(t *testing.T) {
 		templateWriter   *writers.FileMapWriter
 		varMap           map[string]string
 		fileNameOverride map[string]string
+		expectedErr      error
 	}{
 		{
 			name:            "valid manifest deployment",
@@ -74,7 +75,7 @@ func TestManifestDeploymentValidation(t *testing.T) {
 			},
 		},
 		{
-			name:            "valid manifest deployment",
+			name:            "valid manifest deployment with filename override",
 			templateName:    "deployment-manifests",
 			fixturesBaseDir: "../fixtures/deployments/manifest",
 			version:         "0.0.1",
@@ -93,6 +94,16 @@ func TestManifestDeploymentValidation(t *testing.T) {
 				"deployment.yaml": "deployment-override.yaml",
 			},
 		},
+		{
+			name:            "insufficient variables for manifest deployment",
+			templateName:    "deployment-manifests",
+			fixturesBaseDir: "../fixtures/deployments/manifest",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap:          map[string]string{},
+			expectedErr:     fmt.Errorf("create workflow files: variable APPNAME has no default value"),
+		},
 	}
 
 	for _, tt := range tests {
@@ -105,13 +116,17 @@ func TestManifestDeploymentValidation(t *testing.T) {
 				template.Config.SetVariable(k, v)
 			}
 
-			overrideReverseLookup := map[string]string{}
+			overrideReverseLookup := make(map[string]string)
 			for k, v := range tt.fileNameOverride {
 				template.Config.SetFileNameOverride(k, v)
 				overrideReverseLookup[v] = k
 			}
 
 			err = template.Generate()
+			if tt.expectedErr != nil {
+				assert.Equal(t, tt.expectedErr.Error(), err.Error())
+				return
+			}
 			assert.Nil(t, err)
 
 			for k, v := range tt.templateWriter.FileMap {

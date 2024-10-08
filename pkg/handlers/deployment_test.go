@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Azure/draft/pkg/fixtures"
@@ -11,13 +13,14 @@ import (
 
 func TestManifestDeploymentValidation(t *testing.T) {
 	tests := []struct {
-		name            string
-		templateName    string
-		fixturesBaseDir string
-		version         string
-		dest            string
-		templateWriter  *writers.FileMapWriter
-		varMap          map[string]string
+		name             string
+		templateName     string
+		fixturesBaseDir  string
+		version          string
+		dest             string
+		templateWriter   *writers.FileMapWriter
+		varMap           map[string]string
+		fileNameOverride map[string]string
 	}{
 		{
 			name:            "valid manifest deployment",
@@ -70,6 +73,26 @@ func TestManifestDeploymentValidation(t *testing.T) {
 				"SERVICEPORT":    "80",
 			},
 		},
+		{
+			name:            "valid manifest deployment",
+			templateName:    "deployment-manifests",
+			fixturesBaseDir: "../fixtures/deployments/manifest",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME":        "testapp",
+				"NAMESPACE":      "default",
+				"PORT":           "80",
+				"IMAGENAME":      "testimage",
+				"IMAGETAG":       "latest",
+				"GENERATORLABEL": "draft",
+				"SERVICEPORT":    "80",
+			},
+			fileNameOverride: map[string]string{
+				"deployment.yaml": "deployment-override.yaml",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -82,11 +105,22 @@ func TestManifestDeploymentValidation(t *testing.T) {
 				template.Config.SetVariable(k, v)
 			}
 
+			overrideReverseLookup := map[string]string{}
+			for k, v := range tt.fileNameOverride {
+				template.Config.SetFileNameOverride(k, v)
+				overrideReverseLookup[v] = k
+			}
+
 			err = template.Generate()
 			assert.Nil(t, err)
 
 			for k, v := range tt.templateWriter.FileMap {
-				err = fixtures.ValidateContentAgainstFixture(v, fmt.Sprintf("%s/%s", tt.fixturesBaseDir, k))
+				fileName := k
+				if overrideFile, ok := overrideReverseLookup[filepath.Base(k)]; ok {
+					fileName = strings.Replace(fileName, filepath.Base(k), overrideFile, 1)
+				}
+
+				err = fixtures.ValidateContentAgainstFixture(v, fmt.Sprintf("%s/%s", tt.fixturesBaseDir, fileName))
 				assert.Nil(t, err)
 			}
 		})

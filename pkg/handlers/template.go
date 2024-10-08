@@ -135,9 +135,20 @@ func writeTemplate(draftTemplate *Template, inputFile string) error {
 		return err
 	}
 
-	if err = draftTemplate.templateWriter.WriteFile(strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1), buf.Bytes()); err != nil {
+	if err = draftTemplate.templateWriter.WriteFile(getOutputFileName(draftTemplate, inputFile), buf.Bytes()); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func getOutputFileName(draftTemplate *Template, inputFile string) string {
+	outputName := strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1)
+
+	fileName := filepath.Base(inputFile)
+	if overrideName, ok := draftTemplate.Config.FileNameOverrideMap[fileName]; ok {
+		return strings.Replace(outputName, fileName, overrideName, 1)
+	}
+
+	return outputName
 }

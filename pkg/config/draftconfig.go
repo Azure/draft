@@ -140,6 +140,7 @@ func (d *DraftConfig) ApplyDefaultVariables() error {
 	return nil
 }
 
+// ApplyDefaultVariablesForVersion will apply the defaults to variables that are not already set for a specific template version
 func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 	v, err := semver.Parse(version)
 	if err != nil {
@@ -222,6 +223,14 @@ func (d *DraftConfig) VariableMapToDraftConfig(flagVariablesMap map[string]strin
 		log.Debugf("flag variable %s=%s", flagName, flagValue)
 		d.SetVariable(flagName, flagValue)
 	}
+}
+
+// SetFileNameOverride sets the filename override for a specific file
+func (d *DraftConfig) SetFileNameOverride(input, override string) {
+	if d.FileNameOverrideMap == nil {
+		d.FileNameOverrideMap = map[string]string{}
+	}
+	d.FileNameOverrideMap[input] = override
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs

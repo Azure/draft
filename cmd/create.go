@@ -309,6 +309,7 @@ func (cc *createCmd) createDeployment() error {
 	var err error
 
 	if cc.createConfig.DeployType != "" {
+		log.Info("Using configuration deployment type")
 		deployType = strings.ToLower(cc.createConfig.DeployType)
 		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployment-%s", deployType), "", cc.dest, cc.templateWriter)
 		if err != nil {
@@ -317,6 +318,7 @@ func (cc *createCmd) createDeployment() error {
 		if deployTemplate == nil || deployTemplate.Config == nil {
 			return errors.New("invalid deployment type")
 		}
+		log.Infof("template: %v | config: %v", deployTemplate, deployTemplate.Config)
 		err = validateConfigInputsToPrompts(deployTemplate.Config, cc.createConfig.DeployVariables)
 		if err != nil {
 			return err

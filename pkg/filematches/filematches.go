@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/instrumenta/kubeval/kubeval"
+	"github.com/yannh/kubeconform/pkg/validator"
 )
 
 type FileMatches struct {
@@ -43,25 +43,29 @@ func (f *FileMatches) walkFunc(path string, info os.FileInfo, err error) error {
 
 // TODO: maybe generalize this function in the future
 func isValidK8sFile(filePath string) bool {
-	fileContents, err := os.ReadFile(filePath)
+	f, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	config := kubeval.NewDefaultConfig()
-	results, err := kubeval.Validate(fileContents, config)
-	if err != nil || hasErrors(results) {
-		return false
-	}
-	return true
-}
 
-func hasErrors(res []kubeval.ValidationResult) bool {
-	for _, r := range res {
-		if len(r.Errors) > 0 {
-			return true
+	v, err := validator.New(nil, validator.Opts{Strict: true})
+	if err != nil {
+		log.Fatalf("failed initializing validator: %s", err)
+	}
+
+	for i, res := range v.Validate(filePath, f) { // A file might contain multiple resources
+		// File starts with ---, the parser assumes a first empty resource
+		if res.Status == validator.Invalid {
+			log.Printf("resource %d in file %s is not valid: %s", i, filePath, res.Err)
+			return false
+		}
+		if res.Status == validator.Error {
+			log.Printf("error while processing resource %d in file %s: %s", i, filePath, res.Err)
+			return false
 		}
 	}
-	return false
+
+	return true
 }
 
 func (f *FileMatches) hasDeploymentFiles() bool {

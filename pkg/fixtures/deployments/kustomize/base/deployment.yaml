@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testapp
+  labels:
+    app: testapp
+    kubernetes.azure.com/generator: draft
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testapp
+  template:
+    metadata:
+      labels:
+        app: testapp
+    spec:
+      containers:
+        - name: testapp
+          image: testimage:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80

@@ -1,6 +1,6 @@
 language: gradle
 displayName: Gradle
-templateName: "dockerfile-gradle"
+templateName: "dockerfile-gradlew"
 description: "This template is used to create a Dockerfile for a Gradle application"
 type: "dockerfile"
 variables:

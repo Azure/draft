@@ -1,0 +1,22 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{.APPNAME}}
+  labels:
+    app.kubernetes.io/name: {{.APPNAME}}
+    app.kubernetes.io/part-of: {{.PARTOF}}
+    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{.APPNAME}}
+  minReplicas: {{.MINIMUMREPLICAS}}
+  maxReplicas: {{.MAXIMUMREPLICAS}}
+  metrics:
+    - type: Resource
+      resource:
+        name: {{.CPU}}
+        target:
+          type: Utilization
+          averageUtilization: {{.AVGUTILIZATION}}

@@ -1,0 +1,52 @@
+templateName: "podDisruptionBudget-manifest"
+description: "This template is used to create a PodDisruptionBudget for an application"
+type: "podDisruptionBudget"
+variables:
+  - name: "APPNAME"
+    type: "string"
+    kind: "resourceName"
+    description: "the name of the application"
+    default:
+      value: "frontend"
+  - name: "PARTOF"
+    type: "string"
+    kind: "part-of"
+    description: "the label to identify which project the resource belong to"
+    default:
+      value: "online-store"
+  - name: "GENERATORLABEL"
+    type: "string"
+    kind: "label"
+    description: "the label to identify who generated the resource"
+    default:
+      value: "draft"
+  - name: "MINIMUMREPLICAS"
+    type: "int"
+    kind: "replicas"
+    description: "specifies the minimum number of pod replicas that the deployment should have"
+    default:
+      value: 2
+  - name: "MAXIMUMREPLICAS"
+    type: "int"
+    kind: "replicas"
+    description: "defines the maximum number of pod replicas the deployment can scale to"
+    default:
+      value: 5
+  - name: "MEMORY"
+    type: "int"
+    kind: "resource"
+    description: "Specifies that the HPA will monitor memory for scaling (in Mi)"
+    default:
+      value: 100
+  - name: "CPU"
+    type: "int"
+    kind: "resource"
+    description: "Specifies that the HPA will monitor CPU utilization for scaling (in m)"
+    default:
+      value: 100
+  - name: "AVGUTILIZATION"
+    type: "int"
+    kind: "autoscaling"
+    description: "the HPA will scale up if the CPU utilization exceeds the default value"
+    default:
+      value: 80

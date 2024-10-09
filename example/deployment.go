@@ -36,8 +36,11 @@ func WriteDeploymentFilesExample() error {
 
 	// Get the deployment template
 	d, err := handlers.GetTemplate(deploymentTemplateType, "", outputPath, &w)
-	if err != nil || d == nil {
+	if err != nil {
 		return fmt.Errorf("failed to get template: %e", err)
+	}
+	if d == nil {
+		return fmt.Errorf("template is nil")
 	}
 
 	// Set the variable values within the template

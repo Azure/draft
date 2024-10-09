@@ -17,9 +17,11 @@ const (
 	JSON Format = "json"
 )
 
-var (
-	supportedDeploymentTypes = []string{"helm", "kustomize", "manifests"}
-)
+var supportedDeploymentTypes = [...]string{
+	"helm",
+	"kustomize",
+	"manifests",
+}
 
 type infoCmd struct {
 	format string
@@ -35,7 +37,7 @@ type draftConfigInfo struct {
 
 type draftInfo struct {
 	SupportedLanguages       []draftConfigInfo `json:"supportedLanguages"`
-	SupportedDeploymentTypes []string          `json:"supportedDeploymentTypes"`
+	SupportedDeploymentTypes [3]string         `json:"supportedDeploymentTypes"`
 }
 
 func newInfoCmd() *cobra.Command {

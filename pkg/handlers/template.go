@@ -99,14 +99,14 @@ func (t *Template) validate() error {
 }
 
 func (t *Template) DeepCopy() *Template {
-	newTemplate := &Template{}
-	newTemplate.Config = t.Config.DeepCopy()
-	newTemplate.templateFiles = t.templateFiles
-	newTemplate.templateWriter = t.templateWriter
-	newTemplate.src = t.src
-	newTemplate.dest = t.dest
-	newTemplate.version = t.version
-	return newTemplate
+	return &Template{
+		Config:         t.Config.DeepCopy(),
+		templateFiles:  t.templateFiles,
+		templateWriter: t.templateWriter,
+		src:            t.src,
+		dest:           t.dest,
+		version:        t.version,
+	}
 }
 
 func generateTemplate(template *Template) error {

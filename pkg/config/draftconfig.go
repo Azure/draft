@@ -234,33 +234,39 @@ func (d *DraftConfig) SetFileNameOverride(input, override string) {
 }
 
 func (d *DraftConfig) DeepCopy() *DraftConfig {
-	newConfig := &DraftConfig{}
-	newConfig.TemplateName = d.TemplateName
-	newConfig.DisplayName = d.DisplayName
-	newConfig.Description = d.Description
-	newConfig.Type = d.Type
-	newConfig.Versions = d.Versions
-	newConfig.DefaultVersion = d.DefaultVersion
-
-	newConfig.Variables = make([]*BuilderVar, len(d.Variables))
+	newConfig := &DraftConfig{
+		TemplateName:        d.TemplateName,
+		DisplayName:         d.DisplayName,
+		Description:         d.Description,
+		Type:                d.Type,
+		Versions:            d.Versions,
+		DefaultVersion:      d.DefaultVersion,
+		Variables:           make([]*BuilderVar, len(d.Variables)),
+		FileNameOverrideMap: make(map[string]string),
+	}
 	for i, variable := range d.Variables {
 		newConfig.Variables[i] = variable.DeepCopy()
+	}
+
+	for k, v := range d.FileNameOverrideMap {
+		newConfig.FileNameOverrideMap[k] = v
 	}
 
 	return newConfig
 }
 
 func (bv *BuilderVar) DeepCopy() *BuilderVar {
-	newVar := &BuilderVar{}
-	newVar.Name = bv.Name
-	newVar.Default = bv.Default
-	newVar.Description = bv.Description
-	newVar.Type = bv.Type
-	newVar.Kind = bv.Kind
-	newVar.Value = bv.Value
-	newVar.Versions = bv.Versions
+	newVar := &BuilderVar{
+		Name:          bv.Name,
+		Default:       bv.Default,
+		Description:   bv.Description,
+		Type:          bv.Type,
+		Kind:          bv.Kind,
+		Value:         bv.Value,
+		Versions:      bv.Versions,
+		ExampleValues: make([]string, len(bv.ExampleValues)),
+	}
 
-	newVar.ExampleValues = make([]string, len(bv.ExampleValues))
 	copy(newVar.ExampleValues, bv.ExampleValues)
 	return newVar
 }

@@ -30,6 +30,8 @@ func GetTemplate(name, version, dest string, templateWriter templatewriter.Templ
 		return nil, fmt.Errorf("template not found: %s", name)
 	}
 
+	template = template.DeepCopy()
+
 	if version == "" {
 		version = template.Config.DefaultVersion
 		log.Println("version not provided, using default version: ", version)
@@ -65,9 +67,6 @@ func (t *Template) Generate() error {
 		return fmt.Errorf("create workflow files: %w", err)
 	}
 
-	if err := generateTemplate(t); err != nil {
-		return err
-	}
 	return generateTemplate(t)
 }
 
@@ -99,10 +98,21 @@ func (t *Template) validate() error {
 	return nil
 }
 
+func (t *Template) DeepCopy() *Template {
+	return &Template{
+		Config:         t.Config.DeepCopy(),
+		templateFiles:  t.templateFiles,
+		templateWriter: t.templateWriter,
+		src:            t.src,
+		dest:           t.dest,
+		version:        t.version,
+	}
+}
+
 func generateTemplate(template *Template) error {
 	err := fs.WalkDir(template.templateFiles, template.src, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
-			return nil
+			return template.templateWriter.EnsureDirectory(strings.Replace(path, template.src, template.dest, 1))
 		}
 
 		if strings.EqualFold(d.Name(), "draft.yaml") {
@@ -110,7 +120,7 @@ func generateTemplate(template *Template) error {
 		}
 
 		if err := writeTemplate(template, path); err != nil {
-			return err
+			return fmt.Errorf("failed to write template %s: %w", path, err)
 		}
 
 		return nil
@@ -138,9 +148,20 @@ func writeTemplate(draftTemplate *Template, inputFile string) error {
 		return err
 	}
 
-	if err = draftTemplate.templateWriter.WriteFile(fmt.Sprintf("%s/%s", draftTemplate.dest, filepath.Base(inputFile)), buf.Bytes()); err != nil {
+	if err = draftTemplate.templateWriter.WriteFile(getOutputFileName(draftTemplate, inputFile), buf.Bytes()); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func getOutputFileName(draftTemplate *Template, inputFile string) string {
+	outputName := strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1)
+
+	fileName := filepath.Base(inputFile)
+	if overrideName, ok := draftTemplate.Config.FileNameOverrideMap[fileName]; ok {
+		return strings.Replace(outputName, fileName, overrideName, 1)
+	}
+
+	return outputName
 }

@@ -1,7 +1,6 @@
 package fixtures
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"os"
@@ -9,17 +8,9 @@ import (
 	"strings"
 )
 
-//go:embed pipelines/*
-var pipelines embed.FS
-
-//go:embed deployments/*
-var deployments embed.FS
-
 func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) error {
-	fullFixturePath := fmt.Sprintf("%s", fixturePath)
-
 	// Read the fixture content
-	fixtureContent, err := os.ReadFile(fullFixturePath)
+	fixtureContent, err := os.ReadFile(fixturePath)
 	if err != nil {
 		return fmt.Errorf("failed to read fixture: %w", err)
 	}

@@ -16,7 +16,7 @@ spec:
   metrics:
     - type: Resource
       resource:
-        name: {{.CPU}}
+        name: {{.RESOURCETYPE}}
         target:
           type: Utilization
           averageUtilization: {{.AVGUTILIZATION}}

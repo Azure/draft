@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
 	"github.com/google/uuid"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
@@ -190,12 +191,19 @@ func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 		},
 	}
 
-	_, err = roleAssignClient.CreateByID(ctx, fullAssignmentId, parameters, nil)
-	if err != nil {
-		return fmt.Errorf("creating role assignment: %w", err)
+	retries := 3
+	for i := 0; i < retries; i++ {
+		_, err = roleAssignClient.CreateByID(ctx, fullAssignmentId, parameters, nil)
+		if err == nil {
+			log.Debug("Role assigned successfully!")
+			return nil
+		}
+		if i == retries-1 || !strings.Contains(err.Error(), "PrincipalNotFound") {
+			return fmt.Errorf("creating role assignment: %w", err)
+		}
+		log.Debugf("Retrying role assignment... Attempt %d/%d", i+1, retries)
+		time.Sleep(5 * time.Second) // Retry delay
 	}
-
-	log.Debug("Role assigned successfully!")
 	return nil
 }
 

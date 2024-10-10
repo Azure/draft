@@ -51,7 +51,7 @@ func WriteDockerfileExample() error {
 	// Generate the dockerfile files
 	err = d.Generate()
 	if err != nil {
-		return fmt.Errorf("failed to generate manifest: %e", err)
+		return fmt.Errorf("failed to generate dockerfile: %e", err)
 	}
 
 	// Read written files from the file map

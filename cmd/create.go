@@ -19,12 +19,10 @@ import (
 	"github.com/Azure/draft/pkg/config"
 	dryrunpkg "github.com/Azure/draft/pkg/dryrun"
 	"github.com/Azure/draft/pkg/filematches"
-	"github.com/Azure/draft/pkg/languages"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
 )
 
 // ErrNoLanguageDetected is raised when `draft create` does not detect source
@@ -51,8 +49,6 @@ type createCmd struct {
 
 	createConfigPath string
 	createConfig     *CreateConfig
-
-	supportedLangs *languages.Languages
 
 	templateWriter           templatewriter.TemplateWriter
 	templateVariableRecorder config.TemplateVariableRecorder
@@ -151,7 +147,7 @@ func (cc *createCmd) run() error {
 
 // detectLanguage detects the language used in a project destination directory
 // It returns the DraftConfig for that language and the name of the language
-func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
+func (cc *createCmd) detectLanguage() (*handlers.Template, string, error) {
 	hasGo := false
 	hasGoMod := false
 	var langs []*linguist.Language
@@ -213,44 +209,48 @@ func (cc *createCmd) detectLanguage() (*config.DraftConfig, string, error) {
 		}
 	}
 
-	cc.supportedLangs = languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, cc.dest)
-
 	if cc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")
 		lowerLang := strings.ToLower(cc.createConfig.LanguageType)
-		langConfig := cc.supportedLangs.GetConfig(lowerLang)
-		if langConfig == nil {
-			return nil, "", ErrNoLanguageDetected
+		langDockerfileTemplate, err := handlers.GetTemplate(fmt.Sprintf("dockerfile-%s", lowerLang), "", cc.dest, cc.templateWriter)
+		if err != nil {
+			return nil, "", err
+		}
+		if langDockerfileTemplate == nil {
+			return nil, "", fmt.Errorf("could not find a template for %s", cc.createConfig.LanguageType)
 		}
 
-		return langConfig, lowerLang, nil
+		return langDockerfileTemplate, lowerLang, nil
 	}
 
 	for _, lang := range langs {
 		detectedLang := linguist.Alias(lang)
 		log.Infof("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
 		lowerLang := strings.ToLower(detectedLang.Language)
-		if cc.supportedLangs.ContainsLanguage(lowerLang) {
+		if handlers.IsValidTemplate(fmt.Sprintf("dockerfile-%s", lowerLang)) {
 			if lowerLang == "go" && hasGo && hasGoMod {
 				log.Debug("detected go and go module")
 				lowerLang = "gomodule"
 			}
-			langConfig := cc.supportedLangs.GetConfig(lowerLang)
-			return langConfig, lowerLang, nil
+			langDockerfileTemplate, err := handlers.GetTemplate(fmt.Sprintf("dockerfile-%s", lowerLang), "", cc.dest, cc.templateWriter)
+			if err != nil {
+				return nil, "", err
+			}
+			if langDockerfileTemplate == nil {
+				return nil, "", fmt.Errorf("could not find a template for detected language %s", detectedLang.Language)
+			}
+			return langDockerfileTemplate, lowerLang, nil
 		}
 		log.Infof("--> Could not find a pack for %s. Trying to find the next likely language match...", detectedLang.Language)
 	}
 	return nil, "", ErrNoLanguageDetected
 }
 
-func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLang string) error {
+func (cc *createCmd) generateDockerfile(dockerfileTemplate *handlers.Template, lowerLang string) error {
 	log.Info("--- Dockerfile Creation ---")
-	if cc.supportedLangs == nil {
-		return errors.New("supported languages were loaded incorrectly")
-	}
 
 	// Extract language-specific defaults from repo
-	extractedValues, err := cc.supportedLangs.ExtractDefaults(lowerLang, cc.repoReader)
+	extractedValues, err := dockerfileTemplate.ExtractDefaults(lowerLang, cc.repoReader)
 	if err != nil {
 		return err
 	}
@@ -258,15 +258,15 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	// Check for existing duplicate defaults
 	for k, v := range extractedValues {
 		variableExists := false
-		for i, variable := range langConfig.Variables {
+		for i, variable := range dockerfileTemplate.Config.Variables {
 			if k == variable.Name {
 				variableExists = true
-				langConfig.Variables[i].Default.Value = v
+				dockerfileTemplate.Config.Variables[i].Default.Value = v
 				break
 			}
 		}
 		if !variableExists {
-			langConfig.Variables = append(langConfig.Variables, &config.BuilderVar{
+			dockerfileTemplate.Config.Variables = append(dockerfileTemplate.Config.Variables, &config.BuilderVar{
 				Name: k,
 				Default: config.BuilderVarDefault{
 					Value: v,
@@ -276,25 +276,25 @@ func (cc *createCmd) generateDockerfile(langConfig *config.DraftConfig, lowerLan
 	}
 
 	if cc.createConfig.LanguageVariables == nil {
-		langConfig.VariableMapToDraftConfig(flagVariablesMap)
+		dockerfileTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
 
-		if err = prompts.RunPromptsFromConfigWithSkips(langConfig); err != nil {
+		if err = prompts.RunPromptsFromConfigWithSkips(dockerfileTemplate.Config); err != nil {
 			return err
 		}
 	} else {
-		err = validateConfigInputsToPrompts(langConfig, cc.createConfig.LanguageVariables)
+		err = validateConfigInputsToPrompts(dockerfileTemplate.Config, cc.createConfig.LanguageVariables)
 		if err != nil {
 			return err
 		}
 	}
 
 	if cc.templateVariableRecorder != nil {
-		for _, variable := range langConfig.Variables {
+		for _, variable := range dockerfileTemplate.Config.Variables {
 			cc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
-	if err = cc.supportedLangs.CreateDockerfileForLanguage(lowerLang, langConfig, cc.templateWriter); err != nil {
+	if err = dockerfileTemplate.Generate(); err != nil {
 		return fmt.Errorf("there was an error when creating the Dockerfile for language %s: %w", cc.createConfig.LanguageType, err)
 	}
 
@@ -363,7 +363,7 @@ func (cc *createCmd) createDeployment() error {
 	return deployTemplate.Generate()
 }
 
-func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang string) error {
+func (cc *createCmd) createFiles(detectedLangTempalte *handlers.Template, lowerLang string) error {
 	// does no further checks without file detection
 
 	if cc.dockerfileOnly && cc.deploymentOnly {
@@ -372,7 +372,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 
 	if cc.skipFileDetection {
 		if !cc.deploymentOnly {
-			err := cc.generateDockerfile(detectedLang, lowerLang)
+			err := cc.generateDockerfile(detectedLangTempalte, lowerLang)
 			if err != nil {
 				return err
 			}
@@ -412,7 +412,7 @@ func (cc *createCmd) createFiles(detectedLang *config.DraftConfig, lowerLang str
 	} else if hasDockerFile {
 		log.Info("--> Found Dockerfile in local directory, skipping Dockerfile creation...")
 	} else if !cc.deploymentOnly {
-		err := cc.generateDockerfile(detectedLang, lowerLang)
+		err := cc.generateDockerfile(detectedLangTempalte, lowerLang)
 		if err != nil {
 			return err
 		}

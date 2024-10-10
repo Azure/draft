@@ -7,8 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/languages"
-	"github.com/Azure/draft/template"
+	"github.com/Azure/draft/pkg/handlers"
 )
 
 type Format string
@@ -21,6 +20,10 @@ var supportedDeploymentTypes = [...]string{
 	"helm",
 	"kustomize",
 	"manifests",
+}
+
+var SupportedLanguages = []string{
+	"dockerfile",
 }
 
 type infoCmd struct {
@@ -61,15 +64,14 @@ func newInfoCmd() *cobra.Command {
 
 func (ic *infoCmd) run() error {
 	log.Debugf("getting supported languages")
-	l := languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, "")
+	supportedDockerfileTemplates := handlers.GetTemplatesByType(handlers.TemplateTypeDockerfile)
 
 	languagesInfo := make([]draftConfigInfo, 0)
-	for _, lang := range l.Names() {
-		langConfig := l.GetConfig(lang)
+	for _, template := range supportedDockerfileTemplates {
 		newConfig := draftConfigInfo{
-			Name:                  lang,
-			DisplayName:           langConfig.DisplayName,
-			VariableExampleValues: langConfig.GetVariableExampleValues(),
+			Name:                  template.Config.TemplateName,
+			DisplayName:           template.Config.DisplayName,
+			VariableExampleValues: template.Config.GetVariableExampleValues(),
 		}
 		languagesInfo = append(languagesInfo, newConfig)
 	}

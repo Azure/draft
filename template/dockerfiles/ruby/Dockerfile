@@ -1,6 +1,6 @@
-FROM ruby:{{.VERSION}}
-ENV PORT {{.PORT}}
-EXPOSE {{.PORT}}
+FROM ruby:{{ .Config.GetVariableValue "VERSION" }}
+ENV PORT {{ .Config.GetVariableValue "PORT" }}
+EXPOSE {{ .Config.GetVariableValue "PORT" }}
 RUN bundle config --global frozen 1
 
 WORKDIR /usr/src/app

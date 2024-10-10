@@ -15,6 +15,19 @@ import (
 
 var templateConfigs map[string]*Template
 
+type TemplateType string
+
+func (t TemplateType) String() string {
+	return string(t)
+}
+
+const (
+	TemplateTypeDeployment TemplateType = "deployment"
+	TemplateTypeDockerfile TemplateType = "dockerfile"
+	TemplateTypeManifests  TemplateType = "manifest"
+	TemplateTypeWorkflow   TemplateType = "workflow"
+)
+
 func init() {
 	if err := loadTemplates(); err != nil {
 		log.Fatalf("failed to init templates: %s", err.Error())
@@ -24,6 +37,21 @@ func init() {
 // GetTemplates returns all templates
 func GetTemplates() map[string]*Template {
 	return templateConfigs
+}
+
+func GetTemplatesByType(templateType TemplateType) map[string]*Template {
+	templates := make(map[string]*Template)
+	for name, template := range templateConfigs {
+		if template.Config.Type == templateType.String() {
+			templates[name] = template
+		}
+	}
+	return templates
+}
+
+func IsValidTemplate(templateName string) bool {
+	_, ok := templateConfigs[strings.ToLower(templateName)]
+	return ok
 }
 
 func loadTemplates() error {

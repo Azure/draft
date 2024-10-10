@@ -13,19 +13,23 @@ import (
 func TestCopyDirToFileMap(t *testing.T) {
 
 	templatewriter := &FileMapWriter{}
-	err := osutil.CopyDir(template.Dockerfiles, "dockerfiles/javascript", "/test/dir", &config.DraftConfig{
+	err := osutil.CopyDir(template.Addons, "addons/azure/webapp_routing", "/test/dir", &config.DraftConfig{
 		Variables: []*config.BuilderVar{
 			{
-				Name:  "PORT",
-				Value: "8080",
+				Name:  "ingress-tls-cert-keyvault-uri",
+				Value: "https://test.vault.azure.net/secrets/test-secret",
 			},
 			{
-				Name:  "VERSION",
-				Value: "14",
+				Name:  "ingress-use-osm-mtls",
+				Value: "true",
+			},
+			{
+				Name:  "ingress-host",
+				Value: "testhost.com",
 			},
 		},
 	}, templatewriter)
 	assert.Nil(t, err)
 	assert.NotNil(t, templatewriter.FileMap)
-	assert.NotNil(t, templatewriter.FileMap["/test/dir/Dockerfile"])
+	assert.NotNil(t, templatewriter.FileMap["/test/dir/ingress.yaml"])
 }

@@ -13,16 +13,15 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/languages"
+	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/linguist"
 	"github.com/Azure/draft/pkg/reporeader"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
 )
 
 func TestRun(t *testing.T) {
-	testCreateConfig := CreateConfig{LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}, DeployVariables: []UserInputs{{Name: "PORT", Value: "8080"}, {Name: "APPNAME", Value: "testingCreateCommand"}}}
-	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest"}
+	testCreateConfig := CreateConfig{LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}, DeployVariables: []UserInputs{{Name: "PORT", Value: "8080"}, {Name: "APPNAME", Value: "testingCreateCommand"}, {Name: "DOCKERFILENAME", Value: "Dockerfile"}}}
+	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest", "DOCKERFILENAME": "test.Dockerfile"}
 	mockCC := createCmd{
 		dest:           "./..",
 		createConfig:   &testCreateConfig,
@@ -199,7 +198,7 @@ func TestValidateConfigInputsToPromptsMissing(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) {
+func (mcc *createCmd) mockDetectLanguage() (*handlers.Template, string, error) {
 	hasGo := false
 	hasGoMod := false
 	var langs []*linguist.Language
@@ -227,12 +226,13 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		}
 	}
 
-	mcc.supportedLangs = languages.CreateLanguagesFromEmbedFS(template.Dockerfiles, mcc.dest)
-
 	if mcc.createConfig.LanguageType != "" {
 		log.Debug("using configuration language")
 		lowerLang := strings.ToLower(mcc.createConfig.LanguageType)
-		langConfig := mcc.supportedLangs.GetConfig(lowerLang)
+		langConfig, err := handlers.GetTemplate(fmt.Sprintf("dockerfile-%s", lowerLang), "", mcc.dest, mcc.templateWriter)
+		if err != nil {
+			return nil, "", err
+		}
 		if langConfig == nil {
 			return nil, "", ErrNoLanguageDetected
 		}
@@ -245,13 +245,19 @@ func (mcc *createCmd) mockDetectLanguage() (*config.DraftConfig, string, error) 
 		log.Infof("--> Draft detected %s (%f%%)\n", detectedLang.Language, detectedLang.Percent)
 		lowerLang := strings.ToLower(detectedLang.Language)
 
-		if mcc.supportedLangs.ContainsLanguage(lowerLang) {
+		if handlers.IsValidTemplate(fmt.Sprintf("dockerfile-%s", lowerLang)) {
 			if lowerLang == "go" && hasGo && hasGoMod {
 				log.Debug("detected go and go module")
 				lowerLang = "gomodule"
 			}
 
-			langConfig := mcc.supportedLangs.GetConfig(lowerLang)
+			langConfig, err := handlers.GetTemplate(fmt.Sprintf("dockerfile-%s", lowerLang), "", mcc.dest, mcc.templateWriter)
+			if err != nil {
+				return nil, "", err
+			}
+			if langConfig == nil {
+				return nil, "", ErrNoLanguageDetected
+			}
 			return langConfig, lowerLang, nil
 		}
 		log.Infof("--> Could not find a pack for %s. Trying to find the next likely language match...\n", detectedLang.Language)

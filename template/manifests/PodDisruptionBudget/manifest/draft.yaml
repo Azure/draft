@@ -6,14 +6,10 @@ variables:
     type: "string"
     kind: "resourceName"
     description: "the name of the application"
-    default:
-      value: "frontend"
   - name: "PARTOF"
     type: "string"
     kind: "part-of"
     description: "the label to identify which project the resource belong to"
-    default:
-      value: "online-store"
   - name: "GENERATORLABEL"
     type: "string"
     kind: "label"
@@ -22,28 +18,22 @@ variables:
       value: "draft"
   - name: "MINIMUMREPLICAS"
     type: "int"
-    kind: "replicas"
+    kind: "replicaCount"
     description: "specifies the minimum number of pod replicas that the deployment should have"
     default:
       value: 2
   - name: "MAXIMUMREPLICAS"
     type: "int"
-    kind: "replicas"
+    kind: "replicaCount"
     description: "defines the maximum number of pod replicas the deployment can scale to"
     default:
       value: 5
-  - name: "MEMORY"
-    type: "int"
-    kind: "resource"
-    description: "Specifies that the HPA will monitor memory for scaling (in Mi)"
+  - name: "RESOURCETYPE"
+    type: "string"
+    kind: "scalingResourceType"
+    description: "Specifies that the HPA will monitor cpu or memory for scaling"
     default:
-      value: 100
-  - name: "CPU"
-    type: "int"
-    kind: "resource"
-    description: "Specifies that the HPA will monitor CPU utilization for scaling (in m)"
-    default:
-      value: 100
+      value: "cpu"
   - name: "AVGUTILIZATION"
     type: "int"
     kind: "autoscaling"

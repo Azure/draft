@@ -1,0 +1,3 @@
+# files and directories to exclude from context
+Dockerfile
+_build

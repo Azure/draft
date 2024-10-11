@@ -1,2 +1,2 @@
-Dockerfile
+{{ .Config.GetVariableValue "DOCKERFILENAME" }}
 charts/

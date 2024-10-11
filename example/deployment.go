@@ -20,7 +20,7 @@ func WriteDeploymentFilesExample() error {
 	// Select the deployment type to generate the files for (must correspond to a directory in the template/deployments directory)
 	deploymentTemplateType := "deployment-manifests"
 
-	// Create a DraftConfig of inputs to the template (must correspond to the inputs in the template/deployments/<deploymentType>/draft.yaml files)
+	// Create a map of of inputs to the template (must correspond to the inputs in the template/deployments/<deploymentType>/draft.yaml files)
 	templateVars := map[string]string{
 		"PORT":           "8080",
 		"APPNAME":        "example-app",

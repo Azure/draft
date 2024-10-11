@@ -22,10 +22,6 @@ var supportedDeploymentTypes = [...]string{
 	"manifests",
 }
 
-var SupportedLanguages = []string{
-	"dockerfile",
-}
-
 type infoCmd struct {
 	format string
 	info   *draftInfo

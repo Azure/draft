@@ -2,6 +2,8 @@ language: gradle
 displayName: Gradle
 templateName: "dockerfile-gradle"
 description: "This template is used to create a Dockerfile for a Gradle application"
+versions: "0.0.1"
+defaultVersion: "0.0.1"
 type: "dockerfile"
 variables:
   - name: "PORT"
@@ -10,6 +12,7 @@ variables:
     default:
       value: "80"
     description: "the port exposed in the application"
+    versions: ">=0.0.1"
   - name: "BUILDERVERSION"
     type: "string"
     kind: "containerImageVersion"
@@ -17,6 +20,7 @@ variables:
       value: "jdk21"
     description: "the version of gradle used during the builder stage to generate the executable"
     exampleValues: ["jdk8", "jdk11", "jdk17", "jdk19", "jdk21"]
+    versions: ">=0.0.1"
   - name: "VERSION"
     type: "string"
     kind: "containerImageVersion"
@@ -24,3 +28,12 @@ variables:
       value: "21-jre"
     description: "the java version used by the application"
     exampleValues: ["11-jre", "17-jre", "19-jre", "21-jre"]
+    versions: ">=0.0.1"
+  - name: "DOCKERFILENAME"
+    type: "string"
+    kind: "dockerFileName"
+    default:
+      value: "Dockerfile"
+      disablePrompt: true
+    description: "the name of the Dockerfile"
+    versions: ">=0.0.1"

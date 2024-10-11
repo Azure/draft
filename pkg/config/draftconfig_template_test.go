@@ -35,6 +35,7 @@ var validVariableKinds = map[string]bool{
 	"containerImageName":     true,
 	"containerImageVersion":  true,
 	"dirPath":                true,
+	"dockerFileName":         true,
 	"filePath":               true,
 	"flag":                   true,
 	"helmChartOverrides":     true,

@@ -2,6 +2,8 @@ language: erlang
 displayName: Erlang
 templateName: "dockerfile-erlang"
 description: "This template is used to create a Dockerfile for an Erlang application"
+versions: "0.0.1"
+defaultVersion: "0.0.1"
 type: "dockerfile"
 variables:
   - name: "PORT"
@@ -10,6 +12,7 @@ variables:
     default:
       value: "80"
     description: "the port exposed in the application"
+    versions: ">=0.0.1"
   - name: "BUILDERVERSION"
     type: "string"
     kind: "containerImageVersion"
@@ -17,6 +20,7 @@ variables:
       value: "27.0-alpine"
     description: "the version of erlang used during the builder stage to generate the executable"
     exampleValues: ["27.0-alpine"]
+    versions: ">=0.0.1"
   - name: "VERSION"
     type: "string"
     kind: "containerImageVersion"
@@ -24,3 +28,12 @@ variables:
       value: "3.17"
     description: "the version of alpine used by the application"
     exampleValues: ["3.17"]
+    versions: ">=0.0.1"
+  - name: "DOCKERFILENAME"
+    type: "string"
+    kind: "dockerFileName"
+    default:
+      value: "Dockerfile"
+      disablePrompt: true
+    description: "the name of the Dockerfile"
+    versions: ">=0.0.1"

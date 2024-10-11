@@ -9,6 +9,8 @@ import (
 	tmpl "text/template"
 
 	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/handlers/variableextractors/defaults"
+	"github.com/Azure/draft/pkg/reporeader"
 	"github.com/Azure/draft/pkg/templatewriter"
 	log "github.com/sirupsen/logrus"
 )
@@ -107,6 +109,35 @@ func (t *Template) DeepCopy() *Template {
 		dest:           t.dest,
 		version:        t.version,
 	}
+}
+
+func (l *Template) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (map[string]string, error) {
+	extractors := []reporeader.VariableExtractor{
+		&defaults.PythonExtractor{},
+		&defaults.GradleExtractor{},
+	}
+	extractedValues := make(map[string]string)
+	if r == nil {
+		log.Debugf("no repo reader provided, returning empty list of defaults")
+		return extractedValues, nil
+	}
+	for _, extractor := range extractors {
+		if extractor.MatchesLanguage(lowerLang) {
+			newDefaults, err := extractor.ReadDefaults(r)
+			if err != nil {
+				return nil, fmt.Errorf("error reading defaults for language %s: %v", lowerLang, err)
+			}
+			for k, v := range newDefaults {
+				if _, ok := extractedValues[k]; ok {
+					log.Debugf("duplicate default %s for language %s with extractor %s", k, lowerLang, extractor.GetName())
+				}
+				extractedValues[k] = v
+				log.Debugf("extracted default %s=%s with extractor:%s", k, v, extractor.GetName())
+			}
+		}
+	}
+
+	return extractedValues, nil
 }
 
 func generateTemplate(template *Template) error {

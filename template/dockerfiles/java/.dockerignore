@@ -1,4 +1,4 @@
-Dockerfile
+{{ .Config.GetVariableValue "DOCKERFILENAME" }}
 charts/
 target/
 work/

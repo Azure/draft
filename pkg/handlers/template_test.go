@@ -289,6 +289,38 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"VERSION": "5.5",
 			},
 		},
+		{
+			name:            "valid azpipeline manifest deployment",
+			templateName:    "azure-pipeline-manifest",
+			fixturesBaseDir: "../fixtures/workflows/azurepipelines/manifest",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"ARMSERVICECONNECTION":   "testserviceconnection",
+				"AZURECONTAINERREGISTRY": "myacr.acr.io",
+				"CONTAINERNAME":          "myapp",
+				"CLUSTERRESOURCEGROUP":   "myrg",
+				"ACRRESOURCEGROUP":       "myrg",
+				"CLUSTERNAME":            "testcluster",
+			},
+		},
+		{
+			name:            "valid azpipeline kustomize deployment",
+			templateName:    "azure-pipeline-kustomize",
+			fixturesBaseDir: "../fixtures/workflows/azurepipelines/kustomize",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"ARMSERVICECONNECTION":   "testserviceconnection",
+				"AZURECONTAINERREGISTRY": "myacr.acr.io",
+				"CONTAINERNAME":          "myapp",
+				"CLUSTERRESOURCEGROUP":   "myrg",
+				"ACRRESOURCEGROUP":       "myrg",
+				"CLUSTERNAME":            "testcluster",
+			},
+		},
 	}
 
 	for _, tt := range tests {

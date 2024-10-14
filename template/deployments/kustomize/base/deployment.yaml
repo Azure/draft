@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{.APPNAME}}
+  name: {{ .Config.GetVariableValue "APPNAME" }}
   labels:
-    app: {{.APPNAME}}
-    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
-  namespace: {{.NAMESPACE}}
+    app: {{ .Config.GetVariableValue "APPNAME"}}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
+  namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{.APPNAME}}
+      app: {{ .Config.GetVariableValue "APPNAME" }}
   template:
     metadata:
       labels:
-        app: {{.APPNAME}}
+        app: {{ .Config.GetVariableValue "APPNAME" }}
     spec:
       containers:
-        - name: {{.APPNAME}}
-          image: {{.IMAGENAME}}:{{.IMAGETAG}}
+        - name: {{.Config.GetVariableValue "APPNAME" }}
+          image: {{ .Config.GetVariableValue "IMAGENAME" }}:{{ .Config.GetVariableValue "IMAGETAG" }}
           imagePullPolicy: Always
           ports:
-            - containerPort: {{.PORT}}
+            - containerPort: {{ .Config.GetVariableValue "PORT" }}

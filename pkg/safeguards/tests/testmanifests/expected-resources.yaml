@@ -35,11 +35,6 @@ data:
     ingress:
       enabled: true
       hostname: example.com
-      annotations: {}
+      annotations:
       tls: false
-      tlsSecret: ""
-
-
-
-
-
+      tlsSecret:

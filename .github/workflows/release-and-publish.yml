@@ -18,7 +18,7 @@ jobs:
     steps:
     # Checkout code
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     # Read changelog and read versions etc.
     - name: Check version is mentioned in Changelog.md
       id: changelog_reader
@@ -36,12 +36,12 @@ jobs:
     - name: Make Release Dir
       run: mkdir bin
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: 1.22
     # Check if the newest tag already exists
     - name: Check if tag exist
-      uses: mukunku/tag-exists-action@5dfe2bf779fe5259360bb10b2041676713dcc8a3 # v1.1.0
+      uses: mukunku/tag-exists-action@bdad1eaa119ce71b150b952c97351c75025c06a9 # v1.6.0
       id: check-tag-exists
       with: 
         tag:  "v${{ steps.changelog_reader.outputs.version }}"
@@ -54,7 +54,7 @@ jobs:
     # If the tag already exists, we don't upload release artifacts
     - name: Update Draft Release Body
       if: ${{ steps.check-tag-exists.outputs.exists == 'true' }}
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
@@ -64,7 +64,7 @@ jobs:
     # Create Release with artifacts
     - name: Create Draft Release
       if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:

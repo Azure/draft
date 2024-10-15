@@ -13,10 +13,11 @@ import (
 var allTemplates = map[string]*DraftConfig{}
 
 var validTemplateTypes = map[string]bool{
-	"manifest":   true,
-	"dockerfile": true,
-	"workflow":   true,
-	"deployment": true,
+	"manifest":            true,
+	"dockerfile":          true,
+	"workflow":            true,
+	"deployment":          true,
+	"podDisruptionBudget": true,
 }
 
 var validVariableTypes = map[string]bool{
@@ -46,6 +47,11 @@ var validVariableKinds = map[string]bool{
 	"port":                   true,
 	"repositoryBranch":       true,
 	"workflowName":           true,
+	"resourceName":           true,
+	"part-of":                true,
+	"replicaCount":           true,
+	"scalingResourceType":    true,
+	"autoscaling":            true,
 }
 
 /*

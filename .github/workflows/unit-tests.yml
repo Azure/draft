@@ -1,10 +1,7 @@
 name: draft Unit Tests
 on:
   pull_request:
-    paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
+    branches: [ main ]
 
 jobs:
   build:

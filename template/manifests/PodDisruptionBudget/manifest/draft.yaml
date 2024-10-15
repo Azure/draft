@@ -4,11 +4,11 @@ type: "podDisruptionBudget"
 variables:
   - name: "APPNAME"
     type: "string"
-    kind: "resourceName"
+    kind: "kubernetesResourceName"
     description: "the name of the application"
   - name: "PARTOF"
     type: "string"
-    kind: "part-of"
+    kind: "label"
     description: "the label to identify which project the resource belong to"
   - name: "GENERATORLABEL"
     type: "string"
@@ -36,7 +36,7 @@ variables:
       value: "cpu"
   - name: "AVGUTILIZATION"
     type: "int"
-    kind: "autoscaling"
+    kind: "scalingResourceUtilization"
     description: "specifies the average utilization for the monitored resource, triggering scaling when exceeded"
     default:
       value: 80

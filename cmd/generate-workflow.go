@@ -8,11 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/Azure/draft/pkg/workflows"
-	"github.com/Azure/draft/template"
 )
 
 type generateWorkflowCmd struct {
@@ -64,7 +64,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	if gwc.deployType == "" {
 		selection := &promptui.Select{
 			Label: "Select k8s Deployment Type",
-			Items: []string{"helm", "kustomize", "manifests"},
+			Items: []string{"helm", "kustomize", "manifest"},
 		}
 
 		_, gwc.deployType, err = selection.Run()
@@ -73,23 +73,25 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		}
 	}
 
-	workflow := workflows.CreateWorkflowsFromEmbedFS(template.Workflows, gwc.dest)
-	draftConfig, err := workflow.GetConfig(gwc.deployType)
+	t, err := handlers.GetTemplate(fmt.Sprintf("github-workflow-%s", gwc.deployType), "", gwc.dest, gwc.templateWriter)
 	if err != nil {
-		return fmt.Errorf("get config: %w", err)
+		return fmt.Errorf("failed to get template: %e", err)
+	}
+	if t == nil {
+		return fmt.Errorf("template is nil")
 	}
 
-	draftConfig.VariableMapToDraftConfig(flagVariablesMap)
+	t.Config.VariableMapToDraftConfig(flagVariablesMap)
 
-	if err = prompts.RunPromptsFromConfigWithSkips(draftConfig); err != nil {
+	if err = prompts.RunPromptsFromConfigWithSkips(t.Config); err != nil {
 		return err
 	}
 
-	if err := workflows.UpdateProductionDeployments(gwc.deployType, gwc.dest, draftConfig, gwc.templateWriter); err != nil {
+	if err := workflows.UpdateProductionDeployments(gwc.deployType, gwc.dest, t.Config, gwc.templateWriter); err != nil {
 		return fmt.Errorf("update production deployments: %w", err)
 	}
 
-	return workflow.CreateWorkflowFiles(gwc.deployType, draftConfig, gwc.templateWriter)
+	return t.Generate()
 }
 
 func flagVariablesToMap(flagVariables []string) map[string]string {

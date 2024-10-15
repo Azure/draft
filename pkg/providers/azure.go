@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/google/uuid"
 	"os/exec"
-	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/spinner"
 
 	bo "github.com/cenkalti/backoff/v4"
@@ -184,26 +183,21 @@ func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 	fullAssignmentId := fmt.Sprintf("/%s/providers/Microsoft.Authorization/roleAssignments/%s", scope, raUid)
 	fullDefinitionId := fmt.Sprintf("/providers/Microsoft.Authorization/roleDefinitions/%s", roleId)
 
+	principalType := armauthorization.PrincipalTypeServicePrincipal
 	parameters := armauthorization.RoleAssignmentCreateParameters{
 		Properties: &armauthorization.RoleAssignmentProperties{
 			PrincipalID:      &objectID,
 			RoleDefinitionID: &fullDefinitionId,
+			PrincipalType:    &principalType,
 		},
 	}
 
-	retries := 3
-	for i := 0; i < retries; i++ {
-		_, err = roleAssignClient.CreateByID(ctx, fullAssignmentId, parameters, nil)
-		if err == nil {
-			log.Debug("Role assigned successfully!")
-			return nil
-		}
-		if i == retries-1 || !strings.Contains(err.Error(), "PrincipalNotFound") {
-			return fmt.Errorf("creating role assignment: %w", err)
-		}
-		log.Debugf("Retrying role assignment... Attempt %d/%d", i+1, retries)
-		time.Sleep(5 * time.Second) // Retry delay
+	_, err = roleAssignClient.CreateByID(ctx, fullAssignmentId, parameters, nil)
+	if err != nil {
+		return fmt.Errorf("creating role assignment: %w", err)
 	}
+
+	log.Debug("Role assigned successfully!")
 	return nil
 }
 

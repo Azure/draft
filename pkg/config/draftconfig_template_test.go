@@ -13,11 +13,10 @@ import (
 var allTemplates = map[string]*DraftConfig{}
 
 var validTemplateTypes = map[string]bool{
-	"manifest":            true,
-	"dockerfile":          true,
-	"workflow":            true,
-	"deployment":          true,
-	"podDisruptionBudget": true,
+	"manifest":   true,
+	"dockerfile": true,
+	"workflow":   true,
+	"deployment": true,
 }
 
 var validVariableTypes = map[string]bool{

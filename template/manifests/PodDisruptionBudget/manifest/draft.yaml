@@ -40,3 +40,9 @@ variables:
     description: "specifies the average utilization for the monitored resource, triggering scaling when exceeded"
     default:
       value: 80
+  - name: "MAXUNAVAILABLE"
+    type: "int"
+    kind: "resourceLimit"
+    description: "specifies the maximum number of pods that can be unavailable during a disruption, such as a pod eviction"
+    default:
+      value: 1

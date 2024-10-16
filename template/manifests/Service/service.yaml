@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.APPNAME}}
+  labels:
+    app.kubernetes.io/name: {{.APPNAME}}
+    app.kubernetes.io/part-of: {{.PARTOF}}
+    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{.APPNAME}}
+  ports:
+    - protocol: TCP
+      port: {{.PORT}}
+      targetPort: {{.TARGETPORT}}

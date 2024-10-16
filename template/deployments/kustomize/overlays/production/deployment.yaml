@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{.APPNAME}}
+  name: {{ .Config.GetVariableValue "APPNAME" }}
   labels:
-    app: {{.APPNAME}}
-    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
-  namespace: {{.NAMESPACE}}
+    app: {{ .Config.GetVariableValue "APPNAME" }}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL"}}
+  namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
 spec:
   selector:
     matchLabels:
-      app: {{.APPNAME}}
+      app: {{ .Config.GetVariableValue "APPNAME" }}
   template:
     spec:
       containers:
-        - name: {{.APPNAME}}
-          image: {{.IMAGENAME}}:{{.IMAGETAG}}
+        - name: {{ .Config.GetVariableValue "APPNAME" }}
+          image: {{ .Config.GetVariableValue "IMAGENAME" }}:{{ .Config.GetVariableValue "IMAGETAG" }}

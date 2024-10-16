@@ -9,6 +9,8 @@ import (
 	tmpl "text/template"
 
 	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/handlers/variableextractors/defaults"
+	"github.com/Azure/draft/pkg/reporeader"
 	"github.com/Azure/draft/pkg/templatewriter"
 	log "github.com/sirupsen/logrus"
 )
@@ -29,6 +31,8 @@ func GetTemplate(name, version, dest string, templateWriter templatewriter.Templ
 	if !ok {
 		return nil, fmt.Errorf("template not found: %s", name)
 	}
+
+	template = template.DeepCopy()
 
 	if version == "" {
 		version = template.Config.DefaultVersion
@@ -65,9 +69,6 @@ func (t *Template) Generate() error {
 		return fmt.Errorf("create workflow files: %w", err)
 	}
 
-	if err := generateTemplate(t); err != nil {
-		return err
-	}
 	return generateTemplate(t)
 }
 
@@ -99,10 +100,50 @@ func (t *Template) validate() error {
 	return nil
 }
 
+func (t *Template) DeepCopy() *Template {
+	return &Template{
+		Config:         t.Config.DeepCopy(),
+		templateFiles:  t.templateFiles,
+		templateWriter: t.templateWriter,
+		src:            t.src,
+		dest:           t.dest,
+		version:        t.version,
+	}
+}
+
+func (l *Template) ExtractDefaults(lowerLang string, r reporeader.RepoReader) (map[string]string, error) {
+	extractors := []reporeader.VariableExtractor{
+		&defaults.PythonExtractor{},
+		&defaults.GradleExtractor{},
+	}
+	extractedValues := make(map[string]string)
+	if r == nil {
+		log.Debugf("no repo reader provided, returning empty list of defaults")
+		return extractedValues, nil
+	}
+	for _, extractor := range extractors {
+		if extractor.MatchesLanguage(lowerLang) {
+			newDefaults, err := extractor.ReadDefaults(r)
+			if err != nil {
+				return nil, fmt.Errorf("error reading defaults for language %s: %v", lowerLang, err)
+			}
+			for k, v := range newDefaults {
+				if _, ok := extractedValues[k]; ok {
+					log.Debugf("duplicate default %s for language %s with extractor %s", k, lowerLang, extractor.GetName())
+				}
+				extractedValues[k] = v
+				log.Debugf("extracted default %s=%s with extractor:%s", k, v, extractor.GetName())
+			}
+		}
+	}
+
+	return extractedValues, nil
+}
+
 func generateTemplate(template *Template) error {
 	err := fs.WalkDir(template.templateFiles, template.src, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
-			return nil
+			return template.templateWriter.EnsureDirectory(strings.Replace(path, template.src, template.dest, 1))
 		}
 
 		if strings.EqualFold(d.Name(), "draft.yaml") {
@@ -110,7 +151,7 @@ func generateTemplate(template *Template) error {
 		}
 
 		if err := writeTemplate(template, path); err != nil {
-			return err
+			return fmt.Errorf("failed to write template %s: %w", path, err)
 		}
 
 		return nil
@@ -138,9 +179,20 @@ func writeTemplate(draftTemplate *Template, inputFile string) error {
 		return err
 	}
 
-	if err = draftTemplate.templateWriter.WriteFile(fmt.Sprintf("%s/%s", draftTemplate.dest, filepath.Base(inputFile)), buf.Bytes()); err != nil {
+	if err = draftTemplate.templateWriter.WriteFile(getOutputFileName(draftTemplate, inputFile), buf.Bytes()); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func getOutputFileName(draftTemplate *Template, inputFile string) string {
+	outputName := strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1)
+
+	fileName := filepath.Base(inputFile)
+	if overrideName, ok := draftTemplate.Config.FileNameOverrideMap[fileName]; ok {
+		return strings.Replace(outputName, fileName, overrideName, 1)
+	}
+
+	return outputName
 }

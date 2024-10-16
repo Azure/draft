@@ -85,6 +85,19 @@ func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {
 	return nil, fmt.Errorf("variable %s not found", name)
 }
 
+func (d *DraftConfig) GetVariableValue(name string) (string, error) {
+	for _, variable := range d.Variables {
+		if variable.Name == name {
+			if variable.Value == "" {
+				return "", fmt.Errorf("variable %s has no value", name)
+			}
+			return variable.Value, nil
+		}
+	}
+
+	return "", fmt.Errorf("variable %s not found", name)
+}
+
 func (d *DraftConfig) SetVariable(name, value string) {
 	if variable, err := d.GetVariable(name); err != nil {
 		d.Variables = append(d.Variables, &BuilderVar{
@@ -127,6 +140,7 @@ func (d *DraftConfig) ApplyDefaultVariables() error {
 	return nil
 }
 
+// ApplyDefaultVariablesForVersion will apply the defaults to variables that are not already set for a specific template version
 func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 	v, err := semver.Parse(version)
 	if err != nil {
@@ -209,6 +223,52 @@ func (d *DraftConfig) VariableMapToDraftConfig(flagVariablesMap map[string]strin
 		log.Debugf("flag variable %s=%s", flagName, flagValue)
 		d.SetVariable(flagName, flagValue)
 	}
+}
+
+// SetFileNameOverride sets the filename override for a specific file
+func (d *DraftConfig) SetFileNameOverride(input, override string) {
+	if d.FileNameOverrideMap == nil {
+		d.FileNameOverrideMap = make(map[string]string)
+	}
+	d.FileNameOverrideMap[input] = override
+}
+
+func (d *DraftConfig) DeepCopy() *DraftConfig {
+	newConfig := &DraftConfig{
+		TemplateName:        d.TemplateName,
+		DisplayName:         d.DisplayName,
+		Description:         d.Description,
+		Type:                d.Type,
+		Versions:            d.Versions,
+		DefaultVersion:      d.DefaultVersion,
+		Variables:           make([]*BuilderVar, len(d.Variables)),
+		FileNameOverrideMap: make(map[string]string),
+	}
+	for i, variable := range d.Variables {
+		newConfig.Variables[i] = variable.DeepCopy()
+	}
+
+	for k, v := range d.FileNameOverrideMap {
+		newConfig.FileNameOverrideMap[k] = v
+	}
+
+	return newConfig
+}
+
+func (bv *BuilderVar) DeepCopy() *BuilderVar {
+	newVar := &BuilderVar{
+		Name:          bv.Name,
+		Default:       bv.Default,
+		Description:   bv.Description,
+		Type:          bv.Type,
+		Kind:          bv.Kind,
+		Value:         bv.Value,
+		Versions:      bv.Versions,
+		ExampleValues: make([]string, len(bv.ExampleValues)),
+	}
+
+	copy(newVar.ExampleValues, bv.ExampleValues)
+	return newVar
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs

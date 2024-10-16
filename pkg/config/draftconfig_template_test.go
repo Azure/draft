@@ -49,6 +49,7 @@ var validVariableKinds = map[string]bool{
 	"replicaCount":               true,
 	"scalingResourceType":        true,
 	"scalingResourceUtilization": true,
+	"resourceLimit":              true,
 }
 
 /*

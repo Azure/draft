@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{.APPNAME}}
+  labels:
+    app.kubernetes.io/name: {{.APPNAME}}
+    app.kubernetes.io/part-of: {{.PARTOF}}
+    kubernetes.azure.com/generator: {{.GENERATORLABEL}}
+spec:
+  maxUnavailable: {{.MAXUNAVAILABLE}}
+  selector:
+    matchLabels:
+      app: {{.APPNAME}}

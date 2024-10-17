@@ -13,7 +13,7 @@ import (
 func TestCopyDirToFileMap(t *testing.T) {
 
 	templatewriter := &FileMapWriter{}
-	err := osutil.CopyDir(template.Addons, "addons/azure/webapp_routing", "/test/dir", &config.DraftConfig{
+	err := osutil.CopyDir(template.Templates, "addons/azure/webapp_routing", "/test/dir", &config.DraftConfig{
 		Variables: []*config.BuilderVar{
 			{
 				Name:  "ingress-tls-cert-keyvault-uri",

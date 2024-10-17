@@ -7,10 +7,7 @@ go-generate:
 	rm -r ./pkg/deployments/deployTypes; \
 	rm -r ./pkg/workflows/workflows; \
 	rm -r ./pkg/addons/addons; \
-	GO111MODULE=on go generate ./pkg/languages/...; \
-	GO111MODULE=on go generate ./pkg/deployments/...; \
 	GO111MODULE=on go generate ./pkg/workflows/...; \
-	GO111MODULE=on go generate ./pkg/addons/...;
 
 .PHONY: test
 test: run-unit-tests run-e2e-tests-local

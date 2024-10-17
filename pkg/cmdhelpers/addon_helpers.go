@@ -1,65 +1,77 @@
-package addons
+package cmdhelpers
 
 import (
 	"errors"
 	"fmt"
-	"path"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
-	"helm.sh/helm/v3/pkg/chart/loader"
-	"sigs.k8s.io/kustomize/api/krusty"
-	"sigs.k8s.io/kustomize/api/types"
-	"sigs.k8s.io/kustomize/kyaml/filesys"
-	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	"github.com/Azure/draft/pkg/config"
 	"github.com/Azure/draft/pkg/consts"
 	"github.com/Azure/draft/pkg/filematches"
+	"github.com/Azure/draft/pkg/prompts"
+	log "github.com/sirupsen/logrus"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"sigs.k8s.io/kustomize/api/filesys"
+	"sigs.k8s.io/kustomize/api/krusty"
+	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
-
-// AddonConfig is a struct that extends the base DraftConfig to allow for the Referencing previously generated
-// k8s objects. This allows an addon creator to reference pre-entered data from the deployment files.
-type AddonConfig struct {
-	*config.DraftConfig `yaml:",inline"`
-	ReferenceComponents map[string][]referenceResource `yaml:"references"`
-
-	deployType string
-}
 
 type referenceResource struct {
 	Name string
 	Path string
 }
 
-type Reference interface {
-	GetReferenceVariables([]referenceResource) map[string]string
+var ReferenceResources map[string][]referenceResource = map[string][]referenceResource{
+	"service": {
+		{Name: "namespace", Path: "metadata.namespace"},
+		{Name: "name", Path: "metadata.name"},
+		{Name: "service-port", Path: "spec.ports.port"},
+	},
 }
 
-func (ac *AddonConfig) getDeployType(dest string) (string, error) {
-	if ac.deployType != "" {
-		return ac.deployType, nil
+func PromptAddonValues(dest string, addonConfig *config.DraftConfig) error {
+	err := prompts.RunPromptsFromConfigWithSkips(addonConfig)
+	if err != nil {
+		return err
 	}
+	log.Debug("got user inputs")
+
+	deployType, err := getDeployType(dest)
+	if err != nil {
+		return err
+	}
+
+	referenceMap, err := GetReferenceValueMap(dest, deployType)
+	if err != nil {
+		return err
+	}
+	log.Debug("got reference map")
+	// merge maps
+	for refName, refVal := range referenceMap {
+		// check for key collision
+		if _, err := addonConfig.GetVariable(refName); err == nil {
+			return errors.New("variable name collision between references and DraftConfig")
+		}
+		if strings.Contains(strings.ToLower(refName), "namespace") && refVal == "" {
+			refVal = "default" //hack here to have explicit namespacing, probably a better way to do this
+		}
+		addonConfig.SetVariable(refName, refVal)
+	}
+
+	return nil
+}
+
+func getDeployType(dest string) (string, error) {
 	deploymentType, err := filematches.FindDraftDeploymentFiles(dest)
 	log.Debugf("found deployment type: %s", deploymentType)
 	return deploymentType, err
 }
 
-func (ac *AddonConfig) GetAddonDestPath(dest string) (string, error) {
-	deployType, err := ac.getDeployType(dest)
-	if err != nil {
-		return "", err
-	}
-	return path.Join(dest, consts.DeploymentFilePaths[deployType]), err
-}
-
-// GetReferenceValueMap extracts k8s object values into a mapping of template strings to k8s object value.
-func (ac *AddonConfig) GetReferenceValueMap(dest string) (map[string]string, error) {
+func GetReferenceValueMap(deployType, dest string) (map[string]string, error) {
 	referenceMap := make(map[string]string)
-
-	deployType, err := ac.getDeployType(dest)
-
-	for referenceName, referenceResources := range ac.ReferenceComponents {
+	var err error
+	for referenceName, referenceResources := range ReferenceResources {
 		switch deployType {
 		case "helm":
 			if err = extractHelmValuesToMap(referenceName, dest, referenceResources, referenceMap); err != nil {
@@ -91,7 +103,7 @@ func extractHelmValuesToMap(referenceName, dest string, references []referenceRe
 	for _, reference := range references {
 		referenceMap[reference.Name] =
 			strings.ReplaceAll(
-				consts.HelmReferencePathMapping[referenceName][reference.Path], "{{APPNAME}}", chart.Name())
+				consts.HelmReferencePathMapping[referenceName][reference.Path], ".Config.GetVariableValue \"APPNAME\"", chart.Name())
 	}
 
 	return nil
@@ -125,7 +137,7 @@ func extractNativeRefMap(referenceNodes []*yaml.RNode, referenceName string, ref
 			//hack for default namespace
 			refStr = "default"
 		} else if refStr == "" {
-			return errors.New(fmt.Sprintf("referenceResource %s not found", reference.Name))
+			return fmt.Errorf("referenceResource %s not found", reference.Name)
 		}
 
 		referenceMap[reference.Name] = refStr

@@ -10,18 +10,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/addons"
+	"github.com/Azure/draft/pkg/cmdhelpers"
 	"github.com/Azure/draft/pkg/config"
 	dryrunpkg "github.com/Azure/draft/pkg/dryrun"
+	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/templatewriter"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
 )
 
 type updateCmd struct {
 	dest                     string
-	provider                 string
-	addon                    string
 	flagVariables            []string
 	templateWriter           templatewriter.TemplateWriter
 	addonFS                  embed.FS
@@ -48,8 +46,6 @@ func newUpdateCmd() *cobra.Command {
 	}
 	f := cmd.Flags()
 	f.StringVarP(&uc.dest, "destination", "d", ".", "specify the path to the project directory")
-	f.StringVarP(&uc.provider, "provider", "p", "azure", "cloud provider")
-	f.StringVarP(&uc.addon, "addon", "a", "", "addon name")
 	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable ingress-tls-cert-keyvault-uri=test.uri ingress-host=host)")
 
 	uc.templateWriter = &writers.LocalFSWriter{}
@@ -60,40 +56,37 @@ func newUpdateCmd() *cobra.Command {
 func (uc *updateCmd) run() error {
 	flagVariablesMap = flagVariablesToMap(uc.flagVariables)
 
-	if uc.addon == "" {
-		addon, err := addons.PromptAddon(template.Addons, uc.provider)
-		if err != nil {
-			return err
-		}
-		uc.addon = addon
+	if dryRun {
+		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
+		uc.templateVariableRecorder = dryRunRecorder
+		uc.templateWriter = dryRunRecorder
 	}
 
-	addonConfig, err := addons.GetAddonConfig(template.Addons, uc.provider, uc.addon)
+	ingressTemplate, err := handlers.GetTemplate("app-routing-ingress", "", uc.dest, uc.templateWriter)
 	if err != nil {
+		log.Errorf("error getting ingress template: %s", err.Error())
 		return err
 	}
-
-	if addonConfig.DraftConfig == nil {
+	if ingressTemplate == nil {
 		return errors.New("DraftConfig is nil")
-	} else {
-		addonConfig.DraftConfig.VariableMapToDraftConfig(flagVariablesMap)
 	}
 
-	err = addons.PromptAddonValues(uc.dest, &addonConfig)
+	err = cmdhelpers.PromptAddonValues(uc.dest, ingressTemplate.Config)
 	if err != nil {
 		return err
 	}
 
 	if dryRun {
-		dryRunRecorder = dryrunpkg.NewDryRunRecorder()
-		uc.templateVariableRecorder = dryRunRecorder
-		uc.templateWriter = dryRunRecorder
-		for _, variable := range addonConfig.DraftConfig.Variables {
+		for _, variable := range ingressTemplate.Config.Variables {
 			uc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
-	err = addons.GenerateAddon(template.Addons, uc.provider, uc.addon, uc.dest, addonConfig, uc.templateWriter)
+	err = ingressTemplate.Generate()
+	if err != nil {
+		log.Errorf("error generating ingress template: %s", err.Error())
+		return err
+	}
 
 	if dryRun {
 		dryRunText, err := json.MarshalIndent(dryRunRecorder.DryRunInfo, "", TWO_SPACES)

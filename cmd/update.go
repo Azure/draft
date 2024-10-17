@@ -64,7 +64,13 @@ func (uc *updateCmd) run() error {
 		uc.templateWriter = dryRunRecorder
 	}
 
-	ingressTemplate, err := handlers.GetTemplate("app-routing-ingress", "", uc.dest, uc.templateWriter)
+	updatedDest, err := cmdhelpers.GetAddonDestPath(uc.dest)
+	if err != nil {
+		log.Errorf("error getting addon destination path: %s", err.Error())
+		return err
+	}
+
+	ingressTemplate, err := handlers.GetTemplate("app-routing-ingress", "", updatedDest, uc.templateWriter)
 	if err != nil {
 		log.Errorf("error getting ingress template: %s", err.Error())
 		return err

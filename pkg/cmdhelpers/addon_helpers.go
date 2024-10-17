@@ -3,6 +3,7 @@ package cmdhelpers
 import (
 	"errors"
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/Azure/draft/pkg/config"
@@ -60,6 +61,14 @@ func PromptAddonValues(dest string, addonConfig *config.DraftConfig) error {
 	}
 
 	return nil
+}
+
+func GetAddonDestPath(dest string) (string, error) {
+	deployType, err := getDeployType(dest)
+	if err != nil {
+		return "", err
+	}
+	return path.Join(dest, consts.DeploymentFilePaths[deployType]), err
 }
 
 func getDeployType(dest string) (string, error) {

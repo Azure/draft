@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,7 +21,6 @@ type updateCmd struct {
 	dest                     string
 	flagVariables            []string
 	templateWriter           templatewriter.TemplateWriter
-	addonFS                  embed.FS
 	templateVariableRecorder config.TemplateVariableRecorder
 }
 

@@ -22,17 +22,24 @@ variables:
   - name: "service-name"
     type: "string"
     kind: "kubernetesResourceName"
+    default:
+      disablePrompt: true
+      value: "service"
     description: "specify the name of the service this points to"
     versions: ">=0.0.1"
   - name: "service-namespace"
     type: "string"
     kind: "kubernetesNamespace"
+    default:
+      disablePrompt: true
+      value: "namespace"
     description: "specify the namespace for the ingress"
     versions: ">=0.0.1"
   - name: "service-port"
     type: "int"
     kind: "port"
     default:
+      disablePrompt: true
       value: 80
     description: "the port exposed in the service"
     versions: ">=0.0.1"

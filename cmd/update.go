@@ -19,6 +19,8 @@ import (
 
 type updateCmd struct {
 	dest                     string
+	provider                 string
+	addon                    string
 	flagVariables            []string
 	templateWriter           templatewriter.TemplateWriter
 	templateVariableRecorder config.TemplateVariableRecorder
@@ -44,6 +46,8 @@ func newUpdateCmd() *cobra.Command {
 	}
 	f := cmd.Flags()
 	f.StringVarP(&uc.dest, "destination", "d", ".", "specify the path to the project directory")
+	f.StringVarP(&uc.provider, "provider", "p", "azure", "cloud provider")
+	f.StringVarP(&uc.addon, "addon", "a", "", "addon name")
 	f.StringArrayVarP(&uc.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable ingress-tls-cert-keyvault-uri=test.uri ingress-host=host)")
 
 	uc.templateWriter = &writers.LocalFSWriter{}

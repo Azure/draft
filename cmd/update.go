@@ -69,6 +69,8 @@ func (uc *updateCmd) run() error {
 		return errors.New("DraftConfig is nil")
 	}
 
+	ingressTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
+
 	err = cmdhelpers.PromptAddonValues(uc.dest, ingressTemplate.Config)
 	if err != nil {
 		return err

@@ -32,7 +32,7 @@ variables:
     kind: "kubernetesNamespace"
     default:
       disablePrompt: true
-      value: "namespace"
+      value: "default"
     description: "specify the namespace for the ingress"
     versions: ">=0.0.1"
   - name: "service-port"

@@ -1,7 +1,6 @@
 package cmdhelpers
 
 import (
-	"errors"
 	"fmt"
 	"path"
 	"strings"
@@ -25,8 +24,8 @@ type referenceResource struct {
 
 var ReferenceResources map[string][]referenceResource = map[string][]referenceResource{
 	"service": {
-		{Name: "namespace", Path: "metadata.namespace"},
-		{Name: "name", Path: "metadata.name"},
+		{Name: "service-namespace", Path: "metadata.namespace"},
+		{Name: "service-name", Path: "metadata.name"},
 		{Name: "service-port", Path: "spec.ports.port"},
 	},
 }
@@ -50,10 +49,6 @@ func PromptAddonValues(dest string, addonConfig *config.DraftConfig) error {
 	log.Debug("got reference map")
 	// merge maps
 	for refName, refVal := range referenceMap {
-		// check for key collision
-		if _, err := addonConfig.GetVariable(refName); err == nil {
-			return errors.New("variable name collision between references and DraftConfig")
-		}
 		if strings.Contains(strings.ToLower(refName), "namespace") && refVal == "" {
 			refVal = "default" //hack here to have explicit namespacing, probably a better way to do this
 		}

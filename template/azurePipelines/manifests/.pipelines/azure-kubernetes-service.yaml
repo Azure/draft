@@ -2,22 +2,22 @@
 # Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service cluster
 
 variables:
-  armServiceConnection: {{ARMSERVICECONNECTION}}
-  azureContainerRegistry: {{AZURECONTAINERREGISTRY}}
-  containerName: {{CONTAINERNAME}}
-  clusterRg: {{CLUSTERRESOURCEGROUP}}
-  acrRg: {{ACRRESOURCEGROUP}}
-  clusterName: {{CLUSTERNAME}}
-  manifestPath: {{MANIFESTPATH}}
-  namespace: {{NAMESPACE}}
+  armServiceConnection: {{ .Config.GetVariableValue "ARMSERVICECONNECTION" }}
+  azureContainerRegistry: {{ .Config.GetVariableValue "AZURECONTAINERREGISTRY" }}
+  containerName: {{ .Config.GetVariableValue "CONTAINERNAME" }}
+  clusterRg: {{ .Config.GetVariableValue "CLUSTERRESOURCEGROUP" }}
+  acrRg: {{ .Config.GetVariableValue "ACRRESOURCEGROUP" }}
+  clusterName: {{ .Config.GetVariableValue "CLUSTERNAME" }}
+  manifestPath: {{ .Config.GetVariableValue "MANIFESTPATH" }}
+  namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
 
-name: {{PIPELINENAME}}
+name: {{ .Config.GetVariableValue "PIPELINENAME" }}
 
 trigger:
-  - {{BRANCHNAME}}
-
+  - {{ .Config.GetVariableValue "BRANCHNAME" }}
+{{`
 stages:
   - stage: BuildAndPush
     displayName: Build stage
@@ -58,3 +58,4 @@ stages:
               namespace: $(namespace)
               containers: |
                 $(azureContainerRegistry).azurecr.io/$(containerName):$(tag)
+`}}

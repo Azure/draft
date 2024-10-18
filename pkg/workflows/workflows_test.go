@@ -3,6 +3,10 @@ package workflows
 import (
 	"errors"
 	"fmt"
+	"github.com/Azure/draft/pkg/config"
+	"github.com/Azure/draft/pkg/embedutils"
+	"github.com/Azure/draft/pkg/fixtures"
+	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -10,15 +14,11 @@ import (
 	"testing"
 	"testing/fstest"
 
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-
+	"github.com/Azure/draft/template"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
-	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/template"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func TestCreateWorkflows(t *testing.T) {
@@ -160,6 +160,8 @@ func TestCreateWorkflows(t *testing.T) {
 		tempDirPath  string
 		tempFileName string
 		tempPath     string
+		expectedFile string
+		fixturePath  string
 		cleanUp      func()
 	}{
 		{
@@ -169,6 +171,8 @@ func TestCreateWorkflows(t *testing.T) {
 			tempDirPath:  "charts",
 			tempFileName: "charts/production.yaml",
 			tempPath:     "../../test/templates/helm/charts/production.yaml",
+			expectedFile: ".github/workflows/azure-kubernetes-service-helm.yml",
+			fixturePath:  "../fixtures/workflows/azure-kubernetes-service-helm.yml",
 			cleanUp: func() {
 				os.Remove(".charts")
 				os.Remove(".github")
@@ -181,6 +185,8 @@ func TestCreateWorkflows(t *testing.T) {
 			tempDirPath:  "overlays/production",
 			tempFileName: "overlays/production/deployment.yaml",
 			tempPath:     "../../test/templates/kustomize/overlays/production/deployment.yaml",
+			expectedFile: ".github/workflows/azure-kubernetes-service-kustomize.yml",
+			fixturePath:  "../fixtures/workflows/azure-kubernetes-service-kustomize.yml",
 			cleanUp: func() {
 				os.Remove(".overlays")
 				os.Remove(".github")
@@ -193,6 +199,8 @@ func TestCreateWorkflows(t *testing.T) {
 			tempDirPath:  "manifests",
 			tempFileName: "manifests/deployment.yaml",
 			tempPath:     "../../test/templates/manifests/manifests/deployment.yaml",
+			expectedFile: ".github/workflows/azure-kubernetes-service.yml",
+			fixturePath:  "../fixtures/workflows/azure-kubernetes-service.yml",
 			cleanUp: func() {
 				os.Remove(".manifests")
 				os.Remove(".github")
@@ -232,9 +240,19 @@ func TestCreateWorkflows(t *testing.T) {
 			if err != nil && !tt.shouldError {
 				t.Errorf("Default Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
 			}
+
 			err = workflows.CreateWorkflowFiles(tt.deployType, draftConfigNoRoot, templateWriter)
 			if err != nil && !tt.shouldError {
 				t.Errorf("Custom Build Context CreateWorkflows() error = %v, wantErr %v", err, tt.shouldError)
+			}
+
+			if !tt.shouldError && tt.expectedFile != "" && tt.fixturePath != "" {
+				generatedContent, err := os.ReadFile(tt.expectedFile)
+				assert.Nil(t, err)
+
+				// Validate against the fixture
+				err = fixtures.ValidateContentAgainstFixture(generatedContent, tt.fixturePath)
+				assert.Nil(t, err, "Generated content does not match the fixture for %s", tt.deployType)
 			}
 
 			tt.cleanUp()

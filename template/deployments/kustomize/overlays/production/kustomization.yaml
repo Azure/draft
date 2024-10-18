@@ -1,5 +1,5 @@
 namePrefix: production-
-namespace: {{.NAMESPACE}}
+namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
 resources:
   - ../../base
 patchesStrategicMerge:

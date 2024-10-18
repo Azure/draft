@@ -1,13 +1,31 @@
 language: go
 displayName: Go
+templateName: "dockerfile-go"
+description: "This template is used to create a Dockerfile for a Go application"
+versions: "0.0.1"
+defaultVersion: "0.0.1"
+type: "dockerfile"
 variables:
   - name: "PORT"
-    default: 
+    type: "int"
+    kind: "port"
+    default:
       value: "80"
     description: "the port exposed in the application"
-    type: int
+    versions: ">=0.0.1"
   - name: "VERSION"
-    default: 
-      value: "1.18"
+    type: "string"
+    kind: "containerImageVersion"
+    default:
+      value: "1.23"
     description: "the version of go used by the application"
-    exampleValues: ["1.16", "1.17", "1.18", "1.19"]
+    exampleValues: ["1.20", "1.21", "1.22", "1.23"]
+    versions: ">=0.0.1"
+  - name: "DOCKERFILENAME"
+    type: "string"
+    kind: "dockerFileName"
+    default:
+      value: "Dockerfile"
+      disablePrompt: true
+    description: "the name of the Dockerfile"
+    versions: ">=0.0.1"

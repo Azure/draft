@@ -1,6 +1,6 @@
-FROM golang:{{VERSION}}
-ENV PORT {{PORT}}
-EXPOSE {{PORT}}
+FROM golang:{{ .Config.GetVariableValue "VERSION" }}
+ENV PORT={{ .Config.GetVariableValue "PORT" }}
+EXPOSE {{ .Config.GetVariableValue "PORT" }}
 
 WORKDIR /go/src/app
 COPY . .

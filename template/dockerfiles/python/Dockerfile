@@ -1,6 +1,6 @@
-FROM python:{{VERSION}}
-ENV PORT {{PORT}}
-EXPOSE {{PORT}}
+FROM python:{{ .Config.GetVariableValue "VERSION" }}
+ENV PORT {{ .Config.GetVariableValue "PORT" }}
+EXPOSE {{ .Config.GetVariableValue "PORT" }}
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 ENTRYPOINT ["python"]
-CMD ["{{ENTRYPOINT}}"]
+CMD ["{{ .Config.GetVariableValue "ENTRYPOINT" }}"]

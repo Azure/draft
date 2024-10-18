@@ -5,7 +5,7 @@ variables:
   - name: "PORT"
     type: "int"
     kind: "port"
-    description: "the port exposed in the application"
+    description: "the port the service uses to make the application accessible from outside the cluster"
     default:
       value: 80
   - name: "APPNAME"
@@ -25,6 +25,6 @@ variables:
   - name: "TARGETPORT"
     type: "int"
     kind: "port"
-    description: "the port the Service uses to make the application accessible from outside the cluster"
+    description: "the port exposed in the application"
     default:
       referenceVar: "PORT"

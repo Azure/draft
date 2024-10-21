@@ -145,7 +145,7 @@ func (d *DraftConfig) GetVariableValidator(kind string) VariableValidator {
 	}
 
 	// internally defined validators
-	return validators.DefaultValidator
+	return validators.GetValidator(kind)
 }
 
 // SetVariableTransformer sets the transformer for a specific variable kind

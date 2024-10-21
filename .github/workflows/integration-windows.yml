@@ -7,9 +7,9 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: 1.22
       - name: make
@@ -44,12 +44,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -73,7 +73,7 @@ jobs:
     needs: gomodule-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -94,12 +94,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -144,12 +144,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
@@ -173,7 +173,7 @@ jobs:
     needs: go-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -194,12 +194,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
@@ -244,12 +244,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -273,7 +273,7 @@ jobs:
     needs: python-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -294,12 +294,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -344,12 +344,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -373,7 +373,7 @@ jobs:
     needs: rust-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -394,12 +394,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -444,12 +444,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -473,7 +473,7 @@ jobs:
     needs: javascript-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -494,12 +494,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -544,12 +544,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
@@ -573,7 +573,7 @@ jobs:
     needs: ruby-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -594,12 +594,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
@@ -644,12 +644,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -673,7 +673,7 @@ jobs:
     needs: csharp-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -694,12 +694,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -744,12 +744,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -773,7 +773,7 @@ jobs:
     needs: java-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -794,12 +794,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -844,12 +844,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -873,7 +873,7 @@ jobs:
     needs: gradle-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -894,12 +894,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -944,12 +944,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -973,7 +973,7 @@ jobs:
     needs: swift-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -994,12 +994,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -1044,12 +1044,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -1073,7 +1073,7 @@ jobs:
     needs: erlang-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -1094,12 +1094,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -1144,12 +1144,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -1173,7 +1173,7 @@ jobs:
     needs: clojure-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
@@ -1194,12 +1194,12 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: draft-binary
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest

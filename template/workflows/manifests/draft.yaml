@@ -1,4 +1,4 @@
-templateName: "github-workflow-manifest"
+templateName: "github-workflow-manifests"
 description: "This template is used to create a GitHub workflow for building and deploying an app to AKS with kubernetes manifests"
 type: "workflow"
 versions: "0.0.1"

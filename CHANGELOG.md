@@ -1,5 +1,26 @@
 # Change Log
 
+## [0.0.39] - 2024-10-22
+
+### Added
+
+- [#406](https://github.com/Azure/draft/pull/406) Migrating Addons to generic handler
+- [#403](https://github.com/Azure/draft/pull/403), [#404](https://github.com/Azure/draft/pull/404) Adding PDB template
+- [#400](https://github.com/Azure/draft/pull/400) Migrating azurePipelines to Generic handler
+- [#399](https://github.com/Azure/draft/pull/399) Migrating Dockerfile templates to Generic handler
+- [#398](https://github.com/Azure/draft/pull/398) Creating HPA template
+- [#395](https://github.com/Azure/draft/pull/395) Upgrade from deprecated kubeval to kubeconform
+- [#393](https://github.com/Azure/draft/pull/393) Migrate Deployments templates to generic handler
+- [#391](https://github.com/Azure/draft/pull/391) Creation of generic template handler
+- [#381](https://github.com/Azure/draft/pull/381) Update DraftConfig to contain more metadata
+
+
+
+### Fixed
+
+- [#410](https://github.com/Azure/draft/pull/410) Fix private cluater check for helm workflows
+- [#387](https://github.com/Azure/draft/pull/387) Update go version and dockerfile template
+
 ## [0.0.38] - 2024-08-13
 
 ### Fixed

@@ -10,8 +10,7 @@
 #
 # To configure this workflow:
 #
-# 1. Set the following secrets in your repository (instructions for getting these
-#    https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux)):
+# 1. Set the following secrets in your repository (instructions for getting these can be found at https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux):
 #    - AZURE_CLIENT_ID
 #    - AZURE_TENANT_ID
 #    - AZURE_SUBSCRIPTION_ID
@@ -19,40 +18,36 @@
 # 2. Set the following environment variables (or replace the values below):
 #    - ACR_RESOURCE_GROUP (resource group of your ACR)
 #    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
-#    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
 #    - CLUSTER_RESOURCE_GROUP (where your cluster is deployed)
 #    - CLUSTER_NAME (name of your AKS cluster)
+#    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
+#    - DEPLOYMENT_MANIFEST_PATH (path to the manifest yaml for your deployment)
 #    - DOCKER_FILE (path to your Dockerfile)
 #    - BUILD_CONTEXT_PATH (path to the context of your Dockerfile)
-#    - CHART_PATH (path to your helm chart)
-#    - CHART_OVERRIDE_PATH (path to your helm chart with override values)
-#    - CHART_OVERRIDES (override values for your helm chart)
 #    - NAMESPACE (namespace to deploy your application)
 #
 # For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: {{ .Config.GetVariableValue "WORKFLOWNAME"}}
+name: testWorkflow
 
 on:
   push:
-    branches: [{{.Config.GetVariableValue "BRANCHNAME"}}]
+    branches: [testBranch]
   workflow_dispatch:
 
 env:
-  ACR_RESOURCE_GROUP: {{ .Config.GetVariableValue "ACRRESOURCEGROUP" }}
-  AZURE_CONTAINER_REGISTRY: {{ .Config.GetVariableValue "AZURECONTAINERREGISTRY" }}
-  CONTAINER_NAME: {{ .Config.GetVariableValue "CONTAINERNAME" }}
-  CLUSTER_RESOURCE_GROUP: {{ .Config.GetVariableValue "CLUSTERRESOURCEGROUP" }}
-  CLUSTER_NAME: {{ .Config.GetVariableValue "CLUSTERNAME" }}
-  DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
-  BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
-  CHART_PATH: {{ .Config.GetVariableValue "CHARTPATH" }}
-  CHART_OVERRIDE_PATH: {{ .Config.GetVariableValue "CHARTOVERRIDEPATH" }}
-  CHART_OVERRIDES: {{ .Config.GetVariableValue "CHARTOVERRIDES" }}
-  NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
-{{`
+  ACR_RESOURCE_GROUP: testAcrRG
+  AZURE_CONTAINER_REGISTRY: testAcr
+  CONTAINER_NAME: testContainer
+  CLUSTER_RESOURCE_GROUP: testClusterRG
+  CLUSTER_NAME: testCluster
+  DEPLOYMENT_MANIFEST_PATH: ./manifests
+  DOCKER_FILE: ./Dockerfile
+  BUILD_CONTEXT_PATH: test
+  NAMESPACE: default
+
 jobs:
   buildImage:
     permissions:
@@ -74,7 +69,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
   deploy:
     permissions:
       actions: read
@@ -98,7 +93,7 @@ jobs:
       - name: Set up kubelogin for non-interactive login
         uses: azure/use-kubelogin@v1
         with:
-          kubelogin-version: "v0.0.25"
+          kubelogin-version: 'v0.0.25'
 
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
@@ -106,8 +101,8 @@ jobs:
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
-          admin: "false"
-          use-kubelogin: "true"
+          admin: 'false'
+          use-kubelogin: 'true'
 
       # Checks if the AKS cluster is private
       - name: Is private cluster
@@ -116,20 +111,15 @@ jobs:
           result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
           echo "PRIVATE_CLUSTER=$result" >> "$GITHUB_OUTPUT"
 
-      # Deploys application
-      - name: Deploy application on private cluster
-        if: steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true'
-        run: |
-          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace --timeout 240s" --file . --query id -o tsv)
-          result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
-          echo "Helm upgrade result: $result"
-          exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
-          
-          if [ $exitCode -ne 0 ]; then
-            exit $exitCode
-          fi
-
-      - name: Deploy application on public cluster
-        if: steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true'
-        run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace
-`}}
+      # Deploys application based on given manifest  file
+      - name: Deploys application
+        uses: Azure/k8s-deploy@v4
+        with:
+          action: deploy
+          manifests: ${{ env.DEPLOYMENT_MANIFEST_PATH }}
+          images: |
+            ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+          name: ${{ env.CLUSTER_NAME }}
+          private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
+          namespace: ${{ env.NAMESPACE }}

@@ -322,6 +322,22 @@ func TestTemplateHandlerValidation(t *testing.T) {
 			},
 		},
 		{
+			name:            "valid app-routing ingress",
+			templateName:    "app-routing-ingress",
+			fixturesBaseDir: "../fixtures/addons/ingress",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"ingress-tls-cert-keyvault-uri": "test.uri",
+				"ingress-use-osm-mtls":          "false",
+				"ingress-host":                  "host",
+				"service-name":                  "test-service",
+				"service-namespace":             "test-namespace",
+				"service-port":                  "80",
+			},
+		},
+		{
 			name:            "valid helm workflow",
 			templateName:    "github-workflow-helm",
 			fixturesBaseDir: "../fixtures/workflows/github/helm",

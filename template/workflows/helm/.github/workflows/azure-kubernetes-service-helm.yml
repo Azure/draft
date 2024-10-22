@@ -130,6 +130,6 @@ jobs:
           fi
 
       - name: Deploy application on public cluster
-        if : steps.isPrivate.outputs.PRIVATE_CLUSTER == '' || steps.isPrivate.outputs.PRIVATE_CLUSTER == 'false'
+        if : steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true'
         run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace
 `}}

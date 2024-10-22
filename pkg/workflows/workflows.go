@@ -1,7 +1,6 @@
 package workflows
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -17,7 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/templatewriter"
 )
@@ -144,23 +142,6 @@ func (w *Workflows) GetConfig(deployType string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("deploy type %s unsupported", deployType)
 	}
 	return val, nil
-}
-
-func CreateWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workflows {
-	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, parentDirName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	w := &Workflows{
-		workflows:         deployMap,
-		Dest:              dest,
-		configs:           make(map[string]*config.DraftConfig),
-		workflowTemplates: workflowTemplates,
-	}
-	w.populateConfigs()
-
-	return w
 }
 
 func (w *Workflows) populateConfigs() {

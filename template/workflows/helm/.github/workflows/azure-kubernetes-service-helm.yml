@@ -33,11 +33,11 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: {{.WORKFLOWNAME}}
+name: {{ .Config.GetVariableValue "WORKFLOWNAME"}}
 
 on:
   push:
-    branches: [{{.BRANCHNAME}}]
+    branches: [{{.Config.GetVariableValue "BRANCHNAME"}}]
   workflow_dispatch:
 
 env:
@@ -98,7 +98,7 @@ jobs:
       - name: Set up kubelogin for non-interactive login
         uses: azure/use-kubelogin@v1
         with:
-          kubelogin-version: 'v0.0.25'
+          kubelogin-version: "v0.0.25"
 
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
@@ -106,8 +106,8 @@ jobs:
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
-          admin: 'false'
-          use-kubelogin: 'true'
+          admin: "false"
+          use-kubelogin: "true"
 
       # Checks if the AKS cluster is private
       - name: Is private cluster
@@ -118,7 +118,7 @@ jobs:
 
       # Deploys application
       - name: Deploy application on private cluster
-        if : steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true'
+        if: steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true'
         run: |
           command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace --timeout 240s" --file . --query id -o tsv)
           result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
@@ -130,6 +130,6 @@ jobs:
           fi
 
       - name: Deploy application on public cluster
-        if : steps.isPrivate.outputs.PRIVATE_CLUSTER == ''
+        if: steps.isPrivate.outputs.PRIVATE_CLUSTER == ''
         run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace
 `}}

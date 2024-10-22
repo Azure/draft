@@ -34,11 +34,11 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: {{.WORKFLOWNAME}}
+name: {{ .Config.GetVariableValue "WORKFLOWNAME" }}
 
 on:
   push:
-    branches: [{{.BRANCHNAME}}]
+    branches: [{{ .Config.GetVariableValue "BRANCHNAME" }}]
   workflow_dispatch:
 
 env:

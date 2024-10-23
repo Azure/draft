@@ -7,6 +7,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+
+	"github.com/blang/semver/v4"
 )
 
 const draftConfigFile = "draft.yaml"
@@ -83,6 +85,19 @@ func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {
 	return nil, fmt.Errorf("variable %s not found", name)
 }
 
+func (d *DraftConfig) GetVariableValue(name string) (string, error) {
+	for _, variable := range d.Variables {
+		if variable.Name == name {
+			if variable.Value == "" {
+				return "", fmt.Errorf("variable %s has no value", name)
+			}
+			return variable.Value, nil
+		}
+	}
+
+	return "", fmt.Errorf("variable %s not found", name)
+}
+
 func (d *DraftConfig) SetVariable(name, value string) {
 	if variable, err := d.GetVariable(name); err != nil {
 		d.Variables = append(d.Variables, &BuilderVar{
@@ -103,6 +118,62 @@ func (d *DraftConfig) ApplyDefaultVariables() error {
 				if err != nil {
 					return fmt.Errorf("apply default variables: %w", err)
 				}
+				defaultVal, err := d.recurseReferenceVars(referenceVar, referenceVar, true)
+				if err != nil {
+					return fmt.Errorf("apply default variables: %w", err)
+				}
+				log.Infof("Variable %s defaulting to value %s", variable.Name, defaultVal)
+				variable.Value = defaultVal
+			}
+
+			if variable.Value == "" {
+				if variable.Default.Value != "" {
+					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
+					variable.Value = variable.Default.Value
+				} else {
+					return errors.New("variable " + variable.Name + " has no default value")
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// ApplyDefaultVariablesForVersion will apply the defaults to variables that are not already set for a specific template version
+func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
+	v, err := semver.Parse(version)
+	if err != nil {
+		return fmt.Errorf("invalid version: %w", err)
+	}
+
+	expectedConfigVersionRange, err := semver.ParseRange(d.Versions)
+	if err != nil {
+		return fmt.Errorf("invalid config version range: %w", err)
+	}
+
+	if !expectedConfigVersionRange(v) {
+		return fmt.Errorf("version %s is outside of config version range %s", version, d.Versions)
+	}
+
+	for _, variable := range d.Variables {
+		if variable.Value == "" {
+			expectedRange, err := semver.ParseRange(variable.Versions)
+			if err != nil {
+				return fmt.Errorf("invalid variable versions: %w", err)
+			}
+
+			if !expectedRange(v) {
+				log.Infof("Variable %s versions %s is outside input version %s, skipping", variable.Name, variable.Versions, version)
+				continue
+			}
+
+			if variable.Default.ReferenceVar != "" {
+				referenceVar, err := d.GetVariable(variable.Default.ReferenceVar)
+				if err != nil {
+					return fmt.Errorf("apply default variables: %w", err)
+				}
+
 				defaultVal, err := d.recurseReferenceVars(referenceVar, referenceVar, true)
 				if err != nil {
 					return fmt.Errorf("apply default variables: %w", err)
@@ -152,6 +223,52 @@ func (d *DraftConfig) VariableMapToDraftConfig(flagVariablesMap map[string]strin
 		log.Debugf("flag variable %s=%s", flagName, flagValue)
 		d.SetVariable(flagName, flagValue)
 	}
+}
+
+// SetFileNameOverride sets the filename override for a specific file
+func (d *DraftConfig) SetFileNameOverride(input, override string) {
+	if d.FileNameOverrideMap == nil {
+		d.FileNameOverrideMap = make(map[string]string)
+	}
+	d.FileNameOverrideMap[input] = override
+}
+
+func (d *DraftConfig) DeepCopy() *DraftConfig {
+	newConfig := &DraftConfig{
+		TemplateName:        d.TemplateName,
+		DisplayName:         d.DisplayName,
+		Description:         d.Description,
+		Type:                d.Type,
+		Versions:            d.Versions,
+		DefaultVersion:      d.DefaultVersion,
+		Variables:           make([]*BuilderVar, len(d.Variables)),
+		FileNameOverrideMap: make(map[string]string),
+	}
+	for i, variable := range d.Variables {
+		newConfig.Variables[i] = variable.DeepCopy()
+	}
+
+	for k, v := range d.FileNameOverrideMap {
+		newConfig.FileNameOverrideMap[k] = v
+	}
+
+	return newConfig
+}
+
+func (bv *BuilderVar) DeepCopy() *BuilderVar {
+	newVar := &BuilderVar{
+		Name:          bv.Name,
+		Default:       bv.Default,
+		Description:   bv.Description,
+		Type:          bv.Type,
+		Kind:          bv.Kind,
+		Value:         bv.Value,
+		Versions:      bv.Versions,
+		ExampleValues: make([]string, len(bv.ExampleValues)),
+	}
+
+	copy(newVar.ExampleValues, bv.ExampleValues)
+	return newVar
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs

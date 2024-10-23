@@ -2,6 +2,8 @@ language: csharp
 displayName: C#
 templateName: "dockerfile-csharp"
 description: "This template is used to create a Dockerfile for a C# application"
+versions: "0.0.1"
+defaultVersion: "0.0.1"
 type: "dockerfile"
 variables:
   - name: "PORT"
@@ -10,6 +12,7 @@ variables:
     default:
       value: "80"
     description: "the port exposed in the application"
+    versions: ">=0.0.1"
   - name: "VERSION"
     type: "float"
     kind: "containerImageVersion"
@@ -17,3 +20,12 @@ variables:
       value: "5.0"
     description: "the dotnet SDK version"
     exampleValues: ["3.1", "4.0", "5.0", "6.0"]
+    versions: ">=0.0.1"
+  - name: "DOCKERFILENAME"
+    type: "string"
+    kind: "dockerFileName"
+    default:
+      value: "Dockerfile"
+      disablePrompt: true
+    description: "the name of the Dockerfile"
+    versions: ">=0.0.1"

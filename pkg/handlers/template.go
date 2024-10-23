@@ -187,7 +187,7 @@ func writeTemplate(draftTemplate *Template, inputFile string) error {
 }
 
 func getOutputFileName(draftTemplate *Template, inputFile string) string {
-	outputName := strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1)
+	outputName := filepath.Clean(strings.Replace(inputFile, draftTemplate.src, draftTemplate.dest, 1))
 
 	fileName := filepath.Base(inputFile)
 	if overrideName, ok := draftTemplate.Config.FileNameOverrideMap[fileName]; ok {

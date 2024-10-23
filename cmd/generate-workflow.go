@@ -64,7 +64,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	if gwc.deployType == "" {
 		selection := &promptui.Select{
 			Label: "Select k8s Deployment Type",
-			Items: []string{"helm", "kustomize", "manifest"},
+			Items: []string{"helm", "kustomize", "manifests"},
 		}
 
 		_, gwc.deployType, err = selection.Run()

@@ -384,7 +384,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 		}, {
 			name:            "valid manifest workflow",
 			templateName:    "github-workflow-manifests",
-			fixturesBaseDir: "../fixtures/workflows/github/manifest",
+			fixturesBaseDir: "../fixtures/workflows/github/manifests",
 			version:         "0.0.1",
 			dest:            ".",
 			templateWriter:  &writers.FileMapWriter{},

@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.40] - 2024-10-23
+
+### Fixed
+
+- [#413](https://github.com/Azure/draft/pull/413) Fix filename output
+
 ## [0.0.39] - 2024-10-22
 
 ### Added

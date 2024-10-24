@@ -33,26 +33,26 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: {{ .Config.GetVariableValue "WORKFLOWNAME"}}
+name: testWorkflow
 
 on:
   push:
-    branches: [{{.Config.GetVariableValue "BRANCHNAME"}}]
+    branches: [testBranch]
   workflow_dispatch:
 
 env:
-  ACR_RESOURCE_GROUP: {{ .Config.GetVariableValue "ACRRESOURCEGROUP" }}
-  AZURE_CONTAINER_REGISTRY: {{ .Config.GetVariableValue "AZURECONTAINERREGISTRY" }}
-  CONTAINER_NAME: {{ .Config.GetVariableValue "CONTAINERNAME" }}
-  CLUSTER_RESOURCE_GROUP: {{ .Config.GetVariableValue "CLUSTERRESOURCEGROUP" }}
-  CLUSTER_NAME: {{ .Config.GetVariableValue "CLUSTERNAME" }}
-  DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
-  BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
-  CHART_PATH: {{ .Config.GetVariableValue "CHARTPATH" }}
-  CHART_OVERRIDE_PATH: {{ .Config.GetVariableValue "CHARTOVERRIDEPATH" }}
-  CHART_OVERRIDES: {{ .Config.GetVariableValue "CHARTOVERRIDES" }}
-  NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
-{{`
+  ACR_RESOURCE_GROUP: testAcrRG
+  AZURE_CONTAINER_REGISTRY: testAcr
+  CONTAINER_NAME: testContainer
+  CLUSTER_RESOURCE_GROUP: testClusterRG
+  CLUSTER_NAME: testCluster
+  DOCKER_FILE: ./Dockerfile
+  BUILD_CONTEXT_PATH: test
+  CHART_PATH: testPath
+  CHART_OVERRIDE_PATH: testOverridePath
+  CHART_OVERRIDES: replicas:2
+  NAMESPACE: default
+
 jobs:
   buildImage:
     permissions:
@@ -124,7 +124,7 @@ jobs:
           result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
           echo "Helm upgrade result: $result"
           exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
-          
+
           if [ $exitCode -ne 0 ]; then
             exit $exitCode
           fi
@@ -132,4 +132,3 @@ jobs:
       - name: Deploy application on public cluster
         if: steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true'
         run: helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace
-`}}

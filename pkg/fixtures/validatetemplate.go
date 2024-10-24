@@ -16,7 +16,20 @@ func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) 
 	}
 
 	if normalizeWhitespace(fixtureContent) != normalizeWhitespace(generatedContent) {
-		return errors.New("generated content does not match fixture")
+		genWords := strings.Split(normalizeWhitespace(generatedContent), " ")
+		fixtureWords := strings.Split(normalizeWhitespace(fixtureContent), " ")
+		differingWords := []string{}
+		for i, word := range genWords {
+			if word != fixtureWords[i] {
+				differingWords = append(differingWords, fmt.Sprintf("'%s' != '%s'", word, fixtureWords[i]))
+				if len(differingWords) == 1 {
+					fmt.Println("Generated Word | Fixture Word")
+				}
+				fmt.Printf("'%s' != '%s'\n", word, fixtureWords[i])
+			}
+		}
+
+		return errors.New(fmt.Sprintf("generated content does not match fixture: %s", strings.Join(differingWords, ", ")))
 	}
 
 	return nil

@@ -11,8 +11,8 @@ import (
 	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/Azure/draft/pkg/cmdhelpers"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
-	"github.com/Azure/draft/pkg/workflows"
 )
 
 type generateWorkflowCmd struct {
@@ -87,7 +87,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 		return err
 	}
 
-	if err := workflows.UpdateProductionDeployments(gwc.deployType, gwc.dest, t.Config, gwc.templateWriter); err != nil {
+	if err := cmdhelpers.UpdateProductionDeployments(gwc.deployType, gwc.dest, t.Config, gwc.templateWriter); err != nil {
 		return fmt.Errorf("update production deployments: %w", err)
 	}
 

@@ -290,9 +290,9 @@ func TestTemplateHandlerValidation(t *testing.T) {
 			},
 		},
 		{
-			name:            "valid azpipeline manifest deployment",
-			templateName:    "azure-pipeline-manifest",
-			fixturesBaseDir: "../fixtures/workflows/azurepipelines/manifest",
+			name:            "valid azpipeline manifests deployment",
+			templateName:    "azure-pipeline-manifests",
+			fixturesBaseDir: "../fixtures/workflows/azurepipelines/manifests",
 			version:         "0.0.1",
 			dest:            ".",
 			templateWriter:  &writers.FileMapWriter{},

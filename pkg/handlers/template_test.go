@@ -422,6 +422,42 @@ func TestTemplateHandlerValidation(t *testing.T) {
 			},
 			expectedErr: fmt.Errorf("invalid label: *myTestApp"),
 		},
+		{
+			name:            "valid hpa manifest",
+			templateName:    "horizontalPodAutoscaler-manifests",
+			fixturesBaseDir: "../fixtures/manifests/hpa",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME": "test-app",
+				"PARTOF":  "test-app-project",
+			},
+		},
+		{
+			name:            "valid pdb manifest",
+			templateName:    "podDisruptionBudget-manifests",
+			fixturesBaseDir: "../fixtures/manifests/pdb",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME": "test-app",
+				"PARTOF":  "test-app-project",
+			},
+		},
+		{
+			name:            "valid service manifest",
+			templateName:    "service-manifests",
+			fixturesBaseDir: "../fixtures/manifests/service",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME": "test-app",
+				"PARTOF":  "test-app-project",
+			},
+		},
 	}
 
 	for _, tt := range tests {

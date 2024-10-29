@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: test-app
+  labels:
+    app.kubernetes.io/name: test-app
+    app.kubernetes.io/part-of: test-app-project
+    kubernetes.azure.com/generator: draft
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: test-app

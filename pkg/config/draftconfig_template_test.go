@@ -3,12 +3,15 @@ package config
 import (
 	"fmt"
 	"io/fs"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/Azure/draft/template"
 	"github.com/stretchr/testify/assert"
 )
+
+const alphaNumUnderscoreHyphen = "^[A-Za-z][A-Za-z0-9-_]{1,62}[A-Za-z0-9]$"
 
 var allTemplates = map[string]*DraftConfig{}
 
@@ -67,6 +70,7 @@ func TestTempalteValidation(t *testing.T) {
 }
 
 func loadTemplatesWithValidation() error {
+	regexp := regexp.MustCompile(alphaNumUnderscoreHyphen)
 	return fs.WalkDir(template.Templates, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -91,6 +95,10 @@ func loadTemplatesWithValidation() error {
 
 		if currTemplate.TemplateName == "" {
 			return fmt.Errorf("template %s has no template name", path)
+		}
+
+		if !regexp.MatchString(currTemplate.TemplateName) {
+			return fmt.Errorf("template %s name must match the alpha-numeric-underscore-hyphen regex: %s", path, currTemplate.TemplateName)
 		}
 
 		if _, ok := allTemplates[strings.ToLower(currTemplate.TemplateName)]; ok {

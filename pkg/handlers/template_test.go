@@ -61,7 +61,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 			templateName:    "deployment-manifests",
 			fixturesBaseDir: "../fixtures/deployments/manifest",
 			version:         "0.0.1",
-			dest:            ".",
+			dest:            "./validation/.././",
 			templateWriter:  &writers.FileMapWriter{},
 			varMap: map[string]string{
 				"APPNAME":        "testapp",

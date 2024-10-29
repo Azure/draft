@@ -107,6 +107,7 @@ func loadTemplatesWithValidation() error {
 		// }
 
 		referenceVarMap := map[string]*BuilderVar{}
+		conditionRefMap := map[string]*BuilderVar{}
 		allVariables := map[string]*BuilderVar{}
 		for _, variable := range currTemplate.Variables {
 			if variable.Name == "" {
@@ -130,20 +131,39 @@ func loadTemplatesWithValidation() error {
 			if variable.Default.ReferenceVar != "" {
 				referenceVarMap[variable.Name] = variable
 			}
+
+			if variable.ConditionalRef.ReferenceVar != "" {
+				conditionRefMap[variable.Name] = variable
+			}
 		}
 
 		for _, currVar := range referenceVarMap {
 			refVar, ok := allVariables[currVar.Default.ReferenceVar]
 			if !ok {
-				return fmt.Errorf("template %s has a variable %s with reference to a non-existent variable: %s", path, currVar.Name, currVar.Default.ReferenceVar)
+				return fmt.Errorf("template %s has a variable %s with default reference to a non-existent variable: %s", path, currVar.Name, currVar.Default.ReferenceVar)
 			}
 
 			if currVar.Name == refVar.Name {
-				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
+				return fmt.Errorf("template %s has a variable with cyclical default reference to itself: %s", path, currVar.Name)
 			}
 
-			if isCyclicalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
-				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
+			if isCyclicalDefaultVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
+				return fmt.Errorf("template %s has a variable with cyclical default reference to itself: %s", path, currVar.Name)
+			}
+		}
+
+		for _, currVar := range conditionRefMap {
+			refVar, ok := allVariables[currVar.ConditionalRef.ReferenceVar]
+			if !ok {
+				return fmt.Errorf("template %s has a variable %s with conditional reference to a non-existent variable: %s", path, currVar.Name, currVar.ConditionalRef.ReferenceVar)
+			}
+
+			if currVar.Name == refVar.Name {
+				return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself: %s", path, currVar.Name)
+			}
+
+			if isCyclicalConditionalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
+				return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself: %s", path, currVar.Name)
 			}
 		}
 
@@ -152,7 +172,7 @@ func loadTemplatesWithValidation() error {
 	})
 }
 
-func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
+func isCyclicalDefaultVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
 	if initialVar.Name == currRefVar.Name {
 		return true
 	}
@@ -171,5 +191,27 @@ func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariable
 	}
 
 	visited[currRefVar.Name] = true
-	return isCyclicalVariableReference(initialVar, refVar, allVariables, visited)
+	return isCyclicalDefaultVariableReference(initialVar, refVar, allVariables, visited)
+}
+
+func isCyclicalConditionalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
+	if initialVar.Name == currRefVar.Name {
+		return true
+	}
+
+	if _, ok := visited[currRefVar.Name]; ok {
+		return true
+	}
+
+	if currRefVar.ConditionalRef.ReferenceVar == "" {
+		return false
+	}
+
+	refVar, ok := allVariables[currRefVar.ConditionalRef.ReferenceVar]
+	if !ok {
+		return false
+	}
+
+	visited[currRefVar.Name] = true
+	return isCyclicalConditionalVariableReference(initialVar, refVar, allVariables, visited)
 }

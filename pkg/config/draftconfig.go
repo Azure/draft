@@ -32,20 +32,27 @@ type DraftConfig struct {
 }
 
 type BuilderVar struct {
-	Name          string            `yaml:"name"`
-	Default       BuilderVarDefault `yaml:"default"`
-	Description   string            `yaml:"description"`
-	ExampleValues []string          `yaml:"exampleValues"`
-	Type          string            `yaml:"type"`
-	Kind          string            `yaml:"kind"`
-	Value         string            `yaml:"value"`
-	Versions      string            `yaml:"versions"`
+	Name           string                         `yaml:"name"`
+	ConditionalRef BuilderVarConditionalReference `yaml:"conditionalReference"`
+	Default        BuilderVarDefault              `yaml:"default"`
+	Description    string                         `yaml:"description"`
+	ExampleValues  []string                       `yaml:"exampleValues"`
+	Type           string                         `yaml:"type"`
+	Kind           string                         `yaml:"kind"`
+	Value          string                         `yaml:"value"`
+	Versions       string                         `yaml:"versions"`
 }
 
+// BuilderVarDefault holds info on the default value of a variable
 type BuilderVarDefault struct {
 	IsPromptDisabled bool   `yaml:"disablePrompt"`
 	ReferenceVar     string `yaml:"referenceVar"`
 	Value            string `yaml:"value"`
+}
+
+// BuilderVarConditionalReference holds a reference to a variable thats value can effect validation/transformation of the associated variable
+type BuilderVarConditionalReference struct {
+	ReferenceVar string `yaml:"referenceVar"`
 }
 
 func NewConfigFromFS(fileSys fs.FS, path string) (*DraftConfig, error) {

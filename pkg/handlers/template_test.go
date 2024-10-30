@@ -360,7 +360,6 @@ func TestTemplateHandlerValidation(t *testing.T) {
 			},
 		},
 		{
-<<<<<<< HEAD
 			name:            "manifest deployment vars with err from validators",
 			templateName:    "deployment-manifests",
 			fixturesBaseDir: "../fixtures/deployments/manifest",
@@ -424,8 +423,6 @@ func TestTemplateHandlerValidation(t *testing.T) {
 			expectedErr: fmt.Errorf("invalid label: *myTestApp"),
 		},
 		{
-=======
->>>>>>> origin
 			name:            "valid helm workflow",
 			templateName:    "github-workflow-helm",
 			fixturesBaseDir: "../fixtures/workflows/github/helm",
@@ -449,12 +446,8 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"CHARTOVERRIDES":         "replicas:2",
 				"NAMESPACE":              "default",
 			},
-<<<<<<< HEAD
 		},
 		{
-=======
-		}, {
->>>>>>> origin
 			name:            "valid helm workflow",
 			templateName:    "github-workflow-kustomize",
 			fixturesBaseDir: "../fixtures/workflows/github/kustomize",
@@ -474,12 +467,8 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"BUILDCONTEXTPATH":       "test",
 				"NAMESPACE":              "default",
 			},
-<<<<<<< HEAD
 		},
 		{
-=======
-		}, {
->>>>>>> origin
 			name:            "valid manifest workflow",
 			templateName:    "github-workflow-manifests",
 			fixturesBaseDir: "../fixtures/workflows/github/manifests",
@@ -500,7 +489,6 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"NAMESPACE":              "default",
 			},
 		},
-<<<<<<< HEAD
 		{
 			name:            "valid hpa manifest",
 			templateName:    "horizontalPodAutoscaler-manifests",
@@ -537,8 +525,6 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"PARTOF":  "test-app-project",
 			},
 		},
-=======
->>>>>>> origin
 	}
 
 	for _, tt := range tests {

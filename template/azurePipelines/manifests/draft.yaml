@@ -1,4 +1,4 @@
-templateName: "azure-pipeline-manifest"
+templateName: "azure-pipeline-manifests"
 description: "Azure Pipeline for deploying a containerized application to AKS using kubernetes manifests"
 versions: "0.0.1"
 defaultVersion: "0.0.1"

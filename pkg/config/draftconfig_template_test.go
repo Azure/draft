@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Azure/draft/template"
+	"github.com/blang/semver/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -109,10 +110,9 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has an invalid type: %s", path, currTemplate.Type)
 		}
 
-		// version range check once we define versions
-		// if _, err := semver.ParseRange(currTemplate.Versions); err != nil {
-		// 	return fmt.Errorf("template %s has an invalid version range: %s", path, currTemplate.Versions)
-		// }
+		if _, err := semver.ParseRange(currTemplate.Versions); err != nil {
+			return fmt.Errorf("template %s has an invalid version range: %s", path, currTemplate.Versions)
+		}
 
 		referenceVarMap := map[string]*BuilderVar{}
 		conditionRefMap := map[string]*BuilderVar{}
@@ -130,10 +130,9 @@ func loadTemplatesWithValidation() error {
 				return fmt.Errorf("template %s has an invalid variable kind: %s", path, variable.Kind)
 			}
 
-			// version range check once we define versions
-			// if _, err := semver.ParseRange(variable.Versions); err != nil {
-			// 	return fmt.Errorf("template %s has an invalid version range: %s", path, variable.Versions)
-			// }
+			if _, err := semver.ParseRange(variable.Versions); err != nil {
+				return fmt.Errorf("template %s has an invalid version range: %s", path, variable.Versions)
+			}
 
 			allVariables[variable.Name] = variable
 			if variable.Default.ReferenceVar != "" {

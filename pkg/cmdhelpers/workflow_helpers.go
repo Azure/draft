@@ -1,11 +1,9 @@
-package workflows
+package cmdhelpers
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -17,7 +15,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/draft/pkg/config"
-	"github.com/Azure/draft/pkg/embedutils"
 	"github.com/Azure/draft/pkg/osutil"
 	"github.com/Azure/draft/pkg/templatewriter"
 )
@@ -61,7 +58,7 @@ func UpdateProductionDeployments(deployType, dest string, draftConfig *config.Dr
 func setDeploymentContainerImage(filePath, productionImage string) error {
 
 	decode := scheme.Codecs.UniversalDeserializer().Decode
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
@@ -97,7 +94,7 @@ func setDeploymentContainerImage(filePath, productionImage string) error {
 }
 
 func setHelmContainerImage(filePath, productionImage string, templateWriter templatewriter.TemplateWriter) error {
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
@@ -144,23 +141,6 @@ func (w *Workflows) GetConfig(deployType string) (*config.DraftConfig, error) {
 		return nil, fmt.Errorf("deploy type %s unsupported", deployType)
 	}
 	return val, nil
-}
-
-func CreateWorkflowsFromEmbedFS(workflowTemplates embed.FS, dest string) *Workflows {
-	deployMap, err := embedutils.EmbedFStoMap(workflowTemplates, parentDirName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	w := &Workflows{
-		workflows:         deployMap,
-		Dest:              dest,
-		configs:           make(map[string]*config.DraftConfig),
-		workflowTemplates: workflowTemplates,
-	}
-	w.populateConfigs()
-
-	return w
 }
 
 func (w *Workflows) populateConfigs() {

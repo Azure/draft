@@ -1,8 +1,7 @@
-package workflows
+package cmdhelpers
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -49,7 +48,7 @@ func (hpy *HelmProductionYaml) GetServiceName() string {
 }
 
 func (hpy *HelmProductionYaml) LoadFromFile(filePath string) error {
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
@@ -63,7 +62,7 @@ func (hpy *HelmProductionYaml) WriteToFile(filePath string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filePath, currYaml, 0755)
+	return os.WriteFile(filePath, currYaml, 0755)
 }
 
 type ServiceYaml struct {
@@ -84,7 +83,10 @@ func (sy *ServiceYaml) GetServiceName() string {
 
 func (sy *ServiceYaml) LoadFromFile(filePath string) error {
 	decode := scheme.Codecs.UniversalDeserializer().Decode
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
 	k8sObj, _, err := decode(file, nil, nil)
 	if err != nil {
 		return err

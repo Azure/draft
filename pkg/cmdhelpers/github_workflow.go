@@ -1,6 +1,6 @@
-package workflows
+package cmdhelpers
 
-//GitHubWorkflow is a rough struct to allow for yaml editing including deletion of Job steps
+// GitHubWorkflow is a rough struct to allow for yaml editing including deletion of Job steps
 type GitHubWorkflow struct {
 	Name string
 	On   on `yaml:"on"`

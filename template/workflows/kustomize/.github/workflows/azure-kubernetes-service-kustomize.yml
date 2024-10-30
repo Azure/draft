@@ -34,23 +34,23 @@
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
 
-name: {{.WORKFLOWNAME}}
+name: {{ .Config.GetVariableValue "WORKFLOWNAME" }}
 
 on:
   push:
-    branches: [{{.BRANCHNAME}}]
+    branches: [{{ .Config.GetVariableValue "BRANCHNAME" }}]
   workflow_dispatch:
 
 env:
-  ACR_RESOURCE_GROUP: {{.ACRRESOURCEGROUP}}
-  AZURE_CONTAINER_REGISTRY: {{.AZURECONTAINERREGISTRY}}
-  CONTAINER_NAME: {{.CONTAINERNAME}}
-  CLUSTER_RESOURCE_GROUP: {{.CLUSTERRESOURCEGROUP}}
-  CLUSTER_NAME: {{.CLUSTERNAME}}
-  KUSTOMIZE_PATH: {{.KUSTOMIZEPATH}}
-  DOCKER_FILE: {{.DOCKERFILE}}
-  BUILD_CONTEXT_PATH: {{.BUILDCONTEXTPATH}}
-  NAMESPACE: {{.NAMESPACE}}
+  ACR_RESOURCE_GROUP: {{ .Config.GetVariableValue "ACRRESOURCEGROUP" }}
+  AZURE_CONTAINER_REGISTRY: {{ .Config.GetVariableValue "AZURECONTAINERREGISTRY" }}
+  CONTAINER_NAME: {{ .Config.GetVariableValue "CONTAINERNAME" }}
+  CLUSTER_RESOURCE_GROUP: {{ .Config.GetVariableValue "CLUSTERRESOURCEGROUP" }}
+  CLUSTER_NAME: {{ .Config.GetVariableValue "CLUSTERNAME" }}
+  KUSTOMIZE_PATH: {{ .Config.GetVariableValue "KUSTOMIZEPATH" }}
+  DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
+  BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
+  NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
 {{`
 jobs:
   buildImage:

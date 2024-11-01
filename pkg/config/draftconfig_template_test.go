@@ -165,12 +165,8 @@ func loadTemplatesWithValidation() error {
 				return fmt.Errorf("template %s has a variable %s with conditional reference to a non-existent variable: %s", path, currVar.Name, currVar.ConditionalRef.ReferenceVar)
 			}
 
-			if currVar.Name == refVar.Name {
-				return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself: %s", path, currVar.Name)
-			}
-
 			if isCyclicalConditionalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
-				return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself: %s", path, currVar.Name)
+				return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself or references a non existing variable: %s", path, currVar.Name)
 			}
 		}
 

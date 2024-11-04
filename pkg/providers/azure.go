@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os/exec"
+	"time"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/google/uuid"
-	"os/exec"
-	"time"
 
 	"github.com/Azure/draft/pkg/spinner"
 
@@ -33,13 +34,9 @@ type SetUpCmd struct {
 func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
 
-	if !HasGhCli() || !IsLoggedInToGh() {
-		s.Stop()
-		if err := LogInToGh(); err != nil {
-			return err
-		}
-		s.Start()
-	}
+	EnsureGhCliInstalled()
+	EnsureGhCliLoggedIn()
+	s.Start()
 
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err

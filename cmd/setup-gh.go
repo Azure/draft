@@ -30,6 +30,9 @@ application and service principle, and will configure that application to trust 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 
+			providers.EnsureAzCli()
+			providers.EnsureGhCli()
+
 			azCred, err := cred.GetCred()
 			if err != nil {
 				return fmt.Errorf("getting credentials: %w", err)

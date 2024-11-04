@@ -8,11 +8,11 @@ import (
 
 func TestCheckAzCliInstalled(t *testing.T) {
 	var err error
-	CheckAzCliInstalled()
+	EnsureAzCliInstalled()
 
 	assert.Nil(t, err)
 }
 
 func TestHasGhCli(t *testing.T) {
-	assert.True(t, HasGhCli(), "Github CLI is not installed")
+	assert.True(t, EnsureGhCliInstalled(), "Github CLI is not installed")
 }

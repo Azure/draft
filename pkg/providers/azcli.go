@@ -118,6 +118,57 @@ func LogInToAz() error {
 	return nil
 }
 
+func IsSubscriptionIdValid(subscriptionId string) error {
+	if subscriptionId == "" {
+		return errors.New("subscriptionId cannot be empty")
+	}
+
+	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "id")
+	out, err := getSubscriptionIdCmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	var azSubscription string
+	if err = json.Unmarshal(out, &azSubscription); err != nil {
+		return err
+	}
+
+	if azSubscription == "" {
+		return errors.New("subscription not found")
+	}
+
+	return nil
+}
+
+func isValidResourceGroup(
+	subscriptionId string,
+	resourceGroup string,
+) error {
+	if resourceGroup == "" {
+		return errors.New("resource group cannot be empty")
+	}
+
+	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
+	getResourceGroupCmd := exec.Command("az", "group", "list", "--subscription", subscriptionId, "--query", query)
+	out, err := getResourceGroupCmd.CombinedOutput()
+	if err != nil {
+		log.Errorf("failed to validate resource group %q from subscription %q: %s", resourceGroup, subscriptionId, err)
+		return err
+	}
+
+	var rg []interface{}
+	if err = json.Unmarshal(out, &rg); err != nil {
+		return err
+	}
+
+	if len(rg) == 0 {
+		return fmt.Errorf("resource group %q not found from subscription %q", resourceGroup, subscriptionId)
+	}
+
+	return nil
+}
+
 func AzAppExists(appName string) bool {
 	filter := fmt.Sprintf("displayName eq '%s'", appName)
 	checkAppExistsCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
@@ -223,55 +274,4 @@ func GetAzSubscriptionLabels() ([]SubLabel, error) {
 	}
 
 	return subLabels, nil
-}
-
-func IsSubscriptionIdValid(subscriptionId string) error {
-	if subscriptionId == "" {
-		return errors.New("subscriptionId cannot be empty")
-	}
-
-	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "id")
-	out, err := getSubscriptionIdCmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
-
-	var azSubscription string
-	if err = json.Unmarshal(out, &azSubscription); err != nil {
-		return err
-	}
-
-	if azSubscription == "" {
-		return errors.New("subscription not found")
-	}
-
-	return nil
-}
-
-func isValidResourceGroup(
-	subscriptionId string,
-	resourceGroup string,
-) error {
-	if resourceGroup == "" {
-		return errors.New("resource group cannot be empty")
-	}
-
-	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
-	getResourceGroupCmd := exec.Command("az", "group", "list", "--subscription", subscriptionId, "--query", query)
-	out, err := getResourceGroupCmd.CombinedOutput()
-	if err != nil {
-		log.Errorf("failed to validate resource group %q from subscription %q: %s", resourceGroup, subscriptionId, err)
-		return err
-	}
-
-	var rg []interface{}
-	if err = json.Unmarshal(out, &rg); err != nil {
-		return err
-	}
-
-	if len(rg) == 0 {
-		return fmt.Errorf("resource group %q not found from subscription %q", resourceGroup, subscriptionId)
-	}
-
-	return nil
 }

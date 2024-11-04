@@ -12,6 +12,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// EnsureAzCli ensures that the Azure CLI is installed and the user is logged in
+func EnsureAzCli() {
+	EnsureAzCliInstalled()
+	EnsureAzCliLoggedIn()
+}
+
 func GetAzCliVersion() string {
 	azCmd := exec.Command("az", "version", "-o", "json")
 	out, err := azCmd.CombinedOutput()
@@ -95,12 +101,6 @@ func EnsureAzCliLoggedIn() {
 			log.Fatal("Error: unable to log in to Azure")
 		}
 	}
-}
-
-// EnsureAzCli ensures that the Azure CLI is installed and the user is logged in
-func EnsureAzCli() {
-	EnsureAzCliInstalled()
-	EnsureAzCliLoggedIn()
 }
 
 func LogInToAz() error {

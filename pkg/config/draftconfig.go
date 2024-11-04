@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/Azure/draft/pkg/config/transformers"
+	"github.com/Azure/draft/pkg/config/validators"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
@@ -13,32 +15,44 @@ import (
 
 const draftConfigFile = "draft.yaml"
 
+type VariableValidator func(string) error
+type VariableTransformer func(string) (string, error)
+
 type DraftConfig struct {
-	TemplateName        string            `yaml:"templateName"`
-	DisplayName         string            `yaml:"displayName"`
-	Description         string            `yaml:"description"`
-	Type                string            `yaml:"type"`
-	Versions            string            `yaml:"versions"`
-	DefaultVersion      string            `yaml:"defaultVersion"`
-	Variables           []*BuilderVar     `yaml:"variables"`
-	FileNameOverrideMap map[string]string `yaml:"filenameOverrideMap"`
+	TemplateName        string                         `yaml:"templateName"`
+	DisplayName         string                         `yaml:"displayName"`
+	Description         string                         `yaml:"description"`
+	Type                string                         `yaml:"type"`
+	Versions            string                         `yaml:"versions"`
+	DefaultVersion      string                         `yaml:"defaultVersion"`
+	Variables           []*BuilderVar                  `yaml:"variables"`
+	FileNameOverrideMap map[string]string              `yaml:"filenameOverrideMap"`
+	Validators          map[string]VariableValidator   `yaml:"validators"`
+	Transformers        map[string]VariableTransformer `yaml:"transformers"`
 }
 
 type BuilderVar struct {
-	Name          string            `yaml:"name"`
-	Default       BuilderVarDefault `yaml:"default"`
-	Description   string            `yaml:"description"`
-	ExampleValues []string          `yaml:"exampleValues"`
-	Type          string            `yaml:"type"`
-	Kind          string            `yaml:"kind"`
-	Value         string            `yaml:"value"`
-	Versions      string            `yaml:"versions"`
+	Name           string                         `yaml:"name"`
+	ConditionalRef BuilderVarConditionalReference `yaml:"conditionalReference"`
+	Default        BuilderVarDefault              `yaml:"default"`
+	Description    string                         `yaml:"description"`
+	ExampleValues  []string                       `yaml:"exampleValues"`
+	Type           string                         `yaml:"type"`
+	Kind           string                         `yaml:"kind"`
+	Value          string                         `yaml:"value"`
+	Versions       string                         `yaml:"versions"`
 }
 
+// BuilderVarDefault holds info on the default value of a variable
 type BuilderVarDefault struct {
 	IsPromptDisabled bool   `yaml:"disablePrompt"`
 	ReferenceVar     string `yaml:"referenceVar"`
 	Value            string `yaml:"value"`
+}
+
+// BuilderVarConditionalReference holds a reference to a variable thats value can effect validation/transformation of the associated variable
+type BuilderVarConditionalReference struct {
+	ReferenceVar string `yaml:"referenceVar"`
 }
 
 func NewConfigFromFS(fileSys fs.FS, path string) (*DraftConfig, error) {
@@ -91,7 +105,17 @@ func (d *DraftConfig) GetVariableValue(name string) (string, error) {
 			if variable.Value == "" {
 				return "", fmt.Errorf("variable %s has no value", name)
 			}
-			return variable.Value, nil
+
+			if err := d.GetVariableValidator(variable.Kind)(variable.Value); err != nil {
+				return "", fmt.Errorf("failed variable validation: %w", err)
+			}
+
+			response, err := d.GetVariableTransformer(variable.Kind)(variable.Value)
+			if err != nil {
+				return "", fmt.Errorf("failed variable transformation: %w", err)
+			}
+
+			return response, nil
 		}
 	}
 
@@ -107,6 +131,44 @@ func (d *DraftConfig) SetVariable(name, value string) {
 	} else {
 		variable.Value = value
 	}
+}
+
+// GetVariableTransformer returns the transformer for a specific variable kind
+func (d *DraftConfig) GetVariableTransformer(kind string) VariableTransformer {
+	// user overrides
+	if transformer, ok := d.Transformers[kind]; ok {
+		return transformer
+	}
+
+	// internally defined transformers
+	return transformers.GetTransformer(kind)
+}
+
+// GetVariableValidator returns the validator for a specific variable kind
+func (d *DraftConfig) GetVariableValidator(kind string) VariableValidator {
+	// user overrides
+	if validator, ok := d.Validators[kind]; ok {
+		return validator
+	}
+
+	// internally defined validators
+	return validators.GetValidator(kind)
+}
+
+// SetVariableTransformer sets the transformer for a specific variable kind
+func (d *DraftConfig) SetVariableTransformer(kind string, transformer VariableTransformer) {
+	if d.Transformers == nil {
+		d.Transformers = make(map[string]VariableTransformer)
+	}
+	d.Transformers[kind] = transformer
+}
+
+// SetVariableValidator sets the validator for a specific variable kind
+func (d *DraftConfig) SetVariableValidator(kind string, validator VariableValidator) {
+	if d.Validators == nil {
+		d.Validators = make(map[string]VariableValidator)
+	}
+	d.Validators[kind] = validator
 }
 
 // ApplyDefaultVariables will apply the defaults to variables that are not already set

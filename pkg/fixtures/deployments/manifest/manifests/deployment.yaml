@@ -44,12 +44,6 @@ spec:
             successThreshold: 1
             initialDelaySeconds: 3
           securityContext:
-            privileged: false
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 3000
-            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
             capabilities:

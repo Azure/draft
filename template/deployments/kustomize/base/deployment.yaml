@@ -3,7 +3,8 @@ kind: Deployment
 metadata:
   name: {{ .Config.GetVariableValue "APPNAME" }}
   labels:
-    app: {{ .Config.GetVariableValue "APPNAME"}}
+    app: {{ .Config.GetVariableValue "APPNAME" }}
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
     kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
   namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
 spec:
@@ -17,8 +18,74 @@ spec:
         app: {{ .Config.GetVariableValue "APPNAME" }}
     spec:
       containers:
-        - name: {{.Config.GetVariableValue "APPNAME" }}
+        - name: {{ .Config.GetVariableValue "APPNAME" }}
           image: {{ .Config.GetVariableValue "IMAGENAME" }}:{{ .Config.GetVariableValue "IMAGETAG" }}
           imagePullPolicy: Always
           ports:
-            - containerPort: {{ .Config.GetVariableValue "PORT" }}
+            - containerPort: {{ .Config.GetVariableValue "PORT"}}
+          resources:
+            requests:
+              cpu: "{{ .Config.GetVariableValue "CPUREQ" }}"
+              memory: "{{ .Config.GetVariableValue "MEMREQ" }}"
+            limits:
+              cpu: "{{ .Config.GetVariableValue "CPULIMIT" }}"
+              memory: "{{ .Config.GetVariableValue "MEMLIMIT" }}"
+          envFrom:
+            - configMapRef:
+                name: {{ .Config.GetVariableValue "APPNAME" | printf "%s-config" }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Config.GetVariableValue "PORT" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Config.GetVariableValue "PORT" }}
+            periodSeconds: {{ .Config.GetVariableValue "READINESSPERIOD" }}
+            timeoutSeconds: {{ .Config.GetVariableValue "READINESSTIMEOUT" }}
+            failureThreshold: {{ .Config.GetVariableValue "READINESSFAILURETHRESHOLD" }}
+            successThreshold: {{ .Config.GetVariableValue "READINESSSUCCESSTHRESHOLD" }}
+            initialDelaySeconds: {{ .Config.GetVariableValue "READINESSINITIALDELAY" }}
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 3000
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - SETPCAP
+                - MKNOD
+                - AUDIT_WRITE
+                - CHOWN
+                - DAC_OVERRIDE
+                - FOWNER
+                - FSETID
+                - KILL
+                - SETGID
+                - SETUID
+                - NET_BIND_SERVICE
+                - SYS_CHROOT
+                - SETFCAP
+                - SYS_PTRACE
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: {{ .Config.GetVariableValue "APPNAME" }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: {{ .Config.GetVariableValue "APPNAME" }}
+      hostNetwork: false
+      hostIPC: false

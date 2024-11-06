@@ -4,6 +4,7 @@ metadata:
   name: {{ .Config.GetVariableValue "APPNAME" }}
   namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
   labels:
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
     kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
 spec:
   type: LoadBalancer

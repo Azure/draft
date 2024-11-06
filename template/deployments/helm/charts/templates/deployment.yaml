@@ -12,7 +12,7 @@ spec:
 {{- `
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }} 
+  {{- end }}
   ` -}}
   selector:
     matchLabels:
@@ -23,7 +23,7 @@ spec:
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
-      {{- end }} 
+      {{- end }}
       ` -}}
       labels:
         {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" }}
@@ -47,15 +47,16 @@ spec:
               containerPort: {{ .Values.containerPort }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          ` -}}
+          envFrom:
+            - configMapRef:
+                name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}-config" }}
+          {{- `
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -64,8 +65,14 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      hostNetwork: false
+      hostIPC: false
 ` -}}

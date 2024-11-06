@@ -21,30 +21,22 @@ podAnnotations: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 service:
   annotations: {}
   type: LoadBalancer
   port: {{ .Config.GetVariableValue "SERVICEPORT" }}
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  limits:
+    cpu: "{{ .Config.GetVariableValue "CPULIMIT" }}"
+    memory: "{{ .Config.GetVariableValue "MEMLIMIT" }}"
+  requests:
+    cpu: "{{ .Config.GetVariableValue "CPUREQ" }}"
+    memory: "{{ .Config.GetVariableValue "MEMREQ" }}"
 
 autoscaling:
   enabled: false
@@ -53,10 +45,71 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+livenessProbe:
+  tcpSocket:
+    port: {{ .Config.GetVariableValue "PORT" }}
+readinessProbe:
+  tcpSocket:
+    port: {{ .Config.GetVariableValue "PORT" }}
+  periodSeconds: {{ .Config.GetVariableValue "READINESSPERIOD" }}
+  timeoutSeconds: {{ .Config.GetVariableValue "READINESSTIMEOUT" }}
+  failureThreshold: {{ .Config.GetVariableValue "READINESSFAILURETHRESHOLD" }}
+  successThreshold: {{ .Config.GetVariableValue "READINESSSUCCESSTHRESHOLD" }}
+  initialDelaySeconds: {{ .Config.GetVariableValue "READINESSINITIALDELAY" }}
+
 nodeSelector: {}
 
 tolerations: []
 
-affinity: {}
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app: {{ .Config.GetVariableValue "APPNAME" }}
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            app: {{ .Config.GetVariableValue "APPNAME" }}
+
+securityContext:
+  privileged: false
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 3000
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - SETPCAP
+      - MKNOD
+      - AUDIT_WRITE
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - FSETID
+      - KILL
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+      - SYS_CHROOT
+      - SETFCAP
+      - SYS_PTRACE
+
+envVars:
+{{- range $key, $value := .Config.GetVariableValue "ENVVARS" }}
+  {{ $key }}: {{ $value }}
+{{- end }}
 
 generatorLabel: {{ .Config.GetVariableValue "GENERATORLABEL" }}

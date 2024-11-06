@@ -36,6 +36,7 @@ Common labels
 {{ .Config.GetVariableValue "APPNAME" | printf "{{- define \"%s.labels\" -}}" }}
 helm.sh/chart: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.chart\" . }}" }}
 {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.selectorLabels\" . }}" }}
+{{ .Config.GetVariableValue "APPNAME" | printf "app.kubernetes.io/name: {{ include \"%s.name\" . }}" }}
 {{`{{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

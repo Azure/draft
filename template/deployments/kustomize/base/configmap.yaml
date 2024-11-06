@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Config.GetVariableValue "APPNAME" | printf "%s-config" }}
+  namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
+data:
+{{- range $key, $value := .Config.GetVariableValue "ENVVARS" }}
+  {{ $key }}: {{ $value }}
+{{- end }}

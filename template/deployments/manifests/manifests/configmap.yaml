@@ -3,6 +3,9 @@ kind: ConfigMap
 metadata:
   name: {{ .Config.GetVariableValue "APPNAME" | printf "%s-config" }}
   namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
+  labels:
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
 data:
 {{- range $key, $value := .Config.GetVariableValue "ENVVARS" }}
   {{ $key }}: {{ $value }}

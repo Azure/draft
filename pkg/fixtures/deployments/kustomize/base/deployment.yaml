@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: testapp
   labels:
-    app: testapp
     app.kubernetes.io/name: testapp
     kubernetes.azure.com/generator: draft
   namespace: default
@@ -11,11 +10,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: testapp
+      app.kubernetes.io/name: testapp
   template:
     metadata:
       labels:
-        app: testapp
+        app.kubernetes.io/name: testapp
     spec:
       containers:
         - name: testapp
@@ -25,11 +24,11 @@ spec:
             - containerPort: 80
           resources:
             requests:
-              cpu: "0.5"
+              cpu: "1"
               memory: "512Mi"
             limits:
-              cpu: "0.5"
-              memory: "512Mi"
+              cpu: "2"
+              memory: "1Gi"
           envFrom:
             - configMapRef:
                 name: testapp-config

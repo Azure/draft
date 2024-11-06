@@ -4,8 +4,7 @@ metadata:
   name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}" }}
   labels:
     {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.labels\" . | nindent 4 }}" }}
-    {{- `
-    kubernetes.azure.com/generator: {{.Values.generatorLabel}}
+  {{- `
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
   namespace: {{ .Values.namespace }}

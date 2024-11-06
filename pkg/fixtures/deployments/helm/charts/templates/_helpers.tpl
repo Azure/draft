@@ -26,7 +26,7 @@
 {{- define "testapp.labels" -}}
 helm.sh/chart: {{ include "testapp.chart" . }}
 {{ include "testapp.selectorLabels" . }}
-app.kubernetes.io/name: {{ include "testapp.name" . }}
+kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

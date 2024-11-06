@@ -3,4 +3,7 @@ kind: ConfigMap
 metadata:
   name: testapp-config
   namespace: default
+  labels:
+    app.kubernetes.io/name: testapp
+    kubernetes.azure.com/generator: draft
 data:

@@ -9,7 +9,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: testapp
+    app.kubernetes.io/name: testapp
   ports:
     - protocol: TCP
       port: 80

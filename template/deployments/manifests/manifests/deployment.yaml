@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: {{ .Config.GetVariableValue "APPNAME" }}
   labels:
-    app: {{ .Config.GetVariableValue "APPNAME" }}
     app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
     kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
   namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
@@ -11,11 +10,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Config.GetVariableValue "APPNAME" }}
+      app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
   template:
     metadata:
       labels:
-        app: {{ .Config.GetVariableValue "APPNAME" }}
+        app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
     spec:
       containers:
         - name: {{ .Config.GetVariableValue "APPNAME" }}

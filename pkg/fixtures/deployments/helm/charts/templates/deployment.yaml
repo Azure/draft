@@ -4,7 +4,6 @@ metadata:
   name: {{ include "testapp.fullname" . }}
   labels:
     {{- include "testapp.labels" . | nindent 4 }}
-    kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
   namespace: {{ .Values.namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}

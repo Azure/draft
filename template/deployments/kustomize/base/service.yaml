@@ -9,7 +9,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: {{ .Config.GetVariableValue "APPNAME" }}
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
   ports:
     - protocol: TCP
       port: {{ .Config.GetVariableValue "SERVICEPORT" }}

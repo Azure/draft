@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Config.GetVariableValue "APPNAME" }}
+  labels:
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
+    app.kubernetes.io/part-of: {{ .Config.GetVariableValue "PARTOF" }}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Config.GetVariableValue "APPNAME" }}
+  ports:
+    - protocol: TCP
+      port: {{ .Config.GetVariableValue "PORT" }}
+      targetPort: {{ .Config.GetVariableValue "TARGETPORT" }}

@@ -3,12 +3,16 @@ package config
 import (
 	"fmt"
 	"io/fs"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/Azure/draft/template"
+	"github.com/blang/semver/v4"
 	"github.com/stretchr/testify/assert"
 )
+
+const alphaNumUnderscoreHyphen = "^[A-Za-z][A-Za-z0-9-_]{1,62}[A-Za-z0-9]$"
 
 var allTemplates = map[string]*DraftConfig{}
 
@@ -67,6 +71,7 @@ func TestTempalteValidation(t *testing.T) {
 }
 
 func loadTemplatesWithValidation() error {
+	regexp := regexp.MustCompile(alphaNumUnderscoreHyphen)
 	return fs.WalkDir(template.Templates, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -93,6 +98,10 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has no template name", path)
 		}
 
+		if !regexp.MatchString(currTemplate.TemplateName) {
+			return fmt.Errorf("template %s name must match the alpha-numeric-underscore-hyphen regex: %s", path, currTemplate.TemplateName)
+		}
+
 		if _, ok := allTemplates[strings.ToLower(currTemplate.TemplateName)]; ok {
 			return fmt.Errorf("template %s has a duplicate template name", path)
 		}
@@ -101,12 +110,12 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has an invalid type: %s", path, currTemplate.Type)
 		}
 
-		// version range check once we define versions
-		// if _, err := semver.ParseRange(currTemplate.Versions); err != nil {
-		// 	return fmt.Errorf("template %s has an invalid version range: %s", path, currTemplate.Versions)
-		// }
+		if _, err := semver.ParseRange(currTemplate.Versions); err != nil {
+			return fmt.Errorf("template %s has an invalid version range: %s", path, currTemplate.Versions)
+		}
 
 		referenceVarMap := map[string]*BuilderVar{}
+		conditionRefMap := map[string]*BuilderVar{}
 		allVariables := map[string]*BuilderVar{}
 		for _, variable := range currTemplate.Variables {
 			if variable.Name == "" {
@@ -121,29 +130,43 @@ func loadTemplatesWithValidation() error {
 				return fmt.Errorf("template %s has an invalid variable kind: %s", path, variable.Kind)
 			}
 
-			// version range check once we define versions
-			// if _, err := semver.ParseRange(variable.Versions); err != nil {
-			// 	return fmt.Errorf("template %s has an invalid version range: %s", path, variable.Versions)
-			// }
+			if _, err := semver.ParseRange(variable.Versions); err != nil {
+				return fmt.Errorf("template %s has an invalid version range: %s", path, variable.Versions)
+			}
 
 			allVariables[variable.Name] = variable
 			if variable.Default.ReferenceVar != "" {
 				referenceVarMap[variable.Name] = variable
+			}
+
+			if variable.ConditionalRef.ReferenceVar != "" {
+				conditionRefMap[variable.Name] = variable
 			}
 		}
 
 		for _, currVar := range referenceVarMap {
 			refVar, ok := allVariables[currVar.Default.ReferenceVar]
 			if !ok {
-				return fmt.Errorf("template %s has a variable %s with reference to a non-existent variable: %s", path, currVar.Name, currVar.Default.ReferenceVar)
+				return fmt.Errorf("template %s has a variable %s with default reference to a non-existent variable: %s", path, currVar.Name, currVar.Default.ReferenceVar)
 			}
 
 			if currVar.Name == refVar.Name {
-				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
+				return fmt.Errorf("template %s has a variable with cyclical default reference to itself: %s", path, currVar.Name)
 			}
 
-			if isCyclicalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
-				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
+			if isCyclicalDefaultVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
+				return fmt.Errorf("template %s has a variable with cyclical default reference to itself: %s", path, currVar.Name)
+			}
+		}
+
+		for _, currVar := range conditionRefMap {
+			refVar, ok := allVariables[currVar.ConditionalRef.ReferenceVar]
+			if !ok {
+				return fmt.Errorf("template %s has a variable %s with conditional reference to a non-existent variable: %s", path, currVar.Name, currVar.ConditionalRef.ReferenceVar)
+			}
+
+			if isCyclicalConditionalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
+				return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself or references a non existing variable: %s", path, currVar.Name)
 			}
 		}
 
@@ -152,7 +175,7 @@ func loadTemplatesWithValidation() error {
 	})
 }
 
-func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
+func isCyclicalDefaultVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
 	if initialVar.Name == currRefVar.Name {
 		return true
 	}
@@ -171,5 +194,27 @@ func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariable
 	}
 
 	visited[currRefVar.Name] = true
-	return isCyclicalVariableReference(initialVar, refVar, allVariables, visited)
+	return isCyclicalDefaultVariableReference(initialVar, refVar, allVariables, visited)
+}
+
+func isCyclicalConditionalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
+	if initialVar.Name == currRefVar.Name {
+		return true
+	}
+
+	if _, ok := visited[currRefVar.Name]; ok {
+		return true
+	}
+
+	if currRefVar.ConditionalRef.ReferenceVar == "" {
+		return false
+	}
+
+	refVar, ok := allVariables[currRefVar.ConditionalRef.ReferenceVar]
+	if !ok {
+		return false
+	}
+
+	visited[currRefVar.Name] = true
+	return isCyclicalConditionalVariableReference(initialVar, refVar, allVariables, visited)
 }

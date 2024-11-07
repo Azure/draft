@@ -2240,7 +2240,7 @@ jobs:
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: OliverMKing/ruby-hello-world
+            repository: davidgamero/sinatra-hello-world
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -2275,7 +2275,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
@@ -2381,7 +2381,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - name: Execute Dry Run with config file
         run: |
@@ -2416,7 +2416,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
@@ -2513,7 +2513,7 @@ jobs:
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: OliverMKing/ruby-hello-world
+            repository: davidgamero/sinatra-hello-world
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -2548,7 +2548,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/

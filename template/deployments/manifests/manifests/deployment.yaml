@@ -72,13 +72,11 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  app: {{ .Config.GetVariableValue "APPNAME" }}
+                  app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: {{ .Config.GetVariableValue "APPNAME" }}
-      hostNetwork: false
-      hostIPC: false
+              app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}

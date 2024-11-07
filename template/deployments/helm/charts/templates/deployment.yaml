@@ -72,6 +72,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      hostNetwork: false
-      hostIPC: false
 ` -}}

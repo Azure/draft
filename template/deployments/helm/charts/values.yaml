@@ -66,7 +66,7 @@ topologySpreadConstraints:
     whenUnsatisfiable: ScheduleAnyway
     labelSelector:
       matchLabels:
-        app: {{ .Config.GetVariableValue "APPNAME" }}
+        app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
 
 affinity:
   podAntiAffinity:
@@ -76,7 +76,7 @@ affinity:
         topologyKey: kubernetes.io/hostname
         labelSelector:
           matchLabels:
-            app: {{ .Config.GetVariableValue "APPNAME" }}
+            app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
 
 securityContext: {}
 

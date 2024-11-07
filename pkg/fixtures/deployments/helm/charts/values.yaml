@@ -66,7 +66,7 @@ topologySpreadConstraints:
     whenUnsatisfiable: ScheduleAnyway
     labelSelector:
       matchLabels:
-        app: testapp
+        app.kubernetes.io/name: testapp
 
 affinity:
   podAntiAffinity:
@@ -76,7 +76,7 @@ affinity:
         topologyKey: kubernetes.io/hostname
         labelSelector:
           matchLabels:
-            app: testapp
+            app.kubernetes.io/name: testapp
 
 securityContext: {}
 

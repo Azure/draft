@@ -37,7 +37,7 @@
   {
     "language": "ruby",
     "version": "3.1.2",
-    "port": "8000",
+    "port": "4567",
     "serviceport": 80,
     "repo": "davidgamero/sinatra-hello-world"
   },

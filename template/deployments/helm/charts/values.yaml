@@ -78,7 +78,28 @@ affinity:
           matchLabels:
             app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
 
-securityContext: {}
+securityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - SETPCAP
+      - MKNOD
+      - AUDIT_WRITE
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - FSETID
+      - KILL
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+      - SYS_CHROOT
+      - SETFCAP
+      - SYS_PTRACE
 
 envVars:
 {{- range $key, $value := .Config.GetVariableValue "ENVVARS" }}

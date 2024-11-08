@@ -44,6 +44,7 @@ spec:
             successThreshold: {{ .Config.GetVariableValue "READINESSSUCCESSTHRESHOLD" }}
             initialDelaySeconds: {{ .Config.GetVariableValue "READINESSINITIALDELAY" }}
           securityContext:
+            runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
             capabilities:

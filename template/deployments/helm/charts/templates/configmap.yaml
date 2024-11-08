@@ -10,6 +10,6 @@ metadata:
 data:
 {{- `
 {{- range $key, $value := .Values.envVars }}
-  "{{ $key }}": "{{ $value }}"
+  {{ $key }}: {{ $value }}
 {{- end }}
 ` -}}

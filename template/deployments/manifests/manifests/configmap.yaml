@@ -1,10 +1,12 @@
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
-  name: {{ .Config.GetVariableValue "APPNAME"}}
+  name: {{ .Config.GetVariableValue "APPNAME" | printf "%s-config" }}
   namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
   labels:
     app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
     kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
-spec:
-  type: LoadBalancer
+data:
+{{- range $key, $value := .Config.GetVariableValue "ENVVARS" }}
+  {{ $key }}: {{ $value }}
+{{- end }}

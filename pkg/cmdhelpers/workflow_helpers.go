@@ -80,7 +80,7 @@ func setDeploymentContainerImage(filePath, productionImage string) error {
 
 	printer := printers.YAMLPrinter{}
 
-	out, err := os.OpenFile(filePath, os.O_RDWR, 0755)
+	out, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return nil
 	}

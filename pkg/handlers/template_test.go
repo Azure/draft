@@ -17,7 +17,7 @@ func AlwaysFailingValidator(value string) error {
 	return fmt.Errorf("this is a failing validator")
 }
 
-func AlwaysFailingTransformer(value string) (string, error) {
+func AlwaysFailingTransformer(value string) (any, error) {
 	return "", fmt.Errorf("this is a failing transformer")
 }
 
@@ -54,7 +54,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 		fileNameOverride map[string]string
 		expectedErr      error
 		validators       map[string]func(string) error
-		transformers     map[string]func(string) (string, error)
+		transformers     map[string]func(string) (any, error)
 	}{
 		{
 			name:            "valid manifest deployment",
@@ -71,6 +71,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"IMAGETAG":       "latest",
 				"GENERATORLABEL": "draft",
 				"SERVICEPORT":    "80",
+				"ENVVARS":        `{"key1":"value1","key2":"value2"}`,
 			},
 		},
 		{
@@ -122,6 +123,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"IMAGETAG":       "latest",
 				"GENERATORLABEL": "draft",
 				"SERVICEPORT":    "80",
+				"ENVVARS":        `{"key1":"value1","key2":"value2"}`,
 			},
 			fileNameOverride: map[string]string{
 				"deployment.yaml": "deployment-override.yaml",
@@ -396,7 +398,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"GENERATORLABEL": "draft",
 				"SERVICEPORT":    "80",
 			},
-			transformers: map[string]func(string) (string, error){
+			transformers: map[string]func(string) (any, error){
 				"kubernetesResourceName": AlwaysFailingTransformer,
 			},
 			expectedErr: fmt.Errorf("this is a failing transformer"),

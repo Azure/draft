@@ -4,11 +4,12 @@ metadata:
   name: testapp
   namespace: default
   labels:
+    app.kubernetes.io/name: testapp
     kubernetes.azure.com/generator: draft
 spec:
   type: LoadBalancer
   selector:
-    app: testapp
+    app.kubernetes.io/name: testapp
   ports:
     - protocol: TCP
       port: 80

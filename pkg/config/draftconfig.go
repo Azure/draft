@@ -16,7 +16,7 @@ import (
 const draftConfigFile = "draft.yaml"
 
 type VariableValidator func(string) error
-type VariableTransformer func(string) (string, error)
+type VariableTransformer func(string) (any, error)
 
 type DraftConfig struct {
 	TemplateName        string                         `yaml:"templateName"`
@@ -99,7 +99,7 @@ func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {
 	return nil, fmt.Errorf("variable %s not found", name)
 }
 
-func (d *DraftConfig) GetVariableValue(name string) (string, error) {
+func (d *DraftConfig) GetVariableValue(name string) (any, error) {
 	for _, variable := range d.Variables {
 		if variable.Name == name {
 			if variable.Value == "" {

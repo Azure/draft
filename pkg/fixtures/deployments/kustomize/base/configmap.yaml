@@ -1,10 +1,9 @@
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
-  name: testapp
+  name: testapp-config
   namespace: default
   labels:
     app.kubernetes.io/name: testapp
     kubernetes.azure.com/generator: draft
-spec:
-  type: LoadBalancer
+data:

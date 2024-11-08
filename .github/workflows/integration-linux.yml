@@ -444,6 +444,8 @@ jobs:
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - name: print manifests
+        run: cat ./langtest/manifests/*
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
@@ -2238,7 +2240,7 @@ jobs:
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: OliverMKing/ruby-hello-world
+            repository: davidgamero/sinatra-hello-world
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -2273,7 +2275,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
@@ -2379,7 +2381,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - name: Execute Dry Run with config file
         run: |
@@ -2414,7 +2416,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
@@ -2511,7 +2513,7 @@ jobs:
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: OliverMKing/ruby-hello-world
+            repository: davidgamero/sinatra-hello-world
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -2546,7 +2548,7 @@ jobs:
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/

@@ -3,13 +3,13 @@ kind: Deployment
 metadata:
   name: testapp
   labels:
-    app: testapp
+    app.kubernetes.io/name: testapp
     kubernetes.azure.com/generator: draft
   namespace: default
 spec:
   selector:
     matchLabels:
-      app: testapp
+      app.kubernetes.io/name: testapp
   template:
     spec:
       containers:

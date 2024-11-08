@@ -1,7 +1,6 @@
 package fixtures
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -20,7 +19,7 @@ func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) 
 		fixtureWords := strings.Split(normalizeWhitespace(fixtureContent), " ")
 		differingWords := []string{}
 		for i, word := range genWords {
-			if word != fixtureWords[i] {
+			if i < len(fixtureWords) && word != fixtureWords[i] {
 				differingWords = append(differingWords, fmt.Sprintf("'%s' != '%s'", word, fixtureWords[i]))
 				if len(differingWords) == 1 {
 					fmt.Println("Generated Word | Fixture Word")
@@ -29,7 +28,7 @@ func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) 
 			}
 		}
 
-		return errors.New(fmt.Sprintf("generated content does not match fixture: %s", strings.Join(differingWords, ", ")))
+		return fmt.Errorf("generated content does not match fixture for file %s: %s", fixturePath, strings.Join(differingWords, ", "))
 	}
 
 	return nil

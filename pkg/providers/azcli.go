@@ -12,9 +12,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type SubLabel struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+// EnsureAzCli ensures that the Azure CLI is installed and the user is logged in
+func EnsureAzCli() {
+	EnsureAzCliInstalled()
+	EnsureAzCliLoggedIn()
 }
 
 func GetAzCliVersion() string {
@@ -56,7 +57,7 @@ func upgradeAzCli() {
 	log.Info("Azure CLI upgrade was successful!")
 }
 
-func CheckAzCliInstalled() {
+func EnsureAzCliInstalled() {
 	log.Debug("Checking that Azure Cli is installed...")
 	azCmd := exec.Command("az")
 	_, err := azCmd.CombinedOutput()
@@ -93,45 +94,13 @@ func IsLoggedInToAz() bool {
 	return true
 }
 
-func HasGhCli() bool {
-	log.Debug("Checking that github cli is installed...")
-	ghCmd := exec.Command("gh")
-	_, err := ghCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal("Error: The github cli is required to complete this process. Find installation instructions at this link: https://github.com/cli/cli#installation")
-		return false
+func EnsureAzCliLoggedIn() {
+	EnsureAzCliInstalled()
+	if !IsLoggedInToAz() {
+		if err := LogInToAz(); err != nil {
+			log.Fatal("Error: unable to log in to Azure")
+		}
 	}
-
-	log.Debug("Github cli found!")
-	return true
-}
-
-func IsLoggedInToGh() bool {
-	log.Debug("Checking that user is logged in to github...")
-	ghCmd := exec.Command("gh", "auth", "status")
-	out, err := ghCmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf(string(out))
-		return false
-	}
-
-	log.Debug("User is logged in!")
-	return true
-
-}
-
-func LogInToGh() error {
-	log.Debug("Logging user in to github...")
-	ghCmd := exec.Command("gh", "auth", "login")
-	ghCmd.Stdin = os.Stdin
-	ghCmd.Stdout = os.Stdout
-	ghCmd.Stderr = os.Stderr
-	err := ghCmd.Run()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func LogInToAz() error {
@@ -200,16 +169,6 @@ func isValidResourceGroup(
 	return nil
 }
 
-func isValidGhRepo(repo string) error {
-	listReposCmd := exec.Command("gh", "repo", "view", repo)
-	_, err := listReposCmd.CombinedOutput()
-	if err != nil {
-		log.Fatal("Github repo not found")
-		return err
-	}
-	return nil
-}
-
 func AzAppExists(appName string) bool {
 	filter := fmt.Sprintf("displayName eq '%s'", appName)
 	checkAppExistsCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
@@ -269,7 +228,7 @@ func AzAksExists(aksName string, resourceGroup string) bool {
 }
 
 func GetCurrentAzSubscriptionLabel() (SubLabel, error) {
-	CheckAzCliInstalled()
+	EnsureAzCliInstalled()
 	if !IsLoggedInToAz() {
 		if err := LogInToAz(); err != nil {
 			return SubLabel{}, fmt.Errorf("failed to log in to Azure CLI: %v", err)
@@ -293,7 +252,7 @@ func GetCurrentAzSubscriptionLabel() (SubLabel, error) {
 }
 
 func GetAzSubscriptionLabels() ([]SubLabel, error) {
-	CheckAzCliInstalled()
+	EnsureAzCliInstalled()
 	if !IsLoggedInToAz() {
 		if err := LogInToAz(); err != nil {
 			return nil, fmt.Errorf("failed to log in to Azure CLI: %v", err)

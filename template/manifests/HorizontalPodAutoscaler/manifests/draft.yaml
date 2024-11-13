@@ -1,0 +1,51 @@
+templateName: "horizontalPodAutoscaler-manifests"
+description: "This template is used to create a horizontalPodAutoscaling for an application"
+versions: "0.0.1"
+defaultVersion: "0.0.1"
+type: "manifest"
+variables:
+  - name: "APPNAME"
+    type: "string"
+    kind: "kubernetesResourceName"
+    description: "the name of the application"
+    versions: ">=0.0.1"
+  - name: "PARTOF"
+    type: "string"
+    kind: "label"
+    description: "the label to identify which project the resource belong to"
+    versions: ">=0.0.1"
+  - name: "GENERATORLABEL"
+    type: "string"
+    kind: "label"
+    description: "the label to identify who generated the resource"
+    versions: ">=0.0.1"
+    default:
+      value: "draft"
+  - name: "MINIMUMREPLICAS"
+    type: "int"
+    kind: "replicaCount"
+    description: "specifies the minimum number of pod replicas that the deployment should have"
+    versions: ">=0.0.1"
+    default:
+      value: 2
+  - name: "MAXIMUMREPLICAS"
+    type: "int"
+    kind: "replicaCount"
+    description: "defines the maximum number of pod replicas the deployment can scale to"
+    versions: ">=0.0.1"
+    default:
+      value: 5
+  - name: "RESOURCETYPE"
+    type: "string"
+    kind: "scalingResourceType"
+    description: "specifies the resource type (e.g., cpu or memory) to be monitored for scaling"
+    versions: ">=0.0.1"
+    default:
+      value: "cpu"
+  - name: "AVGUTILIZATION"
+    type: "int"
+    kind: "scalingResourceUtilization"
+    description: "specifies the average utilization for the monitored resource, triggering scaling when exceeded"
+    versions: ">=0.0.1"
+    default:
+      value: 80

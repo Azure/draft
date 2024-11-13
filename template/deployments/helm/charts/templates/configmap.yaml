@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}-config" }}
+  labels:
+    {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.labels\" . | nindent 4 }}" }} 
+{{- `
+  namespace: {{ .Values.namespace }}
+` -}}
+data:
+{{- `
+{{- range $key, $value := .Values.envVars }}
+  {{ $key }}: {{ $value }}
+{{- end }}
+` -}}

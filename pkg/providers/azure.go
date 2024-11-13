@@ -8,7 +8,10 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/google/uuid"
+
 	"github.com/Azure/draft/pkg/spinner"
 
 	bo "github.com/cenkalti/backoff/v4"
@@ -31,13 +34,9 @@ type SetUpCmd struct {
 func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner) error {
 	log.Debug("Commencing github connection with azure...")
 
-	if !HasGhCli() || !IsLoggedInToGh() {
-		s.Stop()
-		if err := LogInToGh(); err != nil {
-			return err
-		}
-		s.Start()
-	}
+	EnsureGhCliInstalled()
+	EnsureGhCliLoggedIn()
+	s.Start()
 
 	if err := sc.ValidateSetUpConfig(); err != nil {
 		return err
@@ -61,7 +60,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.assignSpRole(); err != nil {
+	if err := sc.assignSpRole(ctx); err != nil {
 		return err
 	}
 
@@ -165,17 +164,36 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	return nil
 }
 
-func (sc *SetUpCmd) assignSpRole() error {
+func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
 	log.Debug("Assigning contributor role to service principal...")
 
-	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
-	assignSpRoleCmd := exec.Command("az", "role", "assignment", "create", "--role", "contributor", "--subscription", sc.SubscriptionID, "--assignee-object-id", sc.spObjectId, "--assignee-principal-type", "ServicePrincipal", "--scope", scope, "--only-show-errors")
-	out, err := assignSpRoleCmd.CombinedOutput()
-
+	roleAssignClient, err := createRoleAssignmentClient(sc.SubscriptionID)
 	if err != nil {
-		log.Printf("%s\n", out)
-		return err
+		return fmt.Errorf("creating role assignment client: %w", err)
 	}
+
+	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
+	objectID := sc.spObjectId
+	roleId := "b24988ac-6180-42a0-ab88-20f7382dd24c" // Contributor role ID
+	raUid := uuid.New().String()
+
+	fullAssignmentId := fmt.Sprintf("/%s/providers/Microsoft.Authorization/roleAssignments/%s", scope, raUid)
+	fullDefinitionId := fmt.Sprintf("/providers/Microsoft.Authorization/roleDefinitions/%s", roleId)
+
+	principalType := armauthorization.PrincipalTypeServicePrincipal
+	parameters := armauthorization.RoleAssignmentCreateParameters{
+		Properties: &armauthorization.RoleAssignmentProperties{
+			PrincipalID:      &objectID,
+			RoleDefinitionID: &fullDefinitionId,
+			PrincipalType:    &principalType,
+		},
+	}
+
+	_, err = roleAssignClient.CreateByID(ctx, fullAssignmentId, parameters, nil)
+	if err != nil {
+		return fmt.Errorf("creating role assignment: %w", err)
+	}
+
 	log.Debug("Role assigned successfully!")
 	return nil
 }

@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{.Config.GetVariableValue "APPNAME" }}
+  labels:
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME"}}
+    app.kubernetes.io/part-of: {{ .Config.GetVariableValue "PARTOF" }}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL"}}
+spec:
+  maxUnavailable: {{ .Config.GetVariableValue "MAXUNAVAILABLE" }}
+  selector:
+    matchLabels:
+      app: {{ .Config.GetVariableValue "APPNAME" }}

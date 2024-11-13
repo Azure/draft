@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -11,6 +12,25 @@ import (
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 	"github.com/stretchr/testify/assert"
 )
+
+func AlwaysFailingValidator(value string) error {
+	return fmt.Errorf("this is a failing validator")
+}
+
+func AlwaysFailingTransformer(value string) (any, error) {
+	return "", fmt.Errorf("this is a failing transformer")
+}
+
+func K8sLabelValidator(value string) error {
+	labelRegex, err := regexp.Compile("^((A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$")
+	if err != nil {
+		return err
+	}
+	if !labelRegex.MatchString(value) {
+		return fmt.Errorf("invalid label: %s", value)
+	}
+	return nil
+}
 
 func TestDeepCopy(t *testing.T) {
 	// This will fail on adding a new field to the undelying structs that arent handled in DeepCopy
@@ -33,13 +53,15 @@ func TestTemplateHandlerValidation(t *testing.T) {
 		varMap           map[string]string
 		fileNameOverride map[string]string
 		expectedErr      error
+		validators       map[string]func(string) error
+		transformers     map[string]func(string) (any, error)
 	}{
 		{
 			name:            "valid manifest deployment",
 			templateName:    "deployment-manifests",
 			fixturesBaseDir: "../fixtures/deployments/manifest",
 			version:         "0.0.1",
-			dest:            ".",
+			dest:            "./validation/.././",
 			templateWriter:  &writers.FileMapWriter{},
 			varMap: map[string]string{
 				"APPNAME":        "testapp",
@@ -49,6 +71,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"IMAGETAG":       "latest",
 				"GENERATORLABEL": "draft",
 				"SERVICEPORT":    "80",
+				"ENVVARS":        `{"key1":"value1","key2":"value2"}`,
 			},
 		},
 		{
@@ -100,6 +123,7 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"IMAGETAG":       "latest",
 				"GENERATORLABEL": "draft",
 				"SERVICEPORT":    "80",
+				"ENVVARS":        `{"key1":"value1","key2":"value2"}`,
 			},
 			fileNameOverride: map[string]string{
 				"deployment.yaml": "deployment-override.yaml",
@@ -290,9 +314,9 @@ func TestTemplateHandlerValidation(t *testing.T) {
 			},
 		},
 		{
-			name:            "valid azpipeline manifest deployment",
-			templateName:    "azure-pipeline-manifest",
-			fixturesBaseDir: "../fixtures/workflows/azurepipelines/manifest",
+			name:            "valid azpipeline manifests deployment",
+			templateName:    "azure-pipeline-manifests",
+			fixturesBaseDir: "../fixtures/workflows/azurepipelines/manifests",
 			version:         "0.0.1",
 			dest:            ".",
 			templateWriter:  &writers.FileMapWriter{},
@@ -321,6 +345,188 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				"CLUSTERNAME":            "testcluster",
 			},
 		},
+		{
+			name:            "valid app-routing ingress",
+			templateName:    "app-routing-ingress",
+			fixturesBaseDir: "../fixtures/addons/ingress",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"ingress-tls-cert-keyvault-uri": "test.uri",
+				"ingress-use-osm-mtls":          "false",
+				"ingress-host":                  "host",
+				"service-name":                  "test-service",
+				"service-namespace":             "test-namespace",
+				"service-port":                  "80",
+			},
+		},
+		{
+			name:            "manifest deployment vars with err from validators",
+			templateName:    "deployment-manifests",
+			fixturesBaseDir: "../fixtures/deployments/manifest",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME":        "testapp",
+				"NAMESPACE":      "default",
+				"PORT":           "80",
+				"IMAGENAME":      "testimage",
+				"IMAGETAG":       "latest",
+				"GENERATORLABEL": "draft",
+				"SERVICEPORT":    "80",
+			},
+			validators: map[string]func(string) error{
+				"kubernetesResourceName": AlwaysFailingValidator,
+			},
+			expectedErr: fmt.Errorf("this is a failing validator"),
+		},
+		{
+			name:            "manifest deployment vars with err from transformers",
+			templateName:    "deployment-manifests",
+			fixturesBaseDir: "../fixtures/deployments/manifest",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME":        "testapp",
+				"NAMESPACE":      "default",
+				"PORT":           "80",
+				"IMAGENAME":      "testimage",
+				"IMAGETAG":       "latest",
+				"GENERATORLABEL": "draft",
+				"SERVICEPORT":    "80",
+			},
+			transformers: map[string]func(string) (any, error){
+				"kubernetesResourceName": AlwaysFailingTransformer,
+			},
+			expectedErr: fmt.Errorf("this is a failing transformer"),
+		},
+		{
+			name:            "manifest deployment vars with err from label validator",
+			templateName:    "deployment-manifests",
+			fixturesBaseDir: "../fixtures/deployments/manifest",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME":        "*myTestApp",
+				"NAMESPACE":      "default",
+				"PORT":           "80",
+				"IMAGENAME":      "testimage",
+				"IMAGETAG":       "latest",
+				"GENERATORLABEL": "draft",
+				"SERVICEPORT":    "80",
+			},
+			validators: map[string]func(string) error{
+				"kubernetesResourceName": K8sLabelValidator,
+			},
+			expectedErr: fmt.Errorf("invalid label: *myTestApp"),
+		},
+		{
+			name:            "valid helm workflow",
+			templateName:    "github-workflow-helm",
+			fixturesBaseDir: "../fixtures/workflows/github/helm",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"WORKFLOWNAME":           "testWorkflow",
+				"BRANCHNAME":             "testBranch",
+				"ACRRESOURCEGROUP":       "testAcrRG",
+				"AZURECONTAINERREGISTRY": "testAcr",
+				"CONTAINERNAME":          "testContainer",
+				"CLUSTERRESOURCEGROUP":   "testClusterRG",
+				"CLUSTERNAME":            "testCluster",
+				"KUSTOMIZEPATH":          "./overlays/production",
+				"DEPLOYMENTMANIFESTPATH": "./manifests",
+				"DOCKERFILE":             "./Dockerfile",
+				"BUILDCONTEXTPATH":       "test",
+				"CHARTPATH":              "testPath",
+				"CHARTOVERRIDEPATH":      "testOverridePath",
+				"CHARTOVERRIDES":         "replicas:2",
+				"NAMESPACE":              "default",
+			},
+		},
+		{
+			name:            "valid helm workflow",
+			templateName:    "github-workflow-kustomize",
+			fixturesBaseDir: "../fixtures/workflows/github/kustomize",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"WORKFLOWNAME":           "testWorkflow",
+				"BRANCHNAME":             "testBranch",
+				"ACRRESOURCEGROUP":       "testAcrRG",
+				"AZURECONTAINERREGISTRY": "testAcr",
+				"CONTAINERNAME":          "testContainer",
+				"CLUSTERRESOURCEGROUP":   "testClusterRG",
+				"CLUSTERNAME":            "testCluster",
+				"DEPLOYMENTMANIFESTPATH": "./manifests",
+				"DOCKERFILE":             "./Dockerfile",
+				"BUILDCONTEXTPATH":       "test",
+				"NAMESPACE":              "default",
+			},
+		},
+		{
+			name:            "valid manifest workflow",
+			templateName:    "github-workflow-manifests",
+			fixturesBaseDir: "../fixtures/workflows/github/manifests",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"WORKFLOWNAME":           "testWorkflow",
+				"BRANCHNAME":             "testBranch",
+				"ACRRESOURCEGROUP":       "testAcrRG",
+				"AZURECONTAINERREGISTRY": "testAcr",
+				"CONTAINERNAME":          "testContainer",
+				"CLUSTERRESOURCEGROUP":   "testClusterRG",
+				"CLUSTERNAME":            "testCluster",
+				"DEPLOYMENTMANIFESTPATH": "./manifests",
+				"DOCKERFILE":             "./Dockerfile",
+				"BUILDCONTEXTPATH":       "test",
+				"NAMESPACE":              "default",
+			},
+		},
+		{
+			name:            "valid hpa manifest",
+			templateName:    "horizontalPodAutoscaler-manifests",
+			fixturesBaseDir: "../fixtures/manifests/hpa",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME": "test-app",
+				"PARTOF":  "test-app-project",
+			},
+		},
+		{
+			name:            "valid pdb manifest",
+			templateName:    "podDisruptionBudget-manifests",
+			fixturesBaseDir: "../fixtures/manifests/pdb",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME": "test-app",
+				"PARTOF":  "test-app-project",
+			},
+		},
+		{
+			name:            "valid service manifest",
+			templateName:    "service-manifests",
+			fixturesBaseDir: "../fixtures/manifests/service",
+			version:         "0.0.1",
+			dest:            ".",
+			templateWriter:  &writers.FileMapWriter{},
+			varMap: map[string]string{
+				"APPNAME": "test-app",
+				"PARTOF":  "test-app-project",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -333,6 +539,14 @@ func TestTemplateHandlerValidation(t *testing.T) {
 				template.Config.SetVariable(k, v)
 			}
 
+			for k, v := range tt.validators {
+				template.Config.SetVariableValidator(k, v)
+			}
+
+			for k, v := range tt.transformers {
+				template.Config.SetVariableTransformer(k, v)
+			}
+
 			overrideReverseLookup := make(map[string]string)
 			for k, v := range tt.fileNameOverride {
 				template.Config.SetFileNameOverride(k, v)
@@ -341,7 +555,11 @@ func TestTemplateHandlerValidation(t *testing.T) {
 
 			err = template.Generate()
 			if tt.expectedErr != nil {
-				assert.Equal(t, tt.expectedErr.Error(), err.Error())
+				if err == nil {
+					t.Errorf("expected error %v, got nil", tt.expectedErr)
+					return
+				}
+				assert.True(t, strings.Contains(err.Error(), tt.expectedErr.Error()))
 				return
 			}
 			assert.Nil(t, err)

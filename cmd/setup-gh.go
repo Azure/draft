@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/draft/pkg/cred"
 	"github.com/Azure/draft/pkg/prompts"
@@ -29,6 +30,9 @@ application and service principle, and will configure that application to trust 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 
+			providers.EnsureAzCli()
+			providers.EnsureGhCli()
+
 			azCred, err := cred.GetCred()
 			if err != nil {
 				return fmt.Errorf("getting credentials: %w", err)
@@ -40,6 +44,13 @@ application and service principle, and will configure that application to trust 
 			}
 
 			sc.AzClient.AzTenantClient = client
+
+			roleAssignmentClient, err := armauthorization.NewRoleAssignmentsClient(sc.SubscriptionID, azCred, nil)
+			if err != nil {
+				return fmt.Errorf("getting role assignment client: %w", err)
+			}
+
+			sc.AzClient.RoleAssignClient = roleAssignmentClient
 
 			err = fillSetUpConfig(sc)
 			if err != nil {

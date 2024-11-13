@@ -53,3 +53,83 @@ variables:
       value: "draft"
     description: "the label to identify who generated the resource"
     versions: ">=0.0.1"
+  - name: "CPUREQ"
+    type: "string"
+    kind: "kubernetesResourceRequest"
+    default:
+      disablePrompt: true
+      value: "1"
+    description: "resource request for CPU"
+    versions: ">=0.0.1"
+  - name: "MEMREQ"
+    type: "string"
+    kind: "kubernetesResourceRequest"
+    default:
+      disablePrompt: true
+      value: "512Mi"
+    description: "resource request for Memory"
+    versions: ">=0.0.1"
+  - name: "CPULIMIT"
+    type: "string"
+    kind: "kubernetesResourceLimit"
+    default:
+      disablePrompt: true
+      value: "2"
+    description: "resource limit for CPU"
+    versions: ">=0.0.1"
+  - name: "MEMLIMIT"
+    type: "string"
+    kind: "kubernetesResourceLimit"
+    default:
+      disablePrompt: true
+      value: "1Gi"
+    description: "resource request for Memory"
+    versions: ">=0.0.1"
+  - name: "READINESSPERIOD"
+    type: "int"
+    kind: "kubernetesProbePeriod"
+    default:
+      disablePrompt: true
+      value: 5
+    description: "kubernetes readiness probe period in seconds"
+    versions: ">=0.0.1"
+  - name: "READINESSTIMEOUT"
+    type: "int"
+    kind: "kubernetesProbeTimeout"
+    default:
+      disablePrompt: true
+      value: 5
+    description: "kubernetes readiness probe timeout in seconds"
+    versions: ">=0.0.1"
+  - name: "READINESSFAILURETHRESHOLD"
+    type: "int"
+    kind: "kubernetesProbeThreshold"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "kubernetes readiness probe failure threshold"
+    versions: ">=0.0.1"
+  - name: "READINESSSUCCESSTHRESHOLD"
+    type: "int"
+    kind: "kubernetesProbeThreshold"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "kubernetes readiness probe success threshold"
+    versions: ">=0.0.1"
+  - name: "READINESSINITIALDELAY"
+    type: "int"
+    kind: "kubernetesProbeDelay"
+    default:
+      disablePrompt: true
+      value: 3
+    description: "kubernetes readiness probe initial delay in seconds"
+    versions: ">=0.0.1"
+  - name: "ENVVARS"
+    type: "object"
+    kind: "envVarMap"
+    default:
+      disablePrompt: true
+      value: "{}"
+    description: "a map of key/value environment variables to be set in the deployment"
+    versions: ">=0.0.1"

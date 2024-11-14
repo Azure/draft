@@ -47,7 +47,6 @@ env:
   DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
   BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
-  FLEET: {{ .Config.GetVariableValue "FLEET" }}
 {{`
 jobs:
   buildImage:
@@ -95,15 +94,9 @@ jobs:
         uses: azure/use-kubelogin@v1
         with:
           kubelogin-version: 'v0.0.25'
-      # Retrieves fleet credentials
-      - name: Get fleet credentials
-        if: env.FLEET == 'yes'
-        run: |
-          az fleet get-credentials -g ${{ env.CLUSTER_RESOURCE_GROUP }} -n ${{ env.CLUSTER_NAME }}
 
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
-        if: env.FLEET != 'yes'
         uses: azure/aks-set-context@v3
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}

@@ -82,11 +82,11 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	}
 
 	t.Config.VariableMapToDraftConfig(flagVariablesMap)
-	
+
 	if err = prompts.RunPromptsFromConfigWithSkips(t.Config); err != nil {
 		return err
 	}
-	
+
 	if err := cmdhelpers.UpdateProductionDeployments(gwc.deployType, gwc.dest, t.Config, gwc.templateWriter); err != nil {
 		return fmt.Errorf("update production deployments: %w", err)
 	}

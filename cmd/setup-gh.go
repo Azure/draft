@@ -103,10 +103,6 @@ func fillSetUpConfig(sc *providers.SetUpCmd) error {
 				return fmt.Errorf("getting subscription ID: %w", err)
 			}
 
-			sc.Fleet = getFleet()
-			if err != nil {
-				return fmt.Errorf("getting fleet: %w", err)
-			}
 		} else {
 			sc.SubscriptionID = getSubscriptionID()
 		}
@@ -251,19 +247,6 @@ func getAzSubscriptionId(subLabels []providers.SubLabel, currentSub providers.Su
 	}
 
 	return subLabel.ID, nil
-}
-
-func getFleet() string {
-	selection := &promptui.Select{
-		Label: "Is this for a fleet deployment?",
-		Items: []string{"Yes", "No"},
-	}
-	_, selectResponse, err := selection.Run()
-	if err != nil {
-		return err.Error()
-	}
-
-	return selectResponse
 }
 
 func init() {

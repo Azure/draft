@@ -18,7 +18,6 @@ import (
 type generateWorkflowCmd struct {
 	dest           string
 	deployType     string
-	fleet          string
 	flagVariables  []string
 	templateWriter templatewriter.TemplateWriter
 }
@@ -48,7 +47,6 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 
 	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVarP(&gwCmd.deployType, "deploy-type", "", "", "specify the k8s deployment type (helm, kustomize, manifests)")
-	f.StringVarP(&gwCmd.fleet, "fleet", "f", "", "specify if this is a fleet deployment (yes, no)")
 
 	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable CLUSTERNAME=testCluster --variable DOCKERFILE=./Dockerfile)")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
@@ -63,17 +61,7 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	var err error
 
 	flagVariablesMap = flagVariablesToMap(gwc.flagVariables)
-	if gwc.fleet == "" {
-		selection := &promptui.Select{
-			Label: "Is this a fleet deployment?",
-			Items: []string{"yes", "no"},
-		}
-		_, gwc.fleet, err = selection.Run()
-		if err != nil {
-			return err
-		}
-	}
-	flagVariablesMap["FLEET"] = gwc.fleet
+
 	if gwc.deployType == "" {
 		selection := &promptui.Select{
 			Label: "Select k8s Deployment Type",

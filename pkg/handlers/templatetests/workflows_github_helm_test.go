@@ -22,6 +22,7 @@ func TestGitHubWorkflowHelmTemplates(t *testing.T) {
 				"AZURECONTAINERREGISTRY": "testAcr",
 				"CONTAINERNAME":          "testContainer",
 				"CLUSTERRESOURCEGROUP":   "testClusterRG",
+				"CLUSTERRESOURCETYPE":    "managedClusters",
 				"CLUSTERNAME":            "testCluster",
 				"KUSTOMIZEPATH":          "./overlays/production",
 				"DEPLOYMENTMANIFESTPATH": "./manifests",

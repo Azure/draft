@@ -22,6 +22,7 @@ func TestGitHubWorkflowKustomizeTemplates(t *testing.T) {
 				"AZURECONTAINERREGISTRY": "testAcr",
 				"CONTAINERNAME":          "testContainer",
 				"CLUSTERRESOURCEGROUP":   "testClusterRG",
+				"CLUSTERRESOURCETYPE":    "managedClusters",
 				"CLUSTERNAME":            "testCluster",
 				"DEPLOYMENTMANIFESTPATH": "./manifests",
 				"DOCKERFILE":             "./Dockerfile",

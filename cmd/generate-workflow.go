@@ -8,10 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Azure/draft/pkg/cmdhelpers"
 	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
+	"github.com/Azure/draft/pkg/cmdhelpers"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 )
 
@@ -82,9 +82,11 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	}
 
 	t.Config.VariableMapToDraftConfig(flagVariablesMap)
+	
 	if err = prompts.RunPromptsFromConfigWithSkips(t.Config); err != nil {
 		return err
 	}
+	
 	if err := cmdhelpers.UpdateProductionDeployments(gwc.deployType, gwc.dest, t.Config, gwc.templateWriter); err != nil {
 		return fmt.Errorf("update production deployments: %w", err)
 	}

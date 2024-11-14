@@ -47,6 +47,8 @@ env:
   DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
   BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
+  FLEET: {{ .Config.GetVariableValue "FLEET" }}
+  FLEET_NAME: {{ .Config.GetVariableValue "FLEET_NAME" }}
 {{`
 jobs:
   buildImage:
@@ -78,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [buildImage]
     steps:
-      # Checks out the repository this file is in
+      # Checks out the reposcditory this file is in
       - uses: actions/checkout@v3
 
       # Logs in with your Azure credentials
@@ -95,8 +97,17 @@ jobs:
         with:
           kubelogin-version: 'v0.0.25'
 
+      # gets credentials for a fleet
+      - name: Get fleet credentials
+        if: env.FLEET == 'true'
+        run: |
+          az fleet get-credentials -g ${{ env.CLUSTER_RESOURCE_GROUP }} -n ${{ env.FLEET_NAME }}
+          export KUBECONFIG=/home/runner/.kube/config
+          echo "KUBECONFIG=/home/runner/.kube/config" >> $GITHUB_ENV
+
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
+        if: env.FLEET != 'true'
         uses: azure/aks-set-context@v3
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
@@ -106,6 +117,7 @@ jobs:
 
       # Checks if the AKS cluster is private
       - name: Is private cluster
+        if: env.FLEET != 'true'
         id: isPrivate
         run: |
           result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
@@ -113,6 +125,7 @@ jobs:
 
       # Deploys application based on given manifest  file
       - name: Deploys application
+        if: env.FLEET != 'true'
         uses: Azure/k8s-deploy@v4
         with:
           action: deploy
@@ -123,4 +136,9 @@ jobs:
           name: ${{ env.CLUSTER_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
           namespace: ${{ env.NAMESPACE }}
+      - name: Deploys fleet application
+        if: env.FLEET == 'true'
+        run: |
+          kubectl config current-context
+          /usr/bin/kubectl apply --validate=false --request-timeout=60s -f ${{ env.DEPLOYMENT_MANIFEST_PATH }}/configmap.yaml,${{ env.DEPLOYMENT_MANIFEST_PATH }}/deployment.yaml,${{ env.DEPLOYMENT_MANIFEST_PATH }}/service.yaml --namespace ${{ env.NAMESPACE }}
 `}}

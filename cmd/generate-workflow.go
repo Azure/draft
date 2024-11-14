@@ -47,7 +47,6 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 
 	f.StringVarP(&gwCmd.dest, "destination", "d", currentDirDefaultFlagValue, "specify the path to the project directory")
 	f.StringVarP(&gwCmd.deployType, "deploy-type", "", "", "specify the k8s deployment type (helm, kustomize, manifests)")
-
 	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass template variables (e.g. --variable CLUSTERNAME=testCluster --variable DOCKERFILE=./Dockerfile)")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
@@ -83,14 +82,8 @@ func (gwc *generateWorkflowCmd) generateWorkflows() error {
 	}
 
 	t.Config.VariableMapToDraftConfig(flagVariablesMap)
-	for key, value := range t.Config.GetVariableMap() {
-		fmt.Printf("%s: %s\n", key, value)
-	}
 	if err = prompts.RunPromptsFromConfigWithSkips(t.Config); err != nil {
 		return err
-	}
-	for key, value := range t.Config.GetVariableMap() {
-		fmt.Printf("%s: %s\n", key, value)
 	}
 	if err := cmdhelpers.UpdateProductionDeployments(gwc.deployType, gwc.dest, t.Config, gwc.templateWriter); err != nil {
 		return fmt.Errorf("update production deployments: %w", err)

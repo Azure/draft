@@ -102,7 +102,6 @@ func fillSetUpConfig(sc *providers.SetUpCmd) error {
 			if err != nil {
 				return fmt.Errorf("getting subscription ID: %w", err)
 			}
-
 		} else {
 			sc.SubscriptionID = getSubscriptionID()
 		}

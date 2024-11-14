@@ -44,7 +44,6 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 	}
 
 	if AzAppExists(sc.AppName) {
-		log.Debug(sc.AppName)
 		return errors.New("app already exists")
 	} else if err := sc.createAzApp(); err != nil {
 		return err

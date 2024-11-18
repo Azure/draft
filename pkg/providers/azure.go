@@ -28,7 +28,6 @@ type SetUpCmd struct {
 	tenantId          string
 	appObjectId       string
 	spObjectId        string
-	Fleet             string
 	AzClient          AzClient
 }
 
@@ -61,7 +60,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.assignSpRole(ctx); err != nil {
+	if err := sc.assignSpRoles(ctx); err != nil {
 		return err
 	}
 
@@ -165,12 +164,15 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	return nil
 }
 
-func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
-	if err := sc.assignRole(ctx, "b24988ac-6180-42a0-ab88-20f7382dd24c"); err != nil { // Contributor role ID
-		return err
+func (sc *SetUpCmd) assignSpRoles(ctx context.Context) error {
+	var spRoles = []string{
+		"b24988ac-6180-42a0-ab88-20f7382dd24c", // Contributor role ID
+		"5af6afb3-c06c-4fa4-8848-71a8aee05683", // Azure Kubernetes Fleet Manager RBAC Writer role ID
 	}
-	if err := sc.assignRole(ctx, "5af6afb3-c06c-4fa4-8848-71a8aee05683"); err != nil { // Azure Kubernetes Fleet Manager RBAC Writer role ID
-		return err
+	for _, role := range spRoles {
+		if err := sc.assignRole(ctx, role); err != nil {
+			return err
+		}
 	}
 	log.Debug("Roles assigned successfully!")
 	return nil

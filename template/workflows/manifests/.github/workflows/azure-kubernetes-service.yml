@@ -47,7 +47,7 @@ env:
   DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
   BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
-  FLEET_NAME: {{ .Config.GetVariableValue "FLEET_NAME" }}
+  FLEET_NAME: {{ .Config.GetVariableValue "FLEETNAME" }}
 {{`
 jobs:
   buildImage:

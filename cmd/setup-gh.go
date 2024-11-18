@@ -77,6 +77,7 @@ application and service principle, and will configure that application to trust 
 	f.StringVarP(&sc.SubscriptionID, "subscription-id", "s", emptyDefaultFlagValue, "specify the Azure subscription ID")
 	f.StringVarP(&sc.ResourceGroupName, "resource-group", "r", emptyDefaultFlagValue, "specify the Azure resource group name")
 	f.StringVarP(&sc.Repo, "gh-repo", "g", emptyDefaultFlagValue, "specify the github repository link")
+
 	sc.Provider = provider
 	return cmd
 }

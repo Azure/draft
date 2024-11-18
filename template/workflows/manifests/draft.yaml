@@ -70,14 +70,7 @@ variables:
       value: "default"
     description: "the Kubernetes namespace"
     versions: ">=0.0.1"
-  - name: "FLEET"
-    type: "boolean"
-    kind: "boolean"
-    default:
-      value: false
-    description: "specifies whether or not this is a fleet deployment"
-    versions: ">=0.0.1"
-  - name: "FLEET_NAME"
+  - name: "FLEETNAME"
     type: "string"
     kind: "fleetName"
     default:

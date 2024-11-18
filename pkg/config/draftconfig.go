@@ -37,6 +37,7 @@ type BuilderVar struct {
 	Default        BuilderVarDefault              `yaml:"default"`
 	Description    string                         `yaml:"description"`
 	ExampleValues  []string                       `yaml:"exampleValues"`
+	AllowedValues  []string                       `yaml:"allowedValues"`
 	Type           string                         `yaml:"type"`
 	Kind           string                         `yaml:"kind"`
 	Value          string                         `yaml:"value"`
@@ -50,9 +51,10 @@ type BuilderVarDefault struct {
 	Value            string `yaml:"value"`
 }
 
-// BuilderVarConditionalReference holds a reference to a variable thats value can effect validation/transformation of the associated variable
+// BuilderVarConditionalReference holds a reference to a variable thats value can effect usage/validation/transformation of the associated variable
 type BuilderVarConditionalReference struct {
-	ReferenceVar string `yaml:"referenceVar"`
+	ReferenceVar   string `yaml:"referenceVar"`
+	ConditionValue string `yaml:"conditionValue"`
 }
 
 func NewConfigFromFS(fileSys fs.FS, path string) (*DraftConfig, error) {

@@ -10,7 +10,7 @@ containerPort: {{ .Config.GetVariableValue "PORT" }}
 image:
   repository: {{ .Config.GetVariableValue "IMAGENAME" }}
   tag: {{ .Config.GetVariableValue "IMAGETAG" }}
-  pullPolicy: Always
+  pullPolicy: {{ .Config.GetVariableValue "IMAGEPULLPOLICY" }}
 
 imagePullSecrets: []
 nameOverride: ""
@@ -45,16 +45,42 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 livenessProbe:
+{{- if eq (.Config.GetVariableValue "PROBETYPE") "httpGet" }}
+  httpGet:
+    path: {{ .Config.GetVariableValue "PROBEHTTPPATH" }}
+    port: {{ .Config.GetVariableValue "PORT" }}
+{{- else if eq (.Config.GetVariableValue "PROBETYPE") "tcpSocket" }}
   tcpSocket:
     port: {{ .Config.GetVariableValue "PORT" }}
+{{- end }}
 readinessProbe:
+{{- if eq (.Config.GetVariableValue "PROBETYPE") "httpGet" }}
+  httpGet:
+    path: {{ .Config.GetVariableValue "PROBEHTTPPATH" }}
+    port: {{ .Config.GetVariableValue "PORT" }}
+{{- else if eq (.Config.GetVariableValue "PROBETYPE") "tcpSocket" }}
   tcpSocket:
     port: {{ .Config.GetVariableValue "PORT" }}
+{{- end }}
   periodSeconds: {{ .Config.GetVariableValue "READINESSPERIOD" }}
   timeoutSeconds: {{ .Config.GetVariableValue "READINESSTIMEOUT" }}
   failureThreshold: {{ .Config.GetVariableValue "READINESSFAILURETHRESHOLD" }}
   successThreshold: {{ .Config.GetVariableValue "READINESSSUCCESSTHRESHOLD" }}
   initialDelaySeconds: {{ .Config.GetVariableValue "READINESSINITIALDELAY" }}
+startupProbe:
+{{- if eq (.Config.GetVariableValue "PROBETYPE") "httpGet" }}
+  httpGet:
+    path: {{ .Config.GetVariableValue "PROBEHTTPPATH" }}
+    port: {{ .Config.GetVariableValue "PORT" }}
+{{- else if eq (.Config.GetVariableValue "PROBETYPE") "tcpSocket" }}
+  tcpSocket:
+    port: {{ .Config.GetVariableValue "PORT" }}
+{{- end }}
+  periodSeconds: {{ .Config.GetVariableValue "STARTUPPERIOD" }}
+  timeoutSeconds: {{ .Config.GetVariableValue "STARTUPTIMEOUT" }}
+  failureThreshold: {{ .Config.GetVariableValue "STARTUPFAILURETHRESHOLD" }}
+  successThreshold: {{ .Config.GetVariableValue "STARTUPSUCCESSTHRESHOLD" }}
+  initialDelaySeconds: {{ .Config.GetVariableValue "STARTUPINITIALDELAY" }}
 
 nodeSelector: {}
 

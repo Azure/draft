@@ -31,11 +31,11 @@ resources:
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
-    cpu: "2"
+    cpu: "1"
     memory: "1Gi"
   requests:
     cpu: "1"
-    memory: "512Mi"
+    memory: "1Gi"
 
 autoscaling:
   enabled: false
@@ -55,6 +55,14 @@ readinessProbe:
   failureThreshold: 1
   successThreshold: 1
   initialDelaySeconds: 3
+startupProbe:
+  tcpSocket:
+    port: 80
+  periodSeconds: 1
+  timeoutSeconds: 3
+  failureThreshold: 1
+  successThreshold: 1
+  initialDelaySeconds: 1
 
 nodeSelector: {}
 

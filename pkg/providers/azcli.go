@@ -95,7 +95,6 @@ func IsLoggedInToAz() bool {
 }
 
 func EnsureAzCliLoggedIn() {
-	EnsureAzCliInstalled()
 	if !IsLoggedInToAz() {
 		if err := LogInToAz(); err != nil {
 			log.Fatal("Error: unable to log in to Azure")
@@ -170,6 +169,7 @@ func isValidResourceGroup(
 }
 
 func AzAppExists(appName string) bool {
+	log.Debugf("Checking if app %q exists...", appName)
 	filter := fmt.Sprintf("displayName eq '%s'", appName)
 	checkAppExistsCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
 	out, err := checkAppExistsCmd.CombinedOutput()
@@ -228,13 +228,6 @@ func AzAksExists(aksName string, resourceGroup string) bool {
 }
 
 func GetCurrentAzSubscriptionLabel() (SubLabel, error) {
-	EnsureAzCliInstalled()
-	if !IsLoggedInToAz() {
-		if err := LogInToAz(); err != nil {
-			return SubLabel{}, fmt.Errorf("failed to log in to Azure CLI: %v", err)
-		}
-	}
-
 	getAccountCmd := exec.Command("az", "account", "show", "--query", "{id: id, name: name}")
 	out, err := getAccountCmd.CombinedOutput()
 	if err != nil {
@@ -252,13 +245,6 @@ func GetCurrentAzSubscriptionLabel() (SubLabel, error) {
 }
 
 func GetAzSubscriptionLabels() ([]SubLabel, error) {
-	EnsureAzCliInstalled()
-	if !IsLoggedInToAz() {
-		if err := LogInToAz(); err != nil {
-			return nil, fmt.Errorf("failed to log in to Azure CLI: %v", err)
-		}
-	}
-
 	getAccountCmd := exec.Command("az", "account", "list", "--all", "--query", "[].{id: id, name: name}")
 
 	out, err := getAccountCmd.CombinedOutput()

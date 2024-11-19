@@ -124,6 +124,24 @@ func (d *DraftConfig) GetVariableValue(name string) (any, error) {
 	return "", fmt.Errorf("variable %s not found", name)
 }
 
+func (d *DraftConfig) IsVariableValid(name string) bool {
+	for _, variable := range d.Variables {
+		if variable.Name == name {
+			if variable.Value == "" {
+				return false
+			}
+
+			if err := d.GetVariableValidator(variable.Kind)(variable.Value); err != nil {
+				return false
+			}
+
+			return true
+		}
+	}
+
+	return false
+}
+
 func (d *DraftConfig) SetVariable(name, value string) {
 	if variable, err := d.GetVariable(name); err != nil {
 		d.Variables = append(d.Variables, &BuilderVar{

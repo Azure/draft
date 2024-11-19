@@ -32,6 +32,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: testapp-config
+            - secretRef:
+                name: secret-ref
+                optional: true
           livenessProbe:
             tcpSocket:
               port: 80

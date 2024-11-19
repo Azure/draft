@@ -49,6 +49,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "testapp.fullname" . }}-config
+            - secretRef:
+                name: secret-ref
+                optional: true
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -207,3 +207,30 @@ variables:
       value: "{}"
     description: "a json map of string -> string key/value environment variables to be set in the deployment"
     versions: ">=0.0.1"
+  - name: "ENABLEWORKLOADIDENTITY"
+    type: "bool"
+    kind: "flag"
+    default:
+      disablePrompt: true
+      value: false
+    description: "flag to enable workload identity"
+    versions: ">=0.0.1"
+  - name: "SERVICEACCOUNT"
+    type: "string"
+    kind: "kubernetesResourceName"
+    conditionalReference:
+      variable: "ENABLEWORKLOADIDENTITY"
+      conditionValue: true
+    default:
+      disablePrompt: true
+      value: "service-account"
+    description: "the name of the service account to use with workload identity"
+    versions: ">=0.0.1"
+  - name: "ENVSECRETREF"
+    type: "string"
+    kind: "kubernetesResourceName"
+    default:
+      disablePrompt: true
+      value: "secret-ref"
+    description: "the name of the configmap reference"
+    versions: ">=0.0.1"

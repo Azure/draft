@@ -26,6 +26,9 @@ spec:
       ` -}}
       labels:
         {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" }}
+        {{- if eq (.Config.GetVariableValue "ENABLEWORKLOADIDENTITY") "true" }}
+        azure.workload.identity/use: "true"
+        {{- end}}
       namespace: {{ print "{{ .Values.namespace }}" }}
     spec: 
     {{- `
@@ -33,6 +36,11 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    ` -}}
+      {{- if eq (.Config.GetVariableValue "ENABLEWORKLOADIDENTITY") "true" }}
+      serviceAccountName: {{ .Config.GetVariableValue "SERVICEACCOUNT" }}
+      {{- end}}
+    {{- `
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -57,6 +65,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}-config" }}
+            - secretRef:
+                name: {{ .Config.GetVariableValue "ENVSECRETREF" }}
+                optional: true
           {{- `
       {{- with .Values.nodeSelector }}
       nodeSelector:

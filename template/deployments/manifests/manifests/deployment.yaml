@@ -5,6 +5,9 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
     kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
+    {{- if eq (.Config.GetVariableValue "ENABLEWORKLOADIDENTITY") "true" }}
+    azure.workload.identity/use: "true"
+    {{- end}}
   namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
 spec:
   replicas: 1
@@ -16,6 +19,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
     spec:
+      {{- if eq (.Config.GetVariableValue "ENABLEWORKLOADIDENTITY") "true" }}
+      serviceAccountName: {{ .Config.GetVariableValue "SERVICEACCOUNT" }}
+      {{- end}}
       containers:
         - name: {{ .Config.GetVariableValue "APPNAME" }}
           image: {{ .Config.GetVariableValue "IMAGENAME" }}:{{ .Config.GetVariableValue "IMAGETAG" }}
@@ -32,6 +38,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Config.GetVariableValue "APPNAME" | printf "%s-config" }}
+            - secretRef:
+                name: {{ .Config.GetVariableValue "ENVSECRETREF" }}
+                optional: true
           livenessProbe:
           {{- if eq (.Config.GetVariableValue "PROBETYPE") "httpGet" }}
             httpGet:

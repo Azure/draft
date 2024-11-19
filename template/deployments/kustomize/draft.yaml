@@ -213,7 +213,7 @@ variables:
     default:
       disablePrompt: true
       value: "secret-ref"
-    description: "the name of the configmap reference"
+    description: "the name of the kubernetes secret reference"
     versions: ">=0.0.1"
   - name: "ENABLEWORKLOADIDENTITY"
     type: "bool"

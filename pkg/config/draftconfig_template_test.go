@@ -121,6 +121,10 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has an invalid version range: %s", path, currTemplate.Versions)
 		}
 
+		if _, err := GetValidTemplateVersions(currTemplate.Versions); err != nil {
+			return fmt.Errorf("template %s has an invalid or unboud version range %s: %w", path, currTemplate.Versions, err)
+		}
+
 		referenceVarMap := map[string]*BuilderVar{}
 		conditionRefMap := map[string]*BuilderVar{}
 		allVariables := map[string]*BuilderVar{}

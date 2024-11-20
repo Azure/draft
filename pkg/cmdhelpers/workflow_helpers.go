@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
@@ -163,17 +162,7 @@ func (w *Workflows) CreateWorkflowFiles(deployType string, draftConfig *config.D
 
 	srcDir := path.Join(parentDirName, val.Name())
 	log.Debugf("source directory for workflow template: %s", srcDir)
-	for _, variable := range draftConfig.Variables {
-		if variable.Name == "aksResourceID" && strings.Contains(variable.Value, "Microsoft.ContainerService/fleets") {
-			parts := strings.Split(variable.Value, "/")
-			for i, part := range parts {
-				if part == "fleets" && i+1 < len(parts) {
-					draftConfig.SetVariable("FLEETNAME", parts[i+1])
-				}
-			}
 
-		}
-	}
 	if err := draftConfig.ApplyDefaultVariables(); err != nil {
 		return fmt.Errorf("create workflow files: %w", err)
 	}

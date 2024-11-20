@@ -13,6 +13,17 @@ import (
 	"github.com/blang/semver/v4"
 )
 
+type VariableCondition string
+
+const (
+	EqualTo    VariableCondition = "equals"
+	NotEqualTo VariableCondition = "notequals"
+)
+
+func (v VariableCondition) String() string {
+	return string(v)
+}
+
 const draftConfigFile = "draft.yaml"
 
 type VariableValidator func(string) error
@@ -32,16 +43,16 @@ type DraftConfig struct {
 }
 
 type BuilderVar struct {
-	Name           string                         `yaml:"name"`
-	ConditionalRef BuilderVarConditionalReference `yaml:"conditionalReference"`
-	Default        BuilderVarDefault              `yaml:"default"`
-	Description    string                         `yaml:"description"`
-	ExampleValues  []string                       `yaml:"exampleValues"`
-	AllowedValues  []string                       `yaml:"allowedValues"`
-	Type           string                         `yaml:"type"`
-	Kind           string                         `yaml:"kind"`
-	Value          string                         `yaml:"value"`
-	Versions       string                         `yaml:"versions"`
+	Name                  string                 `yaml:"name"`
+	ActiveWhenConstraints []ActiveWhenConstraint `yaml:"activeWhen"`
+	Default               BuilderVarDefault      `yaml:"default"`
+	Description           string                 `yaml:"description"`
+	ExampleValues         []string               `yaml:"exampleValues"`
+	AllowedValues         []string               `yaml:"allowedValues"`
+	Type                  string                 `yaml:"type"`
+	Kind                  string                 `yaml:"kind"`
+	Value                 string                 `yaml:"value"`
+	Versions              string                 `yaml:"versions"`
 }
 
 // BuilderVarDefault holds info on the default value of a variable
@@ -51,10 +62,11 @@ type BuilderVarDefault struct {
 	Value            string `yaml:"value"`
 }
 
-// BuilderVarConditionalReference holds a reference to a variable thats value can effect usage/validation/transformation of the associated variable
-type BuilderVarConditionalReference struct {
-	ReferenceVar   string `yaml:"referenceVar"`
-	ConditionValue string `yaml:"conditionValue"`
+// ActiveWhenConstraints holds information on when a variable is actively used by a template based off other variable values
+type ActiveWhenConstraint struct {
+	VariableName string            `yaml:"variableName"`
+	Value        string            `yaml:"value"`
+	Condition    VariableCondition `yaml:"condition"`
 }
 
 func NewConfigFromFS(fileSys fs.FS, path string) (*DraftConfig, error) {
@@ -190,6 +202,28 @@ func (d *DraftConfig) ApplyDefaultVariables() error {
 				variable.Value = defaultVal
 			}
 
+			if len(variable.ActiveWhenConstraints) > 0 {
+				isVarActive := true
+				for _, activeWhen := range variable.ActiveWhenConstraints {
+					refVar, err := d.GetVariable(activeWhen.VariableName)
+					if err != nil {
+						return fmt.Errorf("unable to get ActiveWhen reference variable: %w", err)
+					}
+
+					isConditionTrue, err := d.CheckActiveWhenConstraint(refVar, activeWhen)
+					if err != nil {
+						return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+					}
+
+					if !isConditionTrue {
+						isVarActive = false
+					}
+				}
+				if !isVarActive {
+					continue
+				}
+			}
+
 			if variable.Value == "" {
 				if variable.Default.Value != "" {
 					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
@@ -246,6 +280,28 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 				variable.Value = defaultVal
 			}
 
+			if len(variable.ActiveWhenConstraints) > 0 {
+				isVarActive := true
+				for _, activeWhen := range variable.ActiveWhenConstraints {
+					refVar, err := d.GetVariable(activeWhen.VariableName)
+					if err != nil {
+						return fmt.Errorf("unable to get ActiveWhen reference variable: %w", err)
+					}
+
+					isConditionTrue, err := d.CheckActiveWhenConstraint(refVar, activeWhen)
+					if err != nil {
+						return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+					}
+
+					if !isConditionTrue {
+						isVarActive = false
+					}
+				}
+				if !isVarActive {
+					continue
+				}
+			}
+
 			if variable.Value == "" {
 				if variable.Default.Value != "" {
 					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
@@ -258,6 +314,36 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 	}
 
 	return nil
+}
+
+func (d *DraftConfig) CheckActiveWhenConstraint(refVar *BuilderVar, activeWhen ActiveWhenConstraint) (bool, error) {
+	checkValue := refVar.Value
+	if checkValue == "" {
+		if refVar.Default.Value != "" {
+			checkValue = refVar.Default.Value
+		}
+
+		if refVar.Default.ReferenceVar != "" {
+			refValue, err := d.recurseReferenceVars(refVar, refVar, true)
+			if err != nil {
+				return false, err
+			}
+			if refValue == "" {
+				return false, errors.New("reference variable has no value")
+			}
+
+			checkValue = refValue
+		}
+	}
+
+	switch activeWhen.Condition {
+	case EqualTo:
+		return checkValue == activeWhen.Value, nil
+	case NotEqualTo:
+		return checkValue != activeWhen.Value, nil
+	}
+
+	return false, nil
 }
 
 // recurseReferenceVars recursively checks each variable's ReferenceVar if it doesn't have a custom input. If there's no more ReferenceVars, it will return the default value of the last ReferenceVar.
@@ -321,18 +407,31 @@ func (d *DraftConfig) DeepCopy() *DraftConfig {
 
 func (bv *BuilderVar) DeepCopy() *BuilderVar {
 	newVar := &BuilderVar{
-		Name:          bv.Name,
-		Default:       bv.Default,
-		Description:   bv.Description,
-		Type:          bv.Type,
-		Kind:          bv.Kind,
-		Value:         bv.Value,
-		Versions:      bv.Versions,
-		ExampleValues: make([]string, len(bv.ExampleValues)),
+		Name:                  bv.Name,
+		Default:               bv.Default,
+		Description:           bv.Description,
+		Type:                  bv.Type,
+		Kind:                  bv.Kind,
+		Value:                 bv.Value,
+		Versions:              bv.Versions,
+		ExampleValues:         make([]string, len(bv.ExampleValues)),
+		AllowedValues:         make([]string, len(bv.AllowedValues)),
+		ActiveWhenConstraints: make([]ActiveWhenConstraint, len(bv.ActiveWhenConstraints)),
 	}
-
+	for i, awc := range bv.ActiveWhenConstraints {
+		newVar.ActiveWhenConstraints[i] = *awc.DeepCopy()
+	}
+	copy(newVar.AllowedValues, bv.AllowedValues)
 	copy(newVar.ExampleValues, bv.ExampleValues)
 	return newVar
+}
+
+func (awc ActiveWhenConstraint) DeepCopy() *ActiveWhenConstraint {
+	return &ActiveWhenConstraint{
+		VariableName: awc.VariableName,
+		Value:        awc.Value,
+		Condition:    awc.Condition,
+	}
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs

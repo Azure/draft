@@ -111,12 +111,10 @@ variables:
   - name: "PROBEHTTPPATH"
     type: "string"
     kind: "kubernetesProbeHttpPath"
-    default:
-      disablePrompt: true
-      value: "/"
-    conditionalReference:
-      variable: "PROBETYPE"
-      conditionValue: "httpGet"
+    activeWhen:
+      - variableName: "PROBETYPE"
+        value: "httpGet"
+        condition: "equals"
     description: "The path to use for the httpGet probes"
     versions: ">=0.0.1"
   - name: "STARTUPPERIOD"
@@ -218,12 +216,10 @@ variables:
   - name: "SERVICEACCOUNT"
     type: "string"
     kind: "kubernetesResourceName"
-    conditionalReference:
-      variable: "ENABLEWORKLOADIDENTITY"
-      conditionValue: true
-    default:
-      disablePrompt: true
-      value: "service-account"
+    activeWhen:
+      - variableName: "ENABLEWORKLOADIDENTITY"
+        value: "true"
+        condition: "equals"
     description: "the name of the service account to use with workload identity"
     versions: ">=0.0.1"
   - name: "ENVSECRETREF"

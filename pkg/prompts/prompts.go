@@ -250,7 +250,14 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 		selection := strings.ToLower(str)
 		search = strings.ToLower(search)
 
-		return strings.Contains(selection, search)
+		searchWords := strings.Split(search, " ")
+
+		for _, word := range searchWords {
+			if !strings.Contains(selection, word) {
+				return false
+			}
+		}
+		return true
 	}
 
 	// sort the default selection to top if exists

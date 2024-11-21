@@ -202,26 +202,13 @@ func (d *DraftConfig) ApplyDefaultVariables() error {
 				variable.Value = defaultVal
 			}
 
-			if len(variable.ActiveWhenConstraints) > 0 {
-				isVarActive := true
-				for _, activeWhen := range variable.ActiveWhenConstraints {
-					refVar, err := d.GetVariable(activeWhen.VariableName)
-					if err != nil {
-						return fmt.Errorf("unable to get ActiveWhen reference variable: %w", err)
-					}
+			isVarActive, err := d.CheckActiveWhenConstraint(variable)
+			if err != nil {
+				return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+			}
 
-					isConditionTrue, err := d.CheckActiveWhenConstraint(refVar, activeWhen)
-					if err != nil {
-						return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
-					}
-
-					if !isConditionTrue {
-						isVarActive = false
-					}
-				}
-				if !isVarActive {
-					continue
-				}
+			if !isVarActive {
+				continue
 			}
 
 			if variable.Value == "" {
@@ -280,26 +267,13 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 				variable.Value = defaultVal
 			}
 
-			if len(variable.ActiveWhenConstraints) > 0 {
-				isVarActive := true
-				for _, activeWhen := range variable.ActiveWhenConstraints {
-					refVar, err := d.GetVariable(activeWhen.VariableName)
-					if err != nil {
-						return fmt.Errorf("unable to get ActiveWhen reference variable: %w", err)
-					}
+			isVarActive, err := d.CheckActiveWhenConstraint(variable)
+			if err != nil {
+				return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+			}
 
-					isConditionTrue, err := d.CheckActiveWhenConstraint(refVar, activeWhen)
-					if err != nil {
-						return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
-					}
-
-					if !isConditionTrue {
-						isVarActive = false
-					}
-				}
-				if !isVarActive {
-					continue
-				}
+			if !isVarActive {
+				continue
 			}
 
 			if variable.Value == "" {
@@ -316,34 +290,47 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 	return nil
 }
 
-func (d *DraftConfig) CheckActiveWhenConstraint(refVar *BuilderVar, activeWhen ActiveWhenConstraint) (bool, error) {
-	checkValue := refVar.Value
-	if checkValue == "" {
-		if refVar.Default.Value != "" {
-			checkValue = refVar.Default.Value
-		}
-
-		if refVar.Default.ReferenceVar != "" {
-			refValue, err := d.recurseReferenceVars(refVar, refVar, true)
+func (d *DraftConfig) CheckActiveWhenConstraint(variable *BuilderVar) (bool, error) {
+	if len(variable.ActiveWhenConstraints) > 0 {
+		isVarActive := true
+		for _, activeWhen := range variable.ActiveWhenConstraints {
+			refVar, err := d.GetVariable(activeWhen.VariableName)
 			if err != nil {
-				return false, err
-			}
-			if refValue == "" {
-				return false, errors.New("reference variable has no value")
+				return false, fmt.Errorf("unable to get ActiveWhen reference variable: %w", err)
 			}
 
-			checkValue = refValue
+			checkValue := refVar.Value
+			if checkValue == "" {
+				if refVar.Default.Value != "" {
+					checkValue = refVar.Default.Value
+				}
+
+				if refVar.Default.ReferenceVar != "" {
+					refValue, err := d.recurseReferenceVars(refVar, refVar, true)
+					if err != nil {
+						return false, err
+					}
+					if refValue == "" {
+						return false, errors.New("reference variable has no value")
+					}
+
+					checkValue = refValue
+				}
+			}
+
+			switch activeWhen.Condition {
+			case EqualTo:
+				isVarActive = checkValue == activeWhen.Value
+			case NotEqualTo:
+				isVarActive = checkValue != activeWhen.Value
+			default:
+				return false, fmt.Errorf("invalid activeWhen condition: %s", activeWhen.Condition)
+			}
 		}
+		return isVarActive, nil
 	}
 
-	switch activeWhen.Condition {
-	case EqualTo:
-		return checkValue == activeWhen.Value, nil
-	case NotEqualTo:
-		return checkValue != activeWhen.Value, nil
-	}
-
-	return false, nil
+	return true, nil
 }
 
 // recurseReferenceVars recursively checks each variable's ReferenceVar if it doesn't have a custom input. If there's no more ReferenceVars, it will return the default value of the last ReferenceVar.

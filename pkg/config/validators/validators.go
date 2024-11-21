@@ -25,7 +25,7 @@ func imagePullPolicyValidator(input string) error {
 	case "Always", "IfNotPresent", "Never":
 		return nil
 	default:
-		return fmt.Errorf("invalid image pull policy: %s", input)
+		return fmt.Errorf("invalid image pull policy: %s. valid values: Always, IfNotPresent, Never", input)
 	}
 }
 
@@ -34,7 +34,7 @@ func scalingResourceTypeValidator(input string) error {
 	case "cpu", "memory":
 		return nil
 	default:
-		return fmt.Errorf("invalid scaling resource type: %s", input)
+		return fmt.Errorf("invalid scaling resource type: %s. valid values: cpu, memory", input)
 	}
 }
 
@@ -43,7 +43,7 @@ func kubernetesProbeTypeValidator(input string) error {
 	case "httpGet", "tcpSocket":
 		return nil
 	default:
-		return fmt.Errorf("invalid probe type: %s", input)
+		return fmt.Errorf("invalid probe type: %s. valid values: httpGet, tcpSocket", input)
 	}
 }
 

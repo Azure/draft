@@ -1,6 +1,6 @@
 templateName: "deployment-manifests"
 description: "This template is used to create a Kubernetes manifest deployment for an application"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 type: "deployment"
 variables:

@@ -1,5 +1,5 @@
 templateName: "deployment-kustomize"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 description: "This template is used to create a Kustomize deployment for an application"
 type: "deployment"

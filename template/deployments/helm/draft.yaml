@@ -1,7 +1,7 @@
 templateName: "deployment-helm"
 description: "This template is used to create a Helm deployment for an application"
 type: "deployment"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 variables:
   - name: "PORT"

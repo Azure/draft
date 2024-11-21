@@ -1,6 +1,6 @@
 templateName: "service-manifests"
 description: "This template is used to create a generic Service for an application"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 type: "manifest"
 variables:

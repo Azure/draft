@@ -121,12 +121,10 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has an invalid type: %s", path, currTemplate.Type)
 		}
 
-		if _, err := semver.ParseRange(currTemplate.Versions); err != nil {
-			return fmt.Errorf("template %s has an invalid version range: %s", path, currTemplate.Versions)
-		}
-
-		if _, err := GetValidTemplateVersions(currTemplate.Versions); err != nil {
-			return fmt.Errorf("template %s has an invalid or unboud version range %s: %w", path, currTemplate.Versions, err)
+		for _, version := range currTemplate.Versions {
+			if _, err := semver.Parse(version); err != nil {
+				return fmt.Errorf("template %s has an invalid version: %s", path, version)
+			}
 		}
 
 		referenceVarMap := map[string]*BuilderVar{}

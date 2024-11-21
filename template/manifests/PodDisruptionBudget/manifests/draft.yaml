@@ -1,6 +1,6 @@
 templateName: "podDisruptionBudget-manifests"
 description: "This template is used to create a PodDisruptionBudget for an application"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersions: "0.0.1"
 type: "manifest"
 variables:

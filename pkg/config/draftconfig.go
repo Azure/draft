@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"slices"
 
 	"github.com/Azure/draft/pkg/config/transformers"
 	"github.com/Azure/draft/pkg/config/validators"
@@ -34,7 +35,7 @@ type DraftConfig struct {
 	DisplayName         string                         `yaml:"displayName"`
 	Description         string                         `yaml:"description"`
 	Type                string                         `yaml:"type"`
-	Versions            string                         `yaml:"versions"`
+	Versions            []string                       `yaml:"versions"`
 	DefaultVersion      string                         `yaml:"defaultVersion"`
 	Variables           []*BuilderVar                  `yaml:"variables"`
 	FileNameOverrideMap map[string]string              `yaml:"filenameOverrideMap"`
@@ -232,13 +233,8 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 		return fmt.Errorf("invalid version: %w", err)
 	}
 
-	expectedConfigVersionRange, err := semver.ParseRange(d.Versions)
-	if err != nil {
-		return fmt.Errorf("invalid config version range: %w", err)
-	}
-
-	if !expectedConfigVersionRange(v) {
-		return fmt.Errorf("version %s is outside of config version range %s", version, d.Versions)
+	if !slices.Contains(d.Versions, version) {
+		return fmt.Errorf("invalid config version range: %s", version)
 	}
 
 	for _, variable := range d.Variables {
@@ -376,11 +372,16 @@ func (d *DraftConfig) DeepCopy() *DraftConfig {
 		DisplayName:         d.DisplayName,
 		Description:         d.Description,
 		Type:                d.Type,
-		Versions:            d.Versions,
+		Versions:            make([]string, len(d.Versions)),
 		DefaultVersion:      d.DefaultVersion,
 		Variables:           make([]*BuilderVar, len(d.Variables)),
 		FileNameOverrideMap: make(map[string]string),
 	}
+
+	for i, version := range d.Versions {
+		newConfig.Versions[i] = version
+	}
+
 	for i, variable := range d.Variables {
 		newConfig.Variables[i] = variable.DeepCopy()
 	}

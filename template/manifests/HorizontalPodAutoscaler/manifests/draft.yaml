@@ -42,6 +42,9 @@ variables:
     versions: ">=0.0.1"
     default:
       value: "cpu"
+    allowedValues:
+      - "cpu"
+      - "memory"
   - name: "AVGUTILIZATION"
     type: "int"
     kind: "scalingResourceUtilization"

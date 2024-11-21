@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
@@ -44,11 +45,14 @@ var validVariableKinds = map[string]bool{
 	"filePath":                   true,
 	"flag":                       true,
 	"helmChartOverrides":         true,
+	"imagePullPolicy":            true,
 	"ingressHostName":            true,
 	"kubernetesNamespace":        true,
+	"kubernetesProbeHttpPath":    true,
 	"kubernetesProbePeriod":      true,
 	"kubernetesProbeTimeout":     true,
 	"kubernetesProbeThreshold":   true,
+	"kubernetesProbeType":        true,
 	"kubernetesProbeDelay":       true,
 	"kubernetesResourceLimit":    true,
 	"kubernetesResourceName":     true,
@@ -122,7 +126,7 @@ func loadTemplatesWithValidation() error {
 		}
 
 		referenceVarMap := map[string]*BuilderVar{}
-		conditionRefMap := map[string]*BuilderVar{}
+		activeWhenRefMap := map[string]*BuilderVar{}
 		allVariables := map[string]*BuilderVar{}
 		for _, variable := range currTemplate.Variables {
 			if variable.Name == "" {
@@ -146,8 +150,13 @@ func loadTemplatesWithValidation() error {
 				referenceVarMap[variable.Name] = variable
 			}
 
-			if variable.ConditionalRef.ReferenceVar != "" {
-				conditionRefMap[variable.Name] = variable
+			for _, activeWhen := range variable.ActiveWhenConstraints {
+				if activeWhen.VariableName != "" {
+					activeWhenRefMap[variable.Name] = variable
+				}
+				if !isValidVariableCondition(activeWhen.Condition) {
+					return fmt.Errorf("template %s has a variable %s with an invalid activeWhen condition: %s", path, variable.Name, activeWhen.Condition)
+				}
 			}
 		}
 
@@ -166,14 +175,25 @@ func loadTemplatesWithValidation() error {
 			}
 		}
 
-		for _, currVar := range conditionRefMap {
-			refVar, ok := allVariables[currVar.ConditionalRef.ReferenceVar]
-			if !ok {
-				return fmt.Errorf("template %s has a variable %s with conditional reference to a non-existent variable: %s", path, currVar.Name, currVar.ConditionalRef.ReferenceVar)
-			}
+		for _, currVar := range activeWhenRefMap {
 
-			if isCyclicalConditionalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
-				return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself or references a non existing variable: %s", path, currVar.Name)
+			for _, activeWhen := range currVar.ActiveWhenConstraints {
+				refVar, ok := allVariables[activeWhen.VariableName]
+				if !ok {
+					return fmt.Errorf("template %s has a variable %s with ActiveWhen reference to a non-existent variable: %s", path, currVar.Name, activeWhen.VariableName)
+				}
+
+				if currVar.Name == refVar.Name {
+					return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself: %s", path, currVar.Name)
+				}
+
+				if refVar.Type == "bool" {
+					if activeWhen.Value != "true" && activeWhen.Value != "false" {
+						return fmt.Errorf("template %s has a variable %s with ActiveWhen reference to a non-boolean value: %s", path, currVar.Name, activeWhen.Value)
+					}
+				} else if !slices.Contains(refVar.AllowedValues, activeWhen.Value) {
+					return fmt.Errorf("template %s has a variable %s with ActiveWhen reference to a non-existent allowed value: %s", path, currVar.Name, activeWhen.Value)
+				}
 			}
 		}
 
@@ -204,24 +224,11 @@ func isCyclicalDefaultVariableReference(initialVar, currRefVar *BuilderVar, allV
 	return isCyclicalDefaultVariableReference(initialVar, refVar, allVariables, visited)
 }
 
-func isCyclicalConditionalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
-	if initialVar.Name == currRefVar.Name {
+func isValidVariableCondition(condition VariableCondition) bool {
+	switch condition {
+	case EqualTo, NotEqualTo:
 		return true
-	}
-
-	if _, ok := visited[currRefVar.Name]; ok {
-		return true
-	}
-
-	if currRefVar.ConditionalRef.ReferenceVar == "" {
+	default:
 		return false
 	}
-
-	refVar, ok := allVariables[currRefVar.ConditionalRef.ReferenceVar]
-	if !ok {
-		return false
-	}
-
-	visited[currRefVar.Name] = true
-	return isCyclicalConditionalVariableReference(initialVar, refVar, allVariables, visited)
 }

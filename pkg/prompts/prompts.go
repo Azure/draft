@@ -53,6 +53,15 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 			continue
 		}
 
+		isVarActive, err := draftConfig.CheckActiveWhenConstraint(variable)
+		if err != nil {
+			return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+		}
+
+		if !isVarActive {
+			continue
+		}
+
 		log.Debugf("constructing prompt for: %s", variable.Name)
 		if variable.Type == "bool" {
 			input, err := RunBoolPrompt(variable, Stdin, Stdout)

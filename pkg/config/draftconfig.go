@@ -234,7 +234,7 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 	}
 
 	if !slices.Contains(d.Versions, version) {
-		return fmt.Errorf("invalid config version range: %s", version)
+		return fmt.Errorf("requested version outside of valid versions: %s", version)
 	}
 
 	for _, variable := range d.Variables {

@@ -285,7 +285,7 @@ func TestApplyDefaultVariablesForVersion(t *testing.T) {
 					},
 				},
 			},
-			wantErrMsg: "invalid config version range: 0.0.3",
+			wantErrMsg: "requested version outside of valid versions: 0.0.3",
 		},
 		{
 			testName: "overwriteDevfaultValue",

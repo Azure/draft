@@ -1,31 +1,34 @@
 package fixtures
 
 import (
-	"embed"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
 	"strings"
 )
 
-//go:embed pipelines/*
-var pipelines embed.FS
-
-//go:embed deployments/*
-var deployments embed.FS
-
 func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) error {
-	fullFixturePath := fmt.Sprintf("%s", fixturePath)
-
 	// Read the fixture content
-	fixtureContent, err := os.ReadFile(fullFixturePath)
+	fixtureContent, err := os.ReadFile(fixturePath)
 	if err != nil {
 		return fmt.Errorf("failed to read fixture: %w", err)
 	}
 
 	if normalizeWhitespace(fixtureContent) != normalizeWhitespace(generatedContent) {
-		return errors.New("generated content does not match fixture")
+		genWords := strings.Split(normalizeWhitespace(generatedContent), " ")
+		fixtureWords := strings.Split(normalizeWhitespace(fixtureContent), " ")
+		differingWords := []string{}
+		for i, word := range genWords {
+			if i < len(fixtureWords) && word != fixtureWords[i] {
+				differingWords = append(differingWords, fmt.Sprintf("'%s' != '%s'", word, fixtureWords[i]))
+				if len(differingWords) == 1 {
+					fmt.Println("Generated Word | Fixture Word")
+				}
+				fmt.Printf("'%s' != '%s'\n", word, fixtureWords[i])
+			}
+		}
+
+		return fmt.Errorf("generated content does not match fixture for file %s: %s", fixturePath, strings.Join(differingWords, ", "))
 	}
 
 	return nil

@@ -1,32 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "{{ include \"%s.fullname\" . }}" .APPNAME }}
+  name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}" }}
   labels:
-    {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .APPNAME }} 
-    {{- `
-    kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
+    {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.labels\" . | nindent 4 }}" }} 
+  {{- `
   namespace: {{ .Values.namespace }}
 ` -}}
 spec:
 {{- `
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }} 
+  {{- end }}
   ` -}}
   selector:
     matchLabels:
-      {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}
+      {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" }}
   template:
     metadata: 
     {{- `
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
-      {{- end }} 
+      {{- end }}
       ` -}}
       labels:
-        {{ printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" .APPNAME }}
+        {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" }}
       namespace: {{ print "{{ .Values.namespace }}" }}
     spec: 
     {{- `
@@ -47,21 +46,26 @@ spec:
               containerPort: {{ .Values.containerPort }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          ` -}}
+          envFrom:
+            - configMapRef:
+                name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}-config" }}
+          {{- `
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}

@@ -1,11 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ printf "{{ include \"%s.fullname\" . }}" .APPNAME }}
+  name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}" }}
   labels:
-    {{ printf "{{- include \"%s.labels\" . | nindent 4 }}" .APPNAME }}
-    {{- `
-    kubernetes.azure.com/generator: {{.Values.generatorLabel}}
+    {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.labels\" . | nindent 4 }}" }}
+  {{- `
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}
   namespace: {{ .Values.namespace }}
@@ -20,4 +19,4 @@ spec:
       name: svchttp
   ` -}}
   selector:
-    {{ printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" .APPNAME }}
+    {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.selectorLabels\" . | nindent 6 }}" }}

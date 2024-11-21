@@ -15,12 +15,12 @@ jobs:
           go-version: 1.22
       - name: make
         run: make
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: draft-binary
           path: ./draft
@@ -31,7 +31,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -66,7 +66,7 @@ jobs:
     needs: gomodule-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -172,7 +172,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -207,7 +207,7 @@ jobs:
     needs: gomodule-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -304,7 +304,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -339,7 +339,7 @@ jobs:
     needs: gomodule-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -408,7 +408,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: gomodule-manifests-create
           path: |
@@ -427,11 +427,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: gomodule-manifests-create
           path: ./langtest/
@@ -471,7 +471,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -506,7 +506,7 @@ jobs:
     needs: go-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -612,7 +612,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -647,7 +647,7 @@ jobs:
     needs: go-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -744,7 +744,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -779,7 +779,7 @@ jobs:
     needs: go-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -848,7 +848,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: go-manifests-create
           path: |
@@ -867,11 +867,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: go-manifests-create
           path: ./langtest/
@@ -911,7 +911,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -946,7 +946,7 @@ jobs:
     needs: python-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1052,7 +1052,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1087,7 +1087,7 @@ jobs:
     needs: python-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1184,7 +1184,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -1219,7 +1219,7 @@ jobs:
     needs: python-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1288,7 +1288,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: python-manifests-create
           path: |
@@ -1307,11 +1307,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: python-manifests-create
           path: ./langtest/
@@ -1351,7 +1351,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -1386,7 +1386,7 @@ jobs:
     needs: rust-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1492,7 +1492,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1527,7 +1527,7 @@ jobs:
     needs: rust-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1624,7 +1624,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -1659,7 +1659,7 @@ jobs:
     needs: rust-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1728,7 +1728,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: rust-manifests-create
           path: |
@@ -1747,11 +1747,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: rust-manifests-create
           path: ./langtest/
@@ -1791,7 +1791,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -1826,7 +1826,7 @@ jobs:
     needs: javascript-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1932,7 +1932,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -1967,7 +1967,7 @@ jobs:
     needs: javascript-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -2064,7 +2064,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -2099,7 +2099,7 @@ jobs:
     needs: javascript-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -2168,7 +2168,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: javascript-manifests-create
           path: |
@@ -2187,11 +2187,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: javascript-manifests-create
           path: ./langtest/
@@ -2231,14 +2231,14 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: OliverMKing/ruby-hello-world
+            repository: davidgamero/sinatra-hello-world
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -2266,14 +2266,14 @@ jobs:
     needs: ruby-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
@@ -2372,14 +2372,14 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - name: Execute Dry Run with config file
         run: |
@@ -2407,14 +2407,14 @@ jobs:
     needs: ruby-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/kustomize.yaml -d ./langtest/
@@ -2504,14 +2504,14 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
         - uses: actions/checkout@v3
           with:
-            repository: OliverMKing/ruby-hello-world
+            repository: davidgamero/sinatra-hello-world
             path: ./langtest
         - name: Execute Dry Run with config file
           run: |
@@ -2539,14 +2539,14 @@ jobs:
     needs: ruby-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
       - uses: actions/checkout@v3
         with:
-          repository: OliverMKing/ruby-hello-world
+          repository: davidgamero/sinatra-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/manifest.yaml -d ./langtest/
@@ -2608,7 +2608,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: ruby-manifests-create
           path: |
@@ -2627,11 +2627,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: ruby-manifests-create
           path: ./langtest/
@@ -2671,7 +2671,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -2706,7 +2706,7 @@ jobs:
     needs: csharp-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -2812,7 +2812,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -2847,7 +2847,7 @@ jobs:
     needs: csharp-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -2944,7 +2944,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -2979,7 +2979,7 @@ jobs:
     needs: csharp-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3048,7 +3048,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: csharp-manifests-create
           path: |
@@ -3067,11 +3067,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: csharp-manifests-create
           path: ./langtest/
@@ -3111,7 +3111,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -3146,7 +3146,7 @@ jobs:
     needs: java-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3252,7 +3252,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3287,7 +3287,7 @@ jobs:
     needs: java-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3384,7 +3384,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -3419,7 +3419,7 @@ jobs:
     needs: java-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3488,7 +3488,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: java-manifests-create
           path: |
@@ -3507,11 +3507,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: java-manifests-create
           path: ./langtest/
@@ -3551,7 +3551,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -3586,7 +3586,7 @@ jobs:
     needs: gradle-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3692,7 +3692,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3727,7 +3727,7 @@ jobs:
     needs: gradle-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3824,7 +3824,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -3859,7 +3859,7 @@ jobs:
     needs: gradle-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -3928,7 +3928,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: gradle-manifests-create
           path: |
@@ -3947,11 +3947,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: gradle-manifests-create
           path: ./langtest/
@@ -3991,7 +3991,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -4026,7 +4026,7 @@ jobs:
     needs: swift-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4132,7 +4132,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4167,7 +4167,7 @@ jobs:
     needs: swift-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4264,7 +4264,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -4299,7 +4299,7 @@ jobs:
     needs: swift-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4368,7 +4368,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: swift-manifests-create
           path: |
@@ -4387,11 +4387,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: swift-manifests-create
           path: ./langtest/
@@ -4431,7 +4431,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -4466,7 +4466,7 @@ jobs:
     needs: erlang-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4572,7 +4572,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4607,7 +4607,7 @@ jobs:
     needs: erlang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4704,7 +4704,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -4739,7 +4739,7 @@ jobs:
     needs: erlang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -4808,7 +4808,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: erlang-manifests-create
           path: |
@@ -4827,11 +4827,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: erlang-manifests-create
           path: ./langtest/
@@ -4871,7 +4871,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -4906,7 +4906,7 @@ jobs:
     needs: clojure-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -5012,7 +5012,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -5047,7 +5047,7 @@ jobs:
     needs: clojure-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -5144,7 +5144,7 @@ jobs:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -5179,7 +5179,7 @@ jobs:
     needs: clojure-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -5248,7 +5248,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: clojure-manifests-create
           path: |
@@ -5267,11 +5267,11 @@ jobs:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: clojure-manifests-create
           path: ./langtest/

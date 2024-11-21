@@ -7,33 +7,40 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Azure/draft/pkg/safeguards/types"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 //go:embed lib
 var embedFS embed.FS
 
-var fc FileCrawler
+var fc types.FileCrawler
 
 // primes the scheme to be able to interpret beta templates
 func init() {
 
-	selectedVersion = getLatestSafeguardsVersion()
-	updateSafeguardPaths(&safeguards)
+	types.SelectedVersion = getLatestSafeguardsVersion()
+	updateSafeguardPaths(&types.Safeguards)
 
-	fc = FileCrawler{
-		Safeguards:   safeguards,
-		constraintFS: embedFS,
+	fc = types.FileCrawler{
+		Safeguards:   types.Safeguards,
+		ConstraintFS: embedFS,
 	}
 }
 
+type ManifestResult struct {
+	Name             string              // the name of the manifest
+	ObjectViolations map[string][]string // a map of string object names to slice of string objectViolations
+	ViolationsCount  int                 // a count of how many violations are associated with this manifest
+}
+
 // GetManifestResults takes in a list of manifest files and returns a slice of ManifestViolation structs
-func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]ManifestResult, error) {
+func GetManifestResults(ctx context.Context, manifestFiles []types.ManifestFile) ([]types.ManifestResult, error) {
 	if len(manifestFiles) == 0 {
 		return nil, fmt.Errorf("path cannot be empty")
 	}
 
-	manifestResults := make([]ManifestResult, 0)
+	manifestResults := make([]types.ManifestResult, 0)
 
 	// constraint client instantiation
 	c, err := getConstraintClient()
@@ -66,7 +73,7 @@ func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]Ma
 	// aggregate of every manifest object into one list
 	allManifestObjects := []*unstructured.Unstructured{}
 	for _, m := range manifestFiles {
-		manifestObjects, err := fc.ReadManifests(m.Path) // read all the objects stored in a single file
+		manifestObjects, err := fc.ReadManifests(m.ManifestContent) // read all the objects stored in a single file
 		if err != nil {
 			log.Errorf("reading objects %s", err.Error())
 			return manifestResults, err
@@ -77,7 +84,10 @@ func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]Ma
 	}
 
 	if len(allManifestObjects) > 0 {
-		err = loadManifestObjects(ctx, c, allManifestObjects)
+		err := loadManifestObjects(ctx, c, allManifestObjects)
+		if err != nil {
+			return manifestResults, err
+		}
 	}
 
 	for _, m := range manifestFiles {
@@ -89,7 +99,8 @@ func GetManifestResults(ctx context.Context, manifestFiles []ManifestFile) ([]Ma
 			log.Errorf("validating objects: %s", err.Error())
 			return manifestResults, err
 		}
-		manifestResults = append(manifestResults, ManifestResult{
+
+		manifestResults = append(manifestResults, types.ManifestResult{
 			Name:             m.Name,
 			ObjectViolations: objectViolations,
 			ViolationsCount:  len(objectViolations),

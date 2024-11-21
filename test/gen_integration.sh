@@ -39,12 +39,12 @@ jobs:
           go-version: 1.22
       - name: make
         run: make
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: draft-binary
           path: ./draft
@@ -66,27 +66,27 @@ jobs:
           go-version: 1.22
       - name: make
         run: make
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: draft-binary
           path: ./draft.exe
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: check_windows_helm
           path: ./test/check_windows_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: check_windows_addon_helm
           path: ./test/check_windows_addon_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: check_windows_kustomize
           path: ./test/check_windows_kustomize.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: check_windows_addon_kustomize
           path: ./test/check_windows_addon_kustomize.ps1
@@ -186,7 +186,7 @@ languageVariables:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -232,7 +232,7 @@ languageVariables:
     needs: $lang-helm-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -343,7 +343,7 @@ languageVariables:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -389,7 +389,7 @@ languageVariables:
     needs: $lang-kustomize-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -491,7 +491,7 @@ languageVariables:
       needs: build
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
@@ -537,7 +537,7 @@ languageVariables:
     needs: $lang-manifest-dry-run
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
@@ -607,7 +607,7 @@ languageVariables:
         run: |
           find $WORKFLOWS_PATH -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: $lang-manifests-create
           path: |
@@ -626,11 +626,11 @@ languageVariables:
           - 5000:5000
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: $lang-manifests-create
           path: ./langtest/
@@ -674,7 +674,7 @@ languageVariables:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: mkdir ./langtest
@@ -686,13 +686,13 @@ languageVariables:
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draft.exe -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: check_windows_helm
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: $lang-helm-create
           path: |
@@ -703,16 +703,16 @@ languageVariables:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: $lang-helm-create
           path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: check_windows_addon_helm
           path: ./langtest/
@@ -728,7 +728,7 @@ languageVariables:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: mkdir ./langtest
@@ -740,13 +740,13 @@ languageVariables:
       - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
       - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
       - run: ./draft.exe -v create -c ./test/integration/$lang/kustomize.yaml -d ./langtest/
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: check_windows_kustomize
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: $lang-kustomize-create
           path: |
@@ -756,16 +756,16 @@ languageVariables:
     needs: $lang-kustomize-create 
     runs-on: windows-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: $lang-kustomize-create
           path: ./langtest
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ $ingress_test_args
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: check_windows_addon_kustomize
           path: ./langtest/

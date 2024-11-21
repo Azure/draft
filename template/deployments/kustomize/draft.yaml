@@ -1,5 +1,5 @@
 templateName: "deployment-kustomize"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 description: "This template is used to create a Kustomize deployment for an application"
 type: "deployment"
@@ -45,6 +45,18 @@ variables:
       value: "latest"
     description: "the tag of the image to use in the deployment"
     versions: ">=0.0.1"
+  - name: "IMAGEPULLPOLICY"
+    type: "string"
+    kind: "imagePullPolicy"
+    default:
+      disablePrompt: true
+      value: "Always"
+    allowedValues:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
+    description: "the imagePullPolicy"
+    versions: ">=0.0.1"
   - name: "GENERATORLABEL"
     type: "string"
     kind: "label"
@@ -52,4 +64,169 @@ variables:
       disablePrompt: true
       value: "draft"
     description: "the label to identify who generated the resource"
+    versions: ">=0.0.1"
+  - name: "CPUREQ"
+    type: "string"
+    kind: "kubernetesResourceRequest"
+    default:
+      disablePrompt: true
+      value: "1"
+    description: "resource request for CPU"
+    versions: ">=0.0.1"
+  - name: "MEMREQ"
+    type: "string"
+    kind: "kubernetesResourceRequest"
+    default:
+      disablePrompt: true
+      value: "1Gi"
+    description: "resource request for Memory"
+    versions: ">=0.0.1"
+  - name: "CPULIMIT"
+    type: "string"
+    kind: "kubernetesResourceLimit"
+    default:
+      disablePrompt: true
+      value: "1"
+    description: "resource limit for CPU"
+    versions: ">=0.0.1"
+  - name: "MEMLIMIT"
+    type: "string"
+    kind: "kubernetesResourceLimit"
+    default:
+      disablePrompt: true
+      value: "1Gi"
+    description: "resource request for Memory"
+    versions: ">=0.0.1"
+  - name: "PROBETYPE"
+    type: "string"
+    kind: "kubernetesProbeType"
+    default:
+      disablePrompt: true
+      value: "tcpSocket"
+    description: "The type of probe to use for container probes. Options are httpGet or tcpSocket"
+    versions: ">=0.0.1"
+    allowedValues:
+      - "httpGet"
+      - "tcpSocket"
+  - name: "PROBEHTTPPATH"
+    type: "string"
+    kind: "kubernetesProbeHttpPath"
+    activeWhen:
+      - variableName: "PROBETYPE"
+        value: "httpGet"
+        condition: "equals"
+    description: "The path to use for the httpGet probes"
+    versions: ">=0.0.1"
+  - name: "STARTUPPERIOD"
+    type: "int"
+    kind: "kubernetesProbePeriod"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "kubernetes startup probe period in seconds"
+    versions: ">=0.0.1"
+  - name: "STARTUPTIMEOUT"
+    type: "int"
+    kind: "kubernetesProbeTimeout"
+    default:
+      disablePrompt: true
+      value: 3
+    description: "kubernetes startup probe timeout in seconds"
+    versions: ">=0.0.1"
+  - name: "STARTUPFAILURETHRESHOLD"
+    type: "int"
+    kind: "kubernetesProbeThreshold"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "kubernetes startup probe failure threshold"
+    versions: ">=0.0.1"
+  - name: "STARTUPSUCCESSTHRESHOLD"
+    type: "int"
+    kind: "kubernetesProbeThreshold"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "kubernetes startup probe success threshold"
+    versions: ">=0.0.1"
+  - name: "STARTUPINITIALDELAY"
+    type: "int"
+    kind: "kubernetesProbeDelay"
+    default:
+      disablePrompt: true
+      value: 5
+    description: "kubernetes startup probe initial delay in seconds"
+    versions: ">=0.0.1"
+  - name: "READINESSPERIOD"
+    type: "int"
+    kind: "kubernetesProbePeriod"
+    default:
+      disablePrompt: true
+      value: 5
+    description: "kubernetes readiness probe period in seconds"
+    versions: ">=0.0.1"
+  - name: "READINESSTIMEOUT"
+    type: "int"
+    kind: "kubernetesProbeTimeout"
+    default:
+      disablePrompt: true
+      value: 5
+    description: "kubernetes readiness probe timeout in seconds"
+    versions: ">=0.0.1"
+  - name: "READINESSFAILURETHRESHOLD"
+    type: "int"
+    kind: "kubernetesProbeThreshold"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "kubernetes readiness probe failure threshold"
+    versions: ">=0.0.1"
+  - name: "READINESSSUCCESSTHRESHOLD"
+    type: "int"
+    kind: "kubernetesProbeThreshold"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "kubernetes readiness probe success threshold"
+    versions: ">=0.0.1"
+  - name: "READINESSINITIALDELAY"
+    type: "int"
+    kind: "kubernetesProbeDelay"
+    default:
+      disablePrompt: true
+      value: 3
+    description: "kubernetes readiness probe initial delay in seconds"
+    versions: ">=0.0.1"
+  - name: "ENVVARS"
+    type: "object"
+    kind: "envVarMap"
+    default:
+      disablePrompt: true
+      value: "{}"
+    description: "a map of key/value environment variables to be set in the deployment"
+    versions: ">=0.0.1"
+  - name: "ENVSECRETREF"
+    type: "string"
+    kind: "kubernetesResourceName"
+    default:
+      disablePrompt: true
+      value: "secret-ref"
+    description: "the name of the kubernetes secret reference"
+    versions: ">=0.0.1"
+  - name: "ENABLEWORKLOADIDENTITY"
+    type: "bool"
+    kind: "flag"
+    default:
+      disablePrompt: true
+      value: false
+    description: "flag to enable workload identity"
+    versions: ">=0.0.1"
+  - name: "SERVICEACCOUNT"
+    type: "string"
+    kind: "kubernetesResourceName"
+    activeWhen:
+      - variableName: "ENABLEWORKLOADIDENTITY"
+        value: "true"
+        condition: "equals"
+    description: "the name of the service account to use with workload identity"
     versions: ">=0.0.1"

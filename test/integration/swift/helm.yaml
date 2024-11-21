@@ -10,6 +10,12 @@ deployVariables:
     value: "testapp"
   - name: "IMAGENAME"
     value: "host.minikube.internal:5001/testapp"
+  - name: "CPULIMIT"
+    value: "3"
+  - name: "MEMLIMIT"
+    value: "2Gi"
+  - name: "STARTUPINITIALDELAY"
+    value: 30
 languageVariables:
   - name: "VERSION"
     value: "5.5"

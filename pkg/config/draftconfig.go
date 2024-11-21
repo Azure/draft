@@ -4,41 +4,70 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"slices"
 
+	"github.com/Azure/draft/pkg/config/transformers"
+	"github.com/Azure/draft/pkg/config/validators"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/blang/semver/v4"
 )
 
+type VariableCondition string
+
+const (
+	EqualTo    VariableCondition = "equals"
+	NotEqualTo VariableCondition = "notequals"
+)
+
+func (v VariableCondition) String() string {
+	return string(v)
+}
+
 const draftConfigFile = "draft.yaml"
 
+type VariableValidator func(string) error
+type VariableTransformer func(string) (any, error)
+
 type DraftConfig struct {
-	TemplateName        string            `yaml:"templateName"`
-	DisplayName         string            `yaml:"displayName"`
-	Description         string            `yaml:"description"`
-	Type                string            `yaml:"type"`
-	Versions            string            `yaml:"versions"`
-	DefaultVersion      string            `yaml:"defaultVersion"`
-	Variables           []*BuilderVar     `yaml:"variables"`
-	FileNameOverrideMap map[string]string `yaml:"filenameOverrideMap"`
+	TemplateName        string                         `yaml:"templateName"`
+	DisplayName         string                         `yaml:"displayName"`
+	Description         string                         `yaml:"description"`
+	Type                string                         `yaml:"type"`
+	Versions            []string                       `yaml:"versions"`
+	DefaultVersion      string                         `yaml:"defaultVersion"`
+	Variables           []*BuilderVar                  `yaml:"variables"`
+	FileNameOverrideMap map[string]string              `yaml:"filenameOverrideMap"`
+	Validators          map[string]VariableValidator   `yaml:"validators"`
+	Transformers        map[string]VariableTransformer `yaml:"transformers"`
 }
 
 type BuilderVar struct {
-	Name          string            `yaml:"name"`
-	Default       BuilderVarDefault `yaml:"default"`
-	Description   string            `yaml:"description"`
-	ExampleValues []string          `yaml:"exampleValues"`
-	Type          string            `yaml:"type"`
-	Kind          string            `yaml:"kind"`
-	Value         string            `yaml:"value"`
-	Versions      string            `yaml:"versions"`
+	Name                  string                 `yaml:"name"`
+	ActiveWhenConstraints []ActiveWhenConstraint `yaml:"activeWhen"`
+	Default               BuilderVarDefault      `yaml:"default"`
+	Description           string                 `yaml:"description"`
+	ExampleValues         []string               `yaml:"exampleValues"`
+	AllowedValues         []string               `yaml:"allowedValues"`
+	Type                  string                 `yaml:"type"`
+	Kind                  string                 `yaml:"kind"`
+	Value                 string                 `yaml:"value"`
+	Versions              string                 `yaml:"versions"`
 }
 
+// BuilderVarDefault holds info on the default value of a variable
 type BuilderVarDefault struct {
 	IsPromptDisabled bool   `yaml:"disablePrompt"`
 	ReferenceVar     string `yaml:"referenceVar"`
 	Value            string `yaml:"value"`
+}
+
+// ActiveWhenConstraints holds information on when a variable is actively used by a template based off other variable values
+type ActiveWhenConstraint struct {
+	VariableName string            `yaml:"variableName"`
+	Value        string            `yaml:"value"`
+	Condition    VariableCondition `yaml:"condition"`
 }
 
 func NewConfigFromFS(fileSys fs.FS, path string) (*DraftConfig, error) {
@@ -85,13 +114,23 @@ func (d *DraftConfig) GetVariable(name string) (*BuilderVar, error) {
 	return nil, fmt.Errorf("variable %s not found", name)
 }
 
-func (d *DraftConfig) GetVariableValue(name string) (string, error) {
+func (d *DraftConfig) GetVariableValue(name string) (any, error) {
 	for _, variable := range d.Variables {
 		if variable.Name == name {
 			if variable.Value == "" {
 				return "", fmt.Errorf("variable %s has no value", name)
 			}
-			return variable.Value, nil
+
+			if err := d.GetVariableValidator(variable.Kind)(variable.Value); err != nil {
+				return "", fmt.Errorf("failed variable validation: %w", err)
+			}
+
+			response, err := d.GetVariableTransformer(variable.Kind)(variable.Value)
+			if err != nil {
+				return "", fmt.Errorf("failed variable transformation: %w", err)
+			}
+
+			return response, nil
 		}
 	}
 
@@ -109,6 +148,44 @@ func (d *DraftConfig) SetVariable(name, value string) {
 	}
 }
 
+// GetVariableTransformer returns the transformer for a specific variable kind
+func (d *DraftConfig) GetVariableTransformer(kind string) VariableTransformer {
+	// user overrides
+	if transformer, ok := d.Transformers[kind]; ok {
+		return transformer
+	}
+
+	// internally defined transformers
+	return transformers.GetTransformer(kind)
+}
+
+// GetVariableValidator returns the validator for a specific variable kind
+func (d *DraftConfig) GetVariableValidator(kind string) VariableValidator {
+	// user overrides
+	if validator, ok := d.Validators[kind]; ok {
+		return validator
+	}
+
+	// internally defined validators
+	return validators.GetValidator(kind)
+}
+
+// SetVariableTransformer sets the transformer for a specific variable kind
+func (d *DraftConfig) SetVariableTransformer(kind string, transformer VariableTransformer) {
+	if d.Transformers == nil {
+		d.Transformers = make(map[string]VariableTransformer)
+	}
+	d.Transformers[kind] = transformer
+}
+
+// SetVariableValidator sets the validator for a specific variable kind
+func (d *DraftConfig) SetVariableValidator(kind string, validator VariableValidator) {
+	if d.Validators == nil {
+		d.Validators = make(map[string]VariableValidator)
+	}
+	d.Validators[kind] = validator
+}
+
 // ApplyDefaultVariables will apply the defaults to variables that are not already set
 func (d *DraftConfig) ApplyDefaultVariables() error {
 	for _, variable := range d.Variables {
@@ -124,6 +201,15 @@ func (d *DraftConfig) ApplyDefaultVariables() error {
 				}
 				log.Infof("Variable %s defaulting to value %s", variable.Name, defaultVal)
 				variable.Value = defaultVal
+			}
+
+			isVarActive, err := d.CheckActiveWhenConstraint(variable)
+			if err != nil {
+				return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+			}
+
+			if !isVarActive {
+				continue
 			}
 
 			if variable.Value == "" {
@@ -147,13 +233,8 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 		return fmt.Errorf("invalid version: %w", err)
 	}
 
-	expectedConfigVersionRange, err := semver.ParseRange(d.Versions)
-	if err != nil {
-		return fmt.Errorf("invalid config version range: %w", err)
-	}
-
-	if !expectedConfigVersionRange(v) {
-		return fmt.Errorf("version %s is outside of config version range %s", version, d.Versions)
+	if !slices.Contains(d.Versions, version) {
+		return fmt.Errorf("requested version outside of valid versions: %s", version)
 	}
 
 	for _, variable := range d.Variables {
@@ -182,6 +263,15 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 				variable.Value = defaultVal
 			}
 
+			isVarActive, err := d.CheckActiveWhenConstraint(variable)
+			if err != nil {
+				return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+			}
+
+			if !isVarActive {
+				continue
+			}
+
 			if variable.Value == "" {
 				if variable.Default.Value != "" {
 					log.Infof("Variable %s defaulting to value %s", variable.Name, variable.Default.Value)
@@ -194,6 +284,49 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 	}
 
 	return nil
+}
+
+func (d *DraftConfig) CheckActiveWhenConstraint(variable *BuilderVar) (bool, error) {
+	if len(variable.ActiveWhenConstraints) > 0 {
+		isVarActive := true
+		for _, activeWhen := range variable.ActiveWhenConstraints {
+			refVar, err := d.GetVariable(activeWhen.VariableName)
+			if err != nil {
+				return false, fmt.Errorf("unable to get ActiveWhen reference variable: %w", err)
+			}
+
+			checkValue := refVar.Value
+			if checkValue == "" {
+				if refVar.Default.Value != "" {
+					checkValue = refVar.Default.Value
+				}
+
+				if refVar.Default.ReferenceVar != "" {
+					refValue, err := d.recurseReferenceVars(refVar, refVar, true)
+					if err != nil {
+						return false, err
+					}
+					if refValue == "" {
+						return false, errors.New("reference variable has no value")
+					}
+
+					checkValue = refValue
+				}
+			}
+
+			switch activeWhen.Condition {
+			case EqualTo:
+				isVarActive = checkValue == activeWhen.Value
+			case NotEqualTo:
+				isVarActive = checkValue != activeWhen.Value
+			default:
+				return false, fmt.Errorf("invalid activeWhen condition: %s", activeWhen.Condition)
+			}
+		}
+		return isVarActive, nil
+	}
+
+	return true, nil
 }
 
 // recurseReferenceVars recursively checks each variable's ReferenceVar if it doesn't have a custom input. If there's no more ReferenceVars, it will return the default value of the last ReferenceVar.
@@ -239,11 +372,16 @@ func (d *DraftConfig) DeepCopy() *DraftConfig {
 		DisplayName:         d.DisplayName,
 		Description:         d.Description,
 		Type:                d.Type,
-		Versions:            d.Versions,
+		Versions:            make([]string, len(d.Versions)),
 		DefaultVersion:      d.DefaultVersion,
 		Variables:           make([]*BuilderVar, len(d.Variables)),
 		FileNameOverrideMap: make(map[string]string),
 	}
+
+	for i, version := range d.Versions {
+		newConfig.Versions[i] = version
+	}
+
 	for i, variable := range d.Variables {
 		newConfig.Variables[i] = variable.DeepCopy()
 	}
@@ -257,18 +395,31 @@ func (d *DraftConfig) DeepCopy() *DraftConfig {
 
 func (bv *BuilderVar) DeepCopy() *BuilderVar {
 	newVar := &BuilderVar{
-		Name:          bv.Name,
-		Default:       bv.Default,
-		Description:   bv.Description,
-		Type:          bv.Type,
-		Kind:          bv.Kind,
-		Value:         bv.Value,
-		Versions:      bv.Versions,
-		ExampleValues: make([]string, len(bv.ExampleValues)),
+		Name:                  bv.Name,
+		Default:               bv.Default,
+		Description:           bv.Description,
+		Type:                  bv.Type,
+		Kind:                  bv.Kind,
+		Value:                 bv.Value,
+		Versions:              bv.Versions,
+		ExampleValues:         make([]string, len(bv.ExampleValues)),
+		AllowedValues:         make([]string, len(bv.AllowedValues)),
+		ActiveWhenConstraints: make([]ActiveWhenConstraint, len(bv.ActiveWhenConstraints)),
 	}
-
+	for i, awc := range bv.ActiveWhenConstraints {
+		newVar.ActiveWhenConstraints[i] = *awc.DeepCopy()
+	}
+	copy(newVar.AllowedValues, bv.AllowedValues)
 	copy(newVar.ExampleValues, bv.ExampleValues)
 	return newVar
+}
+
+func (awc ActiveWhenConstraint) DeepCopy() *ActiveWhenConstraint {
+	return &ActiveWhenConstraint{
+		VariableName: awc.VariableName,
+		Value:        awc.Value,
+		Condition:    awc.Condition,
+	}
 }
 
 // TemplateVariableRecorder is an interface for recording variables that are read using draft configs

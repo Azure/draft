@@ -37,9 +37,9 @@
   {
     "language": "ruby",
     "version": "3.1.2",
-    "port": "8000",
+    "port": "4567",
     "serviceport": 80,
-    "repo": "OliverMKing/ruby-hello-world"
+    "repo": "davidgamero/sinatra-hello-world"
   },
   {
     "language": "csharp",

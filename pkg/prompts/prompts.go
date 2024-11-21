@@ -53,6 +53,15 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 			continue
 		}
 
+		isVarActive, err := draftConfig.CheckActiveWhenConstraint(variable)
+		if err != nil {
+			return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+		}
+
+		if !isVarActive {
+			continue
+		}
+
 		log.Debugf("constructing prompt for: %s", variable.Name)
 		if variable.Type == "bool" {
 			input, err := RunBoolPrompt(variable, Stdin, Stdout)
@@ -250,7 +259,14 @@ func Select[T any](label string, items []T, opt *SelectOpt[T]) (T, error) {
 		selection := strings.ToLower(str)
 		search = strings.ToLower(search)
 
-		return strings.Contains(selection, search)
+		searchWords := strings.Split(search, " ")
+
+		for _, word := range searchWords {
+			if !strings.Contains(selection, word) {
+				return false
+			}
+		}
+		return true
 	}
 
 	// sort the default selection to top if exists

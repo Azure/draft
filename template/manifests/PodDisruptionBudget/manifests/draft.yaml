@@ -1,0 +1,30 @@
+templateName: "podDisruptionBudget-manifests"
+description: "This template is used to create a PodDisruptionBudget for an application"
+versions: ["0.0.1"]
+defaultVersions: "0.0.1"
+type: "manifest"
+variables:
+  - name: "APPNAME"
+    type: "string"
+    kind: "kubernetesResourceName"
+    description: "the name of the application"
+    versions: ">=0.0.1"
+  - name: "PARTOF"
+    type: "string"
+    kind: "label"
+    description: "the label to identify which project the resource belong to"
+    versions: ">=0.0.1"
+  - name: "GENERATORLABEL"
+    type: "string"
+    kind: "label"
+    description: "the label to identify who generated the resource"
+    versions: ">=0.0.1"
+    default:
+      value: "draft"
+  - name: "MAXUNAVAILABLE"
+    type: "int"
+    kind: "resourceLimit"
+    description: "specifies the maximum number of pods that can be unavailable during a disruption, such as a pod eviction"
+    versions: ">=0.0.1"
+    default:
+      value: 1

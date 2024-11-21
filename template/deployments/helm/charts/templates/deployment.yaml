@@ -4,15 +4,14 @@ metadata:
   name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}" }}
   labels:
     {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.labels\" . | nindent 4 }}" }} 
-    {{- `
-    kubernetes.azure.com/generator: {{ .Values.generatorLabel }}
+  {{- `
   namespace: {{ .Values.namespace }}
 ` -}}
 spec:
 {{- `
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }} 
+  {{- end }}
   ` -}}
   selector:
     matchLabels:
@@ -23,10 +22,13 @@ spec:
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
-      {{- end }} 
+      {{- end }}
       ` -}}
       labels:
         {{ .Config.GetVariableValue "APPNAME" | printf "{{- include \"%s.selectorLabels\" . | nindent 8 }}" }}
+        {{- if eq (.Config.GetVariableValue "ENABLEWORKLOADIDENTITY") "true" }}
+        azure.workload.identity/use: "true"
+        {{- end}}
       namespace: {{ print "{{ .Values.namespace }}" }}
     spec: 
     {{- `
@@ -34,6 +36,11 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    ` -}}
+      {{- if eq (.Config.GetVariableValue "ENABLEWORKLOADIDENTITY") "true" }}
+      serviceAccountName: {{ .Config.GetVariableValue "SERVICEACCOUNT" }}
+      {{- end}}
+    {{- `
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -47,21 +54,31 @@ spec:
               containerPort: {{ .Values.containerPort }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          ` -}}
+          envFrom:
+            - configMapRef:
+                name: {{ .Config.GetVariableValue "APPNAME" | printf "{{ include \"%s.fullname\" . }}-config" }}
+            - secretRef:
+                name: {{ .Config.GetVariableValue "ENVSECRETREF" }}
+                optional: true
+          {{- `
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}

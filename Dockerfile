@@ -17,7 +17,6 @@ ENV PATH "$PATH:/draft/az-cli-env/bin"
 RUN apk add github-cli
 
 COPY . ./
-RUN make go-generate
 
 RUN go mod download
 ENTRYPOINT ["go"]

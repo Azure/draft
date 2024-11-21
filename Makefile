@@ -1,16 +1,6 @@
 .PHONY: all
-all: go-generate build generate-integrations
+all: build generate-integrations
 
-
-.PHONY: go-generate
-go-generate:
-	rm -r ./pkg/deployments/deployTypes; \
-	rm -r ./pkg/workflows/workflows; \
-	rm -r ./pkg/addons/addons; \
-	GO111MODULE=on go generate ./pkg/languages/...; \
-	GO111MODULE=on go generate ./pkg/deployments/...; \
-	GO111MODULE=on go generate ./pkg/workflows/...; \
-	GO111MODULE=on go generate ./pkg/addons/...;
 
 .PHONY: test
 test: run-unit-tests run-e2e-tests-local
@@ -21,7 +11,7 @@ run-unit-tests:
 
 #TODO: add more e2e tests to the local testing
 .PHONY: run-e2e-tests-local
-run-e2e-tests-local: go-generate build
+run-e2e-tests-local: build
 	test/check_info_schema.sh;
 
 .PHONY: generate-integrations
@@ -35,7 +25,7 @@ build:
 	GO111MODULE=on go build -v -o .
 
 .PHONY: build-all
-build-all: go-generate build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
+build-all: build-windows-amd64 build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64
 
 .PHONY: build-windows-amd64
 build-windows-amd64:

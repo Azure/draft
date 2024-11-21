@@ -1,0 +1,22 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Config.GetVariableValue "APPNAME" }}
+  labels:
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "APPNAME" }}
+    app.kubernetes.io/part-of: {{ .Config.GetVariableValue "PARTOF" }}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{  .Config.GetVariableValue "APPNAME" }}
+  minReplicas: {{ .Config.GetVariableValue "MINIMUMREPLICAS" }}
+  maxReplicas: {{ .Config.GetVariableValue "MAXIMUMREPLICAS" }}
+  metrics:
+    - type: Resource
+      resource:
+        name: {{ .Config.GetVariableValue "RESOURCETYPE" }}
+        target:
+          type: Utilization
+          averageUtilization: {{ .Config.GetVariableValue "AVGUTILIZATION"}}

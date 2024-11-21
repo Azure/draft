@@ -3,12 +3,17 @@ package config
 import (
 	"fmt"
 	"io/fs"
+	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/Azure/draft/template"
+	"github.com/blang/semver/v4"
 	"github.com/stretchr/testify/assert"
 )
+
+const alphaNumUnderscoreHyphen = "^[A-Za-z][A-Za-z0-9-_]{1,62}[A-Za-z0-9]$"
 
 var allTemplates = map[string]*DraftConfig{}
 
@@ -36,12 +41,22 @@ var validVariableKinds = map[string]bool{
 	"containerImageVersion":      true,
 	"dirPath":                    true,
 	"dockerFileName":             true,
+	"envVarMap":                  true,
 	"filePath":                   true,
 	"flag":                       true,
 	"helmChartOverrides":         true,
+	"imagePullPolicy":            true,
 	"ingressHostName":            true,
 	"kubernetesNamespace":        true,
+	"kubernetesProbeHttpPath":    true,
+	"kubernetesProbePeriod":      true,
+	"kubernetesProbeTimeout":     true,
+	"kubernetesProbeThreshold":   true,
+	"kubernetesProbeType":        true,
+	"kubernetesProbeDelay":       true,
+	"kubernetesResourceLimit":    true,
 	"kubernetesResourceName":     true,
+	"kubernetesResourceRequest":  true,
 	"label":                      true,
 	"port":                       true,
 	"repositoryBranch":           true,
@@ -67,6 +82,7 @@ func TestTempalteValidation(t *testing.T) {
 }
 
 func loadTemplatesWithValidation() error {
+	regexp := regexp.MustCompile(alphaNumUnderscoreHyphen)
 	return fs.WalkDir(template.Templates, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -93,6 +109,10 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has no template name", path)
 		}
 
+		if !regexp.MatchString(currTemplate.TemplateName) {
+			return fmt.Errorf("template %s name must match the alpha-numeric-underscore-hyphen regex: %s", path, currTemplate.TemplateName)
+		}
+
 		if _, ok := allTemplates[strings.ToLower(currTemplate.TemplateName)]; ok {
 			return fmt.Errorf("template %s has a duplicate template name", path)
 		}
@@ -101,12 +121,14 @@ func loadTemplatesWithValidation() error {
 			return fmt.Errorf("template %s has an invalid type: %s", path, currTemplate.Type)
 		}
 
-		// version range check once we define versions
-		// if _, err := semver.ParseRange(currTemplate.Versions); err != nil {
-		// 	return fmt.Errorf("template %s has an invalid version range: %s", path, currTemplate.Versions)
-		// }
+		for _, version := range currTemplate.Versions {
+			if _, err := semver.Parse(version); err != nil {
+				return fmt.Errorf("template %s has an invalid version: %s", path, version)
+			}
+		}
 
 		referenceVarMap := map[string]*BuilderVar{}
+		activeWhenRefMap := map[string]*BuilderVar{}
 		allVariables := map[string]*BuilderVar{}
 		for _, variable := range currTemplate.Variables {
 			if variable.Name == "" {
@@ -121,29 +143,59 @@ func loadTemplatesWithValidation() error {
 				return fmt.Errorf("template %s has an invalid variable kind: %s", path, variable.Kind)
 			}
 
-			// version range check once we define versions
-			// if _, err := semver.ParseRange(variable.Versions); err != nil {
-			// 	return fmt.Errorf("template %s has an invalid version range: %s", path, variable.Versions)
-			// }
+			if _, err := semver.ParseRange(variable.Versions); err != nil {
+				return fmt.Errorf("template %s has an invalid version range: %s", path, variable.Versions)
+			}
 
 			allVariables[variable.Name] = variable
 			if variable.Default.ReferenceVar != "" {
 				referenceVarMap[variable.Name] = variable
+			}
+
+			for _, activeWhen := range variable.ActiveWhenConstraints {
+				if activeWhen.VariableName != "" {
+					activeWhenRefMap[variable.Name] = variable
+				}
+				if !isValidVariableCondition(activeWhen.Condition) {
+					return fmt.Errorf("template %s has a variable %s with an invalid activeWhen condition: %s", path, variable.Name, activeWhen.Condition)
+				}
 			}
 		}
 
 		for _, currVar := range referenceVarMap {
 			refVar, ok := allVariables[currVar.Default.ReferenceVar]
 			if !ok {
-				return fmt.Errorf("template %s has a variable %s with reference to a non-existent variable: %s", path, currVar.Name, currVar.Default.ReferenceVar)
+				return fmt.Errorf("template %s has a variable %s with default reference to a non-existent variable: %s", path, currVar.Name, currVar.Default.ReferenceVar)
 			}
 
 			if currVar.Name == refVar.Name {
-				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
+				return fmt.Errorf("template %s has a variable with cyclical default reference to itself: %s", path, currVar.Name)
 			}
 
-			if isCyclicalVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
-				return fmt.Errorf("template %s has a variable with cyclical reference to itself: %s", path, currVar.Name)
+			if isCyclicalDefaultVariableReference(currVar, refVar, allVariables, map[string]bool{}) {
+				return fmt.Errorf("template %s has a variable with cyclical default reference to itself: %s", path, currVar.Name)
+			}
+		}
+
+		for _, currVar := range activeWhenRefMap {
+
+			for _, activeWhen := range currVar.ActiveWhenConstraints {
+				refVar, ok := allVariables[activeWhen.VariableName]
+				if !ok {
+					return fmt.Errorf("template %s has a variable %s with ActiveWhen reference to a non-existent variable: %s", path, currVar.Name, activeWhen.VariableName)
+				}
+
+				if currVar.Name == refVar.Name {
+					return fmt.Errorf("template %s has a variable with cyclical conditional reference to itself: %s", path, currVar.Name)
+				}
+
+				if refVar.Type == "bool" {
+					if activeWhen.Value != "true" && activeWhen.Value != "false" {
+						return fmt.Errorf("template %s has a variable %s with ActiveWhen reference to a non-boolean value: %s", path, currVar.Name, activeWhen.Value)
+					}
+				} else if !slices.Contains(refVar.AllowedValues, activeWhen.Value) {
+					return fmt.Errorf("template %s has a variable %s with ActiveWhen reference to a non-existent allowed value: %s", path, currVar.Name, activeWhen.Value)
+				}
 			}
 		}
 
@@ -152,7 +204,7 @@ func loadTemplatesWithValidation() error {
 	})
 }
 
-func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
+func isCyclicalDefaultVariableReference(initialVar, currRefVar *BuilderVar, allVariables map[string]*BuilderVar, visited map[string]bool) bool {
 	if initialVar.Name == currRefVar.Name {
 		return true
 	}
@@ -171,5 +223,14 @@ func isCyclicalVariableReference(initialVar, currRefVar *BuilderVar, allVariable
 	}
 
 	visited[currRefVar.Name] = true
-	return isCyclicalVariableReference(initialVar, refVar, allVariables, visited)
+	return isCyclicalDefaultVariableReference(initialVar, refVar, allVariables, visited)
+}
+
+func isValidVariableCondition(condition VariableCondition) bool {
+	switch condition {
+	case EqualTo, NotEqualTo:
+		return true
+	default:
+		return false
+	}
 }

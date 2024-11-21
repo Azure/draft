@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/Azure/draft/pkg/config"
@@ -90,18 +91,13 @@ func loadTemplates() error {
 }
 
 // IsValidVersion checks if a version is valid for a given version range
-func IsValidVersion(versionRange, version string) bool {
-	v, err := semver.Parse(version)
+func IsValidVersion(versions []string, version string) bool {
+	_, err := semver.Parse(version)
 	if err != nil {
 		return false
 	}
 
-	expectedRange, err := semver.ParseRange(versionRange)
-	if err != nil {
-		return false
-	}
-
-	return expectedRange(v)
+	return slices.Contains(versions, version)
 }
 
 func sanatizeTemplateSrcDir(src string) string {

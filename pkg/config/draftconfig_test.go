@@ -211,7 +211,7 @@ func TestApplyDefaultVariablesForVersion(t *testing.T) {
 			testName: "excludeOutOfVersionRangeVariables",
 			version:  "0.0.1",
 			draftConfig: DraftConfig{
-				Versions: ">=0.0.1 <=0.0.2",
+				Versions: []string{"0.0.1", "0.0.2"},
 				Variables: []*BuilderVar{
 					{
 						Name:     "var1",
@@ -239,7 +239,7 @@ func TestApplyDefaultVariablesForVersion(t *testing.T) {
 			testName: "emptyInputVersion",
 			version:  "",
 			draftConfig: DraftConfig{
-				Versions: ">=0.0.1 <=0.0.2",
+				Versions: []string{"0.0.1", "0.0.2"},
 				Variables: []*BuilderVar{
 					{
 						Name:     "var1",
@@ -265,7 +265,7 @@ func TestApplyDefaultVariablesForVersion(t *testing.T) {
 			testName: "inputVersionOutOfRange",
 			version:  "0.0.3",
 			draftConfig: DraftConfig{
-				Versions: ">=0.0.1 <=0.0.2",
+				Versions: []string{"0.0.1", "0.0.2"},
 				Variables: []*BuilderVar{
 					{
 						Name:     "var1",
@@ -285,13 +285,13 @@ func TestApplyDefaultVariablesForVersion(t *testing.T) {
 					},
 				},
 			},
-			wantErrMsg: "version 0.0.3 is outside of config version range >=0.0.1 <=0.0.2",
+			wantErrMsg: "requested version outside of valid versions: 0.0.3",
 		},
 		{
 			testName: "overwriteDevfaultValue",
 			version:  "0.0.2",
 			draftConfig: DraftConfig{
-				Versions: ">=0.0.1 <=0.0.2",
+				Versions: []string{"0.0.1", "0.0.2"},
 				Variables: []*BuilderVar{
 					{
 						Name:     "var1",
@@ -320,7 +320,7 @@ func TestApplyDefaultVariablesForVersion(t *testing.T) {
 			testName: "referenceVarOverwrite",
 			version:  "0.0.2",
 			draftConfig: DraftConfig{
-				Versions: ">=0.0.1 <=0.0.2",
+				Versions: []string{"0.0.1", "0.0.2"},
 				Variables: []*BuilderVar{
 					{
 						Name:     "var1",

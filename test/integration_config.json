@@ -4,49 +4,56 @@
     "version": "1.22.0",
     "port": "1323",
     "serviceport": 80,
-    "repo": "gambtho/go_echo"
+    "repo": "gambtho/go_echo",
+    "startupInitialDelay": 5
   },
   {
     "language": "go",
     "version": "1.22.0",
     "port": "8080",
     "serviceport": 8080,
-    "repo": "davidgamero/go-echo-no-mod"
+    "repo": "davidgamero/go-echo-no-mod",
+    "startupInitialDelay": 5
   },
   {
     "language": "python",
     "version": "3",
     "port": "5000",
     "serviceport": 80,
-    "repo": "OliverMKing/flask-hello-world"
+    "repo": "OliverMKing/flask-hello-world",
+    "startupInitialDelay": 5
   },
   {
     "language": "rust",
     "version": "1.77.0",
     "port": "8000",
     "serviceport": 80,
-    "repo": "OliverMKing/tiny-http-hello-world"
+    "repo": "OliverMKing/tiny-http-hello-world",
+    "startupInitialDelay": 5
   },
   {
     "language": "javascript",
     "version": "14",
     "port": "1313",
     "serviceport": 80,
-    "repo": "davidgamero/express-hello-world"
+    "repo": "davidgamero/express-hello-world",
+    "startupInitialDelay": 30
   },
   {
     "language": "ruby",
     "version": "3.1.2",
     "port": "4567",
     "serviceport": 80,
-    "repo": "davidgamero/sinatra-hello-world"
+    "repo": "davidgamero/sinatra-hello-world",
+    "startupInitialDelay": 5
   },
   {
     "language": "csharp",
     "version": "5.0",
     "port": "80",
     "serviceport": 80,
-    "repo": "imiller31/csharp-simple-web-app"
+    "repo": "imiller31/csharp-simple-web-app",
+    "startupInitialDelay": 5
   },
   {
     "language": "java",
@@ -54,7 +61,8 @@
     "builderversion": "3-jdk-11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/simple-java-server"
+    "repo": "imiller31/simple-java-server",
+    "startupInitialDelay": 5
   },
   {
     "language": "gradle",
@@ -62,14 +70,16 @@
     "builderversion": "7-jdk11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/simple-gradle-server"
+    "repo": "imiller31/simple-gradle-server",
+    "startupInitialDelay": 30
   },
   {
     "language": "swift",
     "version": "5.5",
     "port": "8080",
     "serviceport": 80,
-    "repo": "OliverMKing/swift-hello-world"
+    "repo": "OliverMKing/swift-hello-world",
+    "startupInitialDelay": 30
   },
   {
     "language": "erlang",
@@ -77,13 +87,15 @@
     "builderversion": "27.0-alpine",
     "port": "8080",
     "serviceport": 80,
-    "repo": "bfoley13/ErlangExample"
+    "repo": "bfoley13/ErlangExample",
+    "startupInitialDelay": 5
   },
   {
     "language": "clojure",
     "version": "8-jdk-alpine",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/clojure-simple-http"
+    "repo": "imiller31/clojure-simple-http",
+    "startupInitialDelay": 30
   }
 ]

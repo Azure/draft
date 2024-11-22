@@ -34,7 +34,6 @@ application and service principle, and will configure that application to trust 
 			ctx := cmd.Context()
 
 			gh := providers.NewGhClient()
-			providers.EnsureAzCli()
 
 			azCred, err := cred.GetCred()
 			if err != nil {
@@ -46,14 +45,14 @@ application and service principle, and will configure that application to trust 
 			}
 			sc.AzClient = az
 
-			err = fillSetUpConfig(sc, gh)
+			err = fillSetUpConfig(sc, gh, az)
 			if err != nil {
 				return fmt.Errorf("filling setup config: %w", err)
 			}
 
 			s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 			s.Start()
-			err = runProviderSetUp(ctx, sc, s, gh)
+			err = runProviderSetUp(ctx, sc, s, gh, az)
 			s.Stop()
 			if err != nil {
 				return err
@@ -75,7 +74,7 @@ application and service principle, and will configure that application to trust 
 	return cmd
 }
 
-func fillSetUpConfig(sc *providers.SetUpCmd, gh providers.GhClient) error {
+func fillSetUpConfig(sc *providers.SetUpCmd, gh providers.GhClient, az providers.AzClientInterface) error {
 	if sc.TenantId == "" {
 		tenandId, err := providers.PromptTenantId(sc.AzClient, context.Background())
 		if err != nil {
@@ -109,12 +108,12 @@ func fillSetUpConfig(sc *providers.SetUpCmd, gh providers.GhClient) error {
 
 	if sc.SubscriptionID == "" {
 		if strings.ToLower(sc.Provider) == "azure" {
-			currentSub, err := providers.GetCurrentAzSubscriptionLabel()
+			currentSub, err := az.GetCurrentAzSubscriptionLabel()
 			if err != nil {
 				return fmt.Errorf("getting current subscription ID: %w", err)
 			}
 
-			subLabels, err := providers.GetAzSubscriptionLabels()
+			subLabels, err := az.GetAzSubscriptionLabels()
 			if err != nil {
 				return fmt.Errorf("getting subscription labels: %w", err)
 			}
@@ -183,17 +182,17 @@ func toValidAppName(name string) (string, error) {
 
 	// lowercase the name
 	cleanedName = strings.ToLower(builder.String())
-	if err := ValidateAppName(cleanedName);err != nil {
+	if err := ValidateAppName(cleanedName); err != nil {
 		return "", fmt.Errorf("app name '%s' could not be converted to a valid name: %w", name, err)
 	}
 	return cleanedName, nil
 }
 
-func runProviderSetUp(ctx context.Context, sc *providers.SetUpCmd, s spinner.Spinner, gh providers.GhClient) error {
+func runProviderSetUp(ctx context.Context, sc *providers.SetUpCmd, s spinner.Spinner, gh providers.GhClient, az providers.AzClientInterface) error {
 	provider := strings.ToLower(sc.Provider)
 	if provider == "azure" {
 		// call azure provider logic
-		return providers.InitiateAzureOIDCFlow(ctx, sc, s, gh)
+		return providers.InitiateAzureOIDCFlow(ctx, sc, s, gh, az)
 
 	} else {
 		// call logic for user-submitted provider
@@ -223,7 +222,7 @@ func PromptAppName(az providers.AzClientInterface, defaultAppName string) (strin
 		return "", err
 	}
 
-	if providers.AzAppExists(appName) {
+	if az.AzAppExists(appName) {
 		confirmAppExistsPrompt := promptui.Prompt{
 			Label:     "An app with this name already exists. Would you like to use it?",
 			IsConfirm: true,

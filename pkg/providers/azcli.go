@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"os/exec"
 
 	"github.com/hashicorp/go-version"
 	"github.com/manifoldco/promptui"
@@ -13,27 +11,29 @@ import (
 )
 
 // EnsureAzCli ensures that the Azure CLI is installed and the user is logged in
-func EnsureAzCli() {
-	EnsureAzCliInstalled()
-	EnsureAzCliLoggedIn()
+func (az *AzClient) EnsureAzCli() {
+	err := az.ValidateAzCliInstalled()
+	if err != nil {
+		log.Fatalf("Error validating az cli installation: %s", err.Error())
+	}
+	az.EnsureAzCliLoggedIn()
 }
 
-func GetAzCliVersion() string {
-	azCmd := exec.Command("az", "version", "-o", "json")
-	out, err := azCmd.CombinedOutput()
+func (az *AzClient) GetAzCliVersion() (string, error) {
+	out, err := az.CommandRunner.RunCommand("az", "version", "-o", "json")
 	if err != nil {
-		log.Fatal("Error: unable to obtain az cli version")
+		return "", errors.New("unable to obtain az cli version")
 	}
 
 	var version map[string]interface{}
-	if err := json.Unmarshal(out, &version); err != nil {
-		log.Fatal("unable to unmarshal az cli version output to map")
+	if err := json.Unmarshal([]byte(out), &version); err != nil {
+		return "", errors.New("unable to unmarshal az cli version output to map")
 	}
 
-	return fmt.Sprint(version["azure-cli"])
+	return fmt.Sprint(version["azure-cli"]), nil
 }
 
-func getAzUpgrade() string {
+func (az *AzClient) GetAzUpgrade() string {
 	selection := &promptui.Select{
 		Label: "Your Azure CLI version must be at least 2.37.0 - would you like us to update it for you?",
 		Items: []string{"yes", "no"},
@@ -47,9 +47,8 @@ func getAzUpgrade() string {
 	return selectResponse
 }
 
-func upgradeAzCli() {
-	azCmd := exec.Command("az", "upgrade", "-y")
-	_, err := azCmd.CombinedOutput()
+func (az *AzClient) UpgradeAzCli() {
+	_, err := az.CommandRunner.RunCommand("az", "upgrade", "-y")
 	if err != nil {
 		log.Fatal("Error: unable to upgrade az cli version; ", err)
 	}
@@ -57,58 +56,52 @@ func upgradeAzCli() {
 	log.Info("Azure CLI upgrade was successful!")
 }
 
-func EnsureAzCliInstalled() {
+func (az *AzClient) ValidateAzCliInstalled() error {
 	log.Debug("Checking that Azure Cli is installed...")
-	azCmd := exec.Command("az")
-	_, err := azCmd.CombinedOutput()
+	_, err := az.CommandRunner.RunCommand("az")
 	if err != nil {
-		log.Fatal("Error: AZ cli not installed. Find installation instructions at this link: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli")
+		return errors.New("az cli not installed. Find installation instructions at this link: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli")
 	}
-
-	currentVersion, err := version.NewVersion(GetAzCliVersion())
+	azCliVersion, err := az.GetAzCliVersion()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("getting azcli version: %w", err)
+	}
+	currentVersion, err := version.NewVersion(azCliVersion)
+	if err != nil {
+		return fmt.Errorf("parsing azcli version: %w", err)
 	}
 
 	constraints, err := version.NewConstraint(">= 2.37")
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("getting azcli version constraint: %w", err)
 	}
 
 	if !constraints.Check(currentVersion) {
-		if ans := getAzUpgrade(); ans == "no" {
-			log.Fatal("Az cli version must be at least 2.37.0")
+		if ans := az.GetAzUpgrade(); ans == "no" {
+			return fmt.Errorf("az cli version must be at least 2.37.0, but current version is %s", azCliVersion)
 		}
-		upgradeAzCli()
+		az.UpgradeAzCli()
 	}
+	return nil
 }
 
-func IsLoggedInToAz() bool {
+func (az *AzClient) IsLoggedInToAz() bool {
 	log.Debug("Checking that user is logged in to Azure CLI...")
-	azCmd := exec.Command("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
-	_, err := azCmd.CombinedOutput()
-	if err != nil {
-		return false
-	}
-
-	return true
+	_, err := az.CommandRunner.RunCommand("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
+	return err != nil 
 }
 
-func EnsureAzCliLoggedIn() {
-	if !IsLoggedInToAz() {
-		if err := LogInToAz(); err != nil {
+func (az *AzClient) EnsureAzCliLoggedIn() {
+	if !az.IsLoggedInToAz() {
+		if err := az.LogInToAz(); err != nil {
 			log.Fatal("Error: unable to log in to Azure")
 		}
 	}
 }
 
-func LogInToAz() error {
+func (az *AzClient) LogInToAz() error {
 	log.Debug("Logging user in to Azure Cli...")
-	azCmd := exec.Command("az", "login", "--allow-no-subscriptions")
-	azCmd.Stdin = os.Stdin
-	azCmd.Stdout = os.Stdout
-	azCmd.Stderr = os.Stderr
-	err := azCmd.Run()
+	_, err := az.CommandRunner.RunCommand("az", "login", "--allow-no-subscriptions")
 	if err != nil {
 		return err
 	}
@@ -117,19 +110,18 @@ func LogInToAz() error {
 	return nil
 }
 
-func IsSubscriptionIdValid(subscriptionId string) error {
+func (az *AzClient) IsSubscriptionIdValid(subscriptionId string) error {
 	if subscriptionId == "" {
 		return errors.New("subscriptionId cannot be empty")
 	}
 
-	getSubscriptionIdCmd := exec.Command("az", "account", "show", "-s", subscriptionId, "--query", "id")
-	out, err := getSubscriptionIdCmd.CombinedOutput()
+	out, err := az.CommandRunner.RunCommand("az", "account", "show", "-s", subscriptionId, "--query", "id")
 	if err != nil {
 		return err
 	}
 
 	var azSubscription string
-	if err = json.Unmarshal(out, &azSubscription); err != nil {
+	if err = json.Unmarshal([]byte(out), &azSubscription); err != nil {
 		return err
 	}
 
@@ -140,7 +132,7 @@ func IsSubscriptionIdValid(subscriptionId string) error {
 	return nil
 }
 
-func isValidResourceGroup(
+func (az *AzClient) IsValidResourceGroup(
 	subscriptionId string,
 	resourceGroup string,
 ) error {
@@ -149,15 +141,14 @@ func isValidResourceGroup(
 	}
 
 	query := fmt.Sprintf("[?name=='%s']", resourceGroup)
-	getResourceGroupCmd := exec.Command("az", "group", "list", "--subscription", subscriptionId, "--query", query)
-	out, err := getResourceGroupCmd.CombinedOutput()
+	out, err := az.CommandRunner.RunCommand("az", "group", "list", "--subscription", subscriptionId, "--query", query)
 	if err != nil {
 		log.Errorf("failed to validate resource group %q from subscription %q: %s", resourceGroup, subscriptionId, err)
 		return err
 	}
 
 	var rg []interface{}
-	if err = json.Unmarshal(out, &rg); err != nil {
+	if err = json.Unmarshal([]byte(out), &rg); err != nil {
 		return err
 	}
 
@@ -168,74 +159,59 @@ func isValidResourceGroup(
 	return nil
 }
 
-func AzAppExists(appName string) bool {
+func (az *AzClient) AzAppExists(appName string) bool {
 	log.Debugf("Checking if app %q exists...", appName)
 	filter := fmt.Sprintf("displayName eq '%s'", appName)
-	checkAppExistsCmd := exec.Command("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
-	out, err := checkAppExistsCmd.CombinedOutput()
+	out, err := az.CommandRunner.RunCommand("az", "ad", "app", "list", "--only-show-errors", "--filter", filter, "--query", "[].appId")
 	if err != nil {
 		return false
 	}
 
 	var azApp []string
-	json.Unmarshal(out, &azApp)
+	json.Unmarshal([]byte(out), &azApp)
 
 	return len(azApp) >= 1
 }
 
-func (sc *SetUpCmd) ServicePrincipalExists() bool {
-	checkSpExistsCmd := exec.Command("az", "ad", "sp", "show", "--only-show-errors", "--id", sc.appId, "--query", "id")
-	out, err := checkSpExistsCmd.CombinedOutput()
+func (az *AzClient) ServicePrincipalExists(appId string) bool {
+	out, err := az.CommandRunner.RunCommand("az", "ad", "sp", "show", "--only-show-errors", "--id", appId, "--query", "id")
 	if err != nil {
 		return false
 	}
 
 	var objectId string
-	json.Unmarshal(out, &objectId)
+	json.Unmarshal([]byte(out), &objectId)
 
-	log.Debug("Service principal exists")
-	// TODO: tell user sp already exists and ask if they want to use it?
-	sc.spObjectId = objectId
+	log.Debugf("Service principal with appId '%s' exists", appId)
 	return true
 }
 
-func AzAcrExists(acrName string) bool {
+func (az *AzClient) AzAcrExists(acrName string) bool {
 	query := fmt.Sprintf("[?name=='%s']", acrName)
-	checkAcrExistsCmd := exec.Command("az", "acr", "list", "--only-show-errors", "--query", query)
-	out, err := checkAcrExistsCmd.CombinedOutput()
+	out, err := az.CommandRunner.RunCommand("az", "acr", "list", "--only-show-errors", "--query", query)
 	if err != nil {
 		return false
 	}
 
 	var azAcr []interface{}
-	json.Unmarshal(out, &azAcr)
+	json.Unmarshal([]byte(out), &azAcr)
 
-	if len(azAcr) >= 1 {
-		return true
-	}
-
-	return false
+	return len(azAcr) >= 1
 }
 
-func AzAksExists(aksName string, resourceGroup string) bool {
-	checkAksExistsCmd := exec.Command("az", "aks", "browse", "-g", resourceGroup, "--name", aksName)
-	_, err := checkAksExistsCmd.CombinedOutput()
-	if err != nil {
-		return false
-	}
-
-	return true
+func (az *AzClient) AzAksExists(aksName string, resourceGroup string) bool {
+	_, err := az.CommandRunner.RunCommand("az", "aks", "browse", "-g", resourceGroup, "--name", aksName)
+	return err == nil
 }
 
-func GetCurrentAzSubscriptionLabel() (SubLabel, error) {
-	getAccountCmd := exec.Command("az", "account", "show", "--query", "{id: id, name: name}")
-	out, err := getAccountCmd.CombinedOutput()
+func (az *AzClient) GetCurrentAzSubscriptionLabel() (SubLabel, error) {
+	out, err := az.CommandRunner.RunCommand("az", "account", "show", "--query", "{id: id, name: name}")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var currentSub SubLabel
-	if err := json.Unmarshal(out, &currentSub); err != nil {
+	if err := json.Unmarshal([]byte(out), &currentSub); err != nil {
 		return SubLabel{}, fmt.Errorf("failed to unmarshal JSON output: %v", err)
 	} else if currentSub.ID == "" {
 		return SubLabel{}, errors.New("no current subscription found")
@@ -244,16 +220,14 @@ func GetCurrentAzSubscriptionLabel() (SubLabel, error) {
 	return currentSub, nil
 }
 
-func GetAzSubscriptionLabels() ([]SubLabel, error) {
-	getAccountCmd := exec.Command("az", "account", "list", "--all", "--query", "[].{id: id, name: name}")
-
-	out, err := getAccountCmd.CombinedOutput()
+func (az *AzClient) GetAzSubscriptionLabels() ([]SubLabel, error) {
+	out, err := az.CommandRunner.RunCommand("az", "account", "list", "--all", "--query", "[].{id: id, name: name}")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var subLabels []SubLabel
-	if err := json.Unmarshal(out, &subLabels); err != nil {
+	if err := json.Unmarshal([]byte(out), &subLabels); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON output: %v", err)
 	} else if len(subLabels) == 0 {
 		return nil, errors.New("no subscriptions found")

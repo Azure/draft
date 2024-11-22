@@ -32,23 +32,23 @@ type SetUpCmd struct {
 
 const AKS_CLUSTER_ADMIN_ROLE_ID = "b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b"
 
-func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner, gh GhClient) error {
+func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner, gh GhClient, az AzClientInterface) error {
 	log.Debug("Commencing github connection with azure...")
 
 	s.Start()
 
-	if err := sc.ValidateSetUpConfig(gh); err != nil {
+	if err := sc.ValidateSetUpConfig(gh, az); err != nil {
 		return err
 	}
 
-	if !AzAppExists(sc.AppName) {
-		err := sc.createAzApp()
+	if !az.AzAppExists(sc.AppName) {
+		err := az.CreateAzApp(sc.AppName)
 		if err != nil {
 			return err
 		}
 	}
 
-	if err := sc.CreateServicePrincipal(); err != nil {
+	if err := az.CreateServicePrincipal(sc.appId); err != nil {
 		return err
 	}
 
@@ -56,7 +56,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner,
 		return err
 	}
 
-	if err := sc.AzClient.assignSpRole(ctx, sc.SubscriptionID, sc.ResourceGroupName, sc.spObjectId, AKS_CLUSTER_ADMIN_ROLE_ID); err != nil {
+	if err := az.AssignSpRole(ctx, sc.SubscriptionID, sc.ResourceGroupName, sc.spObjectId, AKS_CLUSTER_ADMIN_ROLE_ID); err != nil {
 		return err
 	}
 
@@ -80,31 +80,27 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner,
 	return nil
 }
 
-func (sc *SetUpCmd) createAzApp() error {
+func (az *AzClient) CreateAzApp(appName string) error {
 	log.Debug("Commencing Azure app creation...")
 	start := time.Now()
 	log.Debug(start)
 
 	createApp := func() error {
-		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
-
-		out, err := createAppCmd.CombinedOutput()
+		out, err := az.CommandRunner.RunCommand("az", "ad", "app", "create", "--only-show-errors", "--display-name", appName)
 		if err != nil {
 			log.Printf("%s\n", out)
 			return err
 		}
 
-		if AzAppExists(sc.AppName) {
+		if az.AzAppExists(appName) {
 			var azApp map[string]interface{}
-			if err := json.Unmarshal(out, &azApp); err != nil {
+			if err := json.Unmarshal([]byte(out), &azApp); err != nil {
 				return err
 			}
-			appId := fmt.Sprint(azApp["appId"])
-
-			sc.appId = appId
+			createdAppId := fmt.Sprint(azApp["appId"])
 
 			end := time.Since(start)
-			log.Debug("App created successfully!")
+			log.Debugf("App with appId '%s' created successfully!", createdAppId)
 			log.Debug(end)
 			return nil
 		}
@@ -124,21 +120,20 @@ func (sc *SetUpCmd) createAzApp() error {
 	return nil
 }
 
-func (sc *SetUpCmd) CreateServicePrincipal() error {
+func (az *AzClient) CreateServicePrincipal(appId string) error {
 	log.Debug("creating Azure service principal...")
 	start := time.Now()
 	log.Debug(start)
 
 	createServicePrincipal := func() error {
-		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
-		out, err := createSpCmd.CombinedOutput()
+		out, err := az.CommandRunner.RunCommand("az", "ad", "sp", "create", "--id", appId, "--only-show-errors")
 		if err != nil {
 			log.Printf("%s\n", out)
 			return err
 		}
 
 		log.Debug("checking sp was created...")
-		if sc.ServicePrincipalExists() {
+		if az.ServicePrincipalExists(appId) {
 			log.Debug("Service principal created successfully!")
 			end := time.Since(start)
 			log.Debug(end)
@@ -189,14 +184,14 @@ func PromptTenantId(azc AzClientInterface, ctx context.Context) (string, error) 
 	return selectedTenant, nil
 }
 
-func (sc *SetUpCmd) ValidateSetUpConfig(gh GhClient) error {
+func (sc *SetUpCmd) ValidateSetUpConfig(gh GhClient, az AzClientInterface) error {
 	log.Debug("Checking that provided information is valid...")
 
-	if err := IsSubscriptionIdValid(sc.SubscriptionID); err != nil {
+	if err := az.IsSubscriptionIdValid(sc.SubscriptionID); err != nil {
 		return err
 	}
 
-	if err := isValidResourceGroup(sc.SubscriptionID, sc.ResourceGroupName); err != nil {
+	if err := az.IsValidResourceGroup(sc.SubscriptionID, sc.ResourceGroupName); err != nil {
 		return err
 	}
 

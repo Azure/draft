@@ -30,7 +30,7 @@ type SetUpCmd struct {
 	AzClient          AzClientInterface
 }
 
-const AKS_CLUSTER_ADMIN_ROLE_ID = "b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b"
+const CONTRIBUTOR_ROLE_ID = "b24988ac-6180-42a0-ab88-20f7382dd24c"
 
 func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner, gh GhClient, az AzClientInterface) error {
 	log.Debug("Commencing github connection with azure...")
@@ -56,7 +56,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner,
 		return err
 	}
 
-	if err := az.AssignSpRole(ctx, sc.SubscriptionID, sc.ResourceGroupName, sc.spObjectId, AKS_CLUSTER_ADMIN_ROLE_ID); err != nil {
+	if err := az.AssignSpRole(ctx, sc.SubscriptionID, sc.ResourceGroupName, sc.spObjectId, CONTRIBUTOR_ROLE_ID); err != nil {
 		return err
 	}
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	"github.com/Azure/draft/pkg/config"
 )
@@ -141,28 +142,10 @@ func NoBlankStringValidator(s string) error {
 
 // Validator for App name
 func appNameValidator(name string) error {
-	if name == "" {
-		return fmt.Errorf("application name cannot be empty")
+	errors := validation.IsDNS1123Label(name)
+	if errors != nil {
+		return fmt.Errorf("invalid app name: %s", strings.Join(errors, ", "))
 	}
-
-	if !unicode.IsLetter(rune(name[0])) && !unicode.IsDigit(rune(name[0])) {
-		return fmt.Errorf("application name must start with a letter or digit")
-	}
-
-	if name[len(name)-1] == '-' || name[len(name)-1] == '_' || name[len(name)-1] == '.' {
-		return fmt.Errorf("application name must end with a letter or digit")
-	}
-
-	for _, r := range name {
-		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '-' && r != '_' && r != '.' {
-			return fmt.Errorf("application name can only contain letters, digits, '-', '_', and '.'")
-		}
-	}
-
-	if len(name) > 63 {
-		return fmt.Errorf("application name cannot be longer than 63 characters")
-	}
-
 	return nil
 }
 
@@ -312,9 +295,9 @@ func getCurrentDirName() (string, error) {
 func sanitizeAppName(name string) string {
 	var builder strings.Builder
 
-	// Remove all characters except alphanumeric, '-', '_', '.'
+	// Remove all characters except alphanumeric, '-',  '.'
 	for _, r := range name {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_' || r == '.' {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '.' {
 			builder.WriteRune(r)
 		}
 	}

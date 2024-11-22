@@ -88,7 +88,7 @@ func (az *AzClient) ValidateAzCliInstalled() error {
 func (az *AzClient) IsLoggedInToAz() bool {
 	log.Debug("Checking that user is logged in to Azure CLI...")
 	_, err := az.CommandRunner.RunCommand("az", "ad", "signed-in-user", "show", "--only-show-errors", "--query", "objectId")
-	return err != nil 
+	return err != nil
 }
 
 func (az *AzClient) EnsureAzCliLoggedIn() {
@@ -173,17 +173,17 @@ func (az *AzClient) AzAppExists(appName string) bool {
 	return len(azApp) >= 1
 }
 
-func (az *AzClient) ServicePrincipalExists(appId string) bool {
+func (az *AzClient) GetServicePrincipal(appId string) (string, error) {
 	out, err := az.CommandRunner.RunCommand("az", "ad", "sp", "show", "--only-show-errors", "--id", appId, "--query", "id")
 	if err != nil {
-		return false
+		return "", err
 	}
 
 	var objectId string
 	json.Unmarshal([]byte(out), &objectId)
 
 	log.Debugf("Service principal with appId '%s' exists", appId)
-	return true
+	return objectId, nil
 }
 
 func (az *AzClient) AzAcrExists(acrName string) bool {

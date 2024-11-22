@@ -19,21 +19,21 @@ type AzClientInterface interface {
 	AzAcrExists(acrName string) bool
 	AzAksExists(aksName string, resourceGroup string) bool
 	AzAppExists(appName string) bool
-	CreateAzApp(appName string) error
-	CreateServicePrincipal(appId string) error
+	CreateAzApp(appName string) (string, error)
+	CreateServicePrincipal(appId string) (string, error)
 	EnsureAzCli()
 	EnsureAzCliLoggedIn()
 	GetAzCliVersion() (string, error)
 	GetAzSubscriptionLabels() ([]SubLabel, error)
 	GetAzUpgrade() string
 	GetCurrentAzSubscriptionLabel() (SubLabel, error)
+	GetServicePrincipal(appId string) (string, error)
 	IsLoggedInToAz() bool
 	IsSubscriptionIdValid(subscriptionId string) error
 	IsValidResourceGroup(subscriptionId string, resourceGroup string) error
 	ListResourceGroups(ctx context.Context, subscriptionID string) ([]armresources.ResourceGroup, error)
 	ListTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error)
 	LogInToAz() error
-	ServicePrincipalExists(appId string) bool
 	UpgradeAzCli()
 	ValidateAzCliInstalled() error
 }

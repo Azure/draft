@@ -42,15 +42,18 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner,
 	}
 
 	if !az.AzAppExists(sc.AppName) {
-		err := az.CreateAzApp(sc.AppName)
+		appId, err := az.CreateAzApp(sc.AppName)
 		if err != nil {
 			return err
 		}
+		sc.appId = appId
 	}
 
-	if err := az.CreateServicePrincipal(sc.appId); err != nil {
+	spObjId, err := az.CreateServicePrincipal(sc.appId)
+	if err != nil {
 		return err
 	}
+	sc.spObjectId = spObjId
 
 	if err := sc.getAppObjectId(); err != nil {
 		return err
@@ -80,10 +83,13 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner,
 	return nil
 }
 
-func (az *AzClient) CreateAzApp(appName string) error {
+// CreateAzApp creates an Azure app with the given name
+// Returns the appId of the created app
+func (az *AzClient) CreateAzApp(appName string) (string, error) {
 	log.Debug("Commencing Azure app creation...")
 	start := time.Now()
 	log.Debug(start)
+	createdAppId := ""
 
 	createApp := func() error {
 		out, err := az.CommandRunner.RunCommand("az", "ad", "app", "create", "--only-show-errors", "--display-name", appName)
@@ -97,7 +103,7 @@ func (az *AzClient) CreateAzApp(appName string) error {
 			if err := json.Unmarshal([]byte(out), &azApp); err != nil {
 				return err
 			}
-			createdAppId := fmt.Sprint(azApp["appId"])
+			createdAppId = fmt.Sprint(azApp["appId"])
 
 			end := time.Since(start)
 			log.Debugf("App with appId '%s' created successfully!", createdAppId)
@@ -114,16 +120,23 @@ func (az *AzClient) CreateAzApp(appName string) error {
 	err := bo.Retry(createApp, backoff)
 	if err != nil {
 		log.Debug(err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return createdAppId, nil
 }
 
-func (az *AzClient) CreateServicePrincipal(appId string) error {
+// CreateServicePrincipal creates a service principal with the given appId
+// Returns the objectId of the created service principal
+func (az *AzClient) CreateServicePrincipal(appId string) (string, error) {
 	log.Debug("creating Azure service principal...")
 	start := time.Now()
 	log.Debug(start)
+
+	if appId == "" {
+		return "", errors.New("appId cannot be empty")
+	}
+	createdObjectId := ""
 
 	createServicePrincipal := func() error {
 		out, err := az.CommandRunner.RunCommand("az", "ad", "sp", "create", "--id", appId, "--only-show-errors")
@@ -133,14 +146,16 @@ func (az *AzClient) CreateServicePrincipal(appId string) error {
 		}
 
 		log.Debug("checking sp was created...")
-		if az.ServicePrincipalExists(appId) {
-			log.Debug("Service principal created successfully!")
-			end := time.Since(start)
-			log.Debug(end)
-			return nil
+		spObjId, err := az.GetServicePrincipal(appId)
+		if err != nil {
+			return errors.New("service principal not found")
 		}
+		log.Debug("Service principal created successfully!")
+		end := time.Since(start)
+		log.Debug(end)
+		createdObjectId = spObjId
+		return nil
 
-		return errors.New("service principal not found")
 	}
 
 	backoff := bo.NewExponentialBackOff()
@@ -149,10 +164,10 @@ func (az *AzClient) CreateServicePrincipal(appId string) error {
 	err := bo.Retry(createServicePrincipal, backoff)
 	if err != nil {
 		log.Debug(err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return createdObjectId, nil
 }
 
 // Prompt the user to select a tenant ID if there are multiple tenants, or return the only tenant ID if there is only one

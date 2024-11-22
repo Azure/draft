@@ -4,32 +4,28 @@
     "version": "1.22.0",
     "port": "1323",
     "serviceport": 80,
-    "repo": "gambtho/go_echo",
-    "startupInitialDelay": 5
+    "repo": "gambtho/go_echo"
   },
   {
     "language": "go",
     "version": "1.22.0",
     "port": "8080",
     "serviceport": 8080,
-    "repo": "davidgamero/go-echo-no-mod",
-    "startupInitialDelay": 5
+    "repo": "davidgamero/go-echo-no-mod"
   },
   {
     "language": "python",
     "version": "3",
     "port": "5000",
     "serviceport": 80,
-    "repo": "OliverMKing/flask-hello-world",
-    "startupInitialDelay": 5
+    "repo": "OliverMKing/flask-hello-world"
   },
   {
     "language": "rust",
     "version": "1.77.0",
     "port": "8000",
     "serviceport": 80,
-    "repo": "OliverMKing/tiny-http-hello-world",
-    "startupInitialDelay": 5
+    "repo": "OliverMKing/tiny-http-hello-world"
   },
   {
     "language": "javascript",
@@ -44,16 +40,14 @@
     "version": "3.1.2",
     "port": "4567",
     "serviceport": 80,
-    "repo": "davidgamero/sinatra-hello-world",
-    "startupInitialDelay": 5
+    "repo": "davidgamero/sinatra-hello-world"
   },
   {
     "language": "csharp",
     "version": "5.0",
     "port": "80",
     "serviceport": 80,
-    "repo": "imiller31/csharp-simple-web-app",
-    "startupInitialDelay": 5
+    "repo": "imiller31/csharp-simple-web-app"
   },
   {
     "language": "java",
@@ -61,8 +55,7 @@
     "builderversion": "3-jdk-11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/simple-java-server",
-    "startupInitialDelay": 5
+    "repo": "imiller31/simple-java-server"
   },
   {
     "language": "gradle",
@@ -87,8 +80,7 @@
     "builderversion": "27.0-alpine",
     "port": "8080",
     "serviceport": 80,
-    "repo": "bfoley13/ErlangExample",
-    "startupInitialDelay": 5
+    "repo": "bfoley13/ErlangExample"
   },
   {
     "language": "clojure",

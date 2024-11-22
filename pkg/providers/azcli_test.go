@@ -13,8 +13,8 @@ func TestCheckAzCliInstalled(t *testing.T) {
 		"azure-cli-telemetry": "1.1.0",
 		"extensions": {}
 	}`}}
-	assert.NotPanics(t, func() { az.ValidateAzCliInstalled() })
-
+	err := az.ValidateAzCliInstalled()
+	assert.Nil(t, err)
 }
 func TestCheckAzCliInstalledError(t *testing.T) {
 	az := &AzClient{CommandRunner: &FakeCommandRunner{Output: "az", ErrStr: "error"}}

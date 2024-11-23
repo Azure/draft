@@ -108,10 +108,9 @@ do
     startupInitialDelaySegment=""
     # if startupinitialdelay is empty
     if [ "$startupInitialDelay" != "null" ]; then
-      echo "adding startupInitialDelaySegment"
       startupInitialDelaySegment="
   - name: \"STARTUPINITIALDELAY\"
-    value: \"$startupInitialDelay\""
+    value: $startupInitialDelay"
     fi
 
     imagename="host.minikube.internal:5001/testapp"
@@ -135,7 +134,7 @@ deployVariables:
   - name: \"APPNAME\"
     value: \"testapp\"
   - name: \"IMAGENAME\"
-    value: \"$imagename\"$startupInitialDelaySegment 
+    value: \"$imagename\"$startupInitialDelaySegment
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
@@ -156,7 +155,7 @@ deployVariables:
   - name: \"APPNAME\"
     value: \"testapp\"
   - name: \"IMAGENAME\"
-    value: \"$imagename\"$startupInitialDelaySegment 
+    value: \"$imagename\"$startupInitialDelaySegment
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
@@ -177,7 +176,7 @@ deployVariables:
   - name: \"APPNAME\"
     value: \"testapp\"
   - name: \"IMAGENAME\"
-    value: \"$imagename\"$startupInitialDelaySegment 
+    value: \"$imagename\"$startupInitialDelaySegment
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"

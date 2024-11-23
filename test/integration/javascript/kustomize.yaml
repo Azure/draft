@@ -11,7 +11,7 @@ deployVariables:
   - name: "IMAGENAME"
     value: "host.minikube.internal:5001/testapp"
   - name: "STARTUPINITIALDELAY"
-    value: "30" 
+    value: 30
 languageVariables:
   - name: "VERSION"
     value: "14"

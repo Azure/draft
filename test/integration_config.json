@@ -55,7 +55,8 @@
     "builderversion": "3-jdk-11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/simple-java-server"
+    "repo": "imiller31/simple-java-server",
+    "startupInitialDelay": 30
   },
   {
     "language": "gradle",

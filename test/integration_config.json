@@ -32,8 +32,7 @@
     "version": "14",
     "port": "1313",
     "serviceport": 80,
-    "repo": "davidgamero/express-hello-world",
-    "startupInitialDelay": 30
+    "repo": "davidgamero/express-hello-world"
   },
   {
     "language": "ruby",

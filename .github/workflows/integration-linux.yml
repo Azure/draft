@@ -8,9 +8,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: 1.22
       - name: make
@@ -30,13 +30,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: gambtho/go_echo
             path: ./langtest
@@ -65,13 +65,13 @@ jobs:
           - 5001:5000
     needs: gomodule-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -84,7 +84,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -108,7 +108,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -143,7 +143,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -171,13 +171,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -206,13 +206,13 @@ jobs:
           - 5001:5000
     needs: gomodule-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -243,7 +243,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -276,7 +276,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -303,13 +303,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: gambtho/go_echo
             path: ./langtest
@@ -338,13 +338,13 @@ jobs:
           - 5001:5000
     needs: gomodule-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: gambtho/go_echo
           path: ./langtest
@@ -401,7 +401,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -426,7 +426,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -470,13 +470,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: davidgamero/go-echo-no-mod
             path: ./langtest
@@ -505,13 +505,13 @@ jobs:
           - 5001:5000
     needs: go-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
@@ -524,7 +524,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -548,7 +548,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -583,7 +583,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -611,13 +611,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
@@ -646,13 +646,13 @@ jobs:
           - 5001:5000
     needs: go-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
@@ -683,7 +683,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -716,7 +716,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -743,13 +743,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: davidgamero/go-echo-no-mod
             path: ./langtest
@@ -778,13 +778,13 @@ jobs:
           - 5001:5000
     needs: go-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/go-echo-no-mod
           path: ./langtest
@@ -841,7 +841,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -866,7 +866,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -910,13 +910,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
@@ -945,13 +945,13 @@ jobs:
           - 5001:5000
     needs: python-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -964,7 +964,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -988,7 +988,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -1023,7 +1023,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -1051,13 +1051,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -1086,13 +1086,13 @@ jobs:
           - 5001:5000
     needs: python-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -1123,7 +1123,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -1156,7 +1156,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -1183,13 +1183,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: OliverMKing/flask-hello-world
             path: ./langtest
@@ -1218,13 +1218,13 @@ jobs:
           - 5001:5000
     needs: python-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
@@ -1281,7 +1281,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -1306,7 +1306,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -1350,13 +1350,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
@@ -1385,13 +1385,13 @@ jobs:
           - 5001:5000
     needs: rust-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -1404,7 +1404,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -1428,7 +1428,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -1463,7 +1463,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -1491,13 +1491,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -1526,13 +1526,13 @@ jobs:
           - 5001:5000
     needs: rust-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -1563,7 +1563,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -1596,7 +1596,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -1623,13 +1623,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: OliverMKing/tiny-http-hello-world
             path: ./langtest
@@ -1658,13 +1658,13 @@ jobs:
           - 5001:5000
     needs: rust-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
@@ -1721,7 +1721,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -1746,7 +1746,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -1790,13 +1790,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
@@ -1825,13 +1825,13 @@ jobs:
           - 5001:5000
     needs: javascript-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -1844,7 +1844,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -1868,7 +1868,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -1903,7 +1903,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -1931,13 +1931,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -1966,13 +1966,13 @@ jobs:
           - 5001:5000
     needs: javascript-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -2003,7 +2003,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -2036,7 +2036,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -2063,13 +2063,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: davidgamero/express-hello-world
             path: ./langtest
@@ -2098,13 +2098,13 @@ jobs:
           - 5001:5000
     needs: javascript-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/express-hello-world
           path: ./langtest
@@ -2161,7 +2161,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -2186,7 +2186,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -2230,13 +2230,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: davidgamero/sinatra-hello-world
             path: ./langtest
@@ -2265,13 +2265,13 @@ jobs:
           - 5001:5000
     needs: ruby-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/sinatra-hello-world
           path: ./langtest
@@ -2284,7 +2284,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -2308,7 +2308,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -2343,7 +2343,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -2371,13 +2371,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/sinatra-hello-world
           path: ./langtest
@@ -2406,13 +2406,13 @@ jobs:
           - 5001:5000
     needs: ruby-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/sinatra-hello-world
           path: ./langtest
@@ -2443,7 +2443,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -2476,7 +2476,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -2503,13 +2503,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: davidgamero/sinatra-hello-world
             path: ./langtest
@@ -2538,13 +2538,13 @@ jobs:
           - 5001:5000
     needs: ruby-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: davidgamero/sinatra-hello-world
           path: ./langtest
@@ -2601,7 +2601,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -2626,7 +2626,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -2670,13 +2670,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
@@ -2705,13 +2705,13 @@ jobs:
           - 5001:5000
     needs: csharp-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -2724,7 +2724,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -2748,7 +2748,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -2783,7 +2783,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -2811,13 +2811,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -2846,13 +2846,13 @@ jobs:
           - 5001:5000
     needs: csharp-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -2883,7 +2883,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -2916,7 +2916,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -2943,13 +2943,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/csharp-simple-web-app
             path: ./langtest
@@ -2978,13 +2978,13 @@ jobs:
           - 5001:5000
     needs: csharp-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
@@ -3041,7 +3041,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -3066,7 +3066,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -3110,13 +3110,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
@@ -3145,13 +3145,13 @@ jobs:
           - 5001:5000
     needs: java-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -3164,7 +3164,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -3188,7 +3188,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -3223,7 +3223,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -3251,13 +3251,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -3286,13 +3286,13 @@ jobs:
           - 5001:5000
     needs: java-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -3323,7 +3323,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -3356,7 +3356,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -3383,13 +3383,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/simple-java-server
             path: ./langtest
@@ -3418,13 +3418,13 @@ jobs:
           - 5001:5000
     needs: java-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-java-server
           path: ./langtest
@@ -3481,7 +3481,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -3506,7 +3506,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -3550,13 +3550,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
@@ -3585,13 +3585,13 @@ jobs:
           - 5001:5000
     needs: gradle-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -3604,7 +3604,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -3628,7 +3628,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -3663,7 +3663,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -3691,13 +3691,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -3726,13 +3726,13 @@ jobs:
           - 5001:5000
     needs: gradle-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -3763,7 +3763,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -3796,7 +3796,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -3823,13 +3823,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/simple-gradle-server
             path: ./langtest
@@ -3858,13 +3858,13 @@ jobs:
           - 5001:5000
     needs: gradle-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/simple-gradle-server
           path: ./langtest
@@ -3921,7 +3921,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -3946,7 +3946,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -3990,13 +3990,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
@@ -4025,13 +4025,13 @@ jobs:
           - 5001:5000
     needs: swift-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -4044,7 +4044,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -4068,7 +4068,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -4103,7 +4103,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -4131,13 +4131,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -4166,13 +4166,13 @@ jobs:
           - 5001:5000
     needs: swift-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -4203,7 +4203,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -4236,7 +4236,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -4263,13 +4263,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: OliverMKing/swift-hello-world
             path: ./langtest
@@ -4298,13 +4298,13 @@ jobs:
           - 5001:5000
     needs: swift-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
@@ -4361,7 +4361,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -4386,7 +4386,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -4430,13 +4430,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
@@ -4465,13 +4465,13 @@ jobs:
           - 5001:5000
     needs: erlang-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -4484,7 +4484,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -4508,7 +4508,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -4543,7 +4543,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -4571,13 +4571,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -4606,13 +4606,13 @@ jobs:
           - 5001:5000
     needs: erlang-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -4643,7 +4643,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -4676,7 +4676,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -4703,13 +4703,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: bfoley13/ErlangExample
             path: ./langtest
@@ -4738,13 +4738,13 @@ jobs:
           - 5001:5000
     needs: erlang-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: bfoley13/ErlangExample
           path: ./langtest
@@ -4801,7 +4801,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -4826,7 +4826,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
@@ -4870,13 +4870,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
@@ -4905,13 +4905,13 @@ jobs:
           - 5001:5000
     needs: clojure-helm-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -4924,7 +4924,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -4948,7 +4948,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -4983,7 +4983,7 @@ jobs:
           pwd
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -5011,13 +5011,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -5046,13 +5046,13 @@ jobs:
           - 5001:5000
     needs: clojure-kustomize-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -5083,7 +5083,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v4.10
         continue-on-error: true
         id: deploy
         with:
@@ -5116,7 +5116,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type kustomize --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -5143,13 +5143,13 @@ jobs:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: imiller31/clojure-simple-http
             path: ./langtest
@@ -5178,13 +5178,13 @@ jobs:
           - 5001:5000
     needs: clojure-manifest-dry-run
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: imiller31/clojure-simple-http
           path: ./langtest
@@ -5241,7 +5241,7 @@ jobs:
       - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v3
         with:
           tool_versions: |
             action-validator 0.1.2
@@ -5266,7 +5266,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: draft-binary

@@ -11,12 +11,16 @@ import (
 )
 
 // EnsureAzCli ensures that the Azure CLI is installed and the user is logged in
-func (az *AzClient) EnsureAzCli() {
-	err := az.ValidateAzCliInstalled()
-	if err != nil {
-		log.Fatalf("Error validating az cli installation: %s", err.Error())
+func (az *AzClient) EnsureAzCli() error {
+	if err := az.ValidateAzCliInstalled(); err != nil {
+		return fmt.Errorf("failed to validate az CLI installation: %w", err)
 	}
-	az.EnsureAzCliLoggedIn()
+
+	if err := az.EnsureAzCliLoggedIn(); err != nil {
+		return fmt.Errorf("failed to ensure az CLI login: %w", err)
+	}
+
+	return nil
 }
 
 func (az *AzClient) GetAzCliVersion() (string, error) {
@@ -91,12 +95,13 @@ func (az *AzClient) IsLoggedInToAz() bool {
 	return err != nil
 }
 
-func (az *AzClient) EnsureAzCliLoggedIn() {
+func (az *AzClient) EnsureAzCliLoggedIn() error {
 	if !az.IsLoggedInToAz() {
 		if err := az.LogInToAz(); err != nil {
-			log.Fatal("Error: unable to log in to Azure")
+			return fmt.Errorf("unable to log in to Azure: %w", err)
 		}
 	}
+	return nil
 }
 
 func (az *AzClient) LogInToAz() error {

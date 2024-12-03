@@ -21,8 +21,8 @@ type AzClientInterface interface {
 	AzAppExists(appName string) bool
 	CreateAzApp(appName string) (string, error)
 	CreateServicePrincipal(appId string) (string, error)
-	EnsureAzCli()
-	EnsureAzCliLoggedIn()
+	EnsureAzCli() error
+	EnsureAzCliLoggedIn() error
 	GetAzCliVersion() (string, error)
 	GetAzSubscriptionLabels() ([]SubLabel, error)
 	GetAzUpgrade() string
@@ -57,7 +57,10 @@ func NewAzClient(cred *azidentity.DefaultAzureCredential) (*AzClient, error) {
 		Credential:    cred,
 		CommandRunner: &DefaultCommandRunner{},
 	}
-	azClient.EnsureAzCli()
+	err := azClient.EnsureAzCli()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return azClient, nil
 }
 

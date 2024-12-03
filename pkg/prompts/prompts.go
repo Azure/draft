@@ -297,7 +297,7 @@ func sanitizeAppName(name string) string {
 
 	// Remove all characters except alphanumeric, '-',  '.'
 	for _, r := range name {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '.' {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || strings.ContainsRune("-.", r) {
 			builder.WriteRune(r)
 		}
 	}

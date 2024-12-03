@@ -3,6 +3,8 @@ package providers
 import (
 	"errors"
 	"os/exec"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // CommandRunner is an interface for executing commands and getting the output/error
@@ -11,9 +13,11 @@ type CommandRunner interface {
 }
 
 type DefaultCommandRunner struct{}
+
 var _ CommandRunner = &DefaultCommandRunner{}
 
 func (d *DefaultCommandRunner) RunCommand(args ...string) (string, error) {
+	log.Debug("Running command: ", args)
 	cmd := exec.Command(args[0], args[1:]...)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
@@ -23,6 +27,7 @@ type FakeCommandRunner struct {
 	Output string
 	ErrStr string
 }
+
 var _ CommandRunner = &FakeCommandRunner{}
 
 func (f *FakeCommandRunner) RunCommand(args ...string) (string, error) {

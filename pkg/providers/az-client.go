@@ -15,9 +15,27 @@ import (
 
 //go:generate mockgen -source=./az-client.go -destination=./mock/az-client.go .
 type AzClientInterface interface {
+	AssignSpRole(ctx context.Context, subscriptionId, resourceGroup, servicePrincipalObjectID, roleId string) error
+	AzAcrExists(acrName string) bool
+	AzAksExists(aksName string, resourceGroup string) bool
+	AzAppExists(appName string) bool
+	CreateAzApp(appName string) (string, error)
+	CreateServicePrincipal(appId string) (string, error)
+	EnsureAzCli() error
+	EnsureAzCliLoggedIn() error
+	GetAzCliVersion() (string, error)
+	GetAzSubscriptionLabels() ([]SubLabel, error)
+	GetAzUpgrade() string
+	GetCurrentAzSubscriptionLabel() (SubLabel, error)
+	GetServicePrincipal(appId string) (string, error)
+	IsLoggedInToAz() bool
+	IsSubscriptionIdValid(subscriptionId string) error
+	IsValidResourceGroup(subscriptionId string, resourceGroup string) error
 	ListResourceGroups(ctx context.Context, subscriptionID string) ([]armresources.ResourceGroup, error)
 	ListTenants(ctx context.Context) ([]armsubscription.TenantIDDescription, error)
-	assignSpRole(ctx context.Context, subscriptionId, resourceGroup, servicePrincipalObjectID, roleId string) error
+	LogInToAz() error
+	UpgradeAzCli()
+	ValidateAzCliInstalled() error
 }
 
 // assert AzClient implements AzClientInterface
@@ -31,11 +49,17 @@ type AzClient struct {
 	TenantClient        *armsubscription.TenantsClient
 	RoleAssignClient    *armauthorization.RoleAssignmentsClient
 	ResourceGroupClient *armresources.ResourceGroupsClient
+	CommandRunner       CommandRunner
 }
 
 func NewAzClient(cred *azidentity.DefaultAzureCredential) (*AzClient, error) {
 	azClient := &AzClient{
-		Credential: cred,
+		Credential:    cred,
+		CommandRunner: &DefaultCommandRunner{},
+	}
+	err := azClient.EnsureAzCli()
+	if err != nil {
+		log.Fatal(err)
 	}
 	return azClient, nil
 }
@@ -103,7 +127,7 @@ func (az *AzClient) ListTenants(ctx context.Context) ([]armsubscription.TenantID
 	return tenants, nil
 }
 
-func (az *AzClient) assignSpRole(ctx context.Context, subscriptionId, resourceGroup, servicePrincipalObjectID, roleId string) error {
+func (az *AzClient) AssignSpRole(ctx context.Context, subscriptionId, resourceGroup, servicePrincipalObjectID, roleId string) error {
 	log.Debug("Assigning contributor role to service principal...")
 	if az.RoleAssignClient == nil {
 		c, err := armauthorization.NewRoleAssignmentsClient(subscriptionId, az.Credential, nil)

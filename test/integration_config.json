@@ -54,7 +54,8 @@
     "builderversion": "3-jdk-11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/simple-java-server"
+    "repo": "imiller31/simple-java-server",
+    "startupInitialDelay": 30
   },
   {
     "language": "gradle",
@@ -62,14 +63,16 @@
     "builderversion": "7-jdk11",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/simple-gradle-server"
+    "repo": "imiller31/simple-gradle-server",
+    "startupInitialDelay": 30
   },
   {
     "language": "swift",
     "version": "5.5",
     "port": "8080",
     "serviceport": 80,
-    "repo": "OliverMKing/swift-hello-world"
+    "repo": "OliverMKing/swift-hello-world",
+    "startupInitialDelay": 30
   },
   {
     "language": "erlang",
@@ -84,6 +87,7 @@
     "version": "8-jdk-alpine",
     "port": "8080",
     "serviceport": 80,
-    "repo": "imiller31/clojure-simple-http"
+    "repo": "imiller31/clojure-simple-http",
+    "startupInitialDelay": 30
   }
 ]

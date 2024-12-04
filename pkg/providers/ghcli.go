@@ -68,7 +68,7 @@ func (gh GhCliClient) IsLoggedInToGh() bool {
 	log.Debug("Checking that user is logged in to github...")
 	out, err := gh.exec("gh", "auth", "status")
 	if err != nil {
-		fmt.Printf(string(out))
+		fmt.Print(string(out))
 		return false
 	}
 

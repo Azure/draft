@@ -30,33 +30,36 @@ type SetUpCmd struct {
 	AzClient          AzClientInterface
 }
 
-const AKS_CLUSTER_ADMIN_ROLE_ID = "b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b"
+const CONTRIBUTOR_ROLE_ID = "b24988ac-6180-42a0-ab88-20f7382dd24c"
 
-func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner, gh GhClient) error {
+func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner, gh GhClient, az AzClientInterface) error {
 	log.Debug("Commencing github connection with azure...")
 
 	s.Start()
 
-	if err := sc.ValidateSetUpConfig(gh); err != nil {
+	if err := sc.ValidateSetUpConfig(gh, az); err != nil {
 		return err
 	}
 
-	if !AzAppExists(sc.AppName) {
-		err := sc.createAzApp()
+	if !az.AzAppExists(sc.AppName) {
+		appId, err := az.CreateAzApp(sc.AppName)
 		if err != nil {
 			return err
 		}
+		sc.appId = appId
 	}
 
-	if err := sc.CreateServicePrincipal(); err != nil {
+	spObjId, err := az.CreateServicePrincipal(sc.appId)
+	if err != nil {
 		return err
 	}
+	sc.spObjectId = spObjId
 
 	if err := sc.getAppObjectId(); err != nil {
 		return err
 	}
 
-	if err := sc.AzClient.assignSpRole(ctx, sc.SubscriptionID, sc.ResourceGroupName, sc.spObjectId, AKS_CLUSTER_ADMIN_ROLE_ID); err != nil {
+	if err := az.AssignSpRole(ctx, sc.SubscriptionID, sc.ResourceGroupName, sc.spObjectId, CONTRIBUTOR_ROLE_ID); err != nil {
 		return err
 	}
 
@@ -80,31 +83,30 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner,
 	return nil
 }
 
-func (sc *SetUpCmd) createAzApp() error {
+// CreateAzApp creates an Azure app with the given name
+// Returns the appId of the created app
+func (az *AzClient) CreateAzApp(appName string) (string, error) {
 	log.Debug("Commencing Azure app creation...")
 	start := time.Now()
 	log.Debug(start)
+	createdAppId := ""
 
 	createApp := func() error {
-		createAppCmd := exec.Command("az", "ad", "app", "create", "--only-show-errors", "--display-name", sc.AppName)
-
-		out, err := createAppCmd.CombinedOutput()
+		out, err := az.CommandRunner.RunCommand("az", "ad", "app", "create", "--only-show-errors", "--display-name", appName)
 		if err != nil {
 			log.Printf("%s\n", out)
 			return err
 		}
 
-		if AzAppExists(sc.AppName) {
+		if az.AzAppExists(appName) {
 			var azApp map[string]interface{}
-			if err := json.Unmarshal(out, &azApp); err != nil {
+			if err := json.Unmarshal([]byte(out), &azApp); err != nil {
 				return err
 			}
-			appId := fmt.Sprint(azApp["appId"])
-
-			sc.appId = appId
+			createdAppId = fmt.Sprint(azApp["appId"])
 
 			end := time.Since(start)
-			log.Debug("App created successfully!")
+			log.Debugf("App with appId '%s' created successfully!", createdAppId)
 			log.Debug(end)
 			return nil
 		}
@@ -118,34 +120,42 @@ func (sc *SetUpCmd) createAzApp() error {
 	err := bo.Retry(createApp, backoff)
 	if err != nil {
 		log.Debug(err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return createdAppId, nil
 }
 
-func (sc *SetUpCmd) CreateServicePrincipal() error {
+// CreateServicePrincipal creates a service principal with the given appId
+// Returns the objectId of the created service principal
+func (az *AzClient) CreateServicePrincipal(appId string) (string, error) {
 	log.Debug("creating Azure service principal...")
 	start := time.Now()
 	log.Debug(start)
 
+	if appId == "" {
+		return "", errors.New("appId cannot be empty")
+	}
+	createdObjectId := ""
+
 	createServicePrincipal := func() error {
-		createSpCmd := exec.Command("az", "ad", "sp", "create", "--id", sc.appId, "--only-show-errors")
-		out, err := createSpCmd.CombinedOutput()
+		out, err := az.CommandRunner.RunCommand("az", "ad", "sp", "create", "--id", appId, "--only-show-errors")
 		if err != nil {
 			log.Printf("%s\n", out)
 			return err
 		}
 
 		log.Debug("checking sp was created...")
-		if sc.ServicePrincipalExists() {
-			log.Debug("Service principal created successfully!")
-			end := time.Since(start)
-			log.Debug(end)
-			return nil
+		spObjId, err := az.GetServicePrincipal(appId)
+		if err != nil {
+			return errors.New("service principal not found")
 		}
+		log.Debug("Service principal created successfully!")
+		end := time.Since(start)
+		log.Debug(end)
+		createdObjectId = spObjId
+		return nil
 
-		return errors.New("service principal not found")
 	}
 
 	backoff := bo.NewExponentialBackOff()
@@ -154,10 +164,10 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	err := bo.Retry(createServicePrincipal, backoff)
 	if err != nil {
 		log.Debug(err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return createdObjectId, nil
 }
 
 // Prompt the user to select a tenant ID if there are multiple tenants, or return the only tenant ID if there is only one
@@ -189,14 +199,14 @@ func PromptTenantId(azc AzClientInterface, ctx context.Context) (string, error) 
 	return selectedTenant, nil
 }
 
-func (sc *SetUpCmd) ValidateSetUpConfig(gh GhClient) error {
+func (sc *SetUpCmd) ValidateSetUpConfig(gh GhClient, az AzClientInterface) error {
 	log.Debug("Checking that provided information is valid...")
 
-	if err := IsSubscriptionIdValid(sc.SubscriptionID); err != nil {
+	if err := az.IsSubscriptionIdValid(sc.SubscriptionID); err != nil {
 		return err
 	}
 
-	if err := isValidResourceGroup(sc.SubscriptionID, sc.ResourceGroupName); err != nil {
+	if err := az.IsValidResourceGroup(sc.SubscriptionID, sc.ResourceGroupName); err != nil {
 		return err
 	}
 

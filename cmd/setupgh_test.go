@@ -22,9 +22,10 @@ func TestSetUpConfig(t *testing.T) {
 	s := spinner.CreateSpinner("--> Setting up Github OIDC...")
 
 	gh := &providers.GhCliClient{}
-	fillSetUpConfig(mockSetUpCmd, gh)
+	az := &providers.AzClient{}
+	fillSetUpConfig(mockSetUpCmd, gh, az)
 
-	err := runProviderSetUp(ctx, mockSetUpCmd, s, gh)
+	err := runProviderSetUp(ctx, mockSetUpCmd, s, gh, az)
 
 	assert.True(t, err == nil)
 }

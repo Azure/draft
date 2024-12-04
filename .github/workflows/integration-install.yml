@@ -15,9 +15,9 @@ jobs:
       deployments: read
       packages: none
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Get Draft Cli version
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: get_draft_version
         with:
           result-encoding: string

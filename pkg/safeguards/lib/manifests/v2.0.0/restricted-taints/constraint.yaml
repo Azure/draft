@@ -1,0 +1,11 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzureV1ReservedTaints
+metadata:
+  name: v1-system-reserved-taints
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Node"]
+  parameters:
+    reservedTaints: ["CriticalAddonsOnly"]

@@ -84,7 +84,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -108,7 +108,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -224,7 +224,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -243,7 +243,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -524,7 +524,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -548,7 +548,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -664,7 +664,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -683,7 +683,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -964,7 +964,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -988,7 +988,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1104,7 +1104,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -1123,7 +1123,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1404,7 +1404,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -1428,7 +1428,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1544,7 +1544,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -1563,7 +1563,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1844,7 +1844,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -1868,7 +1868,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1984,7 +1984,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -2003,7 +2003,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2284,7 +2284,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -2308,7 +2308,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2424,7 +2424,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -2443,7 +2443,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2724,7 +2724,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -2748,7 +2748,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2864,7 +2864,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -2883,7 +2883,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3164,7 +3164,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -3188,7 +3188,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3304,7 +3304,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -3323,7 +3323,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3604,7 +3604,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -3628,7 +3628,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3744,7 +3744,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -3763,7 +3763,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4044,7 +4044,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -4068,7 +4068,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4184,7 +4184,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -4203,7 +4203,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4484,7 +4484,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -4508,7 +4508,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4624,7 +4624,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -4643,7 +4643,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4924,7 +4924,7 @@ jobs:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         with:
           renderEngine: 'helm'
           helmChart: ./langtest/charts
@@ -4948,7 +4948,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -5064,7 +5064,7 @@ jobs:
         with:
           insecure-registry: 'host.minikube.internal:5001,10.0.0.0/24'
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.4
+        uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: 'kustomize'
@@ -5083,7 +5083,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:

@@ -1,5 +1,15 @@
 # Change Log
 
+## [0.17.0] - 2024-12-10
+
+### Added
+
+- [#437](https://github.com/Azure/draft/pull/437) Bumps the actions group with 10 updates in the /.github/workflows directory
+
+### Fixed
+
+- Updating the version as the previous version was already released https://pkg.go.dev/github.com/azure/draft?tab=versions
+
 ## [0.1.0] - 2024-12-4
 
 ### Added

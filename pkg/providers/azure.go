@@ -60,7 +60,7 @@ func InitiateAzureOIDCFlow(ctx context.Context, sc *SetUpCmd, s spinner.Spinner)
 		return err
 	}
 
-	if err := sc.assignSpRoles(ctx); err != nil {
+	if err := sc.assignSpRole(ctx); err != nil {
 		return err
 	}
 
@@ -164,21 +164,9 @@ func (sc *SetUpCmd) CreateServicePrincipal() error {
 	return nil
 }
 
-func (sc *SetUpCmd) assignSpRoles(ctx context.Context) error {
-	var spRoles = []string{
-		"b24988ac-6180-42a0-ab88-20f7382dd24c", // Contributor role ID
-		"5af6afb3-c06c-4fa4-8848-71a8aee05683", // Azure Kubernetes Fleet Manager RBAC Writer role ID
-	}
-	for _, role := range spRoles {
-		if err := sc.assignRole(ctx, role); err != nil {
-			return err
-		}
-	}
-	log.Debug("Roles assigned successfully!")
-	return nil
-}
+func (sc *SetUpCmd) assignSpRole(ctx context.Context) error {
+	log.Debug("Assigning contributor role to service principal...")
 
-func (sc *SetUpCmd) assignRole(ctx context.Context, roleId string) error {
 	roleAssignClient, err := createRoleAssignmentClient(sc.SubscriptionID)
 	if err != nil {
 		return fmt.Errorf("creating role assignment client: %w", err)
@@ -186,6 +174,7 @@ func (sc *SetUpCmd) assignRole(ctx context.Context, roleId string) error {
 
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", sc.SubscriptionID, sc.ResourceGroupName)
 	objectID := sc.spObjectId
+	roleId := "b24988ac-6180-42a0-ab88-20f7382dd24c" // Contributor role ID
 	raUid := uuid.New().String()
 
 	fullAssignmentId := fmt.Sprintf("/%s/providers/Microsoft.Authorization/roleAssignments/%s", scope, raUid)
@@ -205,6 +194,7 @@ func (sc *SetUpCmd) assignRole(ctx context.Context, roleId string) error {
 		return fmt.Errorf("creating role assignment: %w", err)
 	}
 
+	log.Debug("Role assigned successfully!")
 	return nil
 }
 

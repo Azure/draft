@@ -46,7 +46,7 @@ env:
   DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
   BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
-  RESOURCE_TYPE: {{ .Config.GetVariableValue "RESOURCETYPE" }}
+  RESOURCE_TYPE: Microsoft.ContainerService/{{ .Config.GetVariableValue "RESOURCETYPE" }}
   RESOURCE_NAME: {{ .Config.GetVariableValue "RESOURCENAME" }}
 
 {{`
@@ -97,25 +97,19 @@ jobs:
         with:
           kubelogin-version: 'v0.0.25'
 
-      # gets credentials for a fleet
-      - name: Get fleet credentials
-        if: ${{ env.RESOURCE_TYPE == 'fleets' }}
-        run: |
-          az fleet get-credentials -g ${{ env.CLUSTER_RESOURCE_GROUP }} -n ${{ env.RESOURCE_NAME }}
-
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
-        if: ${{ env.RESOURCE_TYPE != 'fleets' }}
-        uses: azure/aks-set-context@v3
+        uses: azure/aks-set-context@v4.0.2
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.RESOURCE_NAME }}
           admin: 'false'
           use-kubelogin: 'true'
+          resource-type: ${{ env.RESOURCE_TYPE }}
 
       # Checks if the AKS cluster is private
       - name: Is private cluster
-        if: ${{ env.RESOURCE_TYPE != 'fleets' }}
+        if: ${{ env.RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}
         id: isPrivate
         run: |
           result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.RESOURCE_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
@@ -123,8 +117,7 @@ jobs:
 
       # Deploys application based on given manifest  file
       - name: Deploys application
-        if: ${{ env.RESOURCE_TYPE != 'fleets' }}
-        uses: Azure/k8s-deploy@v4
+        uses: Azure/k8s-deploy@v5.0.1
         with:
           action: deploy
           manifests: ${{ env.DEPLOYMENT_MANIFEST_PATH }}
@@ -134,11 +127,5 @@ jobs:
           name: ${{ env.RESOURCE_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
           namespace: ${{ env.NAMESPACE }}
-      - name: Deploys fleet application
-        if: ${{ env.RESOURCE_TYPE == 'fleets' }}
-        run: |
-          kubectl config current-context
-          for manifest in $(echo "${{ env.DEPLOYMENT_MANIFEST_PATH }}" | tr '\n' ' '); do
-            /usr/bin/kubectl apply --validate=false --request-timeout=60s -f ./$manifest --namespace ${{ env.NAMESPACE }}
-          done
+          resource-type: ${{ env.RESOURCE_TYPE }}
 `}}

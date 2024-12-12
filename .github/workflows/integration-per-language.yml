@@ -102,14 +102,14 @@ jobs:
         continue-on-error: true
         run: |
           export SHELL=/bin/bash
-          eval \$(minikube -p minikube docker-env)
+          eval $(minikube -p minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
           docker tag testapp ${{env.imagename}}
-          echo -n \"verifying images:\"
+          echo -n "verifying images:"
           docker images
           docker push ${{env.imagename}}
           echo 'Curling host.minikube.internal test app images from minikube'
-          minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v4.0
@@ -137,11 +137,11 @@ jobs:
           minikube tunnel  > /dev/null 2>&1 & tunnelPID=\$!
           sleep 120
           kubectl get svc
-          SERVICEIP=\$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
-          echo \"SERVICEIP: \$SERVICEIP\"
+          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo "SERVICEIP: \$SERVICEIP"
           echo 'Curling service IP'
-          curl -m 3 \$SERVICEIP:${{env.serviceport}}
-          kill \$tunnelPID
+          curl -m 3 $SERVICEIP:${{env.serviceport}}
+          kill $tunnelPID
       - run: |
           ./draft -v generate-workflow \
           -d ./langtest/ \

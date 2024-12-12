@@ -77,7 +77,7 @@ jobs:
           echo "repo=$(cat ./test/integration_config.json | jq -r '.[] | select(.language == "go") | .repo')" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.repo}}
+          repository: ${{ env.repo }}
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/

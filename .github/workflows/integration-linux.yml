@@ -26,9 +26,10 @@ jobs:
           path: ./draft
           if-no-files-found: error
   language-integration-test:
+    needs: build
     strategy:
       matrix:
-        language: ["gomodule","go"]
+        language: ["gomodule", "go"]
     uses: ./.github/workflows/integration-per-language.yml
     with:
       language: ${{ matrix.language }}

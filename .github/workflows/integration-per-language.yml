@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json \
-          create
+          create \
           -d ./langtest/ \
           -l ${{inputs.language}} \
           --skip-file-detection \

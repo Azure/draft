@@ -17,7 +17,7 @@ jobs:
       - run: chmod +x ./draft
       - run: mkdir ./langtest
       - run: |
-          echo "repo=$(cat ./test/integration_config.json | jq '.[] | select(.language == "go") | .repo')" >> "$GITHUB_ENV"
+          echo "repo=$(cat ./test/integration_config.json | jq -r '.[] | select(.language == "go") | .repo')" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
         with:
           repository: ${{ env.repo }}
@@ -74,7 +74,7 @@ jobs:
       - run: chmod +x ./draft
       - run: mkdir ./langtest
       - run: |
-          echo "repo=$(cat ./test/integration_config.json | jq '.[] | select(.language == "go") | .repo')" >> "$GITHUB_ENV"
+          echo "repo=$(cat ./test/integration_config.json | jq -r '.[] | select(.language == "go") | .repo')" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
         with:
           repository: ${{ inputs.repo}}

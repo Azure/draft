@@ -6,6 +6,10 @@ on:
         description: "The language to test"
         required: true
         type: string
+      repo:
+        description: "The repo to test"
+        required: true
+        type: string
 jobs:
   helm-dry-run:
     runs-on: ubuntu-latest
@@ -16,11 +20,9 @@ jobs:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - run: |
-          echo "repo=$(cat ./test/integration_config.json | jq -r '.[] | select(.language == ${{ inputs.language }}) | .repo')" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
         with:
-          repository: ${{ env.repo }}
+          repository: ${{ inputs.repo }}
           path: ./langtest
       - name: Execute Dry Run with config file
         run: |
@@ -73,11 +75,9 @@ jobs:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - run: |
-          echo "repo=$(cat ./test/integration_config.json | jq -r '.[] | select(.language == ${{ inputs.language }}) | .repo')" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
         with:
-          repository: ${{ env.repo }}
+          repository: ${{ inputs.repo }}
           path: ./langtest
       - run: |
           rm -rf ./langtest/manifests
@@ -104,7 +104,6 @@ jobs:
           releaseName: "test-release"
         id: bake
       - name: Build and Push image
-        continue-on-error: true
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)

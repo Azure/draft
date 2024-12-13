@@ -154,7 +154,7 @@ variables:
     kind: "kubernetesProbeDelay"
     default:
       disablePrompt: true
-      value: 5
+      value: 10
     description: "kubernetes startup probe initial delay in seconds"
     versions: ">=0.0.1"
   - name: "READINESSPERIOD"

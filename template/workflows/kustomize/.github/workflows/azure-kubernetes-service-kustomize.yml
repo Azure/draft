@@ -119,7 +119,6 @@ jobs:
           kustomizationPath: ${{ env.KUSTOMIZE_PATH }}
           kubectl-version: latest
         id: bake
-
       # Checks if the AKS cluster is private
       - name: Is private cluster
         if: ${{ env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}

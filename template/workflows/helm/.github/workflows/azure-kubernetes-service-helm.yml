@@ -54,7 +54,6 @@ env:
   CHART_OVERRIDES: {{ .Config.GetVariableValue "CHARTOVERRIDES" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
   RESOURCE_NAME: {{ .Config.GetVariableValue "CLUSTERNAME" }}
-
 {{`
 jobs:
   buildImage:

@@ -48,7 +48,6 @@ env:
   BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
   RESOURCE_NAME: {{ .Config.GetVariableValue "RESOURCENAME" }}
-
 {{`
 jobs:
   buildImage:

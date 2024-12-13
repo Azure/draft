@@ -117,7 +117,7 @@ jobs:
         id: deploy
         with:
           action: deploy
-          manifests: \${{ steps.bake.outputs.manifestsBundle }}
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
             ${{env.imagename}}
       - name: Wait for rollout

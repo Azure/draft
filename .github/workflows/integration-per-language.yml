@@ -85,7 +85,7 @@ jobs:
           rm -rf ./langtest/charts
           rm -rf ./langtest/base
           rm -rf ./langtest/overlays
-      - run: ./draft -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/ --skip-file-detection
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master

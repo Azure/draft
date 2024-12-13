@@ -79,7 +79,12 @@ jobs:
         with:
           repository: ${{ env.repo }}
           path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+      - run: |
+          rm -rf ./langtest/manifests
+          rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+          rm -rf ./langtest/charts
+          rm -rf ./langtest/base
+          rm -rf ./langtest/overlays
       - run: ./draft -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/
       - name: start minikube
         id: minikube

@@ -88,7 +88,7 @@ jobs:
           insecure-registry: "host.minikube.internal:5001,10.0.0.0/24"
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v3.0.1
         with:
           renderEngine: "helm"
           helmChart: ./langtest/charts

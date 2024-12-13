@@ -29,8 +29,8 @@ jobs:
     needs: build
     strategy:
       matrix:
-        language: []
-        repo: []
+        language: ["gomodule"]
+        repo: ["gambtho/go_echo"]
         include:
           - language: "gomodule"
             repo: "gambtho/go_echo"

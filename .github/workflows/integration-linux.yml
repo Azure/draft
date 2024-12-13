@@ -30,10 +30,8 @@ jobs:
     strategy:
       matrix:
         language: ["gomodule"]
-        repo: ["gambtho/go_echo"]
+        repo: ["davidgamero/go_echo"]
         include:
-          - language: "gomodule"
-            repo: "gambtho/go_echo"
           - language: "go"
             repo: "davidgamero/go-echo-no-mod"
     uses: ./.github/workflows/integration-per-language.yml

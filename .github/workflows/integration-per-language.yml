@@ -188,3 +188,173 @@ jobs:
           kubectl get po
           echo "Deployment failed, check above logs and previous steps to isolate the issue"
           exit 6
+  kustomize-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repo }}
+          path: ./langtest
+      - name: Execute Dry Run with config file
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+          create -c ./test/integration/${{inputs.language}}/kustomize.yaml \
+          -d ./langtest/ --skip-file-detection
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+      - name: Execute Dry Run with variables passed through flag
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+          create \
+          -d ./langtest/ \
+          -l ${{inputs.language}} \
+          --skip-file-detection \
+          --deploy-type kustomize \
+          --variable PORT=8080 \
+          --variable APPNAME=testingCreateCommand \
+          --variable VERSION=1.11 \
+          --variable BUILDERVERSION=1.11 \
+          --variable SERVICEPORT=8080 \
+          --variable NAMESPACE=testNamespace \
+          --variable IMAGENAME=testImage \
+          --variable IMAGETAG=latest \
+
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
+  kustomize-create-update:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5001:5000
+    needs: kustomize-dry-run
+    env:
+      imagename: registry:5001/testapp
+      serviceport: 80
+      ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: draft-binary
+      - run: chmod +x ./draft
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.repo}}
+          path: ./langtest
+      - run: |
+          rm -rf ./langtest/manifests
+          rm -f ./langtest/Dockerfile ./langtest/.dockerignore
+          rm -rf ./langtest/charts
+          rm -rf ./langtest/base
+          rm -rf ./langtest/overlays
+      - run: ./draft -v create -c ./test/integration/${{inputs.language}}/kustomize.yaml -d ./langtest/
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+        with:
+          insecure-registry: "host.minikube.internal:5001,10.0.0.0/24"
+      - name: Bake deployment
+        uses: azure/k8s-bake@v3.0.1
+        id: bake
+        with:
+          renderEngine: "kustomize"
+          kustomizationPath: ./langtest/base
+          kubectl-version: "latest"
+      - name: Build and Push Image
+        continue-on-error: true
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
+          docker images
+          docker push host.minikube.internal:5001/testapp
+          echo 'Curling host.minikube.internal test app images from minikube'
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
+      # Deploys application based on manifest files from previous step
+      - name: Deploy application
+        uses: Azure/k8s-deploy@v4.0
+        continue-on-error: true
+        id: deploy
+        with:
+          action: deploy
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            ${{env.imagename}}
+      - name: Wait for rollout
+        continue-on-error: true
+        id: rollout
+        run: |
+          kubectl rollout status deployment/testapp --timeout=2m
+      - name: Print K8s Objects
+        run: |
+          kubectl get po -o json
+          kubectl get svc -o json
+          kubectl get deploy -o json
+      - name: Curl Endpoint
+        run: |
+          kubectl get svc
+          echo 'Starting minikube tunnel'
+          minikube tunnel  > /dev/null 2>&1 & tunnelPID=\$!
+          sleep 120
+          kubectl get svc
+          SERVICEIP=\$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+          echo \"SERVICEIP: \$SERVICEIP\"
+          echo 'Curling service IP'
+          curl -m 3 \$SERVICEIP:$serviceport
+          kill \$tunnelPID
+      - run: |
+          ./draft -v generate-workflow \
+          -d ./langtest/ \
+          --deploy-type kustomize \
+          --variable WORKFLOWNAME=someWorkflow \
+          --variable BRANCHNAME=main \
+          --variable ACRRESOURCEGROUP=someAcrResourceGroup \
+          --variable AZURECONTAINERREGISTRY=someRegistry \
+          --variable CONTAINERNAME=someContainer \
+          --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
+          --variable CLUSTERNAME=someAksCluster \
+          --variable DOCKERFILE=./Dockerfile \
+          --variable BUILDCONTEXTPATH=. \
+          --variable NAMESPACE=default
+          pwd
+      # Validate generated workflow yaml
+      - name: Install action-validator with asdf
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            action-validator 0.1.2
+      - name: Lint Actions
+        run: |
+          find ./langtest/.github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
+            | xargs -I {} action-validator --verbose {}
+      - name: Execute dry run for update command
+        run: |
+          mkdir -p test/temp
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ $ingress_test_args
+      - name: Validate JSON
+        run: |
+          npm install -g ajv-cli@5.0.0
+          ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
+      - run: ./draft -v update -d ./langtest/ $ingress_test_args
+      - name: Check default namespace
+        if: steps.deploy.outcome != 'success'
+        run: |
+          kubectl get po
+          echo "Deployment failed, check above logs and previous steps to isolate the issue"

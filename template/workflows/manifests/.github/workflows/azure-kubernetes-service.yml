@@ -19,12 +19,12 @@
 #    - ACR_RESOURCE_GROUP (resource group of your ACR)
 #    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
 #    - CLUSTER_RESOURCE_GROUP (where your cluster is deployed)
+#    - CLUSTER_RESOURCE_TYPE (type of resource to deploy to, either 'Microsoft.ContainerService/fleets' or 'Microsoft.ContainerService/managedCluster')
 #    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
 #    - DEPLOYMENT_MANIFEST_PATH (path to the manifest yaml for your deployment)
 #    - DOCKER_FILE (path to your Dockerfile)
 #    - BUILD_CONTEXT_PATH (path to the context of your Dockerfile)
 #    - NAMESPACE (namespace to deploy your application)
-#    - RESOURCE_TYPE (type of resource to deploy to, either 'fleet' or 'managed cluster')
 #    - RESOURCE_NAME (name of the resource to deploy to - fleet name or managed cluster name)
 # For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
@@ -42,11 +42,11 @@ env:
   AZURE_CONTAINER_REGISTRY: {{ .Config.GetVariableValue "AZURECONTAINERREGISTRY" }}
   CONTAINER_NAME: {{ .Config.GetVariableValue "CONTAINERNAME" }}
   CLUSTER_RESOURCE_GROUP: {{ .Config.GetVariableValue "CLUSTERRESOURCEGROUP" }}
+  CLUSTER_RESOURCE_TYPE: Microsoft.ContainerService/{{ .Config.GetVariableValue "RESOURCETYPE" }}
   DEPLOYMENT_MANIFEST_PATH: {{ .Config.GetVariableValue "DEPLOYMENTMANIFESTPATH" }}
   DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
   BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
-  RESOURCE_TYPE: Microsoft.ContainerService/{{ .Config.GetVariableValue "RESOURCETYPE" }}
   RESOURCE_NAME: {{ .Config.GetVariableValue "RESOURCENAME" }}
 
 {{`
@@ -105,11 +105,11 @@ jobs:
           cluster-name: ${{ env.RESOURCE_NAME }}
           admin: 'false'
           use-kubelogin: 'true'
-          resource-type: ${{ env.RESOURCE_TYPE }}
+          resource-type: ${{ env.CLUSTER_RESOURCE_TYPE }}
 
       # Checks if the AKS cluster is private
       - name: Is private cluster
-        if: ${{ env.RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}
+        if: ${{ env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}
         id: isPrivate
         run: |
           result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.RESOURCE_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
@@ -127,5 +127,5 @@ jobs:
           name: ${{ env.RESOURCE_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
           namespace: ${{ env.NAMESPACE }}
-          resource-type: ${{ env.RESOURCE_TYPE }}
+          resource-type: ${{ env.CLUSTER_RESOURCE_TYPE }}
 `}}

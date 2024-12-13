@@ -108,10 +108,10 @@ jobs:
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp ${{env.imagename}}
+          docker tag testapp host.minikube.internal:5001/testapp
           echo -n "verifying images:"
           docker images
-          docker push ${{env.imagename}}
+          docker push host.minikube.internal:5001/testapp
           echo 'Curling host.minikube.internal test app images from minikube'
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step

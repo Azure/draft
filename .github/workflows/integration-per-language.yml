@@ -376,7 +376,7 @@ jobs:
         run: |
           mkdir -p test/temp
           ./draft --dry-run --dry-run-file test/temp/dry-run.json \
-          create -c ./test/integration/$lang/manifest.yaml \
+          create -c ./test/integration/${{inputs.language}}/manifest.yaml \
           -d ./langtest/ --skip-file-detection
       - name: Validate JSON
         run: |

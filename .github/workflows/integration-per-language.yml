@@ -385,7 +385,7 @@ jobs:
       - name: Execute Dry Run with variables passed through flag
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/dry-run.json \
+          ./draft -v --dry-run --dry-run-file test/temp/dry-run.json \
           create \
           -d ./langtest/ \
           -l ${{inputs.language}} \
@@ -395,7 +395,7 @@ jobs:
           --variable APPNAME=testingCreateCommand \
           --variable VERSION=1.11 \
           --variable BUILDERVERSION=1.11 \
-          --variable SERVICEPORT=8080 \
+          --variable SERVICEPORT=80 \
           --variable NAMESPACE=testNamespace \
           --variable IMAGENAME=testImage \
           --variable IMAGETAG=latest \

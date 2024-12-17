@@ -390,7 +390,7 @@ jobs:
           -d ./langtest/ \
           -l ${{inputs.language}} \
           --skip-file-detection \
-          --deploy-type manifests\
+          --deploy-type manifests \
           --variable PORT=8080 \
           --variable APPNAME=testingCreateCommand \
           --variable VERSION=1.11 \

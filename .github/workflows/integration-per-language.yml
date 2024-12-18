@@ -228,7 +228,7 @@ jobs:
           --variable NAMESPACE=testNamespace \
           --variable IMAGENAME=testImage \
           --variable IMAGETAG=latest \
-
+          --variable ENTRYPOINT=myapp.py
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0

@@ -41,8 +41,9 @@ jobs:
       language: ${{ matrix.language }}
       repo: ${{ matrix.repo }}
   linux-integration-summary:
-    needs: language-integration-test
     name: Linux Integration Summary
+    needs: language-integration-test
+    runs-on: ubuntu-latest
     steps:
       - run: |
           echo "Success"

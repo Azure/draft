@@ -22,7 +22,7 @@
 #    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
 #    - CLUSTER_NAME (name of the resource to deploy to - fleet name or managed cluster name)
 #    - CLUSTER_RESOURCE_GROUP (where your cluster is deployed)
-#    - CLUSTER_RESOURCE_TYPE (type of resource to deploy to, either 'Microsoft.ContainerService/fleets' or 'Microsoft.ContainerService/managedCluster')
+#    - CLUSTER_RESOURCE_TYPE (type of resource to deploy to, either 'Microsoft.ContainerService/fleets' or 'Microsoft.ContainerService/managedClusters')
 #    - DOCKER_FILE (path to your Dockerfile)
 #    - BUILD_CONTEXT_PATH (path to the context of your Dockerfile)
 #    - CHART_PATH (path to your helm chart)

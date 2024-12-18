@@ -433,7 +433,7 @@ jobs:
           rm -rf ./langtest/charts
           rm -rf ./langtest/base
           rm -rf ./langtest/overlays
-      - run: ./draft -v create -c ./test/integration/$lang/manifest.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/ --skip-file-detection
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: Add docker.local host to /etc/hosts
@@ -447,14 +447,15 @@ jobs:
       - name: Build and Push Image
         continue-on-error: true
         run: |
-          eval \$(minikube docker-env)
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
           docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp $imagename
-          echo -n \"verifying images:\"
+          docker tag testapp host.minikube.internal:5001/testapp
+          echo -n "verifying images:"
           docker images
-          docker push $imagename
+          docker push host.minikube.internal:5001/testapp
           echo 'Curling host.minikube.internal test app images from minikube'
-          minikube ssh \"curl http://host.minikube.internal:5001/v2/testapp/tags/list\"
+          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
@@ -496,7 +497,7 @@ jobs:
             | xargs -I {} action-validator --verbose {}
       - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
-          name: $lang-manifests-create
+          name: ${{inputs.language}}-manifests-create
           path: |
             ./langtest
             !./langtest/**/.git/*
@@ -521,12 +522,12 @@ jobs:
       - run: chmod +x ./draft
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
-          name: $lang-manifests-create
+          name: ${{inputs.language}}-manifests-create
           path: ./langtest/
       - name: Execute dry run for update command
         run: |
           mkdir -p test/temp
-          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ $ingress_test_args
+          ./draft --dry-run --dry-run-file test/temp/update_dry_run.json update -d ./langtest/ ${{env.ingress_test_args}}
       - name: Validate JSON
         run: |
           npm install -g ajv-cli@5.0.0

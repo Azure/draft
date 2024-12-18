@@ -22,7 +22,7 @@ require (
 	github.com/open-policy-agent/gatekeeper/v3 v3.16.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/yannh/kubeconform v0.6.7
 	go.uber.org/mock v0.4.0
 	golang.org/x/mod v0.20.0

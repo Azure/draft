@@ -44,5 +44,5 @@ jobs:
     needs: language-integration-test
     name: Linux Integration Summary
     steps:
-      run: |
+      - run: |
         echo "Success"

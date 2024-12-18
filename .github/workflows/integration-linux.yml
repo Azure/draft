@@ -15,12 +15,12 @@ jobs:
           go-version: 1.22
       - name: make
         run: make
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: draft-binary
           path: ./draft
@@ -408,7 +408,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: gomodule-manifests-create
           path: |
@@ -848,7 +848,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: go-manifests-create
           path: |
@@ -1288,7 +1288,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: python-manifests-create
           path: |
@@ -1728,7 +1728,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: rust-manifests-create
           path: |
@@ -2168,7 +2168,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: javascript-manifests-create
           path: |
@@ -2608,7 +2608,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: ruby-manifests-create
           path: |
@@ -3048,7 +3048,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: csharp-manifests-create
           path: |
@@ -3488,7 +3488,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: java-manifests-create
           path: |
@@ -3928,7 +3928,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: gradle-manifests-create
           path: |
@@ -4368,7 +4368,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: swift-manifests-create
           path: |
@@ -4808,7 +4808,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: erlang-manifests-create
           path: |
@@ -5248,7 +5248,7 @@ jobs:
       - name: Lint Actions
         run: |
           find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \)             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: clojure-manifests-create
           path: |

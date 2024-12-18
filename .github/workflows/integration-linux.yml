@@ -108,7 +108,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -243,7 +243,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -548,7 +548,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -683,7 +683,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -988,7 +988,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1123,7 +1123,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1428,7 +1428,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1563,7 +1563,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -1868,7 +1868,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2003,7 +2003,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2308,7 +2308,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2443,7 +2443,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2748,7 +2748,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -2883,7 +2883,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3188,7 +3188,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3323,7 +3323,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3628,7 +3628,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -3763,7 +3763,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4068,7 +4068,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4203,7 +4203,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4508,7 +4508,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4643,7 +4643,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -4948,7 +4948,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -5083,7 +5083,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.10
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:

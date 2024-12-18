@@ -433,7 +433,7 @@ jobs:
           rm -rf ./langtest/charts
           rm -rf ./langtest/base
           rm -rf ./langtest/overlays
-      - run: ./draft -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/ --skip-file-detection
+      - run: ./draft -v create -c ./test/integration/${{inputs.language}}/manifest.yaml -d ./langtest/ --skip-file-detection
       - name: print manifests
         run: cat ./langtest/manifests/*
       - name: Add docker.local host to /etc/hosts

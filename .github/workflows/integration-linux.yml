@@ -27,15 +27,35 @@ jobs:
           path: ./draft
           if-no-files-found: error
   language-integration-test:
-    name: Language/DeployType Matrix
+    name: Matrix
     needs: build
     strategy:
       matrix:
-        language: ["gomodule"]
+        language: ["gomodule"] # we dont actually want a matrix here, so we include cases individually
         repo: ["davidgamero/go_echo"]
         include:
           - language: "go"
             repo: "davidgamero/go-echo-no-mod"
+          - language: "python"
+            repo: "OliverMKing/flask-hello-world"
+          - language: "rust"
+            repo: "OliverMKing/tiny-http-hello-world"
+          - language: "javascript"
+            repo: "davidgamero/express-hello-world"
+          - language: "ruby"
+            repo: "davidgamero/sinatra-hello-world"
+          - language: "csharp"
+            repo: "imiller31/csharp-simple-web-app"
+          - language: "java"
+            repo: "imiller31/simple-java-server"
+          - language: "gradle"
+            repo: "imiller31/simple-gradle-server"
+          - language: "swift"
+            repo: "OliverMKing/swift-hello-world"
+          - language: "erlang"
+            repo: "bfoley13/ErlangExample"
+          - language: "clojure"
+            repo: "imiller31/clojure-simple-http"
     uses: ./.github/workflows/integration-per-language.yml
     with:
       language: ${{ matrix.language }}

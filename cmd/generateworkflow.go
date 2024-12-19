@@ -8,10 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/Azure/draft/pkg/cmdhelpers"
 	"github.com/Azure/draft/pkg/handlers"
 	"github.com/Azure/draft/pkg/prompts"
 	"github.com/Azure/draft/pkg/templatewriter"
-	"github.com/Azure/draft/pkg/cmdhelpers"
 	"github.com/Azure/draft/pkg/templatewriter/writers"
 )
 

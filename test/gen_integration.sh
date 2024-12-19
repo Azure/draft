@@ -104,6 +104,14 @@ do
     port=$(echo $test | jq '.port' -r)
     serviceport=$(echo $test | jq '.serviceport' -r)
     repo=$(echo $test | jq '.repo' -r)
+    startupInitialDelay=$(echo $test | jq '.startupInitialDelay' -r)
+    startupInitialDelaySegment=""
+    # if startupinitialdelay is empty
+    if [ "$startupInitialDelay" != "null" ]; then
+      startupInitialDelaySegment="
+  - name: \"STARTUPINITIALDELAY\"
+    value: $startupInitialDelay"
+    fi
 
     imagename="host.minikube.internal:5001/testapp"
     # addon integration testing vars
@@ -126,7 +134,7 @@ deployVariables:
   - name: \"APPNAME\"
     value: \"testapp\"
   - name: \"IMAGENAME\"
-    value: \"$imagename\"
+    value: \"$imagename\"$startupInitialDelaySegment
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
@@ -147,7 +155,7 @@ deployVariables:
   - name: \"APPNAME\"
     value: \"testapp\"
   - name: \"IMAGENAME\"
-    value: \"$imagename\"
+    value: \"$imagename\"$startupInitialDelaySegment
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"
@@ -168,7 +176,7 @@ deployVariables:
   - name: \"APPNAME\"
     value: \"testapp\"
   - name: \"IMAGENAME\"
-    value: \"$imagename\"
+    value: \"$imagename\"$startupInitialDelaySegment
 languageVariables:
   - name: \"VERSION\"
     value: \"$version\"

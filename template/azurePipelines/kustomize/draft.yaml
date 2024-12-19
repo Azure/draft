@@ -1,6 +1,6 @@
 templateName: "azure-pipeline-kustomize"
 description: "This template is used to create an Azure Pipeline for deploying an app to AKS using Kustomize"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 type: "workflow"
 variables:

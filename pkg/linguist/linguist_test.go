@@ -60,7 +60,7 @@ func TestGitAttributes(t *testing.T) {
 	}
 }
 
-//TestDirectoryIsIgnored checks to see if directory paths such as 'docs/' are ignored from being classified by linguist when added to the "ignore" list.
+// TestDirectoryIsIgnored checks to see if directory paths such as 'docs/' are ignored from being classified by linguist when added to the "ignore" list.
 func TestDirectoryIsIgnored(t *testing.T) {
 	path := filepath.Join("testdirs", "app-documentation")
 	// populate isIgnored

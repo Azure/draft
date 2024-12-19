@@ -2,7 +2,7 @@ language: javascript
 displayName: JavaScript
 templateName: "dockerfile-javascript"
 description: "This template is used to create a Dockerfile for a JavaScript application"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 type: "dockerfile"
 variables:

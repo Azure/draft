@@ -4,6 +4,7 @@ vendor/
 /pkg/addons/addons/
 .DS_Store
 draft
+draft.exe
 langtest
 .vscode/
 /pkg/languages/builders

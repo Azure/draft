@@ -25,13 +25,16 @@ spec:
           resources:
             requests:
               cpu: "1"
-              memory: "512Mi"
+              memory: "1Gi"
             limits:
-              cpu: "2"
+              cpu: "1"
               memory: "1Gi"
           envFrom:
             - configMapRef:
                 name: testapp-config
+            - secretRef:
+                name: secret-ref
+                optional: true
           livenessProbe:
             tcpSocket:
               port: 80
@@ -43,6 +46,14 @@ spec:
             failureThreshold: 1
             successThreshold: 1
             initialDelaySeconds: 3
+          startupProbe:
+            tcpSocket:
+              port: 80
+            periodSeconds: 1
+            timeoutSeconds: 3
+            failureThreshold: 1
+            successThreshold: 1
+            initialDelaySeconds: 5
           securityContext:
             seccompProfile:
               type: RuntimeDefault

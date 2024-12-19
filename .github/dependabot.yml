@@ -4,28 +4,10 @@ updates:
     directory: /
     schedule:
       interval: "weekly"
-    groups:
-      # Group updates together, so that they are all applied in a single PR.
-      # Grouped updates are currently in beta and is subject to change.
-      # xref: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#groups
-      k8s-go-deps:
-        patterns:
-          - "k8s.io/*"
-          - "sigs.k8s.io/*"
-      go-deps:
-        patterns:
-          - "*"
-        exclude-patterns:
-          - "k8s.io/*"
-          - "sigs.k8s.io/*"
   - package-ecosystem: "github-actions"
     directory: ".github/workflows"
     schedule:
       interval: weekly
-    groups:
-      actions:
-        patterns:
-          - "*"
   - package-ecosystem: "github-actions"
     directory: "/template/workflows/helm/.github/workflows"
     schedule:

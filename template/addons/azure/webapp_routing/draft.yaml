@@ -1,6 +1,6 @@
 templateName: "app-routing-ingress"
 description: "This template is used to create an ingress resource for use with the app-routing addon in AKS"
-versions: "0.0.1"
+versions: ["0.0.1"]
 defaultVersion: "0.0.1"
 type: "manifest"
 variables:

@@ -17,3 +17,4 @@ func TestDeepCopy(t *testing.T) {
 
 	assert.True(t, reflect.DeepEqual(deepCopy, testTemplate))
 }
+

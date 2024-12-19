@@ -18,14 +18,14 @@
 # 2. Set the following environment variables (or replace the values below):
 #    - ACR_RESOURCE_GROUP (resource group of your ACR)
 #    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
+#    - CLUSTER_NAME (name of the resource to deploy to - fleet name or managed cluster name)
 #    - CLUSTER_RESOURCE_GROUP (where your cluster is deployed)
-#    - CLUSTER_NAME (name of your AKS cluster)
+#    - CLUSTER_RESOURCE_TYPE (type of resource to deploy to, either 'Microsoft.ContainerService/fleets' or 'Microsoft.ContainerService/managedClusters')
 #    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
 #    - DEPLOYMENT_MANIFEST_PATH (path to the manifest yaml for your deployment)
 #    - DOCKER_FILE (path to your Dockerfile)
 #    - BUILD_CONTEXT_PATH (path to the context of your Dockerfile)
 #    - NAMESPACE (namespace to deploy your application)
-#
 # For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 # For more options with the actions used below please refer to https://github.com/Azure/login
@@ -41,8 +41,9 @@ env:
   ACR_RESOURCE_GROUP: testAcrRG
   AZURE_CONTAINER_REGISTRY: testAcr
   CONTAINER_NAME: testContainer
-  CLUSTER_RESOURCE_GROUP: testClusterRG
   CLUSTER_NAME: testCluster
+  CLUSTER_RESOURCE_GROUP: testClusterRG
+  CLUSTER_RESOURCE_TYPE: Microsoft.ContainerService/managedClusters
   DEPLOYMENT_MANIFEST_PATH: ./manifests
   DOCKER_FILE: ./Dockerfile
   BUILD_CONTEXT_PATH: test
@@ -97,15 +98,17 @@ jobs:
 
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
-        uses: azure/aks-set-context@v3
+        uses: azure/aks-set-context@v4.0.2
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
           admin: 'false'
           use-kubelogin: 'true'
+          resource-type: ${{ env.CLUSTER_RESOURCE_TYPE }}
 
       # Checks if the AKS cluster is private
       - name: Is private cluster
+        if: ${{ env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}
         id: isPrivate
         run: |
           result=$(az aks show --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --query "apiServerAccessProfile.enablePrivateCluster")
@@ -113,7 +116,7 @@ jobs:
 
       # Deploys application based on given manifest  file
       - name: Deploys application
-        uses: Azure/k8s-deploy@v4
+        uses: Azure/k8s-deploy@v5.0.1
         with:
           action: deploy
           manifests: ${{ env.DEPLOYMENT_MANIFEST_PATH }}
@@ -123,3 +126,4 @@ jobs:
           name: ${{ env.CLUSTER_NAME }}
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
           namespace: ${{ env.NAMESPACE }}
+          resource-type: ${{ env.CLUSTER_RESOURCE_TYPE }}

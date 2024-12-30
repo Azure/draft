@@ -98,7 +98,7 @@ jobs:
 
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
-        uses: azure/aks-set-context@v4.0.2
+        uses: azure/aks-set-context@v4
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -116,7 +116,7 @@ jobs:
 
       # Deploys application based on given manifest  file
       - name: Deploys application
-        uses: Azure/k8s-deploy@v5.0.1
+        uses: Azure/k8s-deploy@v5
         with:
           action: deploy
           manifests: ${{ env.DEPLOYMENT_MANIFEST_PATH }}

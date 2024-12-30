@@ -104,7 +104,7 @@ jobs:
 
       # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
       - name: Get K8s context
-        uses: azure/aks-set-context@v4.0.2
+        uses: azure/aks-set-context@v4
         with:
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -128,15 +128,17 @@ jobs:
           result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
           echo "Helm upgrade result: $result"
           exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
+          
           if [ $exitCode -ne 0 ]; then
             exit $exitCode
           fi
 
       - name: Deploy application on public cluster
-        if: steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true'
+        if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true' && env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}
         run: |
-          if [ "${{ env.CLUSTER_RESOURCE_TYPE }}" == "Microsoft.ContainerService/fleets" ]; then
-            helm upgrade -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
-          else
-            helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace
-          fi
+          helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace
+
+      - name: Deploy application on fleet hub cluster
+        if: ${{ env.CLUSTER_RESOURCE_TYPE == 'Microsoft.ContainerService/fleets' }}
+        run: |
+          helm upgrade -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}

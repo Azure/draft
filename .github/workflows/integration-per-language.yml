@@ -632,7 +632,7 @@ jobs:
         working-directory: ./langtest/
       - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
-          name: gomodule-kustomize-create
+          name: ${{inputs.langauge}}-win-kustomize-create
           path: |
             ./langtest
             !./langtest/**/.git/*
@@ -645,7 +645,7 @@ jobs:
           name: draft-binary
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
-          name: gomodule-kustomize-create
+          name: ${{inputs.language}}-win-kustomize-create
           path: ./langtest
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
       - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1

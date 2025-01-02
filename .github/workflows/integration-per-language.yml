@@ -504,7 +504,7 @@ jobs:
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
-  manifest_update_job_name:
+  manifest-update:
     needs: manifests-create
     runs-on: ubuntu-latest
     env:
@@ -554,3 +554,104 @@ jobs:
           kubectl get po
           echo "Deployment failed, check above logs and previous steps to isolate the issue"
           exit 6
+  win-helm-create:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: draft-binary-win
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo }}
+          path: ./langtest
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/base -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/overlays -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/charts -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: check_windows_helm
+          path: ./langtest/
+      - run: ./check_windows_helm.ps1
+        working-directory: ./langtest/
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: ${{inputs.language}}-win-helm-create
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
+  win-helm-update:
+    needs: win-helm-create
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: draft-binary-win
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: ${{inputs.language}}-win-helm-create
+          path: ./langtest/
+      - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: check_windows_addon_helm
+          path: ./langtest/
+      - run: ./check_windows_addon_helm.ps1
+        working-directory: ./langtest/
+  win-kustomize-create:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: draft-binary-win
+      - run: mkdir ./langtest
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo }}
+          path: ./langtest
+      - run: Remove-Item ./langtest/manifests -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/base -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/overlays -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/charts -Recurse -Force -ErrorAction Ignore
+      - run: Remove-Item ./langtest/Dockerfile -ErrorAction Ignore
+      - run: Remove-Item ./langtest/.dockerignore -ErrorAction Ignore
+      - run: ./draft.exe -v create -c ./test/integration/${{ inputs.language }}/kustomize.yaml -d ./langtest/
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: check_windows_kustomize
+          path: ./langtest/
+      - run: ./check_windows_kustomize.ps1
+        working-directory: ./langtest/
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: ${{ inputs.language }}-win-kustomize-create
+          path: |
+            ./langtest
+            !./langtest/**/.git/*
+  win-kustomize-update:
+    needs: win-kustomize-create
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: draft-binary-win
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: ${{inputs.language}}-win-kustomize-create
+          path: ./langtest
+      - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
+      - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: check_windows_addon_kustomize
+          path: ./langtest/
+      - run: ./check_windows_addon_kustomize.ps1
+        working-directory: ./langtest/

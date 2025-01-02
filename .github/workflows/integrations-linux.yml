@@ -1,0 +1,69 @@
+# this file is generated using gen_integration.sh
+name: Linux Integration Tests
+on:
+  pull_request:
+    branches: [main, staging]
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build Draft Binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+      - name: make
+        run: make
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: helm-skaffold
+          path: ./test/skaffold.yaml
+          if-no-files-found: error
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: draft-binary
+          path: ./draft
+          if-no-files-found: error
+  language-integration-test:
+    name: Matrix
+    needs: build
+    strategy:
+      matrix:
+        language: ["gomodule"] # we dont actually want a matrix here, so we include cases individually
+        repo: ["davidgamero/go_echo"]
+        include:
+          - language: "go"
+            repo: "davidgamero/go-echo-no-mod"
+          - language: "python"
+            repo: "OliverMKing/flask-hello-world"
+          - language: "rust"
+            repo: "OliverMKing/tiny-http-hello-world"
+          - language: "javascript"
+            repo: "davidgamero/express-hello-world"
+          - language: "ruby"
+            repo: "davidgamero/sinatra-hello-world"
+          - language: "csharp"
+            repo: "imiller31/csharp-simple-web-app"
+          - language: "java"
+            repo: "imiller31/simple-java-server"
+          - language: "gradle"
+            repo: "imiller31/simple-gradle-server"
+          - language: "swift"
+            repo: "OliverMKing/swift-hello-world"
+          - language: "erlang"
+            repo: "bfoley13/ErlangExample"
+          - language: "clojure"
+            repo: "imiller31/clojure-simple-http"
+    uses: ./.github/workflows/integration-per-language.yml
+    with:
+      language: ${{ matrix.language }}
+      repo: ${{ matrix.repo }}
+  linux-integration-summary:
+    name: Linux Integration Summary
+    needs: language-integration-test
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Success"

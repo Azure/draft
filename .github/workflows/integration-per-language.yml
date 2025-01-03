@@ -158,6 +158,7 @@ jobs:
           --variable CONTAINERNAME=someContainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
+          --variable CLUSTERRESOURCETYPE=Microsoft.ContainerService/managedClusters \
           --variable DOCKERFILE=./Dockerfile \
           --variable BUILDCONTEXTPATH=. \
           --variable NAMESPACE=default
@@ -331,6 +332,7 @@ jobs:
           --variable CONTAINERNAME=someContainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
+          --variable CLUSTERRESOURCETYPE=Microsoft.ContainerService/managedClusters \
           --variable DOCKERFILE=./Dockerfile \
           --variable BUILDCONTEXTPATH=. \
           --variable NAMESPACE=default
@@ -484,7 +486,7 @@ jobs:
           curl -m 3 $SERVICEIP:${{env.serviceport}}
           sleep 5
           kill $tunnelPID
-      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
+      - run: ./draft -v generate-workflow -d ./langtest/ --deploy-type manifests --variable WORKFLOWNAME=someWorkflow --variable BRANCHNAME=main --variable ACRRESOURCEGROUP=someAcrResourceGroup --variable AZURECONTAINERREGISTRY=someRegistry --variable CONTAINERNAME=someContainer --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup --variable CLUSTERNAME=someAksCluster --variable CLUSTERRESOURCETYPE=Microsoft.ContainerService/managedClusters --variable DOCKERFILE=./Dockerfile --variable BUILDCONTEXTPATH=. --variable NAMESPACE=default
       # Validate generated workflow yaml
       - name: Install action-validator with asdf
         uses: asdf-vm/actions/install@v1

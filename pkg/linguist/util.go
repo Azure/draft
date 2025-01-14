@@ -3,12 +3,12 @@ package linguist
 import (
 	"bufio"
 	"bytes"
-	"log"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/ghodss/yaml"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -59,6 +59,7 @@ func init() {
 	for n, l := range languages {
 		for _, e := range l.Extensions {
 			extensions[e] = append(extensions[e], n)
+			log.Debugf("loading ext: %s for lang %s", e, l)
 		}
 		for _, f := range l.Filenames {
 			filenames[f] = append(filenames[f], n)
@@ -92,7 +93,9 @@ func LanguageByFilename(filename string) string {
 		return l[0]
 	}
 	ext := filepath.Ext(filename)
+	log.Debugf("filename extension lookup '%s'", ext)
 	if ext != "" {
+		log.Debugf("extension lookup: %v", extensions[ext])
 		if l := extensions[ext]; len(l) == 1 {
 			return l[0]
 		}

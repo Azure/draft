@@ -54,6 +54,7 @@ env:
   CHART_OVERRIDE_PATH: {{ .Config.GetVariableValue "CHARTOVERRIDEPATH" }}
   CHART_OVERRIDES: {{ .Config.GetVariableValue "CHARTOVERRIDES" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
+  ENABLENAMESPACECREATION: {{ .Config.GetVariableValue "ENABLENAMESPACECREATION" }}
 {{`
 jobs:
   buildImage:
@@ -112,6 +113,17 @@ jobs:
           admin: "false"
           use-kubelogin: "true"
 
+      # Create Namespace
+      - name: Create Namespace
+        if: ${{ env.ENABLENAMESPACECREATION == 'true' }}
+        run: |
+          kubectl get namespace ${{ env.NAMESPACE }} || kubectl create namespace ${{ env.NAMESPACE }}
+
+      # Validate Namespace exists
+      - name: Validate Namespace Exists
+        run: |
+          kubectl get namespace ${{ env.NAMESPACE }}
+
       # Checks if the AKS cluster is private
       - name: Is private cluster
         id: isPrivate
@@ -124,7 +136,7 @@ jobs:
       - name: Deploy application on private cluster
         if: steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true'
         run: |
-          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace --timeout 240s" --file . --query id -o tsv)
+          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --timeout 240s" --file . --query id -o tsv)
           result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
           echo "Helm upgrade result: $result"
           exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
@@ -134,12 +146,8 @@ jobs:
           fi
 
       - name: Deploy application on public cluster
-        if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true' && env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}
+        if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true' }}
         run: |
-          helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --create-namespace
+          helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
 
-      - name: Deploy application on fleet hub cluster
-        if: ${{ env.CLUSTER_RESOURCE_TYPE == 'Microsoft.ContainerService/fleets' }}
-        run: |
-          helm upgrade -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
 `}}

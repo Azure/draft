@@ -86,3 +86,10 @@ variables:
       value: "default"
     description: "the Kubernetes namespace"
     versions: ">=0.0.1"
+  - name: "ENABLENAMESPACECREATION"
+    type: "bool"
+    default:
+      disablePrompt: true
+      value: "false"
+    description: "enable creation of target namespace if it does not exist"
+    versions: ">=0.0.1"

@@ -72,6 +72,7 @@ variables:
     versions: ">=0.0.1"
   - name: "ENABLENAMESPACECREATION"
     type: "bool"
+    kind: "flag"
     default:
       disablePrompt: true
       value: "false"

@@ -134,7 +134,7 @@ jobs:
 
       # Deploys application
       - name: Deploy application on private cluster
-        if: steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true'
+        if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
         run: |
           command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --timeout 240s" --file . --query id -o tsv)
           result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
@@ -149,5 +149,4 @@ jobs:
         if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true' }}
         run: |
           helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
-
 `}}

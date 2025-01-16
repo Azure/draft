@@ -62,7 +62,7 @@ func GetTemplate(name, version, dest string, templateWriter templatewriter.Templ
 func (t *Template) Generate() error {
 	if err := t.validate(); err != nil {
 		log.Printf("template validation failed: %s", err.Error())
-		return err
+		return fmt.Errorf("generating template: %w", err)
 	}
 
 	if err := t.Config.ApplyDefaultVariablesForVersion(t.version); err != nil {

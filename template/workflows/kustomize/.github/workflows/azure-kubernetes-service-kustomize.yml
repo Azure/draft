@@ -53,6 +53,7 @@ env:
   DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
   BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
+  ENABLENAMESPACECREATION: {{ .Config.GetVariableValue "ENABLENAMESPACECREATION" }}
 {{`
 jobs:
   buildImage:
@@ -110,6 +111,17 @@ jobs:
           admin: 'false'
           use-kubelogin: 'true'
           resource-type: ${{ env.CLUSTER_RESOURCE_TYPE }}
+
+      # Create Namespace
+      - name: Create Namespace
+        if: ${{ env.ENABLENAMESPACECREATION == 'true' }}
+        run: |
+          kubectl get namespace ${{ env.NAMESPACE }} || kubectl create namespace ${{ env.NAMESPACE }}
+
+      # Validate Namespace exists
+      - name: Validate Namespace Exists
+        run: |
+          kubectl get namespace ${{ env.NAMESPACE }}
 
       # Runs Kustomize to create manifest files
       - name: Bake deployment

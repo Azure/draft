@@ -5,30 +5,25 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) error {
+	got := generatedContent
 	// Read the fixture content
-	fixtureContent, err := os.ReadFile(fixturePath)
+	want, err := os.ReadFile(fixturePath)
 	if err != nil {
 		return fmt.Errorf("failed to read fixture: %w", err)
 	}
 
-	if normalizeWhitespace(fixtureContent) != normalizeWhitespace(generatedContent) {
-		genWords := strings.Split(normalizeWhitespace(generatedContent), " ")
-		fixtureWords := strings.Split(normalizeWhitespace(fixtureContent), " ")
-		differingWords := []string{}
-		for i, word := range genWords {
-			if i < len(fixtureWords) && word != fixtureWords[i] {
-				differingWords = append(differingWords, fmt.Sprintf("'%s' != '%s'", word, fixtureWords[i]))
-				if len(differingWords) == 1 {
-					fmt.Println("Generated Word | Fixture Word")
-				}
-				fmt.Printf("'%s' != '%s'\n", word, fixtureWords[i])
-			}
+	if normalizeWhitespace(want) != normalizeWhitespace(got) {
+		if diff := cmp.Diff(string(want), string(got)); diff != "" {
+			fmt.Println("Diff for file ", fixturePath, " (-want +got)")
+			fmt.Printf(diff)
+			return fmt.Errorf("generated content does not match fixture for file %s, check above for rich diff", fixturePath)
 		}
 
-		return fmt.Errorf("generated content does not match fixture for file %s: %s", fixturePath, strings.Join(differingWords, ", "))
 	}
 
 	return nil

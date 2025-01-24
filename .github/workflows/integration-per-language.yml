@@ -485,6 +485,7 @@ jobs:
           sleep 5
           kill $tunnelPID
       - run: ./draft -v generate-workflow\
+          -d ./langtest/ \
           --deploy-type manifests\
           --variable WORKFLOWNAME=someWorkflow \
           --variable BRANCHNAME=main \

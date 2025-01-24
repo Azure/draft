@@ -98,11 +98,10 @@ jobs:
     with:
       language: ${{ matrix.language }}
       repo: ${{ matrix.repo }}
-  linux-integration-summary:
+  linux-integration-fail:
     name: Integration Test Summary
-    needs: language-integration-test
-    runs-on: ubuntu-latest
-    if: ${{ always() }} # run even if needed jobs have failed
+    needs: linux-integration-test 
+    if: failure() || cancelled() # https://github.com/orgs/community/discussions/60792
     steps:
-      - run: |
-          echo "Success"
+    - name: Fail
+      run: exit 1

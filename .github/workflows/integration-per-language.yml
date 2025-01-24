@@ -158,7 +158,6 @@ jobs:
           --variable CONTAINERNAME=someContainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
-          --variable CLUSTERRESOURCETYPE=Microsoft.ContainerService/managedClusters \
           --variable DOCKERFILE=./Dockerfile \
           --variable BUILDCONTEXTPATH=. \
           --variable NAMESPACE=default

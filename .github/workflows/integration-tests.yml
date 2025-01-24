@@ -84,80 +84,80 @@ jobs:
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "python"
-      - repo: "OliverMKing/flask-hello-world"
+      language: "python"
+      repo: "OliverMKing/flask-hello-world"
   rust:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "rust"
-      - repo: "OliverMKing/tiny-http-hello-world"
+      language: "rust"
+      repo: "OliverMKing/tiny-http-hello-world"
   javascript:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "javascript"
-      - repo: "davidgamero/express-hello-world"
+      language: "javascript"
+      repo: "davidgamero/express-hello-world"
   ruby:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "ruby"
-      - repo: "davidgamero/sinatra-hello-world"
+      language: "ruby"
+      repo: "davidgamero/sinatra-hello-world"
   csharp:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "csharp"
-      - repo: "imiller31/csharp-simple-web-app"
+      language: "csharp"
+      repo: "imiller31/csharp-simple-web-app"
   java:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "java"
-      - repo: "imiller31/simple-java-server"
+      language: "java"
+      repo: "imiller31/simple-java-server"
   gradle:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "gradle"
-      - repo: "imiller31/simple-gradle-server"
+      language: "gradle"
+      repo: "imiller31/simple-gradle-server"
   swift:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "swift"
-      - repo: "OliverMKing/swift-hello-world"
+      language: "swift"
+      repo: "OliverMKing/swift-hello-world"
   erlang:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "erlang"
-      - repo: "bfoley13/ErlangExample"
+      language: "erlang"
+      repo: "bfoley13/ErlangExample"
   clojure:
     needs:
       - build-linux
       - build-windows
     uses: ./.github/workflows/integration-per-language.yml
     with:
-      - language: "clojure"
-      - repo: "imiller31/clojure-simple-http"
+      language: "clojure"
+      repo: "imiller31/clojure-simple-http"
   linux-integration-fail:
     name: Integration Test Summary
     runs-on: ubuntu-latest

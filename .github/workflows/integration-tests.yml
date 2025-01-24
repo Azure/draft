@@ -101,7 +101,7 @@ jobs:
   linux-integration-fail:
     name: Integration Test Summary
     runs-on: ubuntu-latest
-    needs: linux-integration-test 
+    needs: language-integration-test 
     if: failure() || cancelled() # https://github.com/orgs/community/discussions/60792
     steps:
     - name: Fail

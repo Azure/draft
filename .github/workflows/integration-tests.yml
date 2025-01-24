@@ -102,6 +102,7 @@ jobs:
     name: Integration Test Summary
     needs: language-integration-test
     runs-on: ubuntu-latest
+    if: ${{ always() }} # run even if needed jobs have failed
     steps:
       - run: |
           echo "Success"

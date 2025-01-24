@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.17.1] - 2025-01-24
+
+### Added
+- [#447](https://github.com/Azure/draft/pull/447) Add fleet support to workflows, (pending cli implementation). Bump k8s-deploy to v5
+
 ## [0.17.0] - 2024-12-10
 
 ### Added

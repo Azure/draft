@@ -484,7 +484,7 @@ jobs:
           curl -m 3 $SERVICEIP:${{env.serviceport}}
           sleep 5
           kill $tunnelPID
-      - run: ./draft -v generate-workflow\
+      - run: ./draft -v generate-workflow \
           -d ./langtest/ \
           --deploy-type manifests\
           --variable WORKFLOWNAME=someWorkflow \

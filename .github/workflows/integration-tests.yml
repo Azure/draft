@@ -174,7 +174,8 @@ jobs:
       - swift
       - erlang
       - clojure
+    if: ${{ cancelled() || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'failure') }} # i cant believe this is necessary https://github.com/actions/runner/issues/2566
     steps:
-    - name: Done
-      run: |
-        echo "Success"
+      - run: |
+          echo "Some workflows have failed!"
+          exit 1

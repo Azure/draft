@@ -1,5 +1,35 @@
 # Change Log
 
+## [0.17.1] - 2025-01-24
+
+### Added
+- [#447](https://github.com/Azure/draft/pull/447) Add fleet support to workflows, (pending cli implementation). Bump k8s-deploy to v5
+
+## [0.17.0] - 2024-12-10
+
+### Added
+
+- [#437](https://github.com/Azure/draft/pull/437) Bumps the actions group with 10 updates in the /.github/workflows directory
+
+### Fixed
+
+- Updating the version as the previous version was already released https://pkg.go.dev/github.com/azure/draft?tab=versions
+
+## [0.1.0] - 2024-12-4
+
+### Added
+
+- [#388](https://github.com/Azure/draft/pull/388) Migrate createRole assignment to Az SDK
+- [#405](https://github.com/Azure/draft/pull/405) adding generic service templates
+- [#412](https://github.com/Azure/draft/pull/412) Migrate workflows to template handler
+- [#409](https://github.com/Azure/draft/pull/409) Add Trandformer and Validators to template handling
+- [#419](https://github.com/Azure/draft/pull/419) Add configmap handling to deployment templates
+- [#418](https://github.com/Azure/draft/pull/418) Ensure GH and AZ cli changes
+- [#392](https://github.com/Azure/draft/pull/392) Validate helm and kustomize support
+- [#428](https://github.com/Azure/draft/pull/428) Update template versioning definition
+- [#430](https://github.com/Azure/draft/pull/430) Update templates and testing and finalize new template handlers
+- [#434](https://github.com/Azure/draft/pull/434) Az cli client cleanup
+
 ## [0.0.40] - 2024-10-23
 
 ### Fixed

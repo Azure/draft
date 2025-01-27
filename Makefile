@@ -1,5 +1,5 @@
 .PHONY: all
-all: build generate-integrations
+all: build
 
 
 .PHONY: test
@@ -13,12 +13,6 @@ run-unit-tests:
 .PHONY: run-e2e-tests-local
 run-e2e-tests-local: build
 	test/check_info_schema.sh;
-
-.PHONY: generate-integrations
-generate-integrations:
-	cd ./test; \
-	./gen_integration.sh; \
-	cd ..;
 
 .PHONY: build
 build:

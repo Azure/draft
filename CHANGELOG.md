@@ -1,5 +1,16 @@
 # Change Log
 
+## [0.17.2] - 2025-01-27
+
+### Added
+
+- [476](https://github.com/Azure/draft/pull/476) Added default value for CLUSTERRESOURCETYPE in draft.yaml
+
+### Fixed
+
+- [477](https://github.com/Azure/draft/pull/477) Explicitly require jobs for each language to allow failure to be reported and prevent PR merging in case of a failure
+- [479](https://github.com/Azure/draft/pull/479) Remove helm `wait` flag for fleet clusters
+
 ## [0.17.1] - 2025-01-24
 
 ### Added

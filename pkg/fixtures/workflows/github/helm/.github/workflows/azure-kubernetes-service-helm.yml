@@ -148,6 +148,6 @@ jobs:
       - name: Deploy application on public cluster
         if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER != 'true' }}
         env:
-          WAIT_FLAG: ${{ (env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets') && '--wait') || '' }} # don't wait for fleet hubs
+          WAIT_FLAG: ${{ (env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets') && '--wait' || '' }} # don't wait for fleet hubs
         run: |
           helm upgrade ${{ env.WAIT_FLAG }} -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}

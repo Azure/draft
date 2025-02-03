@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.17.3] - 2025-01-30
+
+## Fixed
+
+- [482](https://github.com/Azure/draft/pull/482) Removed extra parentheses in the helm workflow template
+
 ## [0.17.2] - 2025-01-27
 
 ### Added

@@ -4,8 +4,10 @@
 
 ### Added
 
+- [483](https://github.com/Azure/draft/pull/483) Allow user to select language via prompt if none detected
 - [486](https://github.com/Azure/draft/pull/486) Uses the default k8s probe values instead of overriding them on tests
 - [495](https://github.com/Azure/draft/pull/495) Adds private cluster support for namespace creation/validation in workflow templates
+- [497](https://github.com/Azure/draft/pull/497) Reduce base resource requests to 0.5Gi and 0.5 cpu
 
 ## [0.17.3] - 2025-01-30
 

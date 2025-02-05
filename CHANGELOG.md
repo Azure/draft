@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.17.4] - 2025-02-05
+
+### Added
+
+- [486](https://github.com/Azure/draft/pull/486) Uses the default k8s probe values instead of overriding them on tests
+- [495](https://github.com/Azure/draft/pull/495) Adds private cluster support for namespace creation/validation in workflow templates
+
 ## [0.17.3] - 2025-01-30
 
 ## Fixed

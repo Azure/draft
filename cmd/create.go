@@ -39,7 +39,7 @@ const currentDirDefaultFlagValue = "."
 
 const DOCKERFILES_DIR = "dockerfiles"
 
-func ListSupportedLanguages() ([]string, error) {
+func listSupportedLanguages() ([]string, error) {
 	var supportedLanguages []string
 	entries, err := template.Templates.ReadDir(DOCKERFILES_DIR)
 	if err != nil {
@@ -168,7 +168,7 @@ func (cc *createCmd) detectLanguage() (*handlers.Template, string, error) {
 	hasGoMod := false
 	var langs []*linguist.Language
 	var err error
-	supportedLanguages, err := ListSupportedLanguages()
+	supportedLanguages, err := listSupportedLanguages()
 	if err != nil {
 		log.Errorf("loading supported languages: %s", err.Error())
 	}
@@ -184,15 +184,10 @@ func (cc *createCmd) detectLanguage() (*handlers.Template, string, error) {
 				return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
 			}
 			if len(langs) == 0 {
-				selection := &promptui.Select{
-					Label: "Unable to detect a supported language, please select one:",
-					Items: supportedLanguages,
-				}
-				_, selectResponse, err := selection.Run()
+				langs, err = promptLanguageSelection(supportedLanguages)
 				if err != nil {
-					return nil, "", fmt.Errorf("manually selecting language: %w", err)
+					return nil, "", fmt.Errorf("prompting for language: %w", err)
 				}
-				langs = []*linguist.Language{{Language: selectResponse}}
 			}
 			for _, lang := range langs {
 				log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
@@ -493,4 +488,17 @@ func validateConfigInputsToPrompts(draftConfig *config.DraftConfig, provided []U
 	}
 
 	return nil
+}
+
+func promptLanguageSelection(supportedLanguages []string) ([]*linguist.Language, error) {
+	selection := &promptui.Select{
+		Label: "Unable to detect a supported language, please select one:",
+		Items: supportedLanguages,
+	}
+	_, selectResponse, err := selection.Run()
+	if err != nil {
+		return nil, fmt.Errorf("manually selecting language: %w", err)
+	}
+	langs := []*linguist.Language{{Language: selectResponse}}
+	return langs, nil
 }

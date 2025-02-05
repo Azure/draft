@@ -70,7 +70,7 @@ variables:
     kind: "kubernetesResourceRequest"
     default:
       disablePrompt: true
-      value: "1"
+      value: "0.5"
     description: "resource request for CPU"
     versions: ">=0.0.1"
   - name: "MEMREQ"
@@ -78,7 +78,7 @@ variables:
     kind: "kubernetesResourceRequest"
     default:
       disablePrompt: true
-      value: "1Gi"
+      value: "0.5Gi"
     description: "resource request for Memory"
     versions: ">=0.0.1"
   - name: "CPULIMIT"

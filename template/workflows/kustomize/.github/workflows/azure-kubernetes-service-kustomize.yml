@@ -128,7 +128,7 @@ jobs:
             command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "kubectl get namespace ${{ env.NAMESPACE }} || kubectl create namespace ${{ env.NAMESPACE }}" --query id -o tsv)
             result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
             echo "Command Result: $result"
-            exit_code=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
+            exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
             if [ $exitCode -ne 0 ]; then
               exit $exitCode
             fi
@@ -143,14 +143,14 @@ jobs:
             command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "kubectl get namespace ${{ env.NAMESPACE }}" --query id -o tsv)
             result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
             echo "Command Result: $result"
-            exit_code=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
+            exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
             if [ $exitCode -ne 0 ]; then
               exit $exitCode
             fi
           else
             kubectl get namespace ${{ env.NAMESPACE }}
           fi
-          
+
       # Runs Kustomize to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2

@@ -34,8 +34,8 @@ resources:
     cpu: "1"
     memory: "1Gi"
   requests:
-    cpu: "1"
-    memory: "1Gi"
+    cpu: "0.5"
+    memory: "0.5Gi"
 
 autoscaling:
   enabled: false

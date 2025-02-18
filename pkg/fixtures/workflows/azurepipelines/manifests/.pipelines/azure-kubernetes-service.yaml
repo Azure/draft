@@ -10,7 +10,7 @@ variables:
   clusterName: testcluster
   manifestPath: ./manifests
   namespace: default
-  resourceType: Microsoft.ContainerService/managedClusters
+  resourceType: Microsoft.ContainerService/fleets
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
 

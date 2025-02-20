@@ -66,6 +66,7 @@ var validVariableKinds = map[string]bool{
 	"scalingResourceType":        true,
 	"scalingResourceUtilization": true,
 	"resourceLimit":              true,
+	"workflowAuthType":           true,
 }
 
 /*

@@ -20,9 +20,26 @@
   </p>
 </div>
 
+## Installation
+### Homebrew
+
+1. Run the following commands
+
+```sh
+brew install draft
+```
+
+### Shell Script
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Azure/draft/main/scripts/install.sh | bash
+```
+
+* Windows is supported via WSL Ubuntu
+
 ## Getting Started
 
-Draft is a tool made for users who are just getting started with Kubernetes, or users who want to simplify their experience with Kubernetes. This readme will give you a quick run down on Draft’s commands and what they do.
+Draft is a tool made for users who are just getting started with Kubernetes or want to simplify their experience with Kubernetes. This readme will give you a quick run down on Draft’s commands and what they do.
 
 ### `draft create`
 
@@ -129,17 +146,17 @@ The following flags can be used for enabling dry running, which is currently sup
   ]
 }
 ```
-## Prerequisites
+## Install from Source
 
-Draft requires Go version 1.18.x. or above as it uses go generics
+### Prerequisites
+
+Draft requires Go version 1.21.x. or above
 
 Check your go version.
 
 ```sh
 go version
 ```
-
-## Installation
 
 1. Clone the repo
 
@@ -159,23 +176,6 @@ go version
    ```sh
    mv draft $HOME/go/bin/
    ```
-
-### Install with HomeBrew
-
-1. Run the following commands
-
-   ```sh
-   $ brew tap azure/draft
-   $ brew install draft
-   ```
-
-### Installation using script
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Azure/draft/main/scripts/install.sh | bash
-```
-
-* Windows isn't currently supported (you can use WSL)
 
 
 ## Draft as a Dependency

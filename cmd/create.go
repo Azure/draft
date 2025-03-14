@@ -362,12 +362,14 @@ func (cc *createCmd) generateDeployment() error {
 			if err != nil {
 				return fmt.Errorf("getting current directory: %w", err)
 			}
+
 			defaultAppName := fmt.Sprintf("%s-workflow", filepath.Base(currentDir))
-			defaultAppName, err = ToValidAppName(defaultAppName)
-			if err != nil {
+			if validName, err := ToValidAppName(defaultAppName); err != nil {
 				log.Debugf("unable to convert default app name %q to a valid name: %v", defaultAppName, err)
-				log.Debugf("using default app name %q", defaultAppName)
+				log.Debugf("using default app name %q", "my-app")
 				defaultAppName = "my-app"
+			} else {
+				defaultAppName = validName
 			}
 			appVar, err := deployTemplate.Config.GetVariable("APPNAME")
 			if err != nil || appVar == nil {

@@ -302,7 +302,6 @@ func Alias(lang *Language) *Language {
 		"c#":         "csharp",
 		"go module":  "gomodule",
 		"typescript": "javascript",
-		"xml":        "javascript",
 	}
 
 	if alias, ok := packAliases[strings.ToLower(lang.Language)]; ok {

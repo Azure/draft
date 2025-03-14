@@ -20,81 +20,69 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	testCreateConfig := CreateConfig{LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}}, DeployVariables: []UserInputs{{Name: "PORT", Value: "8080"}, {Name: "APPNAME", Value: "testingCreateCommand"}, {Name: "DOCKERFILENAME", Value: "Dockerfile"}}}
-	flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest", "DOCKERFILENAME": "test.Dockerfile"}
-	mockCC := createCmd{
-		dest:           "./..",
-		createConfig:   &testCreateConfig,
-		templateWriter: &writers.LocalFSWriter{},
-	}
 	deployTypes := []string{"helm", "kustomize", "manifests"}
-	oldDockerfile, _ := ioutil.ReadFile("./../Dockerfile")
-	oldDockerignore, _ := ioutil.ReadFile("./../.dockerignore")
-
-	detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
-	assert.NotNil(t, detectedLang)
-	assert.False(t, lowerLang == "")
-	assert.Nil(t, err)
-
-	err = mockCC.generateDockerfile(detectedLang, lowerLang)
-	assert.Nil(t, err)
-
-	//when language variables are passed in --variable flag
-	mockCC.createConfig.LanguageVariables = nil
-	mockCC.lang = "go"
-	detectedLang, lowerLang, err = mockCC.mockDetectLanguage()
-	assert.NotNil(t, detectedLang)
-	assert.False(t, lowerLang == "")
-	assert.Nil(t, err)
-	err = mockCC.generateDockerfile(detectedLang, lowerLang)
-	assert.Nil(t, err)
-
-	//Write back old Dockerfile
-	err = ioutil.WriteFile("./../Dockerfile", oldDockerfile, 0644)
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = ioutil.WriteFile("./../.dockerignore", oldDockerignore, 0644)
-	if err != nil {
-		t.Error(err)
-	}
 
 	for _, deployType := range deployTypes {
-		//deployment variables passed through --variable flag
-		mockCC.deployType = deployType
-		err = mockCC.createDeployment()
-		assert.Nil(t, err)
-		//check if deployment files have been created
-		err, deploymentFiles := getAllDeploymentFiles(path.Join("../template/deployments", mockCC.deployType))
-		assert.Nil(t, err)
-		for _, fileName := range deploymentFiles {
-			_, err = os.Stat(fileName)
-			assert.Nil(t, err)
+		var testDir = t.TempDir()
+
+		testCreateConfig := CreateConfig{
+			DeployType:        deployType,
+			LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}},
+			DeployVariables: []UserInputs{
+				{Name: "PORT", Value: "8080"},
+				{Name: "APPNAME", Value: "testingCreateCommand"},
+				{Name: "DOCKERFILENAME", Value: "Dockerfile"},
+			},
+		}
+		flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest", "DOCKERFILENAME": "test.Dockerfile"}
+		mockCC := createCmd{
+			deployType:     deployType,
+			dest:           testDir,
+			createConfig:   &testCreateConfig,
+			templateWriter: &writers.LocalFSWriter{},
 		}
 
-		os.RemoveAll("./../charts")
-		os.RemoveAll("./../base")
-		os.RemoveAll("./../overlays")
-		os.RemoveAll("./../manifests")
+		err := os.WriteFile(filepath.Join(testDir, "main.go"), []byte("//placeholder"), 0644)
+		assert.Nil(t, err)
+		detectedLang, lowerLang, err := mockCC.mockDetectLanguage()
+		assert.NotNil(t, detectedLang)
+		assert.False(t, lowerLang == "")
+		assert.Nil(t, err)
+
+		err = mockCC.generateDockerfile(detectedLang, lowerLang)
+		assert.Nil(t, err)
+
+		//when language variables are passed in --variable flag
+		mockCC.createConfig.LanguageVariables = nil
+		mockCC.lang = "go"
+		detectedLang, lowerLang, err = mockCC.mockDetectLanguage()
+		assert.NotNil(t, detectedLang)
+		assert.False(t, lowerLang == "")
+		assert.Nil(t, err)
+		err = mockCC.generateDockerfile(detectedLang, lowerLang)
+		assert.Nil(t, err)
+
+		//deployment variables passed through --variable flag
+		err = mockCC.generateDeployment()
+		assert.Nil(t, err)
+		//check if deployment files have been created
+		deploymentFiles, err := getAllDeploymentFiles(filepath.Join("../template/deployments", mockCC.deployType))
+		assert.Nil(t, err)
+		for _, fileName := range deploymentFiles {
+			_, err = os.Stat(filepath.Join(testDir, fileName))
+			assert.Nil(t, err)
+		}
 
 		//deployment variables passed through createConfig
-		mockCC.createConfig.DeployType = deployType
-		err = mockCC.createDeployment()
+		err = mockCC.generateDeployment()
 		assert.Nil(t, err)
 		//check if deployment files have been created
-		err, deploymentFiles = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
+		deploymentFiles, err = getAllDeploymentFiles(path.Join("../template/deployments", mockCC.createConfig.DeployType))
 		assert.Nil(t, err)
 		for _, fileName := range deploymentFiles {
-			_, err = os.Stat(fileName)
+			_, err = os.Stat(filepath.Join(testDir, fileName))
 			assert.Nil(t, err)
 		}
-		mockCC.createConfig.DeployType = ""
-
-		os.RemoveAll("./../charts")
-		os.RemoveAll("./../base")
-		os.RemoveAll("./../overlays")
-		os.RemoveAll("./../manifests")
 	}
 }
 
@@ -270,18 +258,18 @@ func TestDefaultValues(t *testing.T) {
 	assert.Equal(t, currentDirDefaultFlagValue, ".")
 }
 
-func getAllDeploymentFiles(src string) (error, []string) {
+func getAllDeploymentFiles(src string) ([]string, error) {
 	deploymentFiles := []string{}
 	err := filepath.Walk(src,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			filePath := strings.ReplaceAll(path, src, "./..")
+			filePath := strings.ReplaceAll(path, src, "")
 			if info.Name() != "draft.yaml" {
 				deploymentFiles = append(deploymentFiles, filePath)
 			}
 			return nil
 		})
-	return err, deploymentFiles
+	return deploymentFiles, err
 }

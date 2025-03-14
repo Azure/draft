@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.17.5] - 2025-03-11
+
+### Added
+
+- [510](https://github.com/Azure/draft/pull/510) Add build context for ADO pipelines
+- [509](https://github.com/Azure/draft/pull/509) Add Ingress Manifest Template
+- [502](https://github.com/Azure/draft/pull/502) Add Auth type for Azure login in github workflow
+
 ## [0.17.4] - 2025-02-05
 
 ### Added

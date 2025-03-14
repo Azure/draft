@@ -14,6 +14,7 @@ var provider string
 var silent bool
 var dryRun bool
 var dryRunFile string
+var interactive bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -62,5 +63,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&provider, "provider", "p", "azure", "cloud provider")
 	rootCmd.PersistentFlags().BoolVarP(&silent, "silent", "", false, "enable silent logging")
 	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dry-run", "", false, "enable dry run mode in which no files are written to disk")
+	rootCmd.PersistentFlags().BoolVarP(&interactive, "interactive", "", false, "toggle interactive prompting for user input (default is true, use --interactive=false to disable)")
 	rootCmd.PersistentFlags().StringVar(&dryRunFile, "dry-run-file", "", "optional file to write dry run summary in json format into (requires --dry-run flag)")
 }

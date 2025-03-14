@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -184,6 +185,9 @@ func (cc *createCmd) detectLanguage() (*handlers.Template, string, error) {
 				return nil, "", fmt.Errorf("there was an error detecting the language: %s", err)
 			}
 			if len(langs) == 0 {
+				if !interactive {
+					return nil, "", ErrNoLanguageDetected
+				}
 				langs, err = promptLanguageSelection(supportedLanguages)
 				if err != nil {
 					return nil, "", fmt.Errorf("prompting for language: %w", err)
@@ -192,7 +196,8 @@ func (cc *createCmd) detectLanguage() (*handlers.Template, string, error) {
 			for _, lang := range langs {
 				log.Debugf("%s:\t%f (%s)", lang.Language, lang.Percent, lang.Color)
 				// For now let's check here for weird stuff like go module support
-				if lang.Language == "Go" {
+				hasGoMod = true
+				if interactive && lang.Language == "Go" {
 					hasGo = true
 
 					selection := &promptui.Select{
@@ -204,15 +209,15 @@ func (cc *createCmd) detectLanguage() (*handlers.Template, string, error) {
 					if err != nil {
 						return nil, "", err
 					}
-
 					hasGoMod = strings.EqualFold(selectResponse, "yes")
+
 				}
 
-				if lang.Language == "Java" {
+				if interactive && lang.Language == "Java" {
 
 					selection := &promptui.Select{
 						Label: "Linguist detected Java, are you using maven or gradle?",
-						Items: []string{"gradle", "maven", "gradlew"},
+						Items: []string{"maven", "gradle", "gradlew"},
 					}
 
 					_, selectResponse, err := selection.Run()
@@ -302,15 +307,16 @@ func (cc *createCmd) generateDockerfile(dockerfileTemplate *handlers.Template, l
 		}
 	}
 
-	if cc.createConfig.LanguageVariables == nil {
-		dockerfileTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
-
-		if err = prompts.RunPromptsFromConfigWithSkips(dockerfileTemplate.Config); err != nil {
+	if cc.createConfig.LanguageVariables != nil || !interactive {
+		dockerfileTemplate.Config.ApplyDefaultVariables()
+		err = validateConfigInputsToPrompts(dockerfileTemplate.Config, cc.createConfig.LanguageVariables)
+		if err != nil {
 			return err
 		}
 	} else {
-		err = validateConfigInputsToPrompts(dockerfileTemplate.Config, cc.createConfig.LanguageVariables)
-		if err != nil {
+		dockerfileTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
+
+		if err = prompts.RunPromptsFromConfigWithSkips(dockerfileTemplate.Config); err != nil {
 			return err
 		}
 	}
@@ -329,13 +335,20 @@ func (cc *createCmd) generateDockerfile(dockerfileTemplate *handlers.Template, l
 	return nil
 }
 
-func (cc *createCmd) createDeployment() error {
+func (cc *createCmd) generateDeployment() error {
 	log.Info("--- Deployment File Creation ---")
 	var deployType string
 	var deployTemplate *handlers.Template
 	var err error
 
+	if !interactive {
+		if cc.createConfig.DeployType == "" {
+			cc.createConfig.DeployType = "manifests"
+			log.Debugf("using default deployment type %s", cc.createConfig.DeployType)
+		}
+	}
 	if cc.createConfig.DeployType != "" {
+
 		deployType = strings.ToLower(cc.createConfig.DeployType)
 		deployTemplate, err = handlers.GetTemplate(fmt.Sprintf("deployment-%s", deployType), "", cc.dest, cc.templateWriter)
 		if err != nil {
@@ -343,6 +356,28 @@ func (cc *createCmd) createDeployment() error {
 		}
 		if deployTemplate == nil || deployTemplate.Config == nil {
 			return errors.New("invalid deployment type")
+		}
+		if !interactive {
+			currentDir, err := os.Getwd()
+			if err != nil {
+				return fmt.Errorf("getting current directory: %w", err)
+			}
+			defaultAppName := fmt.Sprintf("%s-workflow", filepath.Base(currentDir))
+			defaultAppName, err = ToValidAppName(defaultAppName)
+			if err != nil {
+				log.Debugf("unable to convert default app name %q to a valid name: %v", defaultAppName, err)
+				log.Debugf("using default app name %q", defaultAppName)
+				defaultAppName = "my-app"
+			}
+			appVar, err := deployTemplate.Config.GetVariable("APPNAME")
+			if err != nil || appVar == nil {
+				log.Debugf("unable to get APP_NAME variable: %v", err)
+			}
+			if err == nil {
+				appVar.Default.Value = defaultAppName
+			}
+
+			deployTemplate.Config.ApplyDefaultVariables()
 		}
 		err = validateConfigInputsToPrompts(deployTemplate.Config, cc.createConfig.DeployVariables)
 		if err != nil {
@@ -352,7 +387,7 @@ func (cc *createCmd) createDeployment() error {
 		if cc.deployType == "" {
 			selection := &promptui.Select{
 				Label: "Select k8s Deployment Type",
-				Items: []string{"helm", "kustomize", "manifests"},
+				Items: []string{"manifests", "kustomize", "helm"},
 			}
 
 			_, deployType, err = selection.Run()
@@ -405,7 +440,7 @@ func (cc *createCmd) createFiles(detectedLangTempalte *handlers.Template, lowerL
 			}
 		}
 		if !cc.dockerfileOnly {
-			err := cc.createDeployment()
+			err := cc.generateDeployment()
 			if err != nil {
 				return err
 			}
@@ -421,6 +456,9 @@ func (cc *createCmd) createFiles(detectedLangTempalte *handlers.Template, lowerL
 
 	// prompts user for dockerfile re-creation
 	if hasDockerFile && !cc.deploymentOnly {
+		if !interactive && !cc.skipFileDetection {
+			return fmt.Errorf("dockerfile already exists in the directory '%s', use --skip-file-detection to overwrite", cc.dest)
+		}
 		selection := &promptui.Select{
 			Label: "We found Dockerfile in the directory, would you like to recreate the Dockerfile?",
 			Items: []string{"yes", "no"},
@@ -447,6 +485,9 @@ func (cc *createCmd) createFiles(detectedLangTempalte *handlers.Template, lowerL
 
 	// prompts user for deployment re-creation
 	if hasDeploymentFiles && !cc.dockerfileOnly {
+		if !interactive && !cc.skipFileDetection {
+			return fmt.Errorf("deployment files already exist in the directory '%s', use --skip-file-detection to overwrite", cc.dest)
+		}
 		selection := &promptui.Select{
 			Label: "We found deployment files in the directory, would you like to create new deployment files?",
 			Items: []string{"yes", "no"},
@@ -465,7 +506,7 @@ func (cc *createCmd) createFiles(detectedLangTempalte *handlers.Template, lowerL
 	} else if hasDeploymentFiles {
 		log.Info("--> Found deployment directory in local directory, skipping deployment file creation...")
 	} else if !cc.dockerfileOnly {
-		err := cc.createDeployment()
+		err := cc.generateDeployment()
 		if err != nil {
 			return err
 		}

@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.17.6] - 2025-03-17
+
+### Added
+
+- [518](https://github.com/Azure/draft/pull/518) Use correct variables in production.yaml
+- [513](https://github.com/Azure/draft/pull/513) Add interactive flag
+
 ## [0.17.5] - 2025-03-11
 
 ### Added

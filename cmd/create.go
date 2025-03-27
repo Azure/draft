@@ -357,6 +357,7 @@ func (cc *createCmd) generateDeployment() error {
 		if deployTemplate == nil || deployTemplate.Config == nil {
 			return errors.New("invalid deployment type")
 		}
+		deployTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
 		if !interactive {
 			currentDir, err := os.Getwd()
 			if err != nil {

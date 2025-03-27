@@ -220,6 +220,8 @@ func (d *DraftConfig) ApplyDefaultVariables() error {
 					return errors.New("variable " + variable.Name + " has no default value")
 				}
 			}
+		} else {
+			log.Infof("Variable %s already set to value %s", variable.Name, variable.Value)
 		}
 	}
 

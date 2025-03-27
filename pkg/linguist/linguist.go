@@ -298,10 +298,11 @@ func ProcessDir(dirname string) ([]*Language, error) {
 // app, which in essence is the same thing for Draft's intent.
 func Alias(lang *Language) *Language {
 	packAliases := map[string]string{
-		"maven pom":  "Java",
-		"c#":         "csharp",
-		"go module":  "gomodule",
-		"typescript": "javascript",
+		"maven pom":         "Java",
+		"c#":                "csharp",
+		"go module":         "gomodule",
+		"typescript":        "javascript",
+		"java server pages": "java-tomcat",
 	}
 
 	if alias, ok := packAliases[strings.ToLower(lang.Language)]; ok {

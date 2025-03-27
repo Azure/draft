@@ -1,0 +1,32 @@
+
+language: java-tomcat
+displayName: Java-Tomcat
+templateName: "dockerfile-java-tomcat"
+description: "This template is used to create a Dockerfile for a Java Tomcat application"
+versions: ["0.0.1"]
+defaultVersion: "0.0.1"
+type: "dockerfile"
+variables:
+  - name: "PORT"
+    type: "int"
+    kind: "port"
+    default:
+      value: "80"
+    description: "the port exposed in the application"
+    versions: ">=0.0.1"
+  - name: "VERSION"
+    type: "string"
+    kind: "containerImageVersion"
+    default:
+      value: "8.0-alpine"
+    description: "the tomcat image version used by the application"
+    exampleValues: ["8.0-alpine"]
+    versions: ">=0.0.1"
+  - name: "DOCKERFILENAME"
+    type: "string"
+    kind: "dockerFileName"
+    default:
+      value: "Dockerfile"
+      disablePrompt: true
+    description: "the name of the Dockerfile"
+    versions: ">=0.0.1"

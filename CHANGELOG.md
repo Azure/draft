@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.17.7] - 2025-04-03
+
+### Added
+
+- [526](https://github.com/Azure/draft/pull/526) Add tomcat template
+
 ## [0.17.6] - 2025-03-17
 
 ### Added

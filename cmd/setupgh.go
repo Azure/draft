@@ -92,7 +92,7 @@ func fillSetUpConfig(sc *providers.SetUpCmd, gh providers.GhClient, az providers
 			return fmt.Errorf("getting current directory: %w", err)
 		}
 		defaultAppName := fmt.Sprintf("%s-workflow", filepath.Base(currentDir))
-		defaultAppName, err = toValidAppName(defaultAppName)
+		defaultAppName, err = ToValidAppName(defaultAppName)
 		if err != nil {
 			log.Debugf("unable to convert default app name %q to a valid name: %v", defaultAppName, err)
 			log.Debugf("using default app name %q", defaultAppName)
@@ -149,7 +149,7 @@ func fillSetUpConfig(sc *providers.SetUpCmd, gh providers.GhClient, az providers
 	return nil
 }
 
-func toValidAppName(name string) (string, error) {
+func ToValidAppName(name string) (string, error) {
 	// replace all underscores with hyphens
 	cleanedName := strings.ReplaceAll(name, "_", "-")
 	// replace all spaces with hyphens

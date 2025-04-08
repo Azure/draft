@@ -1,5 +1,35 @@
 # Change Log
 
+## [0.17.7] - 2025-04-03
+
+### Added
+
+- [526](https://github.com/Azure/draft/pull/526) Add tomcat template
+
+## [0.17.6] - 2025-03-17
+
+### Added
+
+- [518](https://github.com/Azure/draft/pull/518) Use correct variables in production.yaml
+- [513](https://github.com/Azure/draft/pull/513) Add interactive flag
+
+## [0.17.5] - 2025-03-11
+
+### Added
+
+- [510](https://github.com/Azure/draft/pull/510) Add build context for ADO pipelines
+- [509](https://github.com/Azure/draft/pull/509) Add Ingress Manifest Template
+- [502](https://github.com/Azure/draft/pull/502) Add Auth type for Azure login in github workflow
+
+## [0.17.4] - 2025-02-05
+
+### Added
+
+- [483](https://github.com/Azure/draft/pull/483) Allow user to select language via prompt if none detected
+- [486](https://github.com/Azure/draft/pull/486) Uses the default k8s probe values instead of overriding them on tests
+- [495](https://github.com/Azure/draft/pull/495) Adds private cluster support for namespace creation/validation in workflow templates
+- [497](https://github.com/Azure/draft/pull/497) Reduce base resource requests to 0.5Gi and 0.5 cpu
+
 ## [0.17.3] - 2025-01-30
 
 ## Fixed

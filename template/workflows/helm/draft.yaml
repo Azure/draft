@@ -102,3 +102,14 @@ variables:
       value: "Microsoft.ContainerService/managedClusters"
     description: "ARM resource type for cluster"
     versions: ">=0.0.1"
+  - name: "AZURELOGINAUTHTYPE"
+    type: "string"
+    kind: "workflowAuthType"
+    default:
+      disablePrompt: true
+      value: "SERVICE_PRINCIPAL"
+    allowedValues:
+      - "SERVICE_PRINCIPAL"
+      - "IDENTITY"
+    description: "the authentication type to use for the azure/login github workflow"
+    versions: ">=0.0.1"

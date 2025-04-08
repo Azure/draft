@@ -1,0 +1,87 @@
+templateName: "ingress-manifests"
+description: "This template is used to create a Ingress"
+versions: ["0.0.1"]
+defaultVersions: "0.0.1"
+type: "manifest"
+variables:
+  - name: "INGRESSNAME"
+    type: "string"
+    kind: "kubernetesResourceName"
+    description: "the name of the application"
+    versions: ">=0.0.1"
+  - name: "PARTOF"
+    type: "string"
+    kind: "label"
+    description: "the label to identify which project the resource belong to"
+    versions: ">=0.0.1"
+  - name: "GENERATORLABEL"
+    type: "string"
+    kind: "label"
+    description: "the label to identify who generated the resource"
+    versions: ">=0.0.1"
+    default:
+      value: "draft"
+  - name: "NAMESPACE"
+    type: "string"
+    kind: "kubernetesNamespace"
+    default:
+      value: default
+    description: " the namespace to place new resources in"
+    versions: ">=0.0.1"
+  - name: "SERVICENAME"
+    type: "string"
+    kind: "kubernetesResourceName"
+    default:
+      value: default
+    description: "the name of the service backing the ingress"
+    versions: ">=0.0.1"
+  - name: "SERVICEPORT"
+    type: "int"
+    kind: "port"
+    description: "the port the service uses to make the application accessible from outside the cluster"
+    versions: ">=0.0.1"
+  - name: "ENABLEAPPROUTING"
+    type: "bool"
+    kind: "flag"
+    default:
+      disablePrompt: true
+      value: false
+    description: "flag to enable app routing"
+    versions: ">=0.0.1"
+  - name: "HASMANAGEDCERT"
+    type: "bool"
+    kind: "flag"
+    default:
+      disablePrompt: true
+      value: false
+    description: "flag to enable managed certs with app routing"
+    versions: ">=0.0.1"
+  - name: "CERTKEYVAULTURI"
+    type: "string"
+    kind: "azureKeyvaultUri"
+    activeWhen:
+      - variableName: "ENABLEAPPROUTING"
+        value: "true"
+        condition: "equals"
+      - variableName: "HASMANAGEDCERT"
+        value: "true"
+        condition: "equals"
+    description: "the key vault uri for the managed cert"
+    versions: ">=0.0.1"
+  - name: "HOST"
+    type: "string"
+    kind: "ingressHostName"
+    description: "the host name for the ingress"
+    versions: ">=0.0.1"
+  - name: "PATH"
+    type: "string"
+    kind: "urlPath"
+    default:
+      value: /
+    description: "the path for the ingress"
+    versions: ">=0.0.1"
+  - name: "INGRESSCLASSNAME"
+    type: "string"
+    kind: "ingressClassName"
+    description: "the ingress class name"
+    versions: ">=0.0.1"

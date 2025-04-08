@@ -47,6 +47,7 @@ var validVariableKinds = map[string]bool{
 	"flag":                       true,
 	"helmChartOverrides":         true,
 	"imagePullPolicy":            true,
+	"ingressClassName":           true,
 	"ingressHostName":            true,
 	"kubernetesNamespace":        true,
 	"kubernetesProbeHttpPath":    true,
@@ -66,6 +67,8 @@ var validVariableKinds = map[string]bool{
 	"scalingResourceType":        true,
 	"scalingResourceUtilization": true,
 	"resourceLimit":              true,
+	"workflowAuthType":           true,
+	"urlPath":                    true,
 }
 
 /*

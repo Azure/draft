@@ -85,7 +85,7 @@ func TestToValidAppName(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testCaseName, func(t *testing.T) {
-			result, err := toValidAppName(tc.nameInput)
+			result, err := ToValidAppName(tc.nameInput)
 			if tc.shouldError {
 				assert.Error(t, err)
 			} else {

@@ -1,7 +1,7 @@
 image:
-  repository: "{{ .Config.GetVariableValue "APPNAME" }}"
-  pullPolicy: Always
-  tag: "latest"
+  repository: "{{ .Config.GetVariableValue "IMAGENAME" }}"
+  tag: "{{ .Config.GetVariableValue "IMAGETAG" }}"
+  pullPolicy: "{{ .Config.GetVariableValue "IMAGEPULLPOLICY" }}"
 service:
   annotations: {}
   type: LoadBalancer

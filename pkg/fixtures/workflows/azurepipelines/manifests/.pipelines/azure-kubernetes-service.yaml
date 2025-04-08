@@ -10,6 +10,7 @@ variables:
   clusterName: testcluster
   manifestPath: ./manifests
   namespace: default
+  buildContextPath: .
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
 
@@ -34,7 +35,7 @@ stages:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                az acr build --image $1.azurecr.io/$2:$3 --registry $1 -g $4 .
+                az acr build --image $1.azurecr.io/$2:$3 --registry $1 -g $4 $(buildContextPath)
               arguments: "$(azureContainerRegistry) $(containerName) $(tag) $(acrRg)"
 
   - stage: Deploy

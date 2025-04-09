@@ -116,7 +116,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -289,7 +289,7 @@ jobs:
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v4.0
+        uses: Azure/k8s-deploy@v5
         continue-on-error: true
         id: deploy
         with:
@@ -508,7 +508,7 @@ jobs:
         run: |
           find ./langtest/.github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) \
             | xargs -I {} action-validator --verbose {}
-      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{inputs.language}}-manifests-create
           path: |
@@ -592,7 +592,7 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_helm.ps1
         working-directory: ./langtest/
-      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{inputs.language}}-win-helm-create
           path: |
@@ -643,7 +643,7 @@ jobs:
           path: ./langtest/
       - run: ./check_windows_kustomize.ps1
         working-directory: ./langtest/
-      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{ inputs.language }}-win-kustomize-create
           path: |

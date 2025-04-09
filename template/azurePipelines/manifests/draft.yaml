@@ -63,3 +63,10 @@ variables:
       value: "default"
     description: "the Kubernetes namespace"
     versions: ">=0.0.1"
+  - name: "BUILDCONTEXTPATH"
+    type: "string"
+    kind: "dirPath"
+    default:
+      value: "."
+    description: "the path to the Docker build context"
+    versions: ">=0.0.1"

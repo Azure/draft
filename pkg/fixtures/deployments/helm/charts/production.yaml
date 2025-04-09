@@ -1,7 +1,7 @@
 image:
-  repository: "testapp"
-  pullPolicy: Always
+  repository: "testimage"
   tag: "latest"
+  pullPolicy: "Always"
 service:
   annotations: {}
   type: LoadBalancer

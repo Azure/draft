@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.17.8] - 2025-04-14
+
+### Added
+
+- [526](https://github.com/Azure/draft/pull/541) Fix manifest ingress keyvault name
+
 ## [0.17.7] - 2025-04-03
 
 ### Added

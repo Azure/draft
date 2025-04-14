@@ -26,4 +26,4 @@ spec:
   tls:
     - hosts:
         - "test-host.com"
-      secretName: "keyvault-test-service"
+      secretName: "keyvault-test-ingress"

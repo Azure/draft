@@ -32,6 +32,6 @@ spec:
   tls:
     - hosts:
         - "{{ .Config.GetVariableValue "HOST"}}"
-      secretName: "keyvault-{{ .Config.GetVariableValue "SERVICENAME"}}"
+      secretName: "keyvault-{{ .Config.GetVariableValue "INGRESSNAME"}}"
   {{- end}}
 {{- end}}

@@ -176,5 +176,5 @@ jobs:
           private-cluster: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
           namespace: ${{ env.NAMESPACE }}
           resource-type: ${{ env.CLUSTER_RESOURCE_TYPE }}
-          annotate-namespace: ${{ env.CLUSTER_RESOURCE_TYPE }}!='Microsoft.ContainerService/fleets'
+          annotate-namespace: ${{ env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets' }}
 

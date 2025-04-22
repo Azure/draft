@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.17.9] - 2025-04-21
+
+### Added
+
+- #544 remove annotate-namespace for fleet
+
 ## [0.17.8] - 2025-04-14
 
 ### Added

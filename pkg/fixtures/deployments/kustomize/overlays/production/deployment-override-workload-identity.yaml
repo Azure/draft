@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testapp
+  labels:
+    app.kubernetes.io/name: testapp
+    kubernetes.azure.com/generator: draft
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: testapp
+  template:
+    spec:
+      containers:
+        - name: testapp
+          image: testimage:latest

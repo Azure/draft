@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.17.10] - 2025-04-25
+
+- [547](https://github.com/Azure/draft/pull/547) Fix deployment templates to have `azure.workload.identity/use` label in pod level spec
+
 ## [0.17.9] - 2025-04-21
 
 ### Added

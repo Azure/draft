@@ -8,7 +8,7 @@ variables:
   clusterRg: myrg
   acrRg: myrg
   clusterName: testcluster
-  manifestPath: ./manifests
+  manifestPath: ./manifests/*
   namespace: default
   buildContextPath: .
   dockerfile: ./Dockerfile

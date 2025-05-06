@@ -70,3 +70,10 @@ variables:
       value: "."
     description: "the path to the Docker build context"
     versions: ">=0.0.1"
+  - name: "DOCKERFILE"
+    type: "string"
+    kind: "filePath"
+    default:
+      value: "./Dockerfile"
+    description: "the path to the Dockerfile"
+    versions: ">=0.0.1"

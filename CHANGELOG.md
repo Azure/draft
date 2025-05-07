@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.17.11] - 2025-05-06
+
+- [558](https://github.com/Azure/draft/pull/558) Add new parameter `DOCKERFILE`and env var `dockerfile` to pass the dockerfile path in the az pipeline template
+
 ## [0.17.10] - 2025-04-25
 
 - [547](https://github.com/Azure/draft/pull/547) Fix deployment templates to have `azure.workload.identity/use` label in pod level spec

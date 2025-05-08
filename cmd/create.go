@@ -125,6 +125,7 @@ func (cc *createCmd) initConfig() error {
 
 func (cc *createCmd) run() error {
 	log.Debugf("config: %s", cc.createConfigPath)
+	log.Debugf("interactive: %t", interactive)
 
 	flagVariablesMap = flagVariablesToMap(cc.flagVariables)
 

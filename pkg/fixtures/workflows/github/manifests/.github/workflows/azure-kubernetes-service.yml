@@ -84,6 +84,11 @@ jobs:
       # Checks out the repository this file is in
       - uses: actions/checkout@v3
 
+      # Logs into ACR
+      - name: Log into ACR
+        run: |
+          az acr login -n ${{ env.AZURE_CONTAINER_REGISTRY }}
+
       # Logs in with your Azure credentials
       - name: Azure login
         uses: azure/login@v2.2.0

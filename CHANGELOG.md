@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.17.12] - 2025-05-16
+
+- [564](https://github.com/Azure/draft/pull/564) fix interactive bug
+- [567](https://github.com/Azure/draft/pull/567) add azlogin step
+
 ## [0.17.11] - 2025-05-06
 
 - [558](https://github.com/Azure/draft/pull/558) Add new parameter `DOCKERFILE`and env var `dockerfile` to pass the dockerfile path in the az pipeline template

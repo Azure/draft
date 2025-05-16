@@ -70,6 +70,11 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           auth-type: ${{ env.AUTH_TYPE }}
 
+      # Logs into ACR
+      - name: Log into ACR
+        run: |
+          az acr login -n ${{ env.AZURE_CONTAINER_REGISTRY }}
+
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |

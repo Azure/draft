@@ -11,7 +11,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v1.2.0
 	github.com/blang/semver/v4 v4.0.0
-	github.com/briandowns/spinner v1.23.1
+	github.com/briandowns/spinner v1.23.2
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/fatih/color v1.17.0
 	github.com/ghodss/yaml v1.0.0

@@ -159,7 +159,7 @@ install() {
   fi
 
   log INFO "validating ARCH: $ARCH"
-  if [[ "$ARCH" != "x86_64" && "$ARCH" != "arm64" ]]; then
+  if [[ "$ARCH" != "x86_64" && "$ARCH" != "arm64" && "$ARCH" != "aarch64" ]]; then
        echo "Draft CLI is only available for linux x86_64 and arm64 architecture"
        file_issue_prompt
        exit 1
@@ -167,6 +167,8 @@ install() {
 
   if [[ "$ARCH" == "x86_64" ]]; then
       ARCH="amd64"
+  elif [[ "$ARCH" == "aarch64" ]]; then
+      ARCH="arm64"
   fi
 
   check_jq_processor_present

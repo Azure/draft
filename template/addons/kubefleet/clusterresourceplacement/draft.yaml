@@ -24,22 +24,10 @@ variables:
     allowedValues:
       - "PickAll"
       - "PickFixed"
-  - name: "CLUSTER_NAME_1"
+  - name: "CLUSTER_NAMES"
     type: "string"
-    kind: "kubernetesResourceName"
-    description: "first cluster name for PickFixed placement type (optional)"
-    versions: ">=0.0.1"
-    default:
-      disablePrompt: true
-      value: ""
-    activeWhen:
-      - variableName: "PLACEMENT_TYPE"
-        value: "PickFixed"
-        condition: "equals"
-  - name: "CLUSTER_NAME_2"
-    type: "string"
-    kind: "kubernetesResourceName"
-    description: "second cluster name for PickFixed placement type (optional)"
+    kind: "label"
+    description: "comma-separated list of cluster names for PickFixed placement type (optional)"
     versions: ">=0.0.1"
     default:
       disablePrompt: true

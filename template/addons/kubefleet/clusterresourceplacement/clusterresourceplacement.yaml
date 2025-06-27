@@ -13,7 +13,6 @@ spec:
       name: {{ .Config.GetVariableValue "RESOURCE_SELECTOR_NAME" }}
       version: v1
   policy:
-    placementType: {{ .Config.GetVariableValue "PLACEMENT_TYPE" }}{{- if eq (.Config.GetVariableValue "PLACEMENT_TYPE") "PickFixed" }}
-    clusterNames:{{- if ne (.Config.GetVariableValue "CLUSTER_NAME_1") "" }}
-       - {{ .Config.GetVariableValue "CLUSTER_NAME_1" }}{{- end }}{{- if ne (.Config.GetVariableValue "CLUSTER_NAME_2") "" }}
-       - {{ .Config.GetVariableValue "CLUSTER_NAME_2" }}{{- end }}{{- end }}
+    placementType: {{ .Config.GetVariableValue "PLACEMENT_TYPE" }}{{- if eq (.Config.GetVariableValue "PLACEMENT_TYPE") "PickFixed" }}{{- $clusterNames := .Config.GetVariableValue "CLUSTER_NAMES" }}{{- if ne $clusterNames "" }}
+    clusterNames:{{- range (split "," $clusterNames) }}{{- $cluster := . | trim }}{{- if ne $cluster "" }}
+       - {{ $cluster }}{{- end }}{{- end }}{{- end }}{{- end }}

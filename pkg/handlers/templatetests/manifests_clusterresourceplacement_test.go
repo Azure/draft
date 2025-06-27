@@ -10,7 +10,7 @@ func TestManifestsClusterResourcePlacementTemplates(t *testing.T) {
 	tests := []TestInput{
 		{
 			Name:            "valid clusterresourceplacement manifest with PickAll",
-			TemplateName:    "clusterresourceplacement-manifests",
+			TemplateName:    "kubefleet-clusterresourceplacement",
 			FixturesBaseDir: "../../fixtures/manifests/clusterresourceplacement/pickall",
 			Version:         "0.0.1",
 			Dest:            ".",
@@ -24,7 +24,7 @@ func TestManifestsClusterResourcePlacementTemplates(t *testing.T) {
 		},
 		{
 			Name:            "valid clusterresourceplacement manifest with PickFixed",
-			TemplateName:    "clusterresourceplacement-manifests", 
+			TemplateName:    "kubefleet-clusterresourceplacement", 
 			FixturesBaseDir: "../../fixtures/manifests/clusterresourceplacement/pickfixed",
 			Version:         "0.0.1",
 			Dest:            ".",

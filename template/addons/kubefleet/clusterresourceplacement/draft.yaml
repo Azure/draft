@@ -1,0 +1,62 @@
+templateName: "kubefleet-clusterresourceplacement"
+description: "This template is used to create a Kubefleet ClusterResourcePlacement for managing resource placement across clusters"
+versions: ["0.0.1"]
+defaultVersion: "0.0.1"
+type: "manifest"
+variables:
+  - name: "CRP_NAME"
+    type: "string"
+    kind: "kubernetesResourceName"
+    description: "the name of the ClusterResourcePlacement"
+    versions: ">=0.0.1"
+  - name: "RESOURCE_SELECTOR_NAME"
+    type: "string"
+    kind: "kubernetesResourceName"
+    description: "the name of the resource to select for placement"
+    versions: ">=0.0.1"
+  - name: "PLACEMENT_TYPE"
+    type: "string"
+    kind: "label"
+    description: "the placement type for the policy (PickAll or PickFixed)"
+    versions: ">=0.0.1"
+    default:
+      value: "PickAll"
+    allowedValues:
+      - "PickAll"
+      - "PickFixed"
+  - name: "CLUSTER_NAME_1"
+    type: "string"
+    kind: "kubernetesResourceName"
+    description: "first cluster name for PickFixed placement type (optional)"
+    versions: ">=0.0.1"
+    default:
+      disablePrompt: true
+      value: ""
+    activeWhen:
+      - variableName: "PLACEMENT_TYPE"
+        value: "PickFixed"
+        condition: "equals"
+  - name: "CLUSTER_NAME_2"
+    type: "string"
+    kind: "kubernetesResourceName"
+    description: "second cluster name for PickFixed placement type (optional)"
+    versions: ">=0.0.1"
+    default:
+      disablePrompt: true
+      value: ""
+    activeWhen:
+      - variableName: "PLACEMENT_TYPE"
+        value: "PickFixed"
+        condition: "equals"
+  - name: "PARTOF"
+    type: "string"
+    kind: "label"
+    description: "the label to identify which project the resource belong to"
+    versions: ">=0.0.1"
+  - name: "GENERATORLABEL"
+    type: "string"
+    kind: "label"
+    description: "the label to identify who generated the resource"
+    versions: ">=0.0.1"
+    default:
+      value: "draft"

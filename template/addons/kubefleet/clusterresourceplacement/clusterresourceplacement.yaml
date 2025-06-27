@@ -1,0 +1,19 @@
+apiVersion: placement.kubernetes-fleet.io/v1
+kind: ClusterResourcePlacement
+metadata:
+  name: {{ .Config.GetVariableValue "CRP_NAME" }}
+  labels:
+    app.kubernetes.io/name: {{ .Config.GetVariableValue "CRP_NAME" }}
+    app.kubernetes.io/part-of: {{ .Config.GetVariableValue "PARTOF" }}
+    kubernetes.azure.com/generator: {{ .Config.GetVariableValue "GENERATORLABEL" }}
+spec:
+  resourceSelectors:
+    - group: ""
+      kind: Namespace
+      name: {{ .Config.GetVariableValue "RESOURCE_SELECTOR_NAME" }}
+      version: v1
+  policy:
+    placementType: {{ .Config.GetVariableValue "PLACEMENT_TYPE" }}{{- if eq (.Config.GetVariableValue "PLACEMENT_TYPE") "PickFixed" }}
+    clusterNames:{{- if ne (.Config.GetVariableValue "CLUSTER_NAME_1") "" }}
+       - {{ .Config.GetVariableValue "CLUSTER_NAME_1" }}{{- end }}{{- if ne (.Config.GetVariableValue "CLUSTER_NAME_2") "" }}
+       - {{ .Config.GetVariableValue "CLUSTER_NAME_2" }}{{- end }}{{- end }}

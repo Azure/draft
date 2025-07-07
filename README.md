@@ -1,4 +1,5 @@
 ![Draft logo](./ghAssets/Draft-Gradient@3x.png)
+
 <div id="top"></div>
 <br />
 <div align="center">
@@ -21,6 +22,7 @@
 </div>
 
 ## Installation
+
 ### Homebrew
 
 1. Run the following commands
@@ -76,15 +78,21 @@ Draft validate scans your manifests and populates warnings messages in your code
 The `draft distribute` command generates Kubefleet ClusterResourcePlacement manifests to distribute your application resources across multiple Kubernetes clusters managed by Kubefleet. This command is specifically designed for multi-cluster resource placement scenarios.
 
 Example usage:
+
 ```bash
-draft distribute --variable CRP_NAME=demo-crp --variable RESOURCE_SELECTOR_NAME=fmad-demo --variable PLACEMENT_TYPE=PickAll --variable PARTOF=my-project
+draft distribute --variable CRP_NAME=demo-crp \
+    --variable RESOURCE_SELECTOR_NAME=demo-namespace \
+    --variable PLACEMENT_TYPE=PickAll \
+    --variable PARTOF=my-project
 ```
 
 ### `draft info`
+
 The `draft info` command prints information about supported languages and deployment types.
 
 Example output (for brevity, only the first supported language is shown):
-```
+
+```json
 {
   "supportedLanguages": [
     {
@@ -106,6 +114,7 @@ Example output (for brevity, only the first supported language is shown):
   ]
 }
 ```
+
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
@@ -114,21 +123,23 @@ Draft makes it easier for developers to get started building apps that run on Ku
 
 ### Commands
 
-- `draft create` adds the minimum required Dockerfile and manifest files for your deployment to the project directory.
-  - Supported deployment types: Helm, Kustomize, Kubernetes manifest.
-- `draft setup-gh` automates the GitHub OIDC setup process for your project.
-- `draft generate-workflow` generates a GitHub Actions workflow for automatic build and deploy to a Kubernetes cluster.
-- `draft update` automatically make your application to be internet accessible.
-- `draft distribute` distributes your application resources across Kubernetes clusters using Kubefleet ClusterResourcePlacement manifests.
-- `draft validate` scan your manifests to see if they are following Kubernetes best practices.
-- `draft info` print supported language and field information in json format.
+* `draft create` adds the minimum required Dockerfile and manifest files for your deployment to the project directory.
+  * Supported deployment types: Helm, Kustomize, Kubernetes manifest.
+* `draft setup-gh` automates the GitHub OIDC setup process for your project.
+* `draft generate-workflow` generates a GitHub Actions workflow for automatic build and deploy to a Kubernetes cluster.
+* `draft update` automatically make your application to be internet accessible.
+* `draft distribute` distributes your application resources across Kubernetes clusters using Kubefleet ClusterResourcePlacement manifests.
+* `draft validate` scan your manifests to see if they are following Kubernetes best practices.
+* `draft info` print supported language and field information in json format.
 
 Use `draft [command] --help` for more information about a command.
 
 ### Dry Run
+
 The following flags can be used for enabling dry running, which is currently supported by the following commands: `create`
-- ` --dry-run` enables dry run mode in which no files are written to disk
--  `--dry-run-file` specifies a file to write the dry run summary in json format into
+
+* `--dry-run` enables dry run mode in which no files are written to disk
+* `--dry-run-file` specifies a file to write the dry run summary in json format into
 
 ```json
 // Example dry run output
@@ -156,6 +167,7 @@ The following flags can be used for enabling dry running, which is currently sup
   ]
 }
 ```
+
 ## Install from Source
 
 ### Prerequisites
@@ -187,12 +199,12 @@ go version
    mv draft $HOME/go/bin/
    ```
 
-
 ## Draft as a Dependency
 
 If you are looking to leverage Draft's file generation capabilities and templating within another project instead of using the CLI, you have two options: importing the Draft go packages, and wrapping the binary
 
 ### Importing Draft Go Packages
+
 This option will provide the cleanest integration, as it directly builds Draft into your project. However, it requires that your project is written in Go.
 
 Dockerfiles can be generated following the example in [examples/dockerfile.go](https://github.com/Azure/draft/blob/main/example/dockerfile.go) 
@@ -200,13 +212,15 @@ Dockerfiles can be generated following the example in [examples/dockerfile.go](h
 Deployment files can be generated following the example in [examples/deployment.go](https://github.com/Azure/draft/blob/main/example/deployment.go)
 
 ### Wrapping the Binary
+
 For projects written in languages other than Go, or for projects that prefer to not import the packages directly, you can wrap the Draft binary.
 
 Several features have been implemented to make consuming draft as easy as possible:
-- `draft info` prints supported language and field information in json format for easy parsing
-- `--dry-run` and `--dry-run-file` flags can be used on the `create` and `update` commands to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
-- `draft update` and `draft create` accept a repeatable `--variable` flag that can be used to set template variables
-- `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
+
+* `draft info` prints supported language and field information in json format for easy parsing
+* `--dry-run` and `--dry-run-file` flags can be used on the `create`, `update` and `ditribute` commands to generate a summary of the files that would be written to disk, and the variables that would be used in the templates
+* `draft update`, `draft create` and `draft distribute` accept a repeatable `--variable` flag that can be used to set template variables
+* `draft create` takes a `--create-config` flag that can be used to input variables through a yaml file instead of interactively
 
 ## Introduction Videos
 

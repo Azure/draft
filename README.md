@@ -75,7 +75,7 @@ Draft validate scans your manifests and populates warnings messages in your code
 
 ### `draft distribute`
 
-The `draft distribute` command generates Kubefleet ClusterResourcePlacement manifests to distribute your application resources across multiple Kubernetes clusters managed by Kubefleet. This command is specifically designed for multi-cluster resource placement scenarios.
+The `draft distribute` command generates [KubeFleet](https://kubefleet.dev) ClusterResourcePlacement manifests to distribute your application resources across multiple Kubernetes clusters managed by KubeFleet. This command is specifically designed for multi-cluster resource placement scenarios and requires existing files created using `draft create`. [Read the documentation for this command](docs/kubefleet-clusterresourceplacement.md) for more details.
 
 Example usage:
 
@@ -128,7 +128,7 @@ Draft makes it easier for developers to get started building apps that run on Ku
 * `draft setup-gh` automates the GitHub OIDC setup process for your project.
 * `draft generate-workflow` generates a GitHub Actions workflow for automatic build and deploy to a Kubernetes cluster.
 * `draft update` automatically make your application to be internet accessible.
-* `draft distribute` distributes your application resources across Kubernetes clusters using Kubefleet ClusterResourcePlacement manifests.
+* `draft distribute` distributes your application resources across Kubernetes clusters using [KubeFleet](https://kubefleet.dev/) ClusterResourcePlacement manifests.
 * `draft validate` scan your manifests to see if they are following Kubernetes best practices.
 * `draft info` print supported language and field information in json format.
 

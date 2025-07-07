@@ -43,7 +43,7 @@ Draft is a tool made for users who are just getting started with Kubernetes or w
 
 ### `draft create`
 
-In our directory that holds our application, we can run the CLI command ‘draft create’. Draft create will walk you through a series of questions prompting you on your application specification. At the end of it, you will have a Dockerfile as well as Kubernetes manifests to deploy your application. Below is a picture of running the Draft create command on our [Contoso Air repository](https://github.com/microsoft/ContosoAir).
+In our directory that holds our application, we can run the CLI command ‘draft create’. Draft create will walk you through a series of questions prompting you on your application specification. At the end of it, you will have a Dockerfile as well as Kubernetes manifests to deploy your application. Below is a picture of running the Draft create command on our [Contoso Air repository](https://github.com/Azure-Samples/contoso-air).
 
 ![example of draft create command showing the prompt "select k8s deployment type" with three options "helm", "kustomize", and "manifests"](./ghAssets/draft-create.png)
 
@@ -70,6 +70,15 @@ If you plan on deploying your application through your GitHub Action, commit all
 Draft validate scans your manifests and populates warnings messages in your code terminal if your manifests are not following best practices. All best practices are sourced from AKS’s deployment safeguards feature. To learn more about deployment safeguards, visit the [offical documentation](https://learn.microsoft.com/azure/aks/deployment-safeguards). To view the best practices that are used in Draft, view the [safeguards package](https://github.com/Azure/draft/tree/main/pkg/safeguards/lib/v1.0.0).
 
 ![screenshot of draft-validate](./ghAssets/draft-validate.png)
+
+### `draft distribute`
+
+The `draft distribute` command generates Kubefleet ClusterResourcePlacement manifests to distribute your application resources across multiple Kubernetes clusters managed by Kubefleet. This command is specifically designed for multi-cluster resource placement scenarios.
+
+Example usage:
+```bash
+draft distribute --variable CRP_NAME=demo-crp --variable RESOURCE_SELECTOR_NAME=fmad-demo --variable PLACEMENT_TYPE=PickAll --variable PARTOF=my-project
+```
 
 ### `draft info`
 The `draft info` command prints information about supported languages and deployment types.
@@ -110,6 +119,7 @@ Draft makes it easier for developers to get started building apps that run on Ku
 - `draft setup-gh` automates the GitHub OIDC setup process for your project.
 - `draft generate-workflow` generates a GitHub Actions workflow for automatic build and deploy to a Kubernetes cluster.
 - `draft update` automatically make your application to be internet accessible.
+- `draft distribute` distributes your application resources across Kubernetes clusters using Kubefleet ClusterResourcePlacement manifests.
 - `draft validate` scan your manifests to see if they are following Kubernetes best practices.
 - `draft info` print supported language and field information in json format.
 

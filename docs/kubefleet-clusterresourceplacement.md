@@ -16,7 +16,7 @@ The ClusterResourcePlacement addon supports both PickAll and PickFixed placement
 For distributing resources to all matching clusters:
 
 ```bash
-draft update --addon kubefleet-clusterresourceplacement \
+draft distribute \
   --variable CRP_NAME=demo-crp \
   --variable RESOURCE_SELECTOR_NAME=fmad-demo \
   --variable PLACEMENT_TYPE=PickAll \
@@ -49,7 +49,7 @@ spec:
 For distributing resources to specific clusters:
 
 ```bash
-draft update --addon kubefleet-clusterresourceplacement \
+draft distribute \
   --variable CRP_NAME=fmad-demo-crp \
   --variable RESOURCE_SELECTOR_NAME=fmad-demo \
   --variable PLACEMENT_TYPE=PickFixed \
@@ -84,7 +84,7 @@ spec:
 #### Example with Three Clusters
 
 ```bash
-draft update --addon kubefleet-clusterresourceplacement \
+draft distribute \
   --variable CRP_NAME=multi-cluster-demo \
   --variable RESOURCE_SELECTOR_NAME=demo-namespace \
   --variable PLACEMENT_TYPE=PickFixed \
@@ -144,7 +144,7 @@ For automation and CI/CD pipelines, use `--interactive=false` and provide all re
 
 ```bash
 # PickAll example
-draft update --addon kubefleet-clusterresourceplacement \
+draft distribute \
   --interactive=false \
   --variable CRP_NAME=my-crp \
   --variable RESOURCE_SELECTOR_NAME=my-namespace \
@@ -154,7 +154,7 @@ draft update --addon kubefleet-clusterresourceplacement \
 
 ```bash
 # PickFixed example
-draft update --addon kubefleet-clusterresourceplacement \
+draft distribute \
   --interactive=false \
   --variable CRP_NAME=my-fixed-crp \
   --variable RESOURCE_SELECTOR_NAME=my-namespace \

@@ -43,6 +43,15 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 			continue
 		}
 
+		isVarActive, err := draftConfig.CheckActiveWhenConstraint(variable)
+		if err != nil {
+			return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+		}
+
+		if !isVarActive {
+			continue
+		}
+
 		if variable.Default.IsPromptDisabled {
 			log.Debugf("Skipping prompt for %s as it has IsPromptDisabled=true", variable.Name)
 			noPromptDefaultValue := GetVariableDefaultValue(draftConfig, variable)
@@ -51,15 +60,6 @@ func RunPromptsFromConfigWithSkipsIO(draftConfig *config.DraftConfig, Stdin io.R
 			}
 			log.Debugf("Using default value %s for %s", noPromptDefaultValue, variable.Name)
 			variable.Value = noPromptDefaultValue
-			continue
-		}
-
-		isVarActive, err := draftConfig.CheckActiveWhenConstraint(variable)
-		if err != nil {
-			return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
-		}
-
-		if !isVarActive {
 			continue
 		}
 

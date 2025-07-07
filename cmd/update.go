@@ -70,31 +70,37 @@ func (uc *updateCmd) run() error {
 		return err
 	}
 
-	ingressTemplate, err := handlers.GetTemplate("app-routing-ingress", "", updatedDest, uc.templateWriter)
+	// Use the specified addon template, default to app-routing-ingress for backward compatibility
+	templateName := "app-routing-ingress"
+	if uc.addon != "" {
+		templateName = uc.addon
+	}
+
+	addonTemplate, err := handlers.GetTemplate(templateName, "", updatedDest, uc.templateWriter)
 	if err != nil {
-		log.Errorf("error getting ingress template: %s", err.Error())
+		log.Errorf("error getting addon template: %s", err.Error())
 		return err
 	}
-	if ingressTemplate == nil {
+	if addonTemplate == nil {
 		return errors.New("DraftConfig is nil")
 	}
 
-	ingressTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
+	addonTemplate.Config.VariableMapToDraftConfig(flagVariablesMap)
 
-	err = cmdhelpers.PromptAddonValues(uc.dest, ingressTemplate.Config)
+	err = cmdhelpers.PromptAddonValues(uc.dest, addonTemplate.Config)
 	if err != nil {
 		return err
 	}
 
 	if dryRun {
-		for _, variable := range ingressTemplate.Config.Variables {
+		for _, variable := range addonTemplate.Config.Variables {
 			uc.templateVariableRecorder.Record(variable.Name, variable.Value)
 		}
 	}
 
-	err = ingressTemplate.Generate()
+	err = addonTemplate.Generate()
 	if err != nil {
-		log.Errorf("error generating ingress template: %s", err.Error())
+		log.Errorf("error generating addon template: %s", err.Error())
 		return err
 	}
 

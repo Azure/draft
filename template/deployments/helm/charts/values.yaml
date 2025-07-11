@@ -1,7 +1,7 @@
 # Default values for {{ .Config.GetVariableValue "APPNAME"}}.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-replicaCount: 2
+replicaCount: {{ .Config.GetVariableValue "REPLICACOUNT" }}
 
 namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
 

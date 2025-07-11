@@ -32,7 +32,6 @@ variables:
     versions: ">=0.0.1"
   - name: "REPLICACOUNT"
     type: "int"
-    kind: "kubernetesReplicas"
     default:
       disablePrompt: true
       value: 1

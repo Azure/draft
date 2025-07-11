@@ -30,6 +30,14 @@ variables:
       value: default
     description: " the namespace to place new resources in"
     versions: ">=0.0.1"
+  - name: "REPLICACOUNT"
+    type: "int"
+    kind: "kubernetesReplicas"
+    default:
+      disablePrompt: true
+      value: 1
+    description: "the number of replicas for the deployment"
+    versions: ">=0.0.1"
   - name: "IMAGENAME"
     type: "string"
     kind: "containerImageName"

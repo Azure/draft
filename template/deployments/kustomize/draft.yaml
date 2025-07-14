@@ -32,6 +32,7 @@ variables:
     versions: ">=0.0.1"
   - name: "REPLICACOUNT"
     type: "int"
+    kind: "replicaCount"
     default:
       disablePrompt: true
       value: 1

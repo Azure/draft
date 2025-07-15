@@ -35,7 +35,7 @@ variables:
     kind: "replicaCount"
     default:
       disablePrompt: true
-      value: 1
+      value: 2
     description: "the number of replicas for the deployment"
     versions: ">=0.0.1"
   - name: "IMAGENAME"

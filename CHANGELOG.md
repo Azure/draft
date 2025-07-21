@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.17.12] - 2025-07-21
+
+- [587](https://github.com/Azure/draft/pull/587) Make replica count configurable across all deployment templates
+- Dependabot updates for dependencies and actions
+
 ## [0.17.12] - 2025-05-16
 
 - [564](https://github.com/Azure/draft/pull/564) fix interactive bug

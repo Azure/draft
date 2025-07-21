@@ -6,7 +6,7 @@ metadata:
     app: my-app
     kubernetes.azure.com/generator: draft
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: my-app

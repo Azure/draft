@@ -166,8 +166,21 @@ func writeTemplate(draftTemplate *Template, inputFile string) error {
 		return err
 	}
 
+	// Define custom template functions
+	funcMap := tmpl.FuncMap{
+		"split": func(delimiter, s string) []string {
+			if s == "" {
+				return []string{}
+			}
+			return strings.Split(s, delimiter)
+		},
+		"trim": func(s string) string {
+			return strings.TrimSpace(s)
+		},
+	}
+
 	// Parse the template file, missingkey=error ensures an error will be returned if any variable is missing during template execution.
-	tmpl, err := tmpl.New("template").Option("missingkey=error").Parse(string(file))
+	tmpl, err := tmpl.New("template").Funcs(funcMap).Option("missingkey=error").Parse(string(file))
 	if err != nil {
 		return err
 	}

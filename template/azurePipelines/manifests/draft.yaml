@@ -48,6 +48,13 @@ variables:
     kind: "azureManagedCluster"
     description: "the AKS cluster name"
     versions: ">=0.0.1"
+  - name: "CLUSTERRESOURCETYPE"
+    type: "string"
+    kind: "clusterResourceType"
+    default:
+      value: "Microsoft.ContainerService/managedClusters"
+    description: "the Azure resource type for the AKS cluster"
+    versions: ">=0.0.1"
   - name: "MANIFESTPATH"
     type: "string"
     kind: "dirPath"

@@ -12,6 +12,7 @@ variables:
   namespace: testNamespace
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
+  resourceType: Microsoft.ContainerService/managedClusters
 
 name: testPipeline
 
@@ -46,6 +47,7 @@ stages:
         pool:
           vmImage: $(vmImageName)
         steps:
+          - task: KubeloginInstaller@0
           - task: KubernetesManifest@1
             displayName: Deploy to Kubernetes cluster
             inputs:
@@ -56,5 +58,6 @@ stages:
               kubernetesCluster: $(clusterName)
               manifests: $(manifestPath)
               namespace: $(namespace)
+              resourceType: $(resourceType)
               containers: |
                 $(azureContainerRegistry).azurecr.io/$(containerName):$(tag)

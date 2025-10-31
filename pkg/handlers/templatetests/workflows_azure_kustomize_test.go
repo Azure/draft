@@ -22,6 +22,7 @@ func TestAzureWorkflowKustomizeTemplates(t *testing.T) {
 				"CLUSTERRESOURCEGROUP":   "myrg",
 				"ACRRESOURCEGROUP":       "myrg",
 				"CLUSTERNAME":            "testcluster",
+				"CLUSTERRESOURCETYPE":    "Microsoft.ContainerService/managedClusters",
 			},
 		},
 	}

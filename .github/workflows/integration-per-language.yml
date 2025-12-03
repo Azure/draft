@@ -100,7 +100,7 @@ jobs:
           overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
-          helm-version: "v3.19.2"
+          helm-version: "latest"
           releaseName: "test-release"
         id: bake
       - name: Build and Push image

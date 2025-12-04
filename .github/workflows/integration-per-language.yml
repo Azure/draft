@@ -134,6 +134,13 @@ jobs:
           kubectl get po -o json
           kubectl get svc -o json
           kubectl get deploy -o json
+      - name: Print Pod Logs
+        if: always()
+        run: |
+          echo "=== Deployment Logs ==="
+          kubectl logs -l app.kubernetes.io/instance=test-release --all-containers=true --ignore-errors=true || true
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -l app.kubernetes.io/instance=test-release || true
       - name: Curl Endpoint
         run: |
           kubectl get svc
@@ -307,6 +314,13 @@ jobs:
           kubectl get po -o json
           kubectl get svc -o json
           kubectl get deploy -o json
+      - name: Print Pod Logs
+        if: always()
+        run: |
+          echo "=== Deployment Logs ==="
+          kubectl logs -l app=testapp --all-containers=true --ignore-errors=true || true
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -l app=testapp || true
       - name: Curl Endpoint
         run: |
           kubectl get svc
@@ -471,6 +485,13 @@ jobs:
           kubectl get po -o json
           kubectl get svc -o json
           kubectl get deploy -o json
+      - name: Print Pod Logs
+        if: always()
+        run: |
+          echo "=== Deployment Logs ==="
+          kubectl logs -l app=testapp --all-containers=true --ignore-errors=true || true
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -l app=testapp || true
       - name: Curl Endpoint
         run: |
           kubectl get svc

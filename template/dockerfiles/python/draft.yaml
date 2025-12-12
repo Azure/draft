@@ -17,9 +17,9 @@ variables:
     type: "string"
     kind: "containerImageVersion"
     default:
-      value: "3"
+      value: "3.13"
     description: "the version of python used by the application"
-    exampleValues: ["3.9", "3.8", "3.7", "3.6"]
+    exampleValues: ["3.13", "3.12", "3.11", "3.10", "3.9"]
     versions: ">=0.0.1"
   - name: "ENTRYPOINT"
     type: "string"

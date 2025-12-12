@@ -14,6 +14,7 @@ variables:
   dockerfile: {{ .Config.GetVariableValue "DOCKERFILE" }}
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
+  resourceType: {{ .Config.GetVariableValue "CLUSTERRESOURCETYPE" }}
 
 trigger:
   - {{ .Config.GetVariableValue "BRANCHNAME" }}
@@ -66,6 +67,7 @@ stages:
               kubernetesCluster: $(clusterName)
               namespace: $(namespace)
               manifests: $(bake.manifestsBundle)
+              resourceType: $(resourceType)
               containers: |
                 $(azureContainerRegistry).azurecr.io/$(containerName):$(tag)
 `}}

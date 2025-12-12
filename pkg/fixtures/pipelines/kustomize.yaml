@@ -12,6 +12,7 @@ variables:
   namespace: testNamespace
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
+  resourceType: Microsoft.ContainerService/managedClusters
 
 trigger:
   - main
@@ -64,5 +65,6 @@ stages:
               kubernetesCluster: $(clusterName)
               namespace: $(namespace)
               manifests: $(bake.manifestsBundle)
+              resourceType: $(resourceType)
               containers: |
                 $(azureContainerRegistry).azurecr.io/$(containerName):$(tag)

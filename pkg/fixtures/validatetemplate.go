@@ -20,7 +20,7 @@ func ValidateContentAgainstFixture(generatedContent []byte, fixturePath string) 
 	if normalizeWhitespace(want) != normalizeWhitespace(got) {
 		if diff := cmp.Diff(string(want), string(got)); diff != "" {
 			fmt.Println("Diff for file ", fixturePath, " (-want +got)")
-			fmt.Printf(diff)
+			fmt.Print(diff)
 			return fmt.Errorf("generated content does not match fixture for file %s, check above for rich diff", fixturePath)
 		}
 

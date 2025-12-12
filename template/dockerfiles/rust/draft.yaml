@@ -17,9 +17,9 @@ variables:
     type: "string"
     kind: "containerImageVersion"
     default:
-      value: "1.82.0"
+      value: "1.83.0"
     description: "the version of rust used by the application"
-    exampleValues: ["1.70.0", "1.65.0", "1.60", "1.54", "1.53"]
+    exampleValues: ["1.83.0", "1.82.0", "1.70.0", "1.65.0", "1.60"]
     versions: ">=0.0.1"
   - name: "DOCKERFILENAME"
     type: "string"

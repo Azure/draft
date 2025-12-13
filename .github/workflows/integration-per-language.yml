@@ -14,13 +14,13 @@ jobs:
   helm-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: ${{ inputs.repo }}
           path: ./langtest
@@ -69,13 +69,13 @@ jobs:
       serviceport: 80
       ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: ${{ inputs.repo }}
           path: ./langtest
@@ -100,7 +100,7 @@ jobs:
           overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
-          helm-version: "latest"
+          helm-version: "v3.19.2"
           releaseName: "test-release"
         id: bake
       - name: Build and Push image
@@ -134,6 +134,13 @@ jobs:
           kubectl get po -o json
           kubectl get svc -o json
           kubectl get deploy -o json
+      - name: Print Pod Logs
+        if: always()
+        run: |
+          echo "=== Deployment Logs ==="
+          kubectl logs -l app.kubernetes.io/instance=test-release --all-containers=true --ignore-errors=true || true
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -l app.kubernetes.io/instance=test-release || true
       - name: Curl Endpoint
         run: |
           kubectl get svc
@@ -191,13 +198,13 @@ jobs:
   kustomize-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6.0.1
         with:
           repository: ${{ inputs.repo }}
           path: ./langtest
@@ -246,13 +253,13 @@ jobs:
       serviceport: 80
       ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6.0.1
         with:
           repository: ${{inputs.repo}}
           path: ./langtest
@@ -307,6 +314,13 @@ jobs:
           kubectl get po -o json
           kubectl get svc -o json
           kubectl get deploy -o json
+      - name: Print Pod Logs
+        if: always()
+        run: |
+          echo "=== Deployment Logs ==="
+          kubectl logs -l app=testapp --all-containers=true --ignore-errors=true || true
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -l app=testapp || true
       - name: Curl Endpoint
         run: |
           kubectl get svc
@@ -362,13 +376,13 @@ jobs:
   manifests-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: ${{ inputs.repo }}
           path: ./langtest
@@ -417,13 +431,13 @@ jobs:
       serviceport: 80
       ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: ${{ inputs.repo }}
           path: ./langtest
@@ -471,6 +485,13 @@ jobs:
           kubectl get po -o json
           kubectl get svc -o json
           kubectl get deploy -o json
+      - name: Print Pod Logs
+        if: always()
+        run: |
+          echo "=== Deployment Logs ==="
+          kubectl logs -l app=testapp --all-containers=true --ignore-errors=true || true
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -l app=testapp || true
       - name: Curl Endpoint
         run: |
           kubectl get svc
@@ -528,7 +549,7 @@ jobs:
         ports:
           - 5000:5000
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary
@@ -570,12 +591,12 @@ jobs:
   win-helm-create:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary-win
       - run: mkdir ./langtest
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: ${{ inputs.repo }}
           path: ./langtest
@@ -602,7 +623,7 @@ jobs:
     needs: win-helm-create
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary-win
@@ -621,12 +642,12 @@ jobs:
   win-kustomize-create:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: draft-binary-win
       - run: mkdir ./langtest
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: ${{ inputs.repo }}
           path: ./langtest

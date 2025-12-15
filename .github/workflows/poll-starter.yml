@@ -19,7 +19,7 @@ jobs:
       pull-requests: write
       packages: none
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6.0.1
 
       - name: Download run information
         uses: dawidd6/action-download-artifact@v11
@@ -76,14 +76,14 @@ jobs:
           done
 
       - name: Upload run information
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: seen
           path: /tmp/seenWorkflows
 
       - name: Create Pull Request
         if: ${{ steps.update-workflows.outputs.changes == 'true' }}
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: update starter workflows
           title: Automated Update Starter Workflows

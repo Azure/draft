@@ -271,8 +271,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/ivanpirog/coloredcobra v1.0.1 h1:aURSdEmlR90/tSiWS0dMjdwOvCVUeYLfltLfbgNxrN4=
 github.com/ivanpirog/coloredcobra v1.0.1/go.mod h1:iho4nEKcnwZFiniGSdcgdvRgZNjxm+h20acv8vqmN6Q=
-github.com/jbrukh/bayesian v0.0.0-20231117143245-13ae6f916c7a h1:zSc8tkEGo49/E6cQ9o00si0L9Q/Lu1Hsg8JWKCvzEDU=
-github.com/jbrukh/bayesian v0.0.0-20231117143245-13ae6f916c7a/go.mod h1:SELxwZQq/mPnfPCR2mchLmT4TQaPJvYtLcCtDWSM7vM=
+github.com/jbrukh/bayesian v1.1.0 h1:cpcxvK3idsXuuz1XIkCiLOffLN9ZvoQxi9IzjDD1Jyc=
+github.com/jbrukh/bayesian v1.1.0/go.mod h1:+JiAxMl/BfoYElARxjSFclVgpWSKo+UuUw8oEU5zX5I=
 github.com/josharian/intern v1.0.0 h1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=
 github.com/josharian/intern v1.0.0/go.mod h1:5DoeVV0s6jJacbCEi61lwdGj/aVlrQvzHFFd8Hwg//Y=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=

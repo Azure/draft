@@ -17,7 +17,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-version v1.7.0
 	github.com/ivanpirog/coloredcobra v1.0.1
-	github.com/jbrukh/bayesian v0.0.0-20231117143245-13ae6f916c7a
+	github.com/jbrukh/bayesian v1.1.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/open-policy-agent/frameworks/constraint v0.0.0-20240524210416-5368a3b697f2
 	github.com/open-policy-agent/gatekeeper/v3 v3.16.3

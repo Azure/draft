@@ -26,7 +26,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/yannh/kubeconform v0.7.0
 	go.uber.org/mock v0.6.0
-	golang.org/x/mod v0.31.0
+	golang.org/x/mod v0.32.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.19.4

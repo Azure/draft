@@ -1,0 +1,31 @@
+name: Curl port-forwarded service
+description: Port-forward a service and curl it with retries
+inputs:
+  service:
+    description: Kubernetes service name
+    required: true
+  port:
+    description: Service port to forward
+    required: true
+  local-port:
+    description: Local port for port-forward
+    required: false
+    default: "18080"
+runs:
+  using: composite
+  steps:
+    - name: curl service
+      shell: bash
+      run: |
+        kubectl get svc
+        echo 'Starting port-forward'
+        kubectl port-forward "svc/${{ inputs.service }}" "${{ inputs.local-port }}:${{ inputs.port }}" > /dev/null 2>&1 & pfPID=$!
+        trap 'kill $pfPID' EXIT
+        echo 'Curling service endpoint with retries'
+        for i in {1..20}; do
+          if curl -m 3 "http://127.0.0.1:${{ inputs.local-port }}"; then
+            exit 0
+          fi
+          sleep 3
+        done
+        exit 1

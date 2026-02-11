@@ -21,6 +21,13 @@ variables:
     description: "the version of swift used by the application"
     exampleValues: ["5.2", "5.5"]
     versions: ">=0.0.1"
+  - name: "APPNAME"
+    type: "string"
+    kind: "applicationName"
+    default:
+      value: "app"
+    description: "the application binary name"
+    versions: ">=0.0.1"
   - name: "DOCKERFILENAME"
     type: "string"
     kind: "dockerFileName"

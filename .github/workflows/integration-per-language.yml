@@ -103,15 +103,21 @@ jobs:
           helm-version: "v3.19.2"
           releaseName: "test-release"
         id: bake
+      - name: Set up buildx
+        run: |
+          docker buildx create --use --name draft-builder || docker buildx use draft-builder
+          docker buildx inspect --bootstrap
       - name: Build and Push image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp host.minikube.internal:5001/testapp
-          echo -n "verifying images:"
-          docker images
-          docker push host.minikube.internal:5001/testapp
+          docker buildx build \
+            --cache-from=type=gha,scope=${{ inputs.language }}-helm \
+            --cache-to=type=gha,scope=${{ inputs.language }}-helm,mode=max \
+            -f ./langtest/Dockerfile \
+            -t host.minikube.internal:5001/testapp \
+            --push \
+            ./langtest/
           echo 'Curling host.minikube.internal test app images from minikube'
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -146,14 +152,29 @@ jobs:
           kubectl get svc
           echo 'Starting minikube tunnel'
           minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
-          sleep 120
+          trap 'kill $tunnelPID' EXIT
+          echo 'Waiting for service IP'
+          for i in {1..30}; do
+            SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+            if [ -n "$SERVICEIP" ]; then
+              break
+            fi
+            sleep 4
+          done
           kubectl get svc
-          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
           echo "SERVICEIP: $SERVICEIP"
-          echo 'Curling service IP'
-          curl -m 3 $SERVICEIP:${{env.serviceport}}
-          sleep 5
-          kill $tunnelPID
+          if [ -z "$SERVICEIP" ]; then
+            echo 'Service IP not ready'
+            exit 1
+          fi
+          echo 'Curling service IP with retries'
+          for i in {1..20}; do
+            if curl -m 3 "http://$SERVICEIP:${{env.serviceport}}"; then
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
       - run: |
           ./draft -v generate-workflow \
           -d ./langtest/ \
@@ -282,16 +303,22 @@ jobs:
           renderEngine: "kustomize"
           kustomizationPath: ./langtest/base
           kubectl-version: "latest"
+      - name: Set up buildx
+        run: |
+          docker buildx create --use --name draft-builder || docker buildx use draft-builder
+          docker buildx inspect --bootstrap
       - name: Build and Push Image
         continue-on-error: true
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp host.minikube.internal:5001/testapp
-          echo -n "verifying images:"
-          docker images
-          docker push host.minikube.internal:5001/testapp
+          docker buildx build \
+            --cache-from=type=gha,scope=${{ inputs.language }}-kustomize \
+            --cache-to=type=gha,scope=${{ inputs.language }}-kustomize,mode=max \
+            -f ./langtest/Dockerfile \
+            -t host.minikube.internal:5001/testapp \
+            --push \
+            ./langtest/
           echo 'Curling host.minikube.internal test app images from minikube'
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -326,14 +353,29 @@ jobs:
           kubectl get svc
           echo 'Starting minikube tunnel'
           minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
-          sleep 120
+          trap 'kill $tunnelPID' EXIT
+          echo 'Waiting for service IP'
+          for i in {1..30}; do
+            SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+            if [ -n "$SERVICEIP" ]; then
+              break
+            fi
+            sleep 4
+          done
           kubectl get svc
-          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
           echo "SERVICEIP: $SERVICEIP"
-          echo 'Curling service IP'
-          curl -m 3 $SERVICEIP:${{env.serviceport}}
-          sleep 5
-          kill $tunnelPID
+          if [ -z "$SERVICEIP" ]; then
+            echo 'Service IP not ready'
+            exit 1
+          fi
+          echo 'Curling service IP with retries'
+          for i in {1..20}; do
+            if curl -m 3 "http://$SERVICEIP:${{env.serviceport}}"; then
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
       - run: |
           ./draft -v generate-workflow \
           -d ./langtest/ \
@@ -458,16 +500,22 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           insecure-registry: "host.minikube.internal:5001,10.0.0.0/24"
+      - name: Set up buildx
+        run: |
+          docker buildx create --use --name draft-builder || docker buildx use draft-builder
+          docker buildx inspect --bootstrap
       - name: Build and Push Image
         continue-on-error: true
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          docker tag testapp host.minikube.internal:5001/testapp
-          echo -n "verifying images:"
-          docker images
-          docker push host.minikube.internal:5001/testapp
+          docker buildx build \
+            --cache-from=type=gha,scope=${{ inputs.language }}-manifests \
+            --cache-to=type=gha,scope=${{ inputs.language }}-manifests,mode=max \
+            -f ./langtest/Dockerfile \
+            -t host.minikube.internal:5001/testapp \
+            --push \
+            ./langtest/
           echo 'Curling host.minikube.internal test app images from minikube'
           minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
       # Deploys application based on manifest files from previous step
@@ -497,14 +545,29 @@ jobs:
           kubectl get svc
           echo 'Starting minikube tunnel'
           minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
-          sleep 120
+          trap 'kill $tunnelPID' EXIT
+          echo 'Waiting for service IP'
+          for i in {1..30}; do
+            SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
+            if [ -n "$SERVICEIP" ]; then
+              break
+            fi
+            sleep 4
+          done
           kubectl get svc
-          SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
           echo "SERVICEIP: $SERVICEIP"
-          echo 'Curling service IP'
-          curl -m 3 $SERVICEIP:${{env.serviceport}}
-          sleep 5
-          kill $tunnelPID
+          if [ -z "$SERVICEIP" ]; then
+            echo 'Service IP not ready'
+            exit 1
+          fi
+          echo 'Curling service IP with retries'
+          for i in {1..20}; do
+            if curl -m 3 "http://$SERVICEIP:${{env.serviceport}}"; then
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
       - run: |
           ./draft -v generate-workflow \
           -d ./langtest/ \
@@ -570,13 +633,21 @@ jobs:
       - name: start minikube
         id: minikube
         uses: medyagh/setup-minikube@master
+      - name: Set up buildx
+        run: |
+          docker buildx create --use --name draft-builder || docker buildx use draft-builder
+          docker buildx inspect --bootstrap
       - name: Build image
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n "verifying images:"
-          docker images
+          docker buildx build \
+            --cache-from=type=gha,scope=${{ inputs.language }}-manifest-update \
+            --cache-to=type=gha,scope=${{ inputs.language }}-manifest-update,mode=max \
+            --load \
+            -f ./langtest/Dockerfile \
+            -t testapp \
+            ./langtest/
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/

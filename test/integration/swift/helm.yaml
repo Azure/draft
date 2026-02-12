@@ -18,7 +18,7 @@ deployVariables:
     value: 30
 languageVariables:
   - name: "VERSION"
-    value: "5.5"
+    value: "5.9"
   - name: "BUILDERVERSION"
     value: "null"
   - name: "PORT"

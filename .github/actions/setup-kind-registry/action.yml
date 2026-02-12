@@ -1,0 +1,32 @@
+name: Setup kind registry
+description: Create kind cluster with local registry and wait for it
+inputs:
+  registry-port:
+    description: Local registry port
+    required: false
+    default: "5000"
+outputs:
+  local-registry:
+    description: Local registry address from kind
+    value: ${{ steps.kind.outputs.LOCAL_REGISTRY }}
+runs:
+  using: composite
+  steps:
+    - name: start kind
+      id: kind
+      uses: helm/kind-action@v1.13.0
+      with:
+        registry: true
+        registry_name: kind-registry
+        registry_port: ${{ inputs.registry-port }}
+    - name: wait for registry
+      shell: bash
+      run: |
+        for i in {1..20}; do
+          if curl -sSf "http://${{ steps.kind.outputs.LOCAL_REGISTRY }}/v2/" > /dev/null; then
+            exit 0
+          fi
+          sleep 2
+        done
+        curl -sS "http://${{ steps.kind.outputs.LOCAL_REGISTRY }}/v2/" || true
+        exit 1

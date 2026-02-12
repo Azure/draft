@@ -9,7 +9,7 @@ deployVariables:
   - name: "APPNAME"
     value: "testapp"
   - name: "IMAGENAME"
-    value: "host.minikube.internal:5001/testapp"
+    value: "kind-registry:5000/testapp"
   - name: "CPULIMIT"
     value: "3"
   - name: "MEMLIMIT"
@@ -18,7 +18,7 @@ deployVariables:
     value: 30
 languageVariables:
   - name: "VERSION"
-    value: "5.5"
+    value: "5.9"
   - name: "BUILDERVERSION"
     value: "null"
   - name: "PORT"

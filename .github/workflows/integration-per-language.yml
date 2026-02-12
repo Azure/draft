@@ -58,16 +58,12 @@ jobs:
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   helm-create-update:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5001:5000
     needs: helm-dry-run
     env:
-      imagename: registry:5001/testapp
+      imagetag: latest
       serviceport: 80
       ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+      registry_port: 5000
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
@@ -86,11 +82,13 @@ jobs:
           rm -rf ./langtest/base
           rm -rf ./langtest/overlays
       - run: ./draft -v create -c ./test/integration/${{inputs.language}}/helm.yaml -d ./langtest/ --skip-file-detection
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
+      - id: kind-registry
+        uses: ./.github/actions/setup-kind-registry
         with:
-          insecure-registry: "host.minikube.internal:5001,10.0.0.0/24"
+          registry-port: ${{ env.registry_port }}
+      - name: Set image name
+        run: |
+          echo "imagename=${{ steps.kind-registry.outputs.local-registry }}/testapp" >> "$GITHUB_ENV"
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v3.0.4
@@ -100,26 +98,17 @@ jobs:
           overrideFiles: ./langtest/charts/values.yaml
           overrides: |
             replicas:2
+            image.repository:${{ env.imagename }}
+            image.tag:${{ env.imagetag }}
           helm-version: "v3.19.2"
           releaseName: "test-release"
         id: bake
-      - name: Set up buildx
-        run: |
-          docker buildx create --use --name draft-builder || docker buildx use draft-builder
-          docker buildx inspect --bootstrap
-      - name: Build and Push image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker buildx build \
-            --cache-from=type=gha,scope=${{ inputs.language }}-helm \
-            --cache-to=type=gha,scope=${{ inputs.language }}-helm,mode=max \
-            -f ./langtest/Dockerfile \
-            -t host.minikube.internal:5001/testapp \
-            --push \
-            ./langtest/
-          echo 'Curling host.minikube.internal test app images from minikube'
-          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
+      - uses: ./.github/actions/buildx-push-image
+        with:
+          dockerfile: ./langtest/Dockerfile
+          image: ${{ env.imagename }}
+          cache-scope: ${{ inputs.language }}-helm
+          context: ./langtest/
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v5
@@ -129,13 +118,15 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            ${{env.imagename}}
+            ${{ env.imagename }}
+          timeout: ${{ inputs.language == 'swift' && '5m' || '1m' }}
       - name: Wait for rollout
         continue-on-error: true
         id: rollout
         run: |
           kubectl rollout status deployment/test-release-testapp --timeout=2m
       - name: Print K8s Objects
+        if: always()
         run: |
           kubectl get po -o json
           kubectl get svc -o json
@@ -147,34 +138,10 @@ jobs:
           kubectl logs -l app.kubernetes.io/instance=test-release --all-containers=true --ignore-errors=true || true
           echo "=== Pod Descriptions ==="
           kubectl describe pods -l app.kubernetes.io/instance=test-release || true
-      - name: Curl Endpoint
-        run: |
-          kubectl get svc
-          echo 'Starting minikube tunnel'
-          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
-          trap 'kill $tunnelPID' EXIT
-          echo 'Waiting for service IP'
-          for i in {1..30}; do
-            SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
-            if [ -n "$SERVICEIP" ]; then
-              break
-            fi
-            sleep 4
-          done
-          kubectl get svc
-          echo "SERVICEIP: $SERVICEIP"
-          if [ -z "$SERVICEIP" ]; then
-            echo 'Service IP not ready'
-            exit 1
-          fi
-          echo 'Curling service IP with retries'
-          for i in {1..20}; do
-            if curl -m 3 "http://$SERVICEIP:${{env.serviceport}}"; then
-              exit 0
-            fi
-            sleep 3
-          done
-          exit 1
+      - uses: ./.github/actions/curl-port-forward
+        with:
+          service: test-release-testapp
+          port: ${{ env.serviceport }}
       - run: |
           ./draft -v generate-workflow \
           -d ./langtest/ \
@@ -263,16 +230,12 @@ jobs:
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   kustomize-create-update:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5001:5000
     needs: kustomize-dry-run
     env:
-      imagename: registry:5001/testapp
+      imagetag: latest
       serviceport: 80
       ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+      registry_port: 5000
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
@@ -291,11 +254,13 @@ jobs:
           rm -rf ./langtest/base
           rm -rf ./langtest/overlays
       - run: ./draft -v create -c ./test/integration/${{inputs.language}}/kustomize.yaml -d ./langtest/
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
+      - id: kind-registry
+        uses: ./.github/actions/setup-kind-registry
         with:
-          insecure-registry: "host.minikube.internal:5001,10.0.0.0/24"
+          registry-port: ${{ env.registry_port }}
+      - name: Set image name
+        run: |
+          echo "imagename=${{ steps.kind-registry.outputs.local-registry }}/testapp" >> "$GITHUB_ENV"
       - name: Bake deployment
         uses: azure/k8s-bake@v3.0.4
         id: bake
@@ -303,24 +268,12 @@ jobs:
           renderEngine: "kustomize"
           kustomizationPath: ./langtest/base
           kubectl-version: "latest"
-      - name: Set up buildx
-        run: |
-          docker buildx create --use --name draft-builder || docker buildx use draft-builder
-          docker buildx inspect --bootstrap
-      - name: Build and Push Image
-        continue-on-error: true
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker buildx build \
-            --cache-from=type=gha,scope=${{ inputs.language }}-kustomize \
-            --cache-to=type=gha,scope=${{ inputs.language }}-kustomize,mode=max \
-            -f ./langtest/Dockerfile \
-            -t host.minikube.internal:5001/testapp \
-            --push \
-            ./langtest/
-          echo 'Curling host.minikube.internal test app images from minikube'
-          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
+      - uses: ./.github/actions/buildx-push-image
+        with:
+          dockerfile: ./langtest/Dockerfile
+          image: ${{ env.imagename }}
+          cache-scope: ${{ inputs.language }}-kustomize
+          context: ./langtest/
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         uses: Azure/k8s-deploy@v5
@@ -330,13 +283,15 @@ jobs:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
-            ${{env.imagename}}
+            ${{ env.imagename }}
+          timeout: ${{ inputs.language == 'swift' && '5m' || '1m' }}
       - name: Wait for rollout
         continue-on-error: true
         id: rollout
         run: |
           kubectl rollout status deployment/testapp --timeout=2m
       - name: Print K8s Objects
+        if: always()
         run: |
           kubectl get po -o json
           kubectl get svc -o json
@@ -348,34 +303,10 @@ jobs:
           kubectl logs -l app=testapp --all-containers=true --ignore-errors=true || true
           echo "=== Pod Descriptions ==="
           kubectl describe pods -l app=testapp || true
-      - name: Curl Endpoint
-        run: |
-          kubectl get svc
-          echo 'Starting minikube tunnel'
-          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
-          trap 'kill $tunnelPID' EXIT
-          echo 'Waiting for service IP'
-          for i in {1..30}; do
-            SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
-            if [ -n "$SERVICEIP" ]; then
-              break
-            fi
-            sleep 4
-          done
-          kubectl get svc
-          echo "SERVICEIP: $SERVICEIP"
-          if [ -z "$SERVICEIP" ]; then
-            echo 'Service IP not ready'
-            exit 1
-          fi
-          echo 'Curling service IP with retries'
-          for i in {1..20}; do
-            if curl -m 3 "http://$SERVICEIP:${{env.serviceport}}"; then
-              exit 0
-            fi
-            sleep 3
-          done
-          exit 1
+      - uses: ./.github/actions/curl-port-forward
+        with:
+          service: testapp
+          port: ${{ env.serviceport }}
       - run: |
           ./draft -v generate-workflow \
           -d ./langtest/ \
@@ -415,6 +346,7 @@ jobs:
         run: |
           kubectl get po
           echo "Deployment failed, check above logs and previous steps to isolate the issue"
+          exit 6
   manifests-dry-run:
     runs-on: ubuntu-latest
     steps:
@@ -462,16 +394,12 @@ jobs:
           ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
   manifests-create:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5001:5000
     needs: manifests-dry-run
     env:
-      imagename: registry:5001/testapp
+      imagename: localhost:5000/testapp
       serviceport: 80
       ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+      registry_port: 5000
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
@@ -495,40 +423,32 @@ jobs:
       - name: Add docker.local host to /etc/hosts
         run: |
           sudo echo \"127.0.0.1 docker.local\" | sudo tee -a /etc/hosts
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
+      - id: kind-registry
+        uses: ./.github/actions/setup-kind-registry
         with:
-          insecure-registry: "host.minikube.internal:5001,10.0.0.0/24"
-      - name: Set up buildx
-        run: |
-          docker buildx create --use --name draft-builder || docker buildx use draft-builder
-          docker buildx inspect --bootstrap
-      - name: Build and Push Image
-        continue-on-error: true
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker buildx build \
-            --cache-from=type=gha,scope=${{ inputs.language }}-manifests \
-            --cache-to=type=gha,scope=${{ inputs.language }}-manifests,mode=max \
-            -f ./langtest/Dockerfile \
-            -t host.minikube.internal:5001/testapp \
-            --push \
-            ./langtest/
-          echo 'Curling host.minikube.internal test app images from minikube'
-          minikube ssh "curl http://host.minikube.internal:5001/v2/testapp/tags/list"
+          registry-port: ${{ env.registry_port }}
+      - uses: ./.github/actions/buildx-push-image
+        with:
+          dockerfile: ./langtest/Dockerfile
+          image: ${{ steps.kind-registry.outputs.local-registry }}/testapp
+          cache-scope: ${{ inputs.language }}-manifests
+          context: ./langtest/
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
+      - name: Patch image for localhost registry
+        run: |
+          kubectl patch deployment/testapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"testapp","image":"${{ steps.kind-registry.outputs.local-registry }}/testapp"}]}}}}'
+          kubectl rollout status deployment/testapp --timeout=5m
       - name: Wait for rollout
         continue-on-error: true
         id: rollout
         run: |
           kubectl rollout status deployment/testapp --timeout=2m
       - name: Print K8s Objects
+        if: always()
         run: |
           kubectl get po -o json
           kubectl get svc -o json
@@ -540,34 +460,10 @@ jobs:
           kubectl logs -l app=testapp --all-containers=true --ignore-errors=true || true
           echo "=== Pod Descriptions ==="
           kubectl describe pods -l app=testapp || true
-      - name: Curl Endpoint
-        run: |
-          kubectl get svc
-          echo 'Starting minikube tunnel'
-          minikube tunnel  > /dev/null 2>&1 & tunnelPID=$!
-          trap 'kill $tunnelPID' EXIT
-          echo 'Waiting for service IP'
-          for i in {1..30}; do
-            SERVICEIP=$(kubectl get svc -o jsonpath={'.items[1].status.loadBalancer.ingress[0].ip'})
-            if [ -n "$SERVICEIP" ]; then
-              break
-            fi
-            sleep 4
-          done
-          kubectl get svc
-          echo "SERVICEIP: $SERVICEIP"
-          if [ -z "$SERVICEIP" ]; then
-            echo 'Service IP not ready'
-            exit 1
-          fi
-          echo 'Curling service IP with retries'
-          for i in {1..20}; do
-            if curl -m 3 "http://$SERVICEIP:${{env.serviceport}}"; then
-              exit 0
-            fi
-            sleep 3
-          done
-          exit 1
+      - uses: ./.github/actions/curl-port-forward
+        with:
+          service: testapp
+          port: ${{ env.serviceport }}
       - run: |
           ./draft -v generate-workflow \
           -d ./langtest/ \
@@ -606,11 +502,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
+      imagename: localhost:5000/testapp
+      registry_port: 5000
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
@@ -630,29 +523,25 @@ jobs:
           npm install -g ajv-cli@5.0.0
           ajv validate -s test/update_dry_run_schema.json -d test/temp/update_dry_run.json
       - run: ./draft -v update -d ./langtest/ ${{ env.ingress_test_args }}
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Set up buildx
-        run: |
-          docker buildx create --use --name draft-builder || docker buildx use draft-builder
-          docker buildx inspect --bootstrap
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker buildx build \
-            --cache-from=type=gha,scope=${{ inputs.language }}-manifest-update \
-            --cache-to=type=gha,scope=${{ inputs.language }}-manifest-update,mode=max \
-            --load \
-            -f ./langtest/Dockerfile \
-            -t testapp \
-            ./langtest/
+      - id: kind-registry
+        uses: ./.github/actions/setup-kind-registry
+        with:
+          registry-port: ${{ env.registry_port }}
+      - uses: ./.github/actions/buildx-push-image
+        with:
+          dockerfile: ./langtest/Dockerfile
+          image: ${{ steps.kind-registry.outputs.local-registry }}/testapp
+          cache-scope: ${{ inputs.language }}-manifest-update
+          context: ./langtest/
       # Deploys application based on manifest files from previous step
       - name: Deploy application
         run: kubectl apply -f ./langtest/manifests/
         continue-on-error: true
         id: deploy
+      - name: Patch image for localhost registry
+        run: |
+          kubectl patch deployment/testapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"testapp","image":"${{ steps.kind-registry.outputs.local-registry }}/testapp"}]}}}}'
+          kubectl rollout status deployment/testapp --timeout=5m
       - name: Fail if any error
         if: steps.deploy.outcome != 'success'
         run: |

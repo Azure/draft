@@ -143,7 +143,7 @@ jobs:
     uses: ./.github/workflows/integration-per-language.yml
     with:
       language: "swift"
-      repo: "OliverMKing/swift-hello-world"
+      repo: "davidgamero/swift-hello-world"
   erlang:
     needs:
       - build-linux

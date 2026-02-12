@@ -17,9 +17,9 @@ variables:
     type: "string"
     kind: "containerImageVersion"
     default:
-      value: "5.5"
+      value: "5.9"
     description: "the version of swift used by the application"
-    exampleValues: ["5.2", "5.5"]
+    exampleValues: ["5.5", "5.9"]
     versions: ">=0.0.1"
   - name: "APPNAME"
     type: "string"

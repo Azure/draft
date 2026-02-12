@@ -1,4 +1,4 @@
-FROM swift:5.5 AS build
+FROM swift:5.9 AS build
 
 WORKDIR /src
 COPY . /src
@@ -7,7 +7,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 RUN swift build -c release --product app
 
-FROM swift:5.5
+FROM swift:5.9
 
 WORKDIR /app
 COPY --from=build /src/.build/release/app ./app

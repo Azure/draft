@@ -23,7 +23,7 @@ variables:
     versions: ">=0.0.1"
   - name: "APPNAME"
     type: "string"
-    kind: "applicationName"
+    kind: "containerImageName"
     default:
       value: "app"
     description: "the application binary name"

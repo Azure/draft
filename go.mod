@@ -20,7 +20,7 @@ require (
 	github.com/jbrukh/bayesian v1.1.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/open-policy-agent/frameworks/constraint v0.0.0-20251105220536-241c4a079fc8
-	github.com/open-policy-agent/gatekeeper/v3 v3.21.0
+	github.com/open-policy-agent/gatekeeper/v3 v3.21.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1

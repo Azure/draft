@@ -11,6 +11,7 @@ import (
 
 	"helm.sh/helm/v3/pkg/chartutil"
 
+	apiconstraints "github.com/open-policy-agent/frameworks/constraint/pkg/apis/constraints"
 	constraintclient "github.com/open-policy-agent/frameworks/constraint/pkg/client"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/client/drivers/rego"
 	"github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
@@ -112,7 +113,11 @@ func getConstraintClient() (*constraintclient.Client, error) {
 		return nil, fmt.Errorf("could not create rego driver: %w", err)
 	}
 
-	c, err := constraintclient.NewClient(constraintclient.Targets(&target.K8sValidationTarget{}), constraintclient.Driver(driver))
+	c, err := constraintclient.NewClient(
+		constraintclient.Targets(&target.K8sValidationTarget{}),
+		constraintclient.Driver(driver),
+		constraintclient.EnforcementPoints(apiconstraints.WebhookEnforcementPoint),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("could not create constraint client: %w", err)
 	}
@@ -140,6 +145,10 @@ func AddSafeguardCRIP() {
 
 // loads constraint templates, constraints into constraint client
 func loadConstraintTemplates(ctx context.Context, c *constraintclient.Client, constraintTemplates []*templates.ConstraintTemplate) error {
+	if c == nil {
+		return fmt.Errorf("constraint client is nil")
+	}
+
 	// AddTemplate adds the template source code to OPA and registers the CRD with the client for
 	// schema validation on calls to AddConstraint. On error, the responses return value
 	// will still be populated so that partial results can be analyzed.
@@ -154,6 +163,10 @@ func loadConstraintTemplates(ctx context.Context, c *constraintclient.Client, co
 }
 
 func loadConstraints(ctx context.Context, c *constraintclient.Client, constraints []*unstructured.Unstructured) error {
+	if c == nil {
+		return fmt.Errorf("constraint client is nil")
+	}
+
 	// AddConstraint validates the constraint and, if valid, inserts it into OPA.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
@@ -168,6 +181,10 @@ func loadConstraints(ctx context.Context, c *constraintclient.Client, constraint
 }
 
 func loadManifestObjects(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) error {
+	if c == nil {
+		return fmt.Errorf("constraint client is nil")
+	}
+
 	// AddData inserts the provided data into OPA for every target that can handle the data.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.
@@ -198,6 +215,10 @@ func IsYAML(path string) bool {
 
 // getObjectViolations executes validation on manifests based on loaded constraint templates and returns a map of manifest name to list of objectViolations
 func getObjectViolations(ctx context.Context, c *constraintclient.Client, objects []*unstructured.Unstructured) (map[string][]string, error) {
+	if c == nil {
+		return nil, fmt.Errorf("constraint client is nil")
+	}
+
 	// Review makes sure the provided object satisfies all stored constraints.
 	// On error, the responses return value will still be populated so that
 	// partial results can be analyzed.

@@ -9,10 +9,10 @@ deployVariables:
   - name: "APPNAME"
     value: "testapp"
   - name: "IMAGENAME"
-    value: "host.minikube.internal:5001/testapp"
+    value: "kind-registry:5000/testapp"
 languageVariables:
   - name: "VERSION"
-    value: "1.82.0"
+    value: "1.88.0"
   - name: "BUILDERVERSION"
     value: "null"
   - name: "PORT"

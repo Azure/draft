@@ -179,7 +179,7 @@ func TestDockerfileTemplates(t *testing.T) {
 			TemplateWriter:  &writers.FileMapWriter{},
 			VarMap: map[string]string{
 				"PORT":    "80",
-				"VERSION": "5.5",
+				"VERSION": "5.9",
 			},
 		},
 	}

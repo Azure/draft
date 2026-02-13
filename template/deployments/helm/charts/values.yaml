@@ -1,7 +1,7 @@
 # Default values for {{ .Config.GetVariableValue "APPNAME"}}.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-replicaCount: 1
+replicaCount: {{ .Config.GetVariableValue "REPLICACOUNT" }}
 
 namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
 
@@ -115,20 +115,18 @@ securityContext:
     drop:
       - ALL
     add:
-      - SETPCAP
-      - MKNOD
       - AUDIT_WRITE
       - CHOWN
       - DAC_OVERRIDE
       - FOWNER
       - FSETID
       - KILL
+      - MKNOD
+      - NET_BIND_SERVICE
+      - SETPCAP
       - SETGID
       - SETUID
-      - NET_BIND_SERVICE
       - SYS_CHROOT
-      - SETFCAP
-      - SYS_PTRACE
 
 envVars:
 {{- range $key, $value := .Config.GetVariableValue "ENVVARS" }}

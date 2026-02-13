@@ -1,0 +1,43 @@
+name: Buildx push image
+description: Build and push image with Buildx and cache
+inputs:
+  context:
+    description: Build context path
+    required: false
+    default: "."
+  dockerfile:
+    description: Dockerfile path
+    required: true
+  image:
+    description: Image tag to push
+    required: true
+  cache-scope:
+    description: Cache scope name
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: write buildkit config
+      shell: bash
+      run: |
+        image="${{ inputs.image }}"
+        registry="${image%%/*}"
+        buildkit_config="$RUNNER_TEMP/buildkitd.toml"
+        printf '[registry."%s"]\nhttp = true\ninsecure = true\n' "$registry" >"$buildkit_config"
+        cat "$buildkit_config"
+        echo "BUILDKIT_CONFIG=$buildkit_config" >> "$GITHUB_ENV"
+    - name: set up buildx
+      shell: bash
+      run: |
+        docker buildx create --use --name draft-builder --driver docker-container --driver-opt network=host --config "$BUILDKIT_CONFIG" || docker buildx use draft-builder
+        docker buildx inspect --bootstrap
+    - name: build and push
+      shell: bash
+      run: |
+        docker buildx build \
+          --cache-from=type=gha,scope=${{ inputs.cache-scope }} \
+          --cache-to=type=gha,scope=${{ inputs.cache-scope }},mode=max \
+          -f "${{ inputs.dockerfile }}" \
+          -t "${{ inputs.image }}" \
+          --push \
+          "${{ inputs.context }}"

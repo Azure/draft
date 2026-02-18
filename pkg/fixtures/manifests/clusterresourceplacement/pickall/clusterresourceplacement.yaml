@@ -1,0 +1,16 @@
+apiVersion: placement.kubernetes-fleet.io/v1
+kind: ClusterResourcePlacement
+metadata:
+  name: demo-crp
+  labels:
+    app.kubernetes.io/name: demo-crp
+    app.kubernetes.io/part-of: test-app-project
+    kubernetes.azure.com/generator: draft
+spec:
+  resourceSelectors:
+    - group: ""
+      kind: Namespace
+      name: fmad-demo
+      version: v1
+  policy:
+    placementType: PickAll

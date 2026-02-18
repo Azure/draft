@@ -62,7 +62,7 @@ jobs:
     env:
       imagetag: latest
       serviceport: 80
-      ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+      ingress_test_args: "-a app-routing-ingress --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
       registry_port: 5000
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -234,7 +234,7 @@ jobs:
     env:
       imagetag: latest
       serviceport: 80
-      ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+      ingress_test_args: "-a app-routing-ingress --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
       registry_port: 5000
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -398,7 +398,7 @@ jobs:
     env:
       imagename: localhost:5000/testapp
       serviceport: 80
-      ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+      ingress_test_args: "-a app-routing-ingress --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
       registry_port: 5000
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -501,7 +501,7 @@ jobs:
     needs: manifests-create
     runs-on: ubuntu-latest
     env:
-      ingress_test_args: "-a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
+      ingress_test_args: "-a app-routing-ingress --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1"
       imagename: localhost:5000/testapp
       registry_port: 5000
     steps:
@@ -592,7 +592,7 @@ jobs:
           name: ${{inputs.language}}-win-helm-create
           path: ./langtest/
       - run: Remove-Item ./langtest/charts/templates/ingress.yaml -Recurse -Force -ErrorAction Ignore
-      - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft.exe -v update -d ./langtest/ -a app-routing-ingress --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: check_windows_addon_helm
@@ -642,7 +642,7 @@ jobs:
           name: ${{inputs.language}}-win-kustomize-create
           path: ./langtest
       - run: Remove-Item ./langtest/overlays/production/ingress.yaml -ErrorAction Ignore
-      - run: ./draft.exe -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
+      - run: ./draft.exe -v update -d ./langtest/ -a app-routing-ingress --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: check_windows_addon_kustomize

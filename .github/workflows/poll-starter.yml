@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
 
       - name: Download run information
-        uses: dawidd6/action-download-artifact@v14
+        uses: dawidd6/action-download-artifact@v15
         continue-on-error: true
         id: download
         with:

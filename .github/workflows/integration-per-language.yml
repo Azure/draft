@@ -91,7 +91,7 @@ jobs:
           echo "imagename=${{ steps.kind-registry.outputs.local-registry }}/testapp" >> "$GITHUB_ENV"
       # Runs Helm to create manifest files
       - name: Bake deployment
-        uses: azure/k8s-bake@v3.0.4
+        uses: azure/k8s-bake@v4.0.0
         with:
           renderEngine: "helm"
           helmChart: ./langtest/charts
@@ -262,7 +262,7 @@ jobs:
         run: |
           echo "imagename=${{ steps.kind-registry.outputs.local-registry }}/testapp" >> "$GITHUB_ENV"
       - name: Bake deployment
-        uses: azure/k8s-bake@v3.0.4
+        uses: azure/k8s-bake@v4.0.0
         id: bake
         with:
           renderEngine: "kustomize"

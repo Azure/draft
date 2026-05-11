@@ -111,7 +111,7 @@ jobs:
           context: ./langtest/
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v5
+        uses: Azure/k8s-deploy@v6
         continue-on-error: true
         id: deploy
         with:
@@ -276,7 +276,7 @@ jobs:
           context: ./langtest/
       # Deploys application based on manifest files from previous step
       - name: Deploy application
-        uses: Azure/k8s-deploy@v5
+        uses: Azure/k8s-deploy@v6
         continue-on-error: true
         id: deploy
         with:

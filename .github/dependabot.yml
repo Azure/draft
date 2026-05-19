@@ -4,25 +4,59 @@ updates:
     directory: /
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: ".github/workflows"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/template/workflows/helm/.github/workflows"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/template/workflows/kustomize/.github/workflows"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/template/workflows/manifests/.github/workflows"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directory: "/.github/actions"
     schedule:
       interval: "weekly"
-    labels:
-      - "dependencies"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"

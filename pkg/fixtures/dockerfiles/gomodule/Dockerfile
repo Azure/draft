@@ -1,4 +1,4 @@
-FROM golang:1.23 AS builder
+FROM mcr.microsoft.com/oss/go/microsoft/golang:1.23 as builder
 
 WORKDIR /build
 COPY go.mod go.sum ./

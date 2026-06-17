@@ -1,4 +1,4 @@
-FROM golang:{{ .Config.GetVariableValue "VERSION" }}
+FROM mcr.microsoft.com/oss/go/microsoft/golang:{{ .Config.GetVariableValue "VERSION"}}
 ENV PORT={{ .Config.GetVariableValue "PORT" }}
 EXPOSE {{ .Config.GetVariableValue "PORT" }}
 

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/oss/go/microsoft/golang:{{ .Config.GetVariableValue "VERSION"}}
+FROM mcr.microsoft.com/oss/go/microsoft/golang:{{ .Config.GetVariableValue "VERSION"}} as builder
 
 WORKDIR /build
 COPY go.mod go.sum ./

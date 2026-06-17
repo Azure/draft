@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM mcr.microsoft.com/oss/go/microsoft/golang:1.23
 ENV PORT=80
 EXPOSE 80
 

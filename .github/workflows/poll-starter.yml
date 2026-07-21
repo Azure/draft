@@ -19,7 +19,7 @@ jobs:
       pull-requests: write
       packages: none
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.0
 
       - name: Download run information
         uses: dawidd6/action-download-artifact@v21

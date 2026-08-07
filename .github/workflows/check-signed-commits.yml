@@ -6,6 +6,6 @@ on:
 
 jobs:
   check-signatures:
-    uses: Azure/action-release-workflows/.github/workflows/check_signed_commits.yaml@v1
+    uses: Azure/action-release-workflows/.github/workflows/check_signed_commits.yaml@3c677ba5ab58f5c5c1a6f0cfb176b333b1f27405 # v1
     permissions:
       pull-requests: write

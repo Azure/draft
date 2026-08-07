@@ -22,7 +22,7 @@ jobs:
     # Read changelog and read versions etc.
     - name: Check version is mentioned in Changelog.md
       id: changelog_reader
-      uses: mindsers/changelog-reader-action@v2
+      uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2
       with:
         validation_depth: 10
         path: './CHANGELOG.md'
@@ -38,7 +38,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
-        go-version: '1.26'
+        go-version: '1.25'
     # Check if the newest tag already exists
     - name: Check if tag exist
       uses: mukunku/tag-exists-action@5c39604fe8aef7e65acb6fbcf96ec580f7680313 # v1.7.0
@@ -54,7 +54,7 @@ jobs:
     # If the tag already exists, we don't upload release artifacts
     - name: Update Draft Release Body
       if: ${{ steps.check-tag-exists.outputs.exists == 'true' }}
-      uses: softprops/action-gh-release@v3.0.2
+      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
@@ -64,7 +64,7 @@ jobs:
     # Create Release with artifacts
     - name: Create Draft Release
       if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
-      uses: softprops/action-gh-release@v3.0.2
+      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:

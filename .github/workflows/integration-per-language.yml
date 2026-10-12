@@ -44,11 +44,11 @@ jobs:
           --skip-file-detection \
           --deploy-type helm \
           --variable PORT=8080 \
-          --variable APPNAME=testingCreateCommand \
+          --variable APPNAME=testing-create-command \
           --variable VERSION=1.11 \
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=8080 \
-          --variable NAMESPACE=testNamespace \
+          --variable NAMESPACE=test-namespace \
           --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
@@ -216,11 +216,11 @@ jobs:
           --skip-file-detection \
           --deploy-type kustomize \
           --variable PORT=8080 \
-          --variable APPNAME=testingCreateCommand \
+          --variable APPNAME=testing-create-command \
           --variable VERSION=1.11 \
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=8080 \
-          --variable NAMESPACE=testNamespace \
+          --variable NAMESPACE=test-namespace \
           --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
@@ -380,11 +380,11 @@ jobs:
           --skip-file-detection \
           --deploy-type manifests \
           --variable PORT=8080 \
-          --variable APPNAME=testingCreateCommand \
+          --variable APPNAME=testing-create-command \
           --variable VERSION=1.11 \
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=80 \
-          --variable NAMESPACE=testNamespace \
+          --variable NAMESPACE=test-namespace \
           --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py

@@ -44,7 +44,7 @@ on:
 env:
   ACR_RESOURCE_GROUP: testAcrRG
   AZURE_CONTAINER_REGISTRY: testAcr
-  CONTAINER_NAME: testContainer
+  CONTAINER_NAME: testcontainer
   CLUSTER_NAME: testCluster
   CLUSTER_RESOURCE_GROUP: testClusterRG
   CLUSTER_RESOURCE_TYPE: Microsoft.ContainerService/managedClusters

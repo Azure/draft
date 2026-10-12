@@ -203,6 +203,23 @@ func TestCINameValidatorsRejectShellSyntax(t *testing.T) {
 	assert.Nil(t, GetValidator("kubernetesNamespace")("team-a"))
 }
 
+func TestContainerImageNameValidator(t *testing.T) {
+	for _, input := range []string{
+		"testapp", "team/my_app", "mcr.microsoft.com/team/app",
+		"host.minikube.internal:5001/testapp", "localhost:5000/team/app",
+		"127.0.0.1:5000/app",
+	} {
+		assert.NoError(t, GetValidator("containerImageName")(input), "expected %q to be valid", input)
+	}
+	for _, input := range []string{
+		"", "app:latest", "app@sha256:abcd", "https://registry/app", "UPPERCASE",
+		"registry:port/app", "app;command", "app$(command)", "app --option value",
+		"app\nRUN command", `app"`, "app#comment",
+	} {
+		assert.Error(t, GetValidator("containerImageName")(input), "expected %q to be rejected", input)
+	}
+}
+
 func TestKubernetesResourceNameValidator(t *testing.T) {
 	for _, input := range []string{"app", "my-app", "app2"} {
 		assert.Nil(t, GetValidator("kubernetesResourceName")(input), "expected %q to be valid", input)

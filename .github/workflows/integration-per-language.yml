@@ -49,7 +49,7 @@ jobs:
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=8080 \
           --variable NAMESPACE=testNamespace \
-          --variable IMAGENAME=testImage \
+          --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
       - name: Validate JSON
@@ -221,7 +221,7 @@ jobs:
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=8080 \
           --variable NAMESPACE=testNamespace \
-          --variable IMAGENAME=testImage \
+          --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
       - name: Validate JSON
@@ -385,7 +385,7 @@ jobs:
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=80 \
           --variable NAMESPACE=testNamespace \
-          --variable IMAGENAME=testImage \
+          --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
       - name: Validate JSON

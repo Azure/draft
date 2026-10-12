@@ -22,10 +22,18 @@ const (
 	maxImageTagLength = 128
 	// maxPort is the highest valid TCP/UDP port.
 	maxPort = 65535
+
+	// Docker reference name grammar (namePat), without tags or digests:
+	// https://github.com/distribution/reference/blob/main/regexp.go
+	imageDomainComponent = `(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])`
+	imageHost            = `(?:` + imageDomainComponent + `(?:\.` + imageDomainComponent + `)*|\[(?:[a-fA-F0-9:]+)\])`
+	imagePathComponent   = `[a-z0-9]+(?:(?:[._]|__|[-]+)[a-z0-9]+)*`
+	imageName            = `(?:` + imageHost + `(?::[0-9]+)?/)?` + imagePathComponent + `(?:/` + imagePathComponent + `)*`
 )
 
 var (
 	ciNamePattern             = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._/-]*$`)
+	containerImageNamePattern = regexp.MustCompile(`^` + imageName + `$`)
 	helmChartOverridesPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]+=[A-Za-z0-9_.:/+-]+(?:,[A-Za-z0-9_.-]+=[A-Za-z0-9_.:/+-]+)*$`)
 )
 
@@ -50,8 +58,10 @@ func safeNameRunes(r rune) bool {
 
 func GetValidator(variableKind string) func(string) error {
 	switch variableKind {
-	case "azureContainerRegistry", "azureManagedCluster", "azureResourceGroup", "containerImageName":
+	case "azureContainerRegistry", "azureManagedCluster", "azureResourceGroup":
 		return ciNameValidator
+	case "containerImageName":
+		return containerImageNameValidator
 	case "containerImageVersion":
 		return containerImageVersionValidator
 	case "dirPath":
@@ -86,6 +96,15 @@ func GetValidator(variableKind string) func(string) error {
 func ciNameValidator(input string) error {
 	if !ciNamePattern.MatchString(input) {
 		return fmt.Errorf("invalid CI resource value %q: contains unsupported characters", input)
+	}
+	return nil
+}
+
+// Image tags are supplied separately by containerImageVersion. Anchor Docker's
+// name grammar so a valid substring cannot conceal trailing shell syntax.
+func containerImageNameValidator(input string) error {
+	if !containerImageNamePattern.MatchString(input) {
+		return fmt.Errorf("invalid container image name %q: expected a repository name with an optional registry and port", input)
 	}
 	return nil
 }

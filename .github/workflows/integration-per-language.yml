@@ -150,7 +150,7 @@ jobs:
           --variable BRANCHNAME=main \
           --variable ACRRESOURCEGROUP=someAcrResourceGroup \
           --variable AZURECONTAINERREGISTRY=someRegistry \
-          --variable CONTAINERNAME=someContainer \
+          --variable CONTAINERNAME=somecontainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
           --variable DOCKERFILE=./Dockerfile \
@@ -315,7 +315,7 @@ jobs:
           --variable BRANCHNAME=main \
           --variable ACRRESOURCEGROUP=someAcrResourceGroup \
           --variable AZURECONTAINERREGISTRY=someRegistry \
-          --variable CONTAINERNAME=someContainer \
+          --variable CONTAINERNAME=somecontainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
           --variable DOCKERFILE=./Dockerfile \
@@ -472,7 +472,7 @@ jobs:
           --variable BRANCHNAME=main \
           --variable ACRRESOURCEGROUP=someAcrResourceGroup \
           --variable AZURECONTAINERREGISTRY=someRegistry \
-          --variable CONTAINERNAME=someContainer \
+          --variable CONTAINERNAME=somecontainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
           --variable DOCKERFILE=./Dockerfile \

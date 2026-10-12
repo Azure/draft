@@ -19,8 +19,7 @@ variables:
     default:
       value: "3"
     description: "the version of maven used during the builder stage to generate the executable"
-    exampleValues:
-      ["3-eclipse-temurin-17", "3-eclipse-temurin-21", "3 (jdk-21)"]
+    exampleValues: ["3", "3-eclipse-temurin-17", "3-eclipse-temurin-21"]
     versions: ">=0.0.1"
   - name: "VERSION"
     type: "string"

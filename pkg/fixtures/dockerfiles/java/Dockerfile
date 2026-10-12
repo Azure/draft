@@ -1,4 +1,4 @@
-FROM maven:3 as BUILD
+FROM maven:3-eclipse-temurin-21 as BUILD
 
 COPY . /usr/src/app
 RUN mvn --batch-mode -f /usr/src/app/pom.xml clean package

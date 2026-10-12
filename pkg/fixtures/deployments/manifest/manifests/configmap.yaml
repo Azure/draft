@@ -7,5 +7,5 @@ metadata:
     app.kubernetes.io/name: testapp
     kubernetes.azure.com/generator: draft
 data:
-  key1: value1
-  key2: value2
+  "key1": "value1"
+  "key2": "value2"

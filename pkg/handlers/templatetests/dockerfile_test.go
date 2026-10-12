@@ -103,9 +103,9 @@ func TestDockerfileTemplates(t *testing.T) {
 			Dest:            ".",
 			TemplateWriter:  &writers.FileMapWriter{},
 			VarMap: map[string]string{
-				"PORT":         "80",
-				"BUILDVERSION": "3 (jdk-21)",
-				"VERSION":      "21-jre",
+				"PORT":           "80",
+				"BUILDERVERSION": "3-eclipse-temurin-21",
+				"VERSION":        "21-jre",
 			},
 		},
 		{

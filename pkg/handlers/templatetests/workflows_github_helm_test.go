@@ -30,7 +30,7 @@ func TestGitHubWorkflowHelmTemplates(t *testing.T) {
 				"BUILDCONTEXTPATH":       "test",
 				"CHARTPATH":              "testPath",
 				"CHARTOVERRIDEPATH":      "testOverridePath",
-				"CHARTOVERRIDES":         "replicas:2",
+				"CHARTOVERRIDES":         "replicas=2",
 				"NAMESPACE":              "default",
 			},
 		},

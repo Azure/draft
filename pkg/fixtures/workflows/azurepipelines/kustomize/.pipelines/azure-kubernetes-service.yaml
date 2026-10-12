@@ -8,16 +8,16 @@ variables:
   acrRg: myrg
   clusterRg: myrg
   clusterName: testcluster
-  kustomizePath: ./overlays/production
+  kustomizePath: "./overlays/production"
   namespace: default
-  buildContextPath: .
-  dockerfile: ./Dockerfile
+  buildContextPath: "."
+  dockerfile: "./Dockerfile"
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
   resourceType: Microsoft.ContainerService/managedClusters
 
 trigger:
-  - main
+  - "main"
 
 name: Build and deploy an app to AKS
 
@@ -37,8 +37,8 @@ stages:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                az acr build --image $1.azurecr.io/$2:$3 --registry $1 -g $4 -f $5 $6
-              arguments: "$(azureContainerRegistry) $(containerName) $(tag) $(acrRg) $(dockerfile) $(buildContextPath)"
+                az acr build --image "$1.azurecr.io/$2:$3" --registry "$1" -g "$4" -f "$5" "$6"
+              arguments: '$(azureContainerRegistry) $(containerName) $(tag) $(acrRg) "$(dockerfile)" "$(buildContextPath)"'
 
   - stage: Deploy
     displayName: Deploy stage

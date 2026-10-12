@@ -294,6 +294,14 @@ func (cc *createCmd) generateDockerfile(dockerfileTemplate *handlers.Template, l
 		for i, variable := range dockerfileTemplate.Config.Variables {
 			if k == variable.Name {
 				variableExists = true
+				// Extracted values are guessed from the contents of the
+				// repository, which is untrusted input. Keep the template's own
+				// default when a guess would not pass validation, so that a
+				// malformed or hostile file name cannot fail the whole command.
+				if err := dockerfileTemplate.Config.GetVariableValidator(variable.Kind)(v); err != nil {
+					log.Warnf("ignoring detected value for %s: %s", k, err)
+					break
+				}
 				dockerfileTemplate.Config.Variables[i].Default.Value = v
 				break
 			}

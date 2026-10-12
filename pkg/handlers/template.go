@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -67,6 +68,12 @@ func (t *Template) Generate() error {
 
 	if err := t.Config.ApplyDefaultVariablesForVersion(t.version); err != nil {
 		return fmt.Errorf("create workflow files: %w", err)
+	}
+
+	// Validate every variable before writing anything, so that an invalid value
+	// cannot leave a partially generated set of files behind.
+	if err := t.Config.ValidateVariablesForVersion(t.version); err != nil {
+		return fmt.Errorf("generating template: %w", err)
 	}
 
 	return generateTemplate(t)
@@ -167,7 +174,12 @@ func writeTemplate(draftTemplate *Template, inputFile string) error {
 	}
 
 	// Parse the template file, missingkey=error ensures an error will be returned if any variable is missing during template execution.
-	tmpl, err := tmpl.New("template").Option("missingkey=error").Parse(string(file))
+	tmpl, err := tmpl.New("template").Funcs(tmpl.FuncMap{
+		"jsonString": func(value string) (string, error) {
+			encoded, err := json.Marshal(value)
+			return string(encoded), err
+		},
+	}).Option("missingkey=error").Parse(string(file))
 	if err != nil {
 		return err
 	}

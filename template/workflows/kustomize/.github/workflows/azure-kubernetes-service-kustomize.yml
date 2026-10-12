@@ -39,7 +39,7 @@ name: {{ .Config.GetVariableValue "WORKFLOWNAME" }}
 
 on:
   push:
-    branches: [{{ .Config.GetVariableValue "BRANCHNAME" }}]
+    branches: [{{ .Config.GetVariableValue "BRANCHNAME" | jsonString }}]
   workflow_dispatch:
 
 env:
@@ -49,9 +49,9 @@ env:
   CLUSTER_NAME: {{ .Config.GetVariableValue "CLUSTERNAME" }}
   CLUSTER_RESOURCE_GROUP: {{ .Config.GetVariableValue "CLUSTERRESOURCEGROUP" }}
   CLUSTER_RESOURCE_TYPE: {{ .Config.GetVariableValue "CLUSTERRESOURCETYPE" }}
-  KUSTOMIZE_PATH: {{ .Config.GetVariableValue "KUSTOMIZEPATH" }}
-  DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" }}
-  BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
+  KUSTOMIZE_PATH: {{ .Config.GetVariableValue "KUSTOMIZEPATH" | jsonString }}
+  DOCKER_FILE: {{ .Config.GetVariableValue "DOCKERFILE" | jsonString }}
+  BUILD_CONTEXT_PATH: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" | jsonString }}
   NAMESPACE: {{ .Config.GetVariableValue "NAMESPACE" }}
   ENABLENAMESPACECREATION: {{ .Config.GetVariableValue "ENABLENAMESPACECREATION" }}
   AUTH_TYPE: {{ .Config.GetVariableValue "AZURELOGINAUTHTYPE" }}
@@ -78,7 +78,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f "${{ env.DOCKER_FILE }}" "${{ env.BUILD_CONTEXT_PATH }}"
   deploy:
     permissions:
       actions: read

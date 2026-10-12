@@ -288,6 +288,55 @@ func (d *DraftConfig) ApplyDefaultVariablesForVersion(version string) error {
 	return nil
 }
 
+// ValidateVariablesForVersion validates every variable that will be used to
+// render the given template version. Templates resolve variables lazily, as each
+// interpolation is reached, so without this up front pass an invalid value is
+// only discovered part way through generation, after earlier files have already
+// been written to disk. Variables outside the requested version range, or made
+// inactive by an ActiveWhen constraint, are skipped because they are never
+// interpolated.
+func (d *DraftConfig) ValidateVariablesForVersion(version string) error {
+	v, err := semver.Parse(version)
+	if err != nil {
+		return fmt.Errorf("invalid version: %w", err)
+	}
+
+	for _, variable := range d.Variables {
+		// Variables set programmatically do not declare a version range and are
+		// always considered applicable.
+		if variable.Versions != "" {
+			expectedRange, err := semver.ParseRange(variable.Versions)
+			if err != nil {
+				return fmt.Errorf("invalid variable versions for %s: %w", variable.Name, err)
+			}
+
+			if !expectedRange(v) {
+				continue
+			}
+		}
+
+		isVarActive, err := d.CheckActiveWhenConstraint(variable)
+		if err != nil {
+			return fmt.Errorf("unable to check ActiveWhen constraint: %w", err)
+		}
+
+		if !isVarActive {
+			continue
+		}
+
+		// An unset value is reported by GetVariableValue at interpolation time.
+		if variable.Value == "" {
+			continue
+		}
+
+		if err := d.GetVariableValidator(variable.Kind)(variable.Value); err != nil {
+			return fmt.Errorf("failed variable validation for %s: %w", variable.Name, err)
+		}
+	}
+
+	return nil
+}
+
 func (d *DraftConfig) CheckActiveWhenConstraint(variable *BuilderVar) (bool, error) {
 	if len(variable.ActiveWhenConstraints) > 0 {
 		isVarActive := true

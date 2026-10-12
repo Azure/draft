@@ -34,7 +34,7 @@ name: testWorkflow
 
 on:
   push:
-    branches: [testBranch]
+    branches: ["testBranch"]
   workflow_dispatch:
 
 env:
@@ -44,9 +44,9 @@ env:
   CLUSTER_NAME: testCluster
   CLUSTER_RESOURCE_GROUP: testClusterRG
   CLUSTER_RESOURCE_TYPE: Microsoft.ContainerService/managedClusters
-  DEPLOYMENT_MANIFEST_PATH: ./manifests
-  DOCKER_FILE: ./Dockerfile
-  BUILD_CONTEXT_PATH: test
+  DEPLOYMENT_MANIFEST_PATH: "./manifests"
+  DOCKER_FILE: "./Dockerfile"
+  BUILD_CONTEXT_PATH: "test"
   NAMESPACE: default
   AUTH_TYPE: SERVICE_PRINCIPAL
 
@@ -72,7 +72,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f "${{ env.DOCKER_FILE }}" "${{ env.BUILD_CONTEXT_PATH }}"
   deploy:
     permissions:
       actions: read

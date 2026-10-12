@@ -38,7 +38,7 @@ name: testWorkflow
 
 on:
   push:
-    branches: [testBranch]
+    branches: ["testBranch"]
   workflow_dispatch:
 
 env:
@@ -48,11 +48,11 @@ env:
   CLUSTER_NAME: testCluster
   CLUSTER_RESOURCE_GROUP: testClusterRG
   CLUSTER_RESOURCE_TYPE: Microsoft.ContainerService/managedClusters
-  DOCKER_FILE: ./Dockerfile
-  BUILD_CONTEXT_PATH: test
-  CHART_PATH: testPath
-  CHART_OVERRIDE_PATH: testOverridePath
-  CHART_OVERRIDES: replicas:2
+  DOCKER_FILE: "./Dockerfile"
+  BUILD_CONTEXT_PATH: "test"
+  CHART_PATH: "testPath"
+  CHART_OVERRIDE_PATH: "testOverridePath"
+  CHART_OVERRIDES: replicas=2
   NAMESPACE: default
   ENABLENAMESPACECREATION: false
   AUTH_TYPE: SERVICE_PRINCIPAL
@@ -79,7 +79,7 @@ jobs:
       # Builds and pushes an image up to your Azure Container Registry
       - name: Build and push image to ACR
         run: |
-          az acr build --image ${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f ${{ env.DOCKER_FILE }} ${{ env.BUILD_CONTEXT_PATH }}
+          az acr build --image ${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.ACR_RESOURCE_GROUP }} -f "${{ env.DOCKER_FILE }}" "${{ env.BUILD_CONTEXT_PATH }}"
   deploy:
     permissions:
       actions: read
@@ -159,7 +159,7 @@ jobs:
       - name: Deploy application on private cluster
         if: ${{ steps.isPrivate.outputs.PRIVATE_CLUSTER == 'true' }}
         run: |
-          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }} --timeout 240s" --file . --query id -o tsv)
+          command_id=$(az aks command invoke --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command "helm upgrade --wait -i -f '${{ env.CHART_OVERRIDE_PATH }}' --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment '${{ env.CHART_PATH }}' --namespace ${{ env.NAMESPACE }} --timeout 240s" --file . --query id -o tsv)
           result=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id)
           echo "Helm upgrade result: $result"
           exitCode=$(az aks command result --resource-group ${{ env.CLUSTER_RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --command-id $command_id --query exitCode -o tsv)
@@ -173,4 +173,4 @@ jobs:
         env:
           WAIT_FLAG: ${{ (env.CLUSTER_RESOURCE_TYPE != 'Microsoft.ContainerService/fleets') && '--wait' || '' }} # don't wait for fleet hubs
         run: |
-          helm upgrade ${{ env.WAIT_FLAG }} -i -f ${{ env.CHART_OVERRIDE_PATH }} --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment ${{ env.CHART_PATH }} --namespace ${{ env.NAMESPACE }}
+          helm upgrade ${{ env.WAIT_FLAG }} -i -f "${{ env.CHART_OVERRIDE_PATH }}" --set ${{ env.CHART_OVERRIDES }} --set image.tag=${{ github.sha }} automated-deployment "${{ env.CHART_PATH }}" --namespace ${{ env.NAMESPACE }}

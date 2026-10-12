@@ -8,10 +8,10 @@ variables:
   clusterRg: {{ .Config.GetVariableValue "CLUSTERRESOURCEGROUP" }}
   acrRg: {{ .Config.GetVariableValue "ACRRESOURCEGROUP" }}
   clusterName: {{ .Config.GetVariableValue "CLUSTERNAME" }}
-  manifestPath: {{ .Config.GetVariableValue "MANIFESTPATH" }}
+  manifestPath: {{ .Config.GetVariableValue "MANIFESTPATH" | jsonString }}
   namespace: {{ .Config.GetVariableValue "NAMESPACE" }}
-  buildContextPath: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" }}
-  dockerfile: {{ .Config.GetVariableValue "DOCKERFILE" }}
+  buildContextPath: {{ .Config.GetVariableValue "BUILDCONTEXTPATH" | jsonString }}
+  dockerfile: {{ .Config.GetVariableValue "DOCKERFILE" | jsonString }}
   tag: "$(Build.BuildId)"
   vmImageName: "ubuntu-latest"
   resourceType: {{ .Config.GetVariableValue "CLUSTERRESOURCETYPE" }}
@@ -19,7 +19,7 @@ variables:
 name: {{ .Config.GetVariableValue "PIPELINENAME" }}
 
 trigger:
-  - {{ .Config.GetVariableValue "BRANCHNAME" }}
+  - {{ .Config.GetVariableValue "BRANCHNAME" | jsonString }}
 {{`
 stages:
   - stage: BuildAndPush
@@ -37,8 +37,8 @@ stages:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                az acr build --image $1.azurecr.io/$2:$3 --registry $1 -g $4 -f $5 $6
-              arguments: "$(azureContainerRegistry) $(containerName) $(tag) $(acrRg) $(dockerfile) $(buildContextPath)"
+                az acr build --image "$1.azurecr.io/$2:$3" --registry "$1" -g "$4" -f "$5" "$6"
+              arguments: '$(azureContainerRegistry) $(containerName) $(tag) $(acrRg) "$(dockerfile)" "$(buildContextPath)"'
 
   - stage: Deploy
     displayName: Deploy stage

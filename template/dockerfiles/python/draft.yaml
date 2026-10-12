@@ -23,7 +23,7 @@ variables:
     versions: ">=0.0.1"
   - name: "ENTRYPOINT"
     type: "string"
-    kind: "filePath"
+    kind: "pythonEntryPoint"
     default:
       value: "app.py"
     description: "the entrypoint file of the repository"

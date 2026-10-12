@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 ENTRYPOINT ["python"]
-CMD ["{{ .Config.GetVariableValue "ENTRYPOINT" }}"]
+CMD [{{ .Config.GetVariableValue "ENTRYPOINT" | jsonString }}]

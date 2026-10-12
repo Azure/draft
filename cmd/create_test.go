@@ -30,11 +30,11 @@ func TestRun(t *testing.T) {
 			LanguageVariables: []UserInputs{{Name: "PORT", Value: "8080"}},
 			DeployVariables: []UserInputs{
 				{Name: "PORT", Value: "8080"},
-				{Name: "APPNAME", Value: "testingCreateCommand"},
+				{Name: "APPNAME", Value: "testing-create-command"},
 				{Name: "DOCKERFILENAME", Value: "Dockerfile"},
 			},
 		}
-		flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testingCreateCommand", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "testNamespace", "IMAGENAME": "testImage", "IMAGETAG": "latest", "DOCKERFILENAME": "test.Dockerfile"}
+		flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testing-create-command", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "test-namespace", "IMAGENAME": "testImage", "IMAGETAG": "latest", "DOCKERFILENAME": "test.Dockerfile"}
 		mockCC := createCmd{
 			deployType:     deployType,
 			dest:           testDir,

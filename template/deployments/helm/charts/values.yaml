@@ -130,7 +130,7 @@ securityContext:
 
 envVars:
 {{- range $key, $value := .Config.GetVariableValue "ENVVARS" }}
-  {{ $key }}: {{ $value }}
+  {{ $key | jsonString }}: {{ $value | jsonString }}
 {{- end }}
 
 generatorLabel: {{ .Config.GetVariableValue "GENERATORLABEL" }}

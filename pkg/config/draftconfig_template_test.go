@@ -43,6 +43,7 @@ var validVariableKinds = map[string]bool{
 	"dirPath":                    true,
 	"dockerFileName":             true,
 	"envVarMap":                  true,
+	"fileName":                   true,
 	"filePath":                   true,
 	"flag":                       true,
 	"helmChartOverrides":         true,
@@ -61,6 +62,7 @@ var validVariableKinds = map[string]bool{
 	"kubernetesResourceRequest":  true,
 	"label":                      true,
 	"port":                       true,
+	"pythonEntryPoint":           true,
 	"repositoryBranch":           true,
 	"workflowName":               true,
 	"replicaCount":               true,
@@ -83,6 +85,54 @@ Append this for more validation
 */
 func TestTempalteValidation(t *testing.T) {
 	assert.Nil(t, loadTemplatesWithValidation())
+}
+
+// TestShippedVariableValuesPassValidation asserts that every default and example
+// value shipped in a template satisfies the validator for its own kind. Example
+// values are surfaced to users by `draft info`, so a value draft advertises must
+// be one draft will accept. This guards against a validator being tightened
+// without the templates being updated to match.
+func TestShippedVariableValuesPassValidation(t *testing.T) {
+	err := fs.WalkDir(template.Templates, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || !strings.EqualFold(d.Name(), draftConfigFile) {
+			return nil
+		}
+
+		currTemplate, err := NewConfigFromFS(template.Templates, path)
+		if err != nil {
+			return err
+		}
+
+		for _, variable := range currTemplate.Variables {
+			validate := currTemplate.GetVariableValidator(variable.Kind)
+
+			if variable.Default.Value != "" {
+				if err := validate(variable.Default.Value); err != nil {
+					t.Errorf("%s: variable %s (kind %q) has an invalid default value: %s",
+						path, variable.Name, variable.Kind, err)
+				}
+			}
+
+			for _, exampleValue := range variable.ExampleValues {
+				if err := validate(exampleValue); err != nil {
+					t.Errorf("%s: variable %s (kind %q) has an invalid example value %q: %s",
+						path, variable.Name, variable.Kind, exampleValue, err)
+				}
+			}
+
+			for _, allowedValue := range variable.AllowedValues {
+				if err := validate(allowedValue); err != nil {
+					t.Errorf("%s: variable %s (kind %q) has an invalid allowed value %q: %s",
+						path, variable.Name, variable.Kind, allowedValue, err)
+				}
+			}
+		}
+		return nil
+	})
+	assert.Nil(t, err)
 }
 
 func loadTemplatesWithValidation() error {

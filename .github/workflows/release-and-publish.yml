@@ -1,5 +1,7 @@
 name: Draft Release & Publish
 on: 
+  pull_request:
+  workflow_dispatch:
   push:
     branches:
       - 'main'
@@ -7,9 +9,30 @@ on:
       - 'CHANGELOG.md'
 
 jobs:
+  Release-Preflight:
+    name: Release Build Preflight
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GOTOOLCHAIN: local
+      DRAFT_VERSION: preflight
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+      - name: Build Draft Release Binaries
+        run: make build-all
   Release-Artifacts:
     name: Draft Release
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      GOTOOLCHAIN: local
     permissions:
       actions: read
       contents: write
@@ -38,7 +61,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
-        go-version: '1.25'
+        go-version-file: 'go.mod'
     # Check if the newest tag already exists
     - name: Check if tag exist
       uses: mukunku/tag-exists-action@5c39604fe8aef7e65acb6fbcf96ec580f7680313 # v1.7.0

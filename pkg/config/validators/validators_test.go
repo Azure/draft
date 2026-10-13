@@ -162,6 +162,25 @@ func TestDirPathValidator(t *testing.T) {
 	}
 }
 
+func TestDirPathListValidator(t *testing.T) {
+	for _, input := range []string{"./manifests/*", "./a.yaml\n./b/c.yaml", "src/my app\n資料/服務"} {
+		assert.Nil(t, GetValidator("dirPathList")(input), "expected %q to be valid", input)
+	}
+
+	for _, input := range []string{
+		"",
+		"./a.yaml\n",
+		"\n./a.yaml",
+		"./a.yaml\n\n./b.yaml",
+		"./a.yaml\r\n./b.yaml",
+		"./a.yaml\n$(touch pwned)",
+		"./a.yaml\n-rf",
+		"./a.yaml\n\"quoted\"",
+	} {
+		assert.NotNil(t, GetValidator("dirPathList")(input), "expected %q to be rejected", input)
+	}
+}
+
 func TestRepositoryBranchValidator(t *testing.T) {
 	for _, input := range []string{"main", "feature/security-fix", "release-1.2"} {
 		assert.Nil(t, GetValidator("repositoryBranch")(input), "expected %q to be valid", input)

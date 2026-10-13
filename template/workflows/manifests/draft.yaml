@@ -43,7 +43,7 @@ variables:
     versions: ">=0.0.1"
   - name: "DEPLOYMENTMANIFESTPATH"
     type: "string"
-    kind: "dirPath"
+    kind: "dirPathList"
     default:
       disablePrompt: true
       value: "./manifests"

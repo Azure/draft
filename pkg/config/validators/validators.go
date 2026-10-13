@@ -66,6 +66,8 @@ func GetValidator(variableKind string) func(string) error {
 		return containerImageVersionValidator
 	case "dirPath":
 		return dirPathValidator
+	case "dirPathList":
+		return dirPathListValidator
 	case "envVarMap":
 		return keyValueMapValidator
 	case "fileName":
@@ -213,6 +215,18 @@ func dirPathValidator(input string) error {
 	}
 	if strings.HasPrefix(input, "-") {
 		return fmt.Errorf("invalid directory path %q: must not start with '-'", input)
+	}
+	return nil
+}
+
+func dirPathListValidator(input string) error {
+	if input == "" {
+		return fmt.Errorf("invalid directory path list: must not be empty")
+	}
+	for _, entry := range strings.Split(input, "\n") {
+		if err := dirPathValidator(entry); err != nil {
+			return fmt.Errorf("invalid directory path list: %w", err)
+		}
 	}
 	return nil
 }

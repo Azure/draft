@@ -54,7 +54,7 @@ jobs:
     # If the tag already exists, we don't upload release artifacts
     - name: Update Draft Release Body
       if: ${{ steps.check-tag-exists.outputs.exists == 'true' }}
-      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
@@ -64,7 +64,7 @@ jobs:
     # Create Release with artifacts
     - name: Create Draft Release
       if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
-      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:

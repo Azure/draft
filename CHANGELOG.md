@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.17.16] - 2026-10-12
+
+- Security: validate and encode template variables to prevent instruction injection in generated artifacts ([GHSA-xqmq-h7rh-g4cq](https://github.com/Azure/draft/security/advisories/GHSA-xqmq-h7rh-g4cq))
+
 ## [0.17.14] - 2026-01-08
 
 - Dependabot updates for dependencies and actions

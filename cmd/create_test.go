@@ -34,7 +34,7 @@ func TestRun(t *testing.T) {
 				{Name: "DOCKERFILENAME", Value: "Dockerfile"},
 			},
 		}
-		flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testing-create-command", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "test-namespace", "IMAGENAME": "testImage", "IMAGETAG": "latest", "DOCKERFILENAME": "test.Dockerfile"}
+		flagVariablesMap = map[string]string{"PORT": "8080", "APPNAME": "testing-create-command", "VERSION": "1.18", "SERVICEPORT": "8080", "NAMESPACE": "test-namespace", "IMAGENAME": "host.minikube.internal:5001/testapp", "IMAGETAG": "latest", "DOCKERFILENAME": "test.Dockerfile"}
 		mockCC := createCmd{
 			deployType:     deployType,
 			dest:           testDir,

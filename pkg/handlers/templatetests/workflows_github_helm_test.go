@@ -20,7 +20,7 @@ func TestGitHubWorkflowHelmTemplates(t *testing.T) {
 				"BRANCHNAME":             "testBranch",
 				"ACRRESOURCEGROUP":       "testAcrRG",
 				"AZURECONTAINERREGISTRY": "testAcr",
-				"CONTAINERNAME":          "testContainer",
+				"CONTAINERNAME":          "testcontainer",
 				"CLUSTERRESOURCEGROUP":   "testClusterRG",
 				"CLUSTERRESOURCETYPE":    "Microsoft.ContainerService/managedClusters",
 				"CLUSTERNAME":            "testCluster",

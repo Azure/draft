@@ -44,12 +44,12 @@ jobs:
           --skip-file-detection \
           --deploy-type helm \
           --variable PORT=8080 \
-          --variable APPNAME=testingCreateCommand \
+          --variable APPNAME=testing-create-command \
           --variable VERSION=1.11 \
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=8080 \
-          --variable NAMESPACE=testNamespace \
-          --variable IMAGENAME=testImage \
+          --variable NAMESPACE=test-namespace \
+          --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
       - name: Validate JSON
@@ -150,7 +150,7 @@ jobs:
           --variable BRANCHNAME=main \
           --variable ACRRESOURCEGROUP=someAcrResourceGroup \
           --variable AZURECONTAINERREGISTRY=someRegistry \
-          --variable CONTAINERNAME=someContainer \
+          --variable CONTAINERNAME=somecontainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
           --variable DOCKERFILE=./Dockerfile \
@@ -216,12 +216,12 @@ jobs:
           --skip-file-detection \
           --deploy-type kustomize \
           --variable PORT=8080 \
-          --variable APPNAME=testingCreateCommand \
+          --variable APPNAME=testing-create-command \
           --variable VERSION=1.11 \
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=8080 \
-          --variable NAMESPACE=testNamespace \
-          --variable IMAGENAME=testImage \
+          --variable NAMESPACE=test-namespace \
+          --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
       - name: Validate JSON
@@ -315,7 +315,7 @@ jobs:
           --variable BRANCHNAME=main \
           --variable ACRRESOURCEGROUP=someAcrResourceGroup \
           --variable AZURECONTAINERREGISTRY=someRegistry \
-          --variable CONTAINERNAME=someContainer \
+          --variable CONTAINERNAME=somecontainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
           --variable DOCKERFILE=./Dockerfile \
@@ -380,12 +380,12 @@ jobs:
           --skip-file-detection \
           --deploy-type manifests \
           --variable PORT=8080 \
-          --variable APPNAME=testingCreateCommand \
+          --variable APPNAME=testing-create-command \
           --variable VERSION=1.11 \
           --variable BUILDERVERSION=1.11 \
           --variable SERVICEPORT=80 \
-          --variable NAMESPACE=testNamespace \
-          --variable IMAGENAME=testImage \
+          --variable NAMESPACE=test-namespace \
+          --variable IMAGENAME=testimage \
           --variable IMAGETAG=latest \
           --variable ENTRYPOINT=myapp.py
       - name: Validate JSON
@@ -472,7 +472,7 @@ jobs:
           --variable BRANCHNAME=main \
           --variable ACRRESOURCEGROUP=someAcrResourceGroup \
           --variable AZURECONTAINERREGISTRY=someRegistry \
-          --variable CONTAINERNAME=someContainer \
+          --variable CONTAINERNAME=somecontainer \
           --variable CLUSTERRESOURCEGROUP=someClusterResourceGroup \
           --variable CLUSTERNAME=someAksCluster \
           --variable DOCKERFILE=./Dockerfile \

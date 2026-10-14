@@ -224,6 +224,9 @@ func dirPathListValidator(input string) error {
 		return fmt.Errorf("invalid directory path list: must not be empty")
 	}
 	for _, entry := range strings.Split(input, "\n") {
+		if strings.TrimSpace(entry) != entry {
+			return fmt.Errorf("invalid directory path list: entry %q has leading or trailing whitespace", entry)
+		}
 		if err := dirPathValidator(entry); err != nil {
 			return fmt.Errorf("invalid directory path list: %w", err)
 		}

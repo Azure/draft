@@ -226,7 +226,7 @@ func TestPythonEntrypointJSONEncoding(t *testing.T) {
 }
 
 func TestManifestPathListRendersAsOneValue(t *testing.T) {
-	paths := "./manifests/deployment.yaml\n./manifests/service.yaml\n  - script: echo injected"
+	paths := "./manifests/deployment.yaml\n./manifests/service.yaml\n./manifests/ingress.yaml"
 
 	testCases := []struct {
 		name     string
@@ -277,7 +277,6 @@ func TestManifestPathListRendersAsOneValue(t *testing.T) {
 			var doc map[string]any
 			assert.Nil(t, yaml.Unmarshal(writer.FileMap[testCase.output], &doc))
 			assert.Equal(t, paths, testCase.lookup(doc))
-			assert.NotContains(t, string(writer.FileMap[testCase.output]), "\n  - script: echo injected")
 		})
 	}
 }

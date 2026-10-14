@@ -175,6 +175,9 @@ func TestDirPathListValidator(t *testing.T) {
 		"./a.yaml\r\n./b.yaml",
 		"./a.yaml\n$(touch pwned)",
 		"./a.yaml\n-rf",
+		" ./a.yaml",
+		"./a.yaml \n./b.yaml",
+		"./a.yaml\n  ./b.yaml",
 		"./a.yaml\n\"quoted\"",
 	} {
 		assert.NotNil(t, GetValidator("dirPathList")(input), "expected %q to be rejected", input)

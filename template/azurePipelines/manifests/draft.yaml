@@ -57,11 +57,11 @@ variables:
     versions: ">=0.0.1"
   - name: "MANIFESTPATH"
     type: "string"
-    kind: "dirPath"
+    kind: "dirPathList"
     default:
       disablePrompt: true
       value: "./manifests/*"
-    description: "the path to the Kubernetes deployment manifest"
+    description: "one or more newline-separated paths to Kubernetes deployment manifests"
     versions: ">=0.0.1"
   - name: "NAMESPACE"
     type: "string"

@@ -224,3 +224,59 @@ func TestPythonEntrypointJSONEncoding(t *testing.T) {
 		})
 	}
 }
+
+func TestManifestPathListRendersAsOneValue(t *testing.T) {
+	paths := "./manifests/deployment.yaml\n./manifests/service.yaml\n./manifests/ingress.yaml"
+
+	testCases := []struct {
+		name     string
+		template string
+		output   string
+		values   map[string]string
+		lookup   func(map[string]any) any
+	}{
+		{
+			name:     "azure pipeline",
+			template: "azure-pipeline-manifests",
+			output:   ".pipelines/azure-kubernetes-service.yaml",
+			values: map[string]string{
+				"ARMSERVICECONNECTION": "conn", "AZURECONTAINERREGISTRY": "registry",
+				"CONTAINERNAME": "app", "CLUSTERRESOURCEGROUP": "cluster-rg",
+				"ACRRESOURCEGROUP": "acr-rg", "CLUSTERNAME": "cluster",
+				"CLUSTERRESOURCETYPE": "Microsoft.ContainerService/managedClusters",
+				"MANIFESTPATH":        paths,
+			},
+			lookup: func(doc map[string]any) any { return doc["variables"].(map[string]any)["manifestPath"] },
+		},
+		{
+			name:     "github workflow",
+			template: "github-workflow-manifests",
+			output:   ".github/workflows/azure-kubernetes-service.yml",
+			values: map[string]string{
+				"WORKFLOWNAME": "deploy", "BRANCHNAME": "main",
+				"ACRRESOURCEGROUP": "acr-rg", "AZURECONTAINERREGISTRY": "registry",
+				"CONTAINERNAME": "app", "CLUSTERRESOURCEGROUP": "cluster-rg",
+				"CLUSTERNAME": "cluster", "DOCKERFILE": "./Dockerfile",
+				"BUILDCONTEXTPATH": ".", "NAMESPACE": "default",
+				"DEPLOYMENTMANIFESTPATH": paths,
+			},
+			lookup: func(doc map[string]any) any { return doc["env"].(map[string]any)["DEPLOYMENT_MANIFEST_PATH"] },
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			writer := &writers.FileMapWriter{FileMap: make(map[string][]byte)}
+			tpl, err := GetTemplate(testCase.template, "", ".", writer)
+			assert.Nil(t, err)
+			for name, value := range testCase.values {
+				tpl.Config.SetVariable(name, value)
+			}
+			assert.Nil(t, tpl.Generate())
+
+			var doc map[string]any
+			assert.Nil(t, yaml.Unmarshal(writer.FileMap[testCase.output], &doc))
+			assert.Equal(t, paths, testCase.lookup(doc))
+		})
+	}
+}

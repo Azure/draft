@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/fs"
+	"path"
 	"regexp"
 	"slices"
 	"strings"
@@ -41,6 +42,7 @@ var validVariableKinds = map[string]bool{
 	"containerImageVersion":      true,
 	"clusterResourceType":        true,
 	"dirPath":                    true,
+	"dirPathList":                true,
 	"dockerFileName":             true,
 	"envVarMap":                  true,
 	"fileName":                   true,
@@ -133,6 +135,53 @@ func TestShippedVariableValuesPassValidation(t *testing.T) {
 		return nil
 	})
 	assert.Nil(t, err)
+}
+
+func TestDirPathListVariablesAreJSONEncoded(t *testing.T) {
+	checked := 0
+	err := fs.WalkDir(template.Templates, ".", func(configPath string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || !strings.EqualFold(d.Name(), draftConfigFile) {
+			return nil
+		}
+
+		currTemplate, err := NewConfigFromFS(template.Templates, configPath)
+		if err != nil {
+			return err
+		}
+
+		templateDir := path.Dir(configPath)
+		for _, variable := range currTemplate.Variables {
+			if variable.Kind != "dirPathList" {
+				continue
+			}
+			reference := regexp.MustCompile(`GetVariableValue\s+"` + regexp.QuoteMeta(variable.Name) + `"\s*(\|\s*jsonString\b)?`)
+			err := fs.WalkDir(template.Templates, templateDir, func(filePath string, d fs.DirEntry, err error) error {
+				if err != nil || d.IsDir() || filePath == configPath {
+					return err
+				}
+				content, err := fs.ReadFile(template.Templates, filePath)
+				if err != nil {
+					return err
+				}
+				for _, match := range reference.FindAllStringSubmatch(string(content), -1) {
+					checked++
+					if match[1] == "" {
+						t.Errorf("%s renders %s (kind dirPathList) without jsonString", filePath, variable.Name)
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	assert.Nil(t, err)
+	assert.NotZero(t, checked, "expected at least one dirPathList variable reference")
 }
 
 func loadTemplatesWithValidation() error {

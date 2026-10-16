@@ -13,6 +13,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      go-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
   - package-ecosystem: "github-actions"
     directory: ".github/workflows"
     schedule:
@@ -21,6 +28,13 @@ updates:
       default-days: 7
     groups:
       github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      github-actions-security:
+        applies-to: security-updates
         patterns:
           - "*"
         update-types:
@@ -39,6 +53,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
   - package-ecosystem: "github-actions"
     directory: "/template/workflows/kustomize/.github/workflows"
     schedule:
@@ -47,6 +68,13 @@ updates:
       default-days: 7
     groups:
       github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      github-actions-security:
+        applies-to: security-updates
         patterns:
           - "*"
         update-types:
@@ -65,6 +93,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
   - package-ecosystem: "github-actions"
     directory: "/.github/actions"
     schedule:
@@ -73,6 +108,13 @@ updates:
       default-days: 7
     groups:
       github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      github-actions-security:
+        applies-to: security-updates
         patterns:
           - "*"
         update-types:

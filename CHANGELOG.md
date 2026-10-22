@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.17.17] - 2026-10-22
+
+- [795](https://github.com/Azure/draft/pull/795) Accept newline-separated manifest path lists for `MANIFESTPATH` and `DEPLOYMENTMANIFESTPATH`
+- [796](https://github.com/Azure/draft/pull/796) Bump Go dependencies and group Dependabot security updates
+- Dependabot updates for dependencies and actions
+
 ## [0.17.16] - 2026-10-12
 
 - Security: validate and encode template variables to prevent instruction injection in generated artifacts ([GHSA-xqmq-h7rh-g4cq](https://github.com/Azure/draft/security/advisories/GHSA-xqmq-h7rh-g4cq))

@@ -1,0 +1,38 @@
+name: Close Stale Pull Requests
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  stale-prs:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Mark and close stale pull requests
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+          remove-issue-stale-when-updated: false
+          days-before-pr-stale: 60
+          days-before-pr-close: 14
+          stale-pr-label: stale
+          exempt-pr-labels: keep-open
+          exempt-draft-pr: true
+          remove-pr-stale-when-updated: true
+          delete-branch: false
+          stale-pr-message: >-
+            This pull request has been marked stale after 60 days without activity.
+            It will be closed in 14 days unless there is new activity.
+            Comment or update the pull request to keep it active, or ask a
+            maintainer to add the keep-open label to exempt it from cleanup.
+          close-pr-message: >-
+            This pull request has been closed after another 14 days without
+            activity since it was marked stale. Reopen it if the work is still
+            relevant, or ask a maintainer to add the keep-open label to exempt
+            it from cleanup.

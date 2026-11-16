@@ -1,0 +1,50 @@
+name: Kind resource diagnostics
+description: Capture runner, Docker, Kubernetes, and kind cgroup memory settings
+runs:
+  using: composite
+  steps:
+    - name: Runner resources
+      shell: bash
+      continue-on-error: true
+      run: |
+        uname -a
+        lscpu
+        free -h
+        swapon --show
+        df -h /
+        docker version
+        docker info
+        docker stats --no-stream
+    - name: Kubernetes resources
+      shell: bash
+      continue-on-error: true
+      run: |
+        kubectl get nodes -o wide
+        kubectl describe nodes
+        kubectl get pods -A -o wide
+        kubectl get pods -A -o json
+        kubectl get events -A --sort-by=.metadata.creationTimestamp
+    - name: Kind node limits and memory accounting
+      shell: bash
+      continue-on-error: true
+      run: |
+        for node in $(kind get nodes --name chart-testing); do
+          echo "::group::Kind node $node"
+          docker inspect "$node" --format 'Memory={{.HostConfig.Memory}} MemorySwap={{.HostConfig.MemorySwap}} NanoCpus={{.HostConfig.NanoCpus}} CpuQuota={{.HostConfig.CpuQuota}} CpuPeriod={{.HostConfig.CpuPeriod}} CgroupParent={{.HostConfig.CgroupParent}}'
+          docker exec "$node" bash -c '
+            uname -a
+            free -h
+            ps -eo pid,ppid,comm,rss,vsz --sort=-rss | head -40
+            while IFS= read -r events; do
+              dir=${events%/*}
+              echo "=== $dir ==="
+              for metric in memory.current memory.peak memory.max memory.events memory.stat cpu.max cpuset.cpus.effective; do
+                if [[ -r "$dir/$metric" ]]; then
+                  echo "--- $metric"
+                  cat "$dir/$metric"
+                fi
+              done
+            done < <(find /sys/fs/cgroup -name memory.events \( -path "*/kubepods*" -o -path /sys/fs/cgroup/memory.events \))
+          '
+          echo "::endgroup::"
+        done

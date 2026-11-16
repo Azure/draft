@@ -2,7 +2,6 @@ package writers
 
 import (
 	"os"
-	"syscall"
 
 	"github.com/Azure/draft/pkg/osutil"
 )
@@ -18,7 +17,7 @@ func (w *LocalFSWriter) WriteFile(path string, data []byte) error {
 	}
 
 	// Reject a symlink at the destination before it can be truncated.
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|syscall.O_NOFOLLOW, mode)
+	f, err := openFileNoFollow(path, mode)
 	if err != nil {
 		return err
 	}

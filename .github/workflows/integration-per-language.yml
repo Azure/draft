@@ -183,6 +183,9 @@ jobs:
           kubectl get po
           echo "Deployment failed, check above logs and previous steps to isolate the issue"
           exit 6
+      - name: Capture failure resource diagnostics
+        if: failure()
+        uses: ./.github/actions/kind-diagnostics
   kustomize-dry-run:
     runs-on: ubuntu-latest
     steps:
@@ -347,6 +350,9 @@ jobs:
           kubectl get po
           echo "Deployment failed, check above logs and previous steps to isolate the issue"
           exit 6
+      - name: Capture failure resource diagnostics
+        if: failure()
+        uses: ./.github/actions/kind-diagnostics
   manifests-dry-run:
     runs-on: ubuntu-latest
     steps:
@@ -497,6 +503,9 @@ jobs:
       - name: Fail if any error
         if: steps.deploy.outcome != 'success' || steps.rollout.outcome != 'success'
         run: exit 6
+      - name: Capture failure resource diagnostics
+        if: failure()
+        uses: ./.github/actions/kind-diagnostics
   manifest-update:
     needs: manifests-create
     runs-on: ubuntu-latest
@@ -548,6 +557,9 @@ jobs:
           kubectl get po
           echo "Deployment failed, check above logs and previous steps to isolate the issue"
           exit 6
+      - name: Capture failure resource diagnostics
+        if: failure()
+        uses: ./.github/actions/kind-diagnostics
   win-helm-create:
     runs-on: windows-latest
     steps:

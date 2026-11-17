@@ -34,7 +34,7 @@ COPY --from=builder /opt/rel /opt/rel
 EXPOSE {{ .Config.GetVariableValue "PORT" }} {{ .Config.GetVariableValue "PORT" }}
 
 RUN ln -s /opt/rel/bin/$(cat /opt/rel/__relname) /opt/rel/bin/start_script
-ENTRYPOINT ["/opt/rel/bin/start_script"]
+# Bound Erlang's file-descriptor-sized tables on runtimes with huge nofile limits.
+ENTRYPOINT ["/bin/sh", "-c", "ulimit -n 65536 && exec /opt/rel/bin/start_script \"$@\"", "--"]
 
 CMD ["foreground"]
-

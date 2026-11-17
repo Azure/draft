@@ -14,11 +14,17 @@ runs:
   steps:
     - name: start kind
       id: kind
-      uses: helm/kind-action@92086f6be054225fa813e0a4b13787fc9088faab # v1.13.0
+      uses: helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376 # v1.15.2
       with:
+        version: v0.33.0
+        kubectl_version: v1.34.11
+        node_image: kindest/node:v1.34.11@sha256:44e222ee2132dab25ff87301682f89eb82c7880ea3a1bf543bfe9708fd08d67d
         registry: true
         registry_name: kind-registry
         registry_port: ${{ inputs.registry-port }}
+    - name: Capture runner and kind resources
+      uses: ./.github/actions/kind-diagnostics
+      if: always()
     - name: wait for registry
       shell: bash
       run: |

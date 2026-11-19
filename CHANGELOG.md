@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.17.18] - 2026-11-19
+
+- [805](https://github.com/Azure/draft/pull/805) Bump GitHub Actions dependencies
+- [807](https://github.com/Azure/draft/pull/807) Reject symlink destinations in the local filesystem writer
+
 ## [0.17.17] - 2026-10-22
 
 - [795](https://github.com/Azure/draft/pull/795) Accept newline-separated manifest path lists for `MANIFESTPATH` and `DEPLOYMENTMANIFESTPATH`
